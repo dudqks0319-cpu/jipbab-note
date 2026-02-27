@@ -1,0 +1,235 @@
+// 이 파일은 레시피 상세 화면을 담당합니다 - 큰 이미지, 재료 목록, 조리 순서를 제공합니다.
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+
+import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
+
+const SERVICE_ID = "COOKRCP01";
+const BASE_URL = "https://openapi.foodsafetykorea.go.kr/api";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1400&q=80";
+
+type MfdsRecipeRow = {
+  RCP_SEQ?: string;
+  RCP_NM?: string;
+  RCP_WAY2?: string;
+  RCP_PAT2?: string;
+  INFO_ENG?: string;
+  ATT_FILE_NO_MAIN?: string;
+  ATT_FILE_NO_MK?: string;
+  RCP_PARTS_DTLS?: string;
+  HASH_TAG?: string;
+  [key: string]: string | undefined;
+};
+
+type MfdsResponse = {
+  COOKRCP01?: {
+    row?: MfdsRecipeRow[];
+  };
+};
+
+const parseIngredientDisplayList = (rawIngredients: string): string[] => {
+  if (!rawIngredients) {
+    return [];
+  }
+
+  const parsed = rawIngredients
+    .split(/[\n,;|/]+/g)
+    .map((item) => item.replace(/^[-•·*]\s*/, "").trim())
+    .filter((item) => item.length > 0);
+
+  return Array.from(new Set(parsed));
+};
+
+const parseSteps = (row: MfdsRecipeRow): RecipeDetailStep[] => {
+  const steps: RecipeDetailStep[] = [];
+
+  for (let index = 1; index <= 20; index += 1) {
+    const key = String(index).padStart(2, "0");
+    const description = row[`MANUAL${key}`]?.trim();
+    const imageUrl = row[`MANUAL_IMG${key}`]?.trim() || null;
+
+    if (!description) {
+      continue;
+    }
+
+    steps.push({
+      index,
+      description,
+      imageUrl,
+    });
+  }
+
+  if (steps.length > 0) {
+    return steps;
+  }
+
+  return [
+    { index: 1, description: "재료를 깨끗하게 손질하고 필요한 양을 준비합니다.", imageUrl: null },
+    { index: 2, description: "조리법에 맞춰 가열하고, 중간에 간을 맞춰가며 조리합니다.", imageUrl: null },
+    { index: 3, description: "불을 끄고 플레이팅한 뒤, 기호에 맞게 마무리합니다.", imageUrl: null },
+  ];
+};
+
+const parseHashTags = (rawTag: string): string[] => {
+  if (!rawTag) {
+    return [];
+  }
+
+  return rawTag
+    .split(/[\s,]+/g)
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
+};
+
+async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
+  const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  const endpoint = `${BASE_URL}/${apiKey}/${SERVICE_ID}/json/1/5/RCP_SEQ=${encodeURIComponent(recipeId)}`;
+  const response = await fetch(endpoint, { cache: "no-store" });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as MfdsResponse;
+  const rows = payload.COOKRCP01?.row ?? [];
+  const target = rows.find((row) => row.RCP_SEQ === recipeId) ?? rows[0];
+
+  if (!target) {
+    return null;
+  }
+
+  return {
+    id: target.RCP_SEQ ?? recipeId,
+    name: target.RCP_NM?.trim() ?? "레시피 이름 없음",
+    category: target.RCP_PAT2?.trim() ?? "기타",
+    method: target.RCP_WAY2?.trim() ?? "정보 없음",
+    calories: target.INFO_ENG?.trim() ?? "-",
+    thumbnailUrl: target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null,
+    ingredients: target.RCP_PARTS_DTLS?.trim() ?? "",
+    hashTag: target.HASH_TAG?.trim() ?? "",
+    ingredientList: parseIngredientDisplayList(target.RCP_PARTS_DTLS?.trim() ?? ""),
+    steps: parseSteps(target),
+  };
+}
+
+type RecipeDetailPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
+  const { id } = await params;
+
+  if (!id) {
+    notFound();
+  }
+
+  const recipe = await fetchRecipeDetail(id);
+
+  if (!recipe) {
+    return (
+      <div className="px-5 py-10">
+        <p className="rounded-2xl bg-rose-50 px-4 py-5 text-sm text-rose-500">
+          레시피 상세 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+        </p>
+        <Link
+          href="/recipe"
+          className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-600"
+        >
+          <ChevronLeft size={16} />
+          목록으로 돌아가기
+        </Link>
+      </div>
+    );
+  }
+
+  const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
+  const tags = parseHashTags(recipe.hashTag);
+
+  return (
+    <div className="pb-10">
+      {/* 상단 히어로 이미지 */}
+      <section className="relative h-72 w-full overflow-hidden">
+        {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={heroImage} alt={recipe.name} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+
+        <Link
+          href="/recipe"
+          className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-gray-700 shadow-soft"
+        >
+          <ChevronLeft size={14} />
+          목록
+        </Link>
+
+        <div className="absolute bottom-4 left-5 right-5">
+          <span className="rounded-full bg-mint-200 px-2.5 py-1 text-[11px] font-bold text-mint-500">
+            {recipe.category}
+          </span>
+          <h1 className="mt-2 text-2xl font-bold text-white">{recipe.name}</h1>
+          <p className="mt-1 text-sm text-white/85">
+            {recipe.method} · {recipe.calories} kcal
+          </p>
+        </div>
+      </section>
+
+      {/* 해시태그 */}
+      {tags.length > 0 && (
+        <section className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto px-5">
+          {tags.map((tag) => (
+            <span key={tag} className="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
+              {tag}
+            </span>
+          ))}
+        </section>
+      )}
+
+      {/* 재료 목록 */}
+      <section className="mt-5 px-5">
+        <h2 className="text-lg font-bold text-gray-800">🧂 재료</h2>
+        {recipe.ingredientList.length === 0 ? (
+          <p className="mt-2 rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-400">재료 정보가 없습니다.</p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {recipe.ingredientList.map((ingredient) => (
+              <li key={ingredient} className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 shadow-soft">
+                {ingredient}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* 조리 순서 */}
+      <section className="mt-6 px-5">
+        <h2 className="text-lg font-bold text-gray-800">👩‍🍳 조리 순서</h2>
+        <ol className="mt-3 space-y-3">
+          {recipe.steps.map((step) => (
+            <li key={step.index} className="overflow-hidden rounded-3xl bg-white shadow-soft">
+              <div className="flex items-start gap-3 px-4 py-4">
+                <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mint-100 text-xs font-bold text-mint-500">
+                  {step.index}
+                </span>
+                <p className="text-sm leading-relaxed text-gray-700">{step.description}</p>
+              </div>
+              {step.imageUrl && (
+                <div className="h-44 w-full overflow-hidden border-t border-gray-50">
+                  {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={step.imageUrl} alt={`${recipe.name} 조리 순서 ${step.index}`} className="h-full w-full object-cover" />
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+  );
+}

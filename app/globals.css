@@ -1,26 +1,70 @@
-@import "tailwindcss";
+/* 이 파일은 앱 전체에 적용되는 기본 스타일을 담당합니다 */
+@import 'tailwindcss';
+
+/* Tailwind v4: config 파일 연결 */
+@config '../tailwind.config.ts';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f3efe7;
+  color: #2b2f36;
+}
+
+/* 모바일 앱 프레임 바깥쪽 배경 텍스처 */
+.bg-app-shell {
+  background:
+    radial-gradient(circle at 14% 10%, rgba(167, 234, 214, 0.55) 0%, rgba(167, 234, 214, 0) 40%),
+    radial-gradient(circle at 88% 6%, rgba(253, 186, 116, 0.35) 0%, rgba(253, 186, 116, 0) 38%),
+    radial-gradient(circle at 8% 88%, rgba(216, 180, 254, 0.33) 0%, rgba(216, 180, 254, 0) 34%),
+    linear-gradient(180deg, #f8f3ec 0%, #f1ece3 100%);
+}
+
+/* 가로 스크롤 시 스크롤바 숨기기 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 바텀시트 올라오는 애니메이션 */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* 오버레이 페이드인 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 부드러운 그라데이션 배경 */
+.bg-warm-gradient {
+  background: linear-gradient(135deg, #d5f5ec 0%, #fef9e7 50%, #f3e8ff 100%);
+}
+
+/* 민트 그라데이션 헤더 */
+.bg-mint-gradient {
+  background: linear-gradient(135deg, #a7ead6 0%, #6dd5b8 100%);
 }
