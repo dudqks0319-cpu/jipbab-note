@@ -11,6 +11,9 @@ const OPEN_FOOD_FACTS_FIELDS = [
   'categories',
   'image_url',
 ] as const
+const REQUEST_WINDOW_MS = 60_000
+const MAX_REQUESTS_PER_WINDOW = 30
+const requestStore = new Map<string, { count: number; startedAt: number }>()
 
 type ProductLookupResult = {
   barcode: string
@@ -38,6 +41,35 @@ type OpenFoodFactsPayload = {
 const toTrimmedOrNull = (value: string | undefined): string | null => {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
+}
+
+const getClientIp = (request: Request): string => {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) return forwardedFor.split(',')[0].trim()
+  return request.headers.get('x-real-ip') ?? 'unknown'
+}
+
+const isRateLimited = (key: string): boolean => {
+  const now = Date.now()
+
+  for (const [bucketKey, value] of requestStore.entries()) {
+    if (now - value.startedAt > REQUEST_WINDOW_MS) {
+      requestStore.delete(bucketKey)
+    }
+  }
+
+  const current = requestStore.get(key)
+  if (!current || now - current.startedAt > REQUEST_WINDOW_MS) {
+    requestStore.set(key, { count: 1, startedAt: now })
+    return false
+  }
+
+  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
+    return true
+  }
+
+  requestStore.set(key, { ...current, count: current.count + 1 })
+  return false
 }
 
 const parseOpenFoodFactsProduct = (
@@ -82,6 +114,14 @@ async function fetchFromOpenFoodFacts(
 }
 
 export async function GET(request: Request) {
+  const clientIp = getClientIp(request)
+  if (isRateLimited(clientIp)) {
+    return NextResponse.json(
+      { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
+      { status: 429 },
+    )
+  }
+
   const { searchParams } = new URL(request.url)
   const normalizedBarcode = normalizeBarcode(searchParams.get('barcode'))
 

@@ -29,9 +29,9 @@ export default function RootLayout({
           <div className="pointer-events-none absolute -right-10 top-28 h-40 w-40 rounded-full bg-peach-200/60 blur-3xl" />
           <div className="pointer-events-none absolute -left-12 bottom-16 h-44 w-44 rounded-full bg-lavender-200/65 blur-3xl" />
 
-          <div className="relative mx-auto min-h-screen max-w-[430px] overflow-hidden border-x border-white/70 bg-[#fffdf9]/92 shadow-[0_18px_60px_rgba(43,54,70,0.18)] backdrop-blur">
+          <div className="relative mx-auto flex h-[100dvh] max-w-[430px] flex-col overflow-hidden border-x border-white/70 bg-[#fffdf9]/92 shadow-[0_18px_60px_rgba(43,54,70,0.18)]">
             <Header />
-            <main className="relative pt-16 [padding-bottom:calc(5.8rem+env(safe-area-inset-bottom))]">
+            <main className="relative flex-1 overflow-y-auto pb-4">
               {children}
             </main>
             <BottomTab />

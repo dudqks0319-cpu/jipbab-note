@@ -1,14 +1,29 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useState } from 'react'
-import { Plus, MoreVertical, X, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
 import { getCategoryEmoji, getCategoryBg, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
 const categories: IngredientCategory[] = ['채소', '과일', '육류', '수산물', '유제품', '양념', '기타']
+const suggestionFetchLimit = 24
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
+
+const resolveApiUrl = (path: string): string => {
+  if (!API_BASE_URL) return path
+  const normalizedBase = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL
+  return `${normalizedBase}${path}`
+}
+
+type IngredientSuggestionResponse = {
+  items: string[]
+  total: number
+  nextCursor: number | null
+  message?: string
+}
 
 type IngredientFormState = {
   name: string
@@ -36,6 +51,15 @@ export default function FridgePage() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
+  const [suggestionKeyword, setSuggestionKeyword] = useState('')
+  const [suggestedIngredients, setSuggestedIngredients] = useState<string[]>([])
+  const [suggestionTotal, setSuggestionTotal] = useState(0)
+  const [suggestionNextCursor, setSuggestionNextCursor] = useState<number | null>(0)
+  const [suggestionLoading, setSuggestionLoading] = useState(false)
+  const [suggestionError, setSuggestionError] = useState<string | null>(null)
+  const [hasFetchedSuggestions, setHasFetchedSuggestions] = useState(false)
+  const suggestionRequestIdRef = useRef(0)
+  const suggestionAbortRef = useRef<AbortController | null>(null)
 
   const filtered =
     activeTab === '전체'
@@ -50,9 +74,104 @@ export default function FridgePage() {
   })
 
   const resetForm = () => {
+    suggestionAbortRef.current?.abort()
     setForm(initialFormState)
+    setSuggestionKeyword('')
+    setSuggestedIngredients([])
+    setSuggestionTotal(0)
+    setSuggestionNextCursor(0)
+    setSuggestionLoading(false)
+    setSuggestionError(null)
+    setHasFetchedSuggestions(false)
     setEditingId(null)
   }
+
+  const fetchSuggestions = useCallback(
+    async (mode: 'reset' | 'append') => {
+      if (!showAddModal) return
+
+      const cursor = mode === 'reset' ? 0 : suggestionNextCursor
+      if (mode === 'append' && cursor === null) return
+
+      if (mode === 'reset') {
+        suggestionAbortRef.current?.abort()
+      }
+
+      const requestId = suggestionRequestIdRef.current + 1
+      suggestionRequestIdRef.current = requestId
+      const controller = new AbortController()
+      suggestionAbortRef.current = controller
+
+      setSuggestionLoading(true)
+      setSuggestionError(null)
+      if (mode === 'reset') {
+        setSuggestedIngredients([])
+        setSuggestionTotal(0)
+        setSuggestionNextCursor(0)
+      }
+
+      try {
+        const params = new URLSearchParams({
+          category: form.category,
+          limit: String(suggestionFetchLimit),
+          cursor: String(cursor ?? 0),
+        })
+
+        const trimmedKeyword = suggestionKeyword.trim()
+        if (trimmedKeyword) {
+          params.set('q', trimmedKeyword)
+        }
+
+        const response = await fetch(resolveApiUrl(`/api/ingredients?${params.toString()}`), {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+
+        const payload = (await response.json()) as IngredientSuggestionResponse
+        if (!response.ok) {
+          throw new Error(payload.message ?? '추천 재료를 불러오지 못했습니다.')
+        }
+
+        if (requestId !== suggestionRequestIdRef.current) return
+
+        setSuggestionTotal(payload.total)
+        setSuggestionNextCursor(payload.nextCursor)
+        setSuggestedIngredients((prev) => {
+          const next = mode === 'reset' ? payload.items : [...prev, ...payload.items]
+          return Array.from(new Set(next))
+        })
+        setHasFetchedSuggestions(true)
+      } catch (caught) {
+        if (controller.signal.aborted) return
+        if (requestId !== suggestionRequestIdRef.current) return
+        setSuggestionError(caught instanceof Error ? caught.message : '추천 재료를 불러오지 못했습니다.')
+        setHasFetchedSuggestions(true)
+      } finally {
+        if (requestId === suggestionRequestIdRef.current) {
+          setSuggestionLoading(false)
+        }
+      }
+    },
+    [form.category, showAddModal, suggestionKeyword, suggestionNextCursor],
+  )
+
+  useEffect(() => {
+    if (!showAddModal) return
+
+    const timer = window.setTimeout(() => {
+      void fetchSuggestions('reset')
+    }, 250)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [fetchSuggestions, form.category, showAddModal, suggestionKeyword])
+
+  useEffect(() => {
+    return () => {
+      suggestionAbortRef.current?.abort()
+    }
+  }, [])
 
   const handleSave = async () => {
     if (!form.name.trim()) return
@@ -236,7 +355,7 @@ export default function FridgePage() {
 
       {/* 재료 추가/수정 바텀시트 모달 */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-[70] flex items-end justify-center">
           <div
             className="animate-fade-in absolute inset-0 bg-black/40"
             onClick={() => {
@@ -293,6 +412,140 @@ export default function FridgePage() {
                     {getCategoryEmoji(cat)} {cat}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* 카테고리별 추천 재료 */}
+            <div className="mb-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="block text-sm font-bold text-gray-700">{form.category} 추천 재료</label>
+                <span className="text-[11px] font-medium text-gray-400">칩 선택 시 재료명 자동입력</span>
+              </div>
+
+              <div className="relative mb-2">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  value={suggestionKeyword}
+                  onChange={(event) => setSuggestionKeyword(event.target.value)}
+                  placeholder={`${form.category} 재료 검색 (예: 양파)`}
+                  className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors focus:border-mint-300 focus:bg-white"
+                />
+                {suggestionKeyword && (
+                  <button
+                    type="button"
+                    aria-label="추천 검색어 지우기"
+                    onClick={() => setSuggestionKeyword('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-2.5">
+                {suggestionLoading && suggestedIngredients.length === 0 ? (
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs text-gray-500">
+                      <Loader2 size={12} className="animate-spin" />
+                      식약처 데이터 검색 중...
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <span
+                          key={`suggestion-skeleton-${index}`}
+                          className="h-8 w-20 animate-pulse rounded-full bg-white"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : suggestionError && suggestedIngredients.length === 0 ? (
+                  <div className="rounded-xl bg-rose-50 p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle size={14} className="mt-0.5 shrink-0 text-rose-500" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-rose-600">추천 재료를 불러오지 못했습니다.</p>
+                        <p className="mt-0.5 text-xs text-rose-500">{suggestionError}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void fetchSuggestions('reset')
+                        }}
+                        className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-rose-500"
+                      >
+                        재시도
+                      </button>
+                    </div>
+                  </div>
+                ) : suggestedIngredients.length === 0 ? (
+                  hasFetchedSuggestions ? (
+                    <div className="rounded-xl bg-white px-3 py-4 text-center">
+                      <p className="text-xs font-semibold text-gray-500">검색 결과가 없습니다.</p>
+                      <p className="mt-1 text-xs text-gray-400">검색어를 바꾸거나 재료명을 직접 입력해 주세요.</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-white px-3 py-4 text-center text-xs text-gray-400">
+                      추천 재료를 준비하고 있습니다...
+                    </div>
+                  )
+                ) : (
+                  <>
+                    <div className="max-h-28 overflow-y-auto pr-1">
+                      <div className="flex flex-wrap gap-2">
+                        {suggestedIngredients.map((name) => (
+                          <button
+                            key={name}
+                            type="button"
+                            onClick={() => setForm((prev) => ({ ...prev, name }))}
+                            aria-pressed={form.name === name}
+                            className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
+                              form.name === name
+                                ? 'bg-mint-300 text-white shadow-soft'
+                                : 'bg-white text-mint-500 hover:bg-mint-100'
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <p className="text-xs text-gray-400">
+                        총 {suggestionTotal}개 중 {suggestedIngredients.length}개 표시
+                      </p>
+                      {suggestionNextCursor !== null && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void fetchSuggestions('append')
+                          }}
+                          className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={suggestionLoading}
+                        >
+                          {suggestionLoading ? '불러오는 중...' : '더 보기'}
+                        </button>
+                      )}
+                    </div>
+                    {suggestionError && (
+                      <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-rose-50 px-3 py-2">
+                        <p className="truncate text-xs text-rose-500">{suggestionError}</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void fetchSuggestions('append')
+                          }}
+                          className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-rose-500"
+                        >
+                          재시도
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

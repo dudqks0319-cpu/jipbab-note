@@ -11,7 +11,7 @@ export default function Header() {
   }).format(new Date())
 
   return (
-    <header className="fixed top-0 z-50 flex h-16 w-full max-w-[430px] items-center justify-between border-b border-white/70 bg-[#fffdf9]/85 px-5 backdrop-blur-xl">
+    <header className="relative z-40 flex h-16 w-full items-center justify-between border-b border-white/70 bg-[#fffdf9]/90 px-5 backdrop-blur-xl">
       {/* 브랜드 블록 */}
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-mint-200 to-peach-200 shadow-soft">

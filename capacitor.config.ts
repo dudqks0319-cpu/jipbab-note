@@ -3,7 +3,7 @@ const liveReloadUrl = process.env.CAPACITOR_SERVER_URL?.trim()
 const config = {
   appId: 'com.jipbab.note',
   appName: 'jipbab-note',
-  webDir: '.next',
+  webDir: 'public',
   bundledWebRuntime: false,
   ...(liveReloadUrl
     ? {

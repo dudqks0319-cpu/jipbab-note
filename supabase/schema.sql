@@ -72,7 +72,7 @@ create table if not exists public.recipes (
 -- 즐겨찾기 테이블입니다.
 create table if not exists public.favorites (
   id uuid primary key default gen_random_uuid(),
-  device_id text,
+  device_id text not null,
   user_id uuid null references auth.users(id) on delete cascade,
   recipe_id uuid not null references public.recipes(id) on delete cascade,
   created_at timestamptz not null default now()
@@ -83,7 +83,7 @@ create table if not exists public.community_posts (
   id uuid primary key default gen_random_uuid(),
   device_id text not null,
   user_id uuid null references auth.users(id) on delete set null,
-  author_name text not null default '집밥러',
+  author_name text not null default '익명 집밥러',
   title text not null,
   content text not null,
   created_at timestamptz not null default now(),
@@ -96,7 +96,7 @@ create table if not exists public.community_comments (
   post_id uuid not null references public.community_posts(id) on delete cascade,
   device_id text not null,
   user_id uuid null references auth.users(id) on delete set null,
-  author_name text not null default '집밥러',
+  author_name text not null default '익명 집밥러',
   content text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -150,6 +150,10 @@ where user_id is not null;
 create unique index if not exists community_likes_device_post_unique
 on public.community_likes(device_id, post_id)
 where user_id is null and device_id is not null;
+
+alter table public.favorites alter column device_id set not null;
+alter table public.community_posts alter column author_name set default '익명 집밥러';
+alter table public.community_comments alter column author_name set default '익명 집밥러';
 
 do $$
 begin
@@ -212,7 +216,7 @@ on public.ingredients
 for select
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists ingredients_insert_own on public.ingredients;
@@ -221,7 +225,7 @@ on public.ingredients
 for insert
 with check (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists ingredients_update_own on public.ingredients;
@@ -230,11 +234,11 @@ on public.ingredients
 for update
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 )
 with check (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists ingredients_delete_own on public.ingredients;
@@ -243,7 +247,7 @@ on public.ingredients
 for delete
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists favorites_select_own on public.favorites;
@@ -252,7 +256,7 @@ on public.favorites
 for select
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists favorites_insert_own on public.favorites;
@@ -262,7 +266,7 @@ for insert
 with check (
   (
     (auth.uid() is not null and user_id = auth.uid())
-    or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+    or (device_id = app.current_device_id())
   )
   and exists (
     select 1
@@ -277,11 +281,11 @@ on public.favorites
 for update
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 )
 with check (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists favorites_delete_own on public.favorites;
@@ -290,13 +294,35 @@ on public.favorites
 for delete
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists recipes_select_public on public.recipes;
 create policy recipes_select_public
 on public.recipes
 for select
+using (true);
+
+drop policy if exists recipes_insert_service_role on public.recipes;
+create policy recipes_insert_service_role
+on public.recipes
+for insert
+to service_role
+with check (true);
+
+drop policy if exists recipes_update_service_role on public.recipes;
+create policy recipes_update_service_role
+on public.recipes
+for update
+to service_role
+using (true)
+with check (true);
+
+drop policy if exists recipes_delete_service_role on public.recipes;
+create policy recipes_delete_service_role
+on public.recipes
+for delete
+to service_role
 using (true);
 
 drop policy if exists community_posts_select_public on public.community_posts;
@@ -320,11 +346,11 @@ on public.community_posts
 for update
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 )
 with check (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists community_posts_delete_own on public.community_posts;
@@ -333,7 +359,7 @@ on public.community_posts
 for delete
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists community_comments_select_public on public.community_comments;
@@ -364,11 +390,11 @@ on public.community_comments
 for update
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 )
 with check (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists community_comments_delete_own on public.community_comments;
@@ -377,7 +403,7 @@ on public.community_comments
 for delete
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );
 
 drop policy if exists community_likes_select_public on public.community_likes;
@@ -402,11 +428,24 @@ with check (
   )
 );
 
+drop policy if exists community_likes_update_own on public.community_likes;
+create policy community_likes_update_own
+on public.community_likes
+for update
+using (
+  (auth.uid() is not null and user_id = auth.uid())
+  or (device_id = app.current_device_id())
+)
+with check (
+  (auth.uid() is not null and user_id = auth.uid())
+  or (device_id = app.current_device_id())
+);
+
 drop policy if exists community_likes_delete_own on public.community_likes;
 create policy community_likes_delete_own
 on public.community_likes
 for delete
 using (
   (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  or (device_id = app.current_device_id())
 );

@@ -17,7 +17,7 @@ export default function BottomTab() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] border-t border-white/80 bg-[#fffdf9]/92 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))]">
+    <nav className="relative z-40 w-full border-t border-white/80 bg-[#fffdf9]/92 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))]">
       <div className="grid grid-cols-5 gap-1">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href

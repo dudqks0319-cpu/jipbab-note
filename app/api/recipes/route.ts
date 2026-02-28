@@ -1,5 +1,6 @@
 // 이 파일은 식약처 조리식품 레시피 OpenAPI를 서버에서 호출해 앱용 데이터로 정규화합니다.
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const SERVICE_ID = 'COOKRCP01'
 const BASE_URL = 'https://openapi.foodsafetykorea.go.kr/api'
@@ -52,6 +53,16 @@ type RecipeDto = {
   thumbnailUrl: string | null
   ingredients: string
   hashTag: string
+}
+
+type SupabaseRecipeRow = {
+  id: string
+  title: string
+  description: string | null
+  category: string | null
+  thumbnail_url: string | null
+  ingredients: unknown
+  source: string | null
 }
 
 const toPositiveInt = (value: string | null, fallback: number) => {
@@ -124,6 +135,19 @@ const buildFilterSegment = (query: string | null, category: string | null) => {
   return `/${filters.join('&')}`
 }
 
+const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
+  if (!value) return null
+
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  if (trimmed.startsWith('http://')) {
+    return `https://${trimmed.slice('http://'.length)}`
+  }
+
+  return trimmed
+}
+
 const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
   return {
     id: row.RCP_SEQ ?? '',
@@ -131,9 +155,97 @@ const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
     category: row.RCP_PAT2?.trim() ?? '기타',
     method: row.RCP_WAY2?.trim() ?? '정보 없음',
     calories: row.INFO_ENG?.trim() ?? '-',
-    thumbnailUrl: row.ATT_FILE_NO_MK || row.ATT_FILE_NO_MAIN || null,
+    thumbnailUrl: normalizeRecipeImageUrl(row.ATT_FILE_NO_MK || row.ATT_FILE_NO_MAIN || null),
     ingredients: row.RCP_PARTS_DTLS?.trim() ?? '',
     hashTag: row.HASH_TAG?.trim() ?? '',
+  }
+}
+
+const parseMethodAndCalories = (description: string | null): Pick<RecipeDto, 'method' | 'calories'> => {
+  if (!description) {
+    return { method: '정보 없음', calories: '-' }
+  }
+
+  const methodMatch = description.match(/조리법:\s*([^|]+)/)
+  const caloriesMatch = description.match(/열량:\s*([^|]+)/)
+
+  return {
+    method: methodMatch?.[1]?.trim() || description,
+    calories: caloriesMatch?.[1]?.trim() || '-',
+  }
+}
+
+const stringifyIngredients = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === 'string' ? item.trim() : ''))
+      .filter((item) => item.length > 0)
+      .join(', ')
+  }
+  if (typeof value === 'string') {
+    return value.trim()
+  }
+  return ''
+}
+
+const supabaseRowToRecipe = (row: SupabaseRecipeRow): RecipeDto => {
+  const parsed = parseMethodAndCalories(row.description)
+  return {
+    id: row.id,
+    name: row.title?.trim() || '이름 없음',
+    category: row.category?.trim() || '기타',
+    method: parsed.method,
+    calories: parsed.calories,
+    thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
+    ingredients: stringifyIngredients(row.ingredients),
+    hashTag: '',
+  }
+}
+
+const fetchRecipesFromSupabase = async (
+  page: number,
+  size: number,
+  query: string | null,
+  category: string | null,
+): Promise<{ recipes: RecipeDto[]; totalCount: number } | null> => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null
+  }
+
+  try {
+    const client = createClient(supabaseUrl, supabaseAnonKey)
+    const from = (page - 1) * size
+    const to = from + size - 1
+
+    let request = client
+      .from('recipes')
+      .select('id,title,description,category,thumbnail_url,ingredients,source', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to)
+
+    if (query) {
+      request = request.ilike('title', `%${query}%`)
+    }
+
+    if (category) {
+      request = request.eq('category', category)
+    }
+
+    const { data, error, count } = await request
+    if (error) {
+      return null
+    }
+
+    const rows = Array.isArray(data) ? (data as SupabaseRecipeRow[]) : []
+    return {
+      recipes: rows.map(supabaseRowToRecipe),
+      totalCount: Number.isFinite(count ?? 0) ? (count ?? 0) : rows.length,
+    }
+  } catch (error) {
+    console.error('Supabase recipes 조회 실패', error)
+    return null
   }
 }
 
@@ -143,17 +255,6 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
       { status: 429 },
-    )
-  }
-
-  const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        message:
-          '레시피 API 키가 없습니다. MFDS_API_KEY(권장) 또는 FOODSAFETY_API_KEY를 설정해 주세요.',
-      },
-      { status: 500 },
     )
   }
 
@@ -173,6 +274,35 @@ export async function GET(request: Request) {
   }
 
   const category = normalizeCategory(searchParams.get('category'))
+
+  const dbResult = await fetchRecipesFromSupabase(page, size, query, category)
+  if (dbResult && dbResult.totalCount > 0) {
+    return NextResponse.json({
+      recipes: dbResult.recipes,
+      totalCount: dbResult.totalCount,
+      page,
+      size,
+      code: 'DB-000',
+      message: '저장된 레시피 데이터를 조회했습니다.',
+    })
+  }
+
+  const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        recipes: dbResult?.recipes ?? [],
+        totalCount: dbResult?.totalCount ?? 0,
+        page,
+        size,
+        code: 'NO-API-KEY',
+        message:
+          '레시피 API 키가 없어 저장된 데이터만 표시합니다. MFDS_API_KEY(권장) 또는 FOODSAFETY_API_KEY를 설정해 주세요.',
+      },
+      { status: 200 },
+    )
+  }
+
   const filterSegment = buildFilterSegment(query, category)
 
   const endpoint = `${BASE_URL}/${apiKey}/${SERVICE_ID}/json/${start}/${end}${filterSegment}`

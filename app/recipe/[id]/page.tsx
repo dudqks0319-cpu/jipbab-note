@@ -2,11 +2,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
 const BASE_URL = "https://openapi.foodsafetykorea.go.kr/api";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1400&q=80";
 
@@ -29,6 +31,34 @@ type MfdsResponse = {
   };
 };
 
+type SupabaseRecipeRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  thumbnail_url: string | null;
+  ingredients: unknown;
+  steps: unknown;
+  source: string | null;
+};
+
+const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith("http://")) {
+    return `https://${trimmed.slice("http://".length)}`;
+  }
+
+  return trimmed;
+};
+
 const parseIngredientDisplayList = (rawIngredients: string): string[] => {
   if (!rawIngredients) {
     return [];
@@ -48,7 +78,7 @@ const parseSteps = (row: MfdsRecipeRow): RecipeDetailStep[] => {
   for (let index = 1; index <= 20; index += 1) {
     const key = String(index).padStart(2, "0");
     const description = row[`MANUAL${key}`]?.trim();
-    const imageUrl = row[`MANUAL_IMG${key}`]?.trim() || null;
+    const imageUrl = normalizeRecipeImageUrl(row[`MANUAL_IMG${key}`]?.trim() || null);
 
     if (!description) {
       continue;
@@ -84,7 +114,146 @@ const parseHashTags = (rawTag: string): string[] => {
     .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
 };
 
+const parseMethodAndCalories = (description: string | null): Pick<RecipeDetailRecord, "method" | "calories"> => {
+  if (!description) {
+    return { method: "정보 없음", calories: "-" };
+  }
+
+  const methodMatch = description.match(/조리법:\s*([^|]+)/);
+  const caloriesMatch = description.match(/열량:\s*([^|]+)/);
+
+  return {
+    method: methodMatch?.[1]?.trim() || description,
+    calories: caloriesMatch?.[1]?.trim() || "-",
+  };
+};
+
+const normalizeIngredientList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return Array.from(
+      new Set(
+        value
+          .map((item) => (typeof item === "string" ? item.trim() : ""))
+          .filter((item) => item.length > 0),
+      ),
+    );
+  }
+  if (typeof value === "string") {
+    return parseIngredientDisplayList(value);
+  }
+  return [];
+};
+
+const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const steps = value
+    .map((item) => {
+      if (typeof item !== "object" || item === null) {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+      const rawDescription = record.description;
+      const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
+      if (!description) {
+        return null;
+      }
+
+      const rawIndex = record.order ?? record.index;
+      const parsedIndex =
+        typeof rawIndex === "number"
+          ? rawIndex
+          : typeof rawIndex === "string"
+            ? Number(rawIndex)
+            : Number.NaN;
+
+      const imageFromSnake = record.image_url;
+      const imageFromCamel = record.imageUrl;
+      const imageUrl =
+        typeof imageFromSnake === "string"
+          ? imageFromSnake
+          : typeof imageFromCamel === "string"
+            ? imageFromCamel
+            : null;
+
+      return {
+        index: Number.isFinite(parsedIndex) && parsedIndex > 0 ? Math.floor(parsedIndex) : 0,
+        description,
+        imageUrl: normalizeRecipeImageUrl(imageUrl),
+      } satisfies RecipeDetailStep;
+    })
+    .filter((item): item is RecipeDetailStep => item !== null)
+    .map((item, idx) => ({
+      ...item,
+      index: item.index > 0 ? item.index : idx + 1,
+    }))
+    .sort((a, b) => a.index - b.index);
+
+  return steps;
+};
+
+async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDetailRecord | null> {
+  if (!UUID_PATTERN.test(recipeId)) {
+    return null;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null;
+  }
+
+  try {
+    const client = createClient(supabaseUrl, supabaseAnonKey);
+    const { data, error } = await client
+      .from("recipes")
+      .select("id,title,description,category,thumbnail_url,ingredients,steps,source")
+      .eq("id", recipeId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const row = data as SupabaseRecipeRow;
+    const parsedMeta = parseMethodAndCalories(row.description);
+    const ingredientList = normalizeIngredientList(row.ingredients);
+    const steps = normalizeStepList(row.steps);
+
+    return {
+      id: row.id,
+      name: row.title?.trim() || "레시피 이름 없음",
+      category: row.category?.trim() || "기타",
+      method: parsedMeta.method,
+      calories: parsedMeta.calories,
+      thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
+      ingredients: ingredientList.join(", "),
+      hashTag: "",
+      ingredientList,
+      steps:
+        steps.length > 0
+          ? steps
+          : [
+              { index: 1, description: "재료를 깨끗하게 손질하고 필요한 양을 준비합니다.", imageUrl: null },
+              { index: 2, description: "조리법에 맞춰 가열하고, 중간에 간을 맞춰가며 조리합니다.", imageUrl: null },
+              { index: 3, description: "불을 끄고 플레이팅한 뒤, 기호에 맞게 마무리합니다.", imageUrl: null },
+            ],
+    };
+  } catch (error) {
+    console.error("Supabase 레시피 상세 조회 실패", error);
+    return null;
+  }
+}
+
 async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
+  const fromSupabase = await fetchRecipeDetailFromSupabase(recipeId);
+  if (fromSupabase) {
+    return fromSupabase;
+  }
+
   const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY;
   if (!apiKey) {
     return null;
@@ -111,7 +280,7 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
     category: target.RCP_PAT2?.trim() ?? "기타",
     method: target.RCP_WAY2?.trim() ?? "정보 없음",
     calories: target.INFO_ENG?.trim() ?? "-",
-    thumbnailUrl: target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null,
+    thumbnailUrl: normalizeRecipeImageUrl(target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null),
     ingredients: target.RCP_PARTS_DTLS?.trim() ?? "",
     hashTag: target.HASH_TAG?.trim() ?? "",
     ingredientList: parseIngredientDisplayList(target.RCP_PARTS_DTLS?.trim() ?? ""),

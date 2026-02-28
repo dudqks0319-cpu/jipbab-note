@@ -1,7 +1,7 @@
 // 이 파일은 /api/recipes 기반 목록/검색/카테고리 조회와 매칭률 계산을 제공합니다.
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIngredients } from "@/hooks/useIngredients";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
@@ -9,6 +9,16 @@ import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch 
 
 const DEFAULT_PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "";
+
+const resolveApiUrl = (path: string): string => {
+  if (!API_BASE_URL) {
+    return path;
+  }
+
+  const normalizedBase = API_BASE_URL.endsWith("/") ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  return `${normalizedBase}${path}`;
+};
 
 const buildQueryParams = (
   page: number,
@@ -61,6 +71,8 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const [searchQuery, setSearchQueryState] = useState<string>("");
   const [debouncedQuery, setDebouncedQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategoryState] = useState<RecipeCategory>("전체");
+  const requestIdRef = useRef(0);
+  const requestAbortRef = useRef<AbortController | null>(null);
 
   const ingredientNames = useMemo(() => ingredients.map((item) => item.name), [ingredients]);
 
@@ -83,13 +95,20 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
 
   const fetchRecipes = useCallback(
     async (targetPage: number, targetQuery: string, targetCategory: RecipeCategory): Promise<void> => {
+      requestAbortRef.current?.abort();
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+      const controller = new AbortController();
+      requestAbortRef.current = controller;
+
       setLoading(true);
       setError(null);
 
       try {
         const params = buildQueryParams(targetPage, pageSize, targetQuery, targetCategory);
-        const response = await fetch(`/api/recipes?${params.toString()}`, {
+        const response = await fetch(resolveApiUrl(`/api/recipes?${params.toString()}`), {
           cache: "no-store",
+          signal: controller.signal,
         });
 
         const payload = (await response.json()) as RecipeListResponse & { message?: string };
@@ -98,15 +117,24 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
           throw new Error(payload.message ?? "레시피를 불러오지 못했습니다.");
         }
 
+        if (requestId !== requestIdRef.current) {
+          return;
+        }
+
         const recipesFromApi = Array.isArray(payload.recipes) ? payload.recipes : [];
         setRawRecipes(recipesFromApi);
         setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : 0);
       } catch (caught) {
+        if (controller.signal.aborted || requestId !== requestIdRef.current) {
+          return;
+        }
         setRawRecipes([]);
         setTotalCount(0);
         setError(caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
-        setLoading(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [pageSize],
@@ -160,6 +188,12 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
       setPage(totalPages);
     }
   }, [page, totalPages]);
+
+  useEffect(() => {
+    return () => {
+      requestAbortRef.current?.abort();
+    };
+  }, []);
 
   return {
     recipes,

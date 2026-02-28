@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android/ios generated build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+
+# local debug captures
+android-*.png
+uidump*.xml
