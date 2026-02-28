@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIngredients } from "@/hooks/useIngredients";
+import { getDeviceId } from "@/lib/device-id";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
 
@@ -109,6 +110,9 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         const response = await fetch(resolveApiUrl(`/api/recipes?${params.toString()}`), {
           cache: "no-store",
           signal: controller.signal,
+          headers: {
+            "x-device-id": getDeviceId(),
+          },
         });
 
         const payload = (await response.json()) as RecipeListResponse & { message?: string };

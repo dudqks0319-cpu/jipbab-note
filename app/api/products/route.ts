@@ -13,6 +13,8 @@ const OPEN_FOOD_FACTS_FIELDS = [
 ] as const
 const REQUEST_WINDOW_MS = 60_000
 const MAX_REQUESTS_PER_WINDOW = 30
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+const RATE_LIMIT_MAX_REQUESTS = IS_PRODUCTION ? MAX_REQUESTS_PER_WINDOW : 5000
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
 type ProductLookupResult = {
@@ -43,13 +45,28 @@ const toTrimmedOrNull = (value: string | undefined): string | null => {
   return trimmed ? trimmed : null
 }
 
-const getClientIp = (request: Request): string => {
+const getClientKey = (request: Request): string => {
+  const deviceId = request.headers.get('x-device-id')?.trim()
+  if (deviceId) return `device:${deviceId}`
+
   const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) return forwardedFor.split(',')[0].trim()
-  return request.headers.get('x-real-ip') ?? 'unknown'
+  if (forwardedFor) {
+    const ip = forwardedFor.split(',')[0]?.trim()
+    if (ip) return `ip:${ip}`
+  }
+
+  const realIp = request.headers.get('x-real-ip')?.trim()
+  if (realIp) return `ip:${realIp}`
+
+  const userAgent = request.headers.get('user-agent')?.trim() ?? 'unknown-ua'
+  return `ua:${userAgent.slice(0, 120)}`
 }
 
 const isRateLimited = (key: string): boolean => {
+  if (!IS_PRODUCTION) {
+    return false
+  }
+
   const now = Date.now()
 
   for (const [bucketKey, value] of requestStore.entries()) {
@@ -64,7 +81,7 @@ const isRateLimited = (key: string): boolean => {
     return false
   }
 
-  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
     return true
   }
 
@@ -114,11 +131,16 @@ async function fetchFromOpenFoodFacts(
 }
 
 export async function GET(request: Request) {
-  const clientIp = getClientIp(request)
-  if (isRateLimited(clientIp)) {
+  const clientKey = getClientKey(request)
+  if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
-      { status: 429 },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': '60',
+        },
+      },
     )
   }
 

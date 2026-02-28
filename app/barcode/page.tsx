@@ -10,6 +10,7 @@ import {
   pickFirstValidBarcode,
   type BarcodeDetectorLike,
 } from '@/lib/barcode'
+import { getDeviceId } from '@/lib/device-id'
 
 const SCAN_INTERVAL_MS = 700
 
@@ -88,6 +89,9 @@ export default function BarcodePage() {
         `/api/products?barcode=${encodeURIComponent(barcode)}`,
         {
           cache: 'no-store',
+          headers: {
+            'x-device-id': getDeviceId(),
+          },
         },
       )
       const payload = (await response.json()) as ProductLookupResponse | ErrorResponse

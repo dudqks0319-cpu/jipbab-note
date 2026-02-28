@@ -5,10 +5,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
+import { getDeviceId } from '@/lib/device-id'
 import { getCategoryEmoji, getCategoryBg, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
 const categories: IngredientCategory[] = ['채소', '과일', '육류', '수산물', '유제품', '양념', '기타']
+const localSuggestionFallback: Record<IngredientCategory, string[]> = {
+  채소: ['양파', '대파', '마늘', '감자', '당근', '애호박', '브로콜리', '버섯', '오이', '시금치'],
+  과일: ['사과', '배', '바나나', '딸기', '레몬', '오렌지', '키위', '블루베리'],
+  육류: ['소고기', '돼지고기', '닭고기', '목살', '삼겹살', '닭가슴살', '소시지'],
+  수산물: ['고등어', '연어', '새우', '오징어', '멸치', '미역', '다시마', '바지락'],
+  유제품: ['우유', '치즈', '버터', '요거트', '생크림', '계란', '두부'],
+  양념: ['간장', '고추장', '된장', '소금', '설탕', '식초', '참기름', '고춧가루'],
+  기타: ['쌀', '밀가루', '당면', '김치', '빵가루', '통조림', '견과류'],
+}
 const suggestionFetchLimit = 24
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
 
@@ -125,6 +135,9 @@ export default function FridgePage() {
         const response = await fetch(resolveApiUrl(`/api/ingredients?${params.toString()}`), {
           cache: 'no-store',
           signal: controller.signal,
+          headers: {
+            'x-device-id': getDeviceId(),
+          },
         })
 
         const payload = (await response.json()) as IngredientSuggestionResponse
@@ -144,7 +157,18 @@ export default function FridgePage() {
       } catch (caught) {
         if (controller.signal.aborted) return
         if (requestId !== suggestionRequestIdRef.current) return
-        setSuggestionError(caught instanceof Error ? caught.message : '추천 재료를 불러오지 못했습니다.')
+        const message = caught instanceof Error ? caught.message : '추천 재료를 불러오지 못했습니다.'
+        setSuggestionError(message)
+        if (mode === 'reset') {
+          const keyword = suggestionKeyword.trim().toLowerCase()
+          const fallbackItems = localSuggestionFallback[form.category].filter((item) =>
+            keyword ? item.toLowerCase().includes(keyword) : true,
+          )
+          const sliced = fallbackItems.slice(0, suggestionFetchLimit)
+          setSuggestedIngredients(sliced)
+          setSuggestionTotal(fallbackItems.length)
+          setSuggestionNextCursor(fallbackItems.length > suggestionFetchLimit ? suggestionFetchLimit : null)
+        }
         setHasFetchedSuggestions(true)
       } finally {
         if (requestId === suggestionRequestIdRef.current) {

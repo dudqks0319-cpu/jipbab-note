@@ -19,6 +19,8 @@ const MIN_LIMIT = 1;
 const MAX_SEARCH_LENGTH = 40;
 const REQUEST_WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 40;
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const RATE_LIMIT_MAX_REQUESTS = IS_PRODUCTION ? MAX_REQUESTS_PER_WINDOW : 5000;
 
 type MfdsRecipeRow = {
   RCP_PARTS_DTLS?: string;
@@ -64,6 +66,15 @@ const requestStore = new Map<string, { count: number; startedAt: number }>();
 
 const CATEGORIES: IngredientCategory[] = ["채소", "과일", "육류", "수산물", "유제품", "양념", "기타"];
 const CATEGORY_PRIORITY: IngredientCategory[] = ["양념", "육류", "수산물", "유제품", "채소", "과일", "기타"];
+const LOCAL_FALLBACK_BY_CATEGORY: Record<IngredientCategory, string[]> = {
+  채소: ["양파", "대파", "마늘", "감자", "당근", "애호박", "버섯", "오이", "시금치", "브로콜리"],
+  과일: ["사과", "배", "바나나", "딸기", "레몬", "오렌지", "키위", "블루베리"],
+  육류: ["소고기", "돼지고기", "닭고기", "목살", "삼겹살", "닭가슴살", "소시지"],
+  수산물: ["고등어", "연어", "새우", "오징어", "멸치", "미역", "다시마", "바지락"],
+  유제품: ["우유", "치즈", "버터", "요거트", "생크림", "계란", "두부"],
+  양념: ["간장", "고추장", "된장", "소금", "설탕", "식초", "참기름", "고춧가루"],
+  기타: ["쌀", "밀가루", "당면", "김치", "통조림", "견과류"],
+};
 const SEARCH_PATTERN = /^[0-9A-Za-z가-힣\s\-_/().,&]+$/;
 const BRACKET_PATTERN = /\([^)]*\)|\[[^\]]*]|\{[^}]*}/g;
 const NON_WORD_PATTERN = /[^0-9a-zA-Z가-힣\s]/g;
@@ -219,13 +230,33 @@ const toPositiveInt = (value: string | null, fallback: number): number => {
   return Math.floor(parsed);
 };
 
-const getClientIp = (request: Request): string => {
+const getClientKey = (request: Request): string => {
+  const deviceId = request.headers.get("x-device-id")?.trim();
+  if (deviceId) {
+    return `device:${deviceId}`;
+  }
+
   const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
+  if (forwardedFor) {
+    const ip = forwardedFor.split(",")[0]?.trim();
+    if (ip) return `ip:${ip}`;
+  }
+
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) {
+    return `ip:${realIp}`;
+  }
+
+  // 로컬 개발 환경에서는 IP 헤더가 비어있는 경우가 많아 UA를 보조 키로 사용합니다.
+  const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
+  return `ua:${userAgent.slice(0, 120)}`;
 };
 
 const isRateLimited = (key: string): boolean => {
+  if (!IS_PRODUCTION) {
+    return false;
+  }
+
   const now = Date.now();
 
   for (const [bucketKey, value] of requestStore.entries()) {
@@ -240,7 +271,7 @@ const isRateLimited = (key: string): boolean => {
     return false;
   }
 
-  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
     return true;
   }
 
@@ -527,22 +558,37 @@ const getCatalog = async (apiKey: string): Promise<IngredientCatalog> => {
   return refreshCatalog(apiKey);
 };
 
+const getFallbackCatalog = (): IngredientCatalog => {
+  const builtAt = Date.now();
+  const all = Array.from(
+    new Set(
+      CATEGORIES.flatMap((category) => LOCAL_FALLBACK_BY_CATEGORY[category]).filter((item) => item.trim().length > 0),
+    ),
+  );
+
+  return {
+    builtAt,
+    scannedRecipes: 0,
+    all,
+    byCategory: LOCAL_FALLBACK_BY_CATEGORY,
+  };
+};
+
 export async function GET(request: Request) {
-  const clientIp = getClientIp(request);
-  if (isRateLimited(clientIp)) {
+  const clientKey = getClientKey(request);
+  if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요." },
-      { status: 429 },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": "60",
+        },
+      },
     );
   }
 
   const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { message: "MFDS_API_KEY(또는 FOODSAFETY_API_KEY)가 설정되어 있지 않습니다." },
-      { status: 500 },
-    );
-  }
 
   const { searchParams } = new URL(request.url);
   const category = parseCategory(searchParams.get("category"));
@@ -560,7 +606,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const catalog = await getCatalog(apiKey);
+    const catalog = apiKey ? await getCatalog(apiKey) : getFallbackCatalog();
     const baseItems = category ? catalog.byCategory[category] : catalog.all;
     const filteredItems = searchKeyword
       ? baseItems.filter((item) => item.toLowerCase().includes(searchKeyword as string))
@@ -574,13 +620,31 @@ export async function GET(request: Request) {
       total: filteredItems.length,
       nextCursor,
       builtAt: new Date(catalog.builtAt).toISOString(),
-      scannedFrom: "mfds_recipes",
+      scannedFrom: apiKey ? "mfds_recipes" : "local_fallback",
+      message: apiKey
+        ? undefined
+        : "API 키가 없어 기본 추천 목록을 보여드립니다. 키를 설정하면 식약처 기반 전체 목록을 제공합니다.",
     });
   } catch (error) {
     console.error("재료 추천 API 오류", error);
+    const fallbackCatalog = getFallbackCatalog();
+    const baseItems = category ? fallbackCatalog.byCategory[category] : fallbackCatalog.all;
+    const filteredItems = searchKeyword
+      ? baseItems.filter((item) => item.toLowerCase().includes(searchKeyword as string))
+      : baseItems;
+    const items = filteredItems.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < filteredItems.length ? cursor + limit : null;
+
     return NextResponse.json(
-      { message: "재료 추천 목록을 불러오는 중 오류가 발생했습니다." },
-      { status: 500 },
+      {
+        items,
+        total: filteredItems.length,
+        nextCursor,
+        builtAt: new Date(fallbackCatalog.builtAt).toISOString(),
+        scannedFrom: "local_fallback",
+        message: "식약처 연동이 지연되어 기본 추천 목록으로 전환했습니다.",
+      },
+      { status: 200 },
     );
   }
 }
