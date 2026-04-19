@@ -53,6 +53,20 @@ const initialFormState: IngredientFormState = {
   memo: '',
 }
 
+const expiryQuickOptions = [
+  { label: '3일', days: 3 },
+  { label: '1주', days: 7 },
+  { label: '2주', days: 14 },
+  { label: '1달', days: 30 },
+] as const
+
+function buildFutureDate(days: number): string {
+  const target = new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setDate(target.getDate() + days)
+  return target.toISOString().slice(0, 10)
+}
+
 export default function FridgePage() {
   const { ingredients, loading, error, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
   const [activeTab, setActiveTab] = useState<string>('전체')
@@ -611,6 +625,26 @@ export default function FridgePage() {
                   onChange={(e) => setForm({ ...form, expiry_date: e.target.value })}
                   className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-mint-300 focus:bg-white"
                 />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {expiryQuickOptions.map((option) => {
+                    const quickDate = buildFutureDate(option.days)
+                    const isActive = form.expiry_date === quickDate
+                    return (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => setForm({ ...form, expiry_date: quickDate })}
+                        className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                          isActive
+                            ? 'bg-mint-300 text-white shadow-soft'
+                            : 'bg-white text-gray-500 ring-1 ring-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        +{option.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 

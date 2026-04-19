@@ -43,8 +43,8 @@ const buildQueryParams = (
   return params;
 };
 
-export interface UseRecipesResult {
-  recipes: RecipeWithMatch[];
+export interface UseRecipeCatalogResult {
+  recipes: RecipeRecord[];
   loading: boolean;
   error: string | null;
   page: number;
@@ -52,7 +52,6 @@ export interface UseRecipesResult {
   totalPages: number;
   searchQuery: string;
   selectedCategory: RecipeCategory;
-  ingredientsLoading: boolean;
   setSearchQuery: (value: string) => void;
   setSelectedCategory: (category: RecipeCategory) => void;
   goToPage: (nextPage: number) => void;
@@ -61,8 +60,12 @@ export interface UseRecipesResult {
   refresh: () => void;
 }
 
-export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
-  const { ingredients, loading: ingredientsLoading } = useIngredients();
+export interface UseRecipesResult extends UseRecipeCatalogResult {
+  recipes: RecipeWithMatch[];
+  ingredientsLoading: boolean;
+}
+
+export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalogResult {
   const [rawRecipes, setRawRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,18 +77,6 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const [selectedCategory, setSelectedCategoryState] = useState<RecipeCategory>("전체");
   const requestIdRef = useRef(0);
   const requestAbortRef = useRef<AbortController | null>(null);
-
-  const ingredientNames = useMemo(() => ingredients.map((item) => item.name), [ingredients]);
-
-  const recipes = useMemo<RecipeWithMatch[]>(() => {
-    return rawRecipes.map((recipe) => {
-      const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients);
-      return {
-        ...recipe,
-        ...match,
-      };
-    });
-  }, [ingredientNames, rawRecipes]);
 
   const totalPages = useMemo(() => {
     if (totalCount <= 0) {
@@ -200,7 +191,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   }, []);
 
   return {
-    recipes,
+    recipes: rawRecipes,
     loading,
     error,
     page,
@@ -208,12 +199,34 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
     totalPages,
     searchQuery,
     selectedCategory,
-    ingredientsLoading,
     setSearchQuery,
     setSelectedCategory,
     goToPage,
     nextPage,
     prevPage,
     refresh,
+  };
+}
+
+export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
+  const { ingredients, loading: ingredientsLoading } = useIngredients();
+  const catalog = useRecipeCatalog(pageSize);
+
+  const ingredientNames = useMemo(() => ingredients.map((item) => item.name), [ingredients]);
+
+  const recipes = useMemo<RecipeWithMatch[]>(() => {
+    return catalog.recipes.map((recipe) => {
+      const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients);
+      return {
+        ...recipe,
+        ...match,
+      };
+    });
+  }, [catalog.recipes, ingredientNames]);
+
+  return {
+    ...catalog,
+    recipes,
+    ingredientsLoading,
   };
 }

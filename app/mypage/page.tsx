@@ -1,17 +1,18 @@
 // 이 파일은 마이페이지를 담당하며 OAuth 로그인 상태와 계정 동기화 정보를 보여줍니다.
 'use client'
 
+import Link from 'next/link'
 import { ChevronRight, LoaderCircle, LogOut, RefreshCw } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
 import type { OAuthProvider } from '@/types'
 
 const menuItems = [
-  { emoji: '❤️', label: '즐겨찾기한 레시피' },
-  { emoji: '🔔', label: '알림 설정' },
-  { emoji: '📊', label: '냉장고 통계' },
-  { emoji: '⚙️', label: '앱 설정' },
-  { emoji: '💬', label: '의견 보내기' },
+  { emoji: '❤️', label: '즐겨찾기한 레시피', href: '/favorites' },
+  { emoji: '🔔', label: '알림 설정', href: '/settings#notifications' },
+  { emoji: '📊', label: '냉장고 통계', href: '/stats' },
+  { emoji: '⚙️', label: '앱 설정', href: '/settings' },
+  { emoji: '💬', label: '의견 보내기', href: '/support' },
 ]
 
 const providerBadges: Record<OAuthProvider, string> = {
@@ -163,9 +164,9 @@ export default function MyPage() {
       {/* 메뉴 리스트 */}
       <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-soft">
         {menuItems.map((item, idx) => (
-          <button
+          <Link
             key={item.label}
-            type="button"
+            href={item.href}
             className={`flex w-full items-center justify-between px-5 py-4 transition-colors hover:bg-gray-50 ${
               idx < menuItems.length - 1 ? 'border-b border-gray-50' : ''
             }`}
@@ -175,7 +176,7 @@ export default function MyPage() {
               <span className="text-sm font-medium text-gray-700">{item.label}</span>
             </div>
             <ChevronRight size={16} className="text-gray-300" />
-          </button>
+          </Link>
         ))}
       </div>
 

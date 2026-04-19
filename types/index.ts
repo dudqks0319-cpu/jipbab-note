@@ -71,6 +71,29 @@ export interface IngredientQueryError {
   source: "supabase" | "local";
 }
 
+// 장보기 플로우에서 사용하는 타입입니다.
+export interface ShoppingItem {
+  id: string;
+  deviceId: string;
+  userId: string | null;
+  name: string;
+  quantity: string | null;
+  category: IngredientCategory | null;
+  checked: boolean;
+  sourceRecipeId: string | null;
+  sourceRecipeName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShoppingItemDraft {
+  name: string;
+  quantity?: string | null;
+  category?: IngredientCategory | null;
+  sourceRecipeId?: string | null;
+  sourceRecipeName?: string | null;
+}
+
 // Phase 5: 로그인 + 커뮤니티에서 사용하는 공통 타입입니다.
 export type OAuthProvider = "google" | "kakao" | "apple";
 

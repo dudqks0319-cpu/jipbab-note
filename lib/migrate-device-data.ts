@@ -12,6 +12,7 @@ interface MigrateDeviceDataOptions {
 
 const TABLES_TO_MIGRATE = [
   "ingredients",
+  "shopping_items",
   "favorites",
   "community_posts",
   "community_comments",
@@ -20,6 +21,7 @@ const TABLES_TO_MIGRATE = [
 
 const LOCAL_STORAGE_KEYS = [
   "jipbab-note-ingredients",
+  "jipbab-note-shopping-items",
   "jipbab-note-community-posts",
   "jipbab-note-community-comments",
   "jipbab-note-community-likes",

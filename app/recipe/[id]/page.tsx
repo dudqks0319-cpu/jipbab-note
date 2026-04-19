@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
+import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
+import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
@@ -375,6 +377,9 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           </ul>
         )}
       </section>
+
+      <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
+      <RecipeExploreLinks recipeName={recipe.name} />
 
       {/* 조리 순서 */}
       <section className="mt-6 px-5">

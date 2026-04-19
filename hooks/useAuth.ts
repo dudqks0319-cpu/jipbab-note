@@ -176,6 +176,16 @@ function resolveCurrentProvider(user: User | null): string | null {
   return provider && provider.trim() ? provider : null;
 }
 
+function buildAuthRedirectUrl(nextPath = "/mypage"): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const callbackUrl = new URL("/auth/callback", window.location.origin);
+  callbackUrl.searchParams.set("next", nextPath);
+  return callbackUrl.toString();
+}
+
 export interface UseAuthResult {
   user: User | null;
   isAuthenticated: boolean;
@@ -280,7 +290,7 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
-        const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/mypage` : undefined;
+        const redirectTo = buildAuthRedirectUrl("/mypage");
         const { error: signInError } = await client.auth.signInWithOAuth({
           provider,
           options: {

@@ -1,6 +1,7 @@
 // 이 파일은 앱 상단 헤더를 담당합니다 - 따뜻한 파스텔 스타일
 'use client'
 
+import Link from 'next/link'
 import { Bell, Leaf } from 'lucide-react'
 
 export default function Header() {
@@ -24,13 +25,14 @@ export default function Header() {
       </div>
 
       {/* 알림 버튼 */}
-      <button
+      <Link
+        href="/settings#notifications"
         aria-label="알림 보기"
         className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-mint-100 bg-white shadow-soft"
       >
         <Bell size={18} className="text-mint-500" />
         <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-400" />
-      </button>
+      </Link>
     </header>
   )
 }
