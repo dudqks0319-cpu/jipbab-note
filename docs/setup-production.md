@@ -40,6 +40,7 @@ OAuth 코드는 `/auth/callback` 경로에서 세션으로 교환합니다.
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
+- `CAPACITOR_SERVER_URL` (모바일 앱이 연결할 공개 HTTPS 웹 주소)
 
 권장:
 
@@ -62,5 +63,7 @@ OAuth 코드는 `/auth/callback` 경로에서 세션으로 교환합니다.
 1. `/privacy` 공개 URL 준비
 2. App Store Connect Privacy Policy URL 등록
 3. App Privacy 답변 입력
-4. 실기기에서 카카오/구글/애플 로그인 확인
-5. 레시피 상세 → 장보기 → 구매 링크 이동 QA
+4. `CAPACITOR_SERVER_URL=https://<public-app-url> npm run mobile:sync:ios` 로 iOS 설정 동기화
+5. Xcode에서 `com.jipbab.note` 번들 ID, Signing Team, Provisioning Profile 확인
+6. 실기기에서 카카오/구글/애플 로그인 확인
+7. 레시피 상세 → 장보기 → 구매 링크 이동 QA

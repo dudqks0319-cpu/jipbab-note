@@ -72,8 +72,8 @@ function resolveProviderEnabled(provider: OAuthProvider): boolean {
     return explicitList.has(provider);
   }
 
-  // 별도 설정이 없으면 우선순위 3개를 모두 노출합니다.
-  return true;
+  // 배포 환경 설정이 없으면 미완성 로그인 버튼을 노출하지 않도록 기본 비활성화합니다.
+  return false;
 }
 
 function buildProviderOptions(): AuthProviderOption[] {
