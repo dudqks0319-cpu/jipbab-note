@@ -18,18 +18,8 @@ let package = Package(
             name: "CapApp-SPM",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm"),
-                "LiteRTLMEngine",
-                "GemmaModelConstraintProvider"
+                .product(name: "Cordova", package: "capacitor-swift-pm")
             ]
-        ),
-        .binaryTarget(
-            name: "LiteRTLMEngine",
-            path: "Vendor/LiteRTLMEngine.xcframework"
-        ),
-        .binaryTarget(
-            name: "GemmaModelConstraintProvider",
-            path: "Vendor/GemmaModelConstraintProvider.xcframework"
         )
     ]
 )

@@ -134,7 +134,7 @@ if ((result.status ?? 1) !== 0) {
 if (platform === "ios") {
   const packagePath = path.join(cwd, "ios", "App", "CapApp-SPM", "Package.swift");
   const capacitorConfigPath = path.join(cwd, "ios", "App", "App", "capacitor.config.json");
-  const enableGemmaPlugin = env.CAPACITOR_ENABLE_GEMMA_PLUGIN !== "0";
+  const enableGemmaPlugin = env.CAPACITOR_ENABLE_GEMMA_PLUGIN === "1";
   const packageSource = `// swift-tools-version: 5.9
 import PackageDescription
 

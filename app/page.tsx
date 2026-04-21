@@ -6,7 +6,6 @@ import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import {
   Bell,
-  ChevronRight,
   Plus,
   Refrigerator,
   Search,
@@ -22,7 +21,7 @@ import { calculateRecipeIngredientMatch } from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { getDday } from '@/lib/utils'
 
-const HERO_IMAGE =
+const FALLBACK_RECIPE_IMAGE =
   'https://images.unsplash.com/photo-1627662168806-efa33a7cda86?auto=format&fit=crop&w=1200&q=85'
 
 export default function HomePage() {
@@ -71,39 +70,6 @@ export default function HomePage() {
           >
             <Bell size={18} className="text-[#3c2b1e]" />
           </Link>
-        </div>
-      </section>
-
-      <section className="px-5 pt-4">
-        <div className="jipbab-panel relative overflow-hidden rounded-[24px] p-4">
-          <div className="flex min-h-[152px] items-stretch gap-3">
-            <div className="z-10 flex w-[43%] flex-col justify-between py-2">
-              <div>
-                <p className="text-[12px] font-bold text-[#7c6a59]">집에서 만드는</p>
-                <h2 className="mt-1 text-[25px] font-black leading-tight text-[#2f2117]">
-                  매콤 든든
-                  <br />
-                  집밥 추천
-                </h2>
-              </div>
-              <Link
-                href="/recipe"
-                className="inline-flex w-fit items-center gap-1 rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-bold text-white shadow-[0_8px_18px_rgba(234,90,31,0.25)]"
-              >
-                레시피 보기
-                <ChevronRight size={13} />
-              </Link>
-            </div>
-            <div className="relative flex-1 overflow-hidden rounded-[20px] bg-[#f3dcc3]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={HERO_IMAGE} alt="오늘의 집밥 추천 음식" className="h-full w-full object-cover" />
-              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="h-1.5 w-1.5 rounded-full bg-white/65" />
-                <span className="h-1.5 w-1.5 rounded-full bg-white/65" />
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -173,7 +139,7 @@ export default function HomePage() {
                 <div className="relative h-20 overflow-hidden bg-[#ecd5bd]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={recipe.thumbnailUrl || HERO_IMAGE}
+                    src={recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE}
                     alt={recipe.name}
                     className="h-full w-full object-cover"
                   />
