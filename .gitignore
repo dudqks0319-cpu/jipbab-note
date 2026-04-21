@@ -47,7 +47,9 @@ next-env.d.ts
 android/.gradle/
 android/build/
 android/app/build/
+ios/build/
 
 # local debug captures
+output/
 android-*.png
 uidump*.xml

@@ -127,4 +127,63 @@ const result = spawnSync(command, ["cap", "sync", platform], {
   stdio: "inherit",
 });
 
-process.exit(result.status ?? 1);
+if ((result.status ?? 1) !== 0) {
+  process.exit(result.status ?? 1);
+}
+
+if (platform === "ios") {
+  const packagePath = path.join(cwd, "ios", "App", "CapApp-SPM", "Package.swift");
+  const capacitorConfigPath = path.join(cwd, "ios", "App", "App", "capacitor.config.json");
+  const enableGemmaPlugin = env.CAPACITOR_ENABLE_GEMMA_PLUGIN !== "0";
+  const packageSource = `// swift-tools-version: 5.9
+import PackageDescription
+
+// DO NOT MODIFY THIS FILE - managed by scripts/sync-capacitor.mjs after Capacitor CLI commands
+let package = Package(
+    name: "CapApp-SPM",
+    platforms: [.iOS(.v15)],
+    products: [
+        .library(
+            name: "CapApp-SPM",
+            targets: ["CapApp-SPM"])
+    ],
+    dependencies: [
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.1")
+    ],
+    targets: [
+        .target(
+            name: "CapApp-SPM",
+            dependencies: [
+                .product(name: "Capacitor", package: "capacitor-swift-pm"),
+                .product(name: "Cordova", package: "capacitor-swift-pm")${enableGemmaPlugin ? `,
+                "LiteRTLMEngine",
+                "GemmaModelConstraintProvider"` : ""}
+            ]
+        )${enableGemmaPlugin ? `,
+        .binaryTarget(
+            name: "LiteRTLMEngine",
+            path: "Vendor/LiteRTLMEngine.xcframework"
+        ),
+        .binaryTarget(
+            name: "GemmaModelConstraintProvider",
+            path: "Vendor/GemmaModelConstraintProvider.xcframework"
+        )` : ""}
+    ]
+)
+`;
+
+  writeFileSync(packagePath, packageSource, "utf8");
+  console.log(enableGemmaPlugin ? "Re-applied Gemma LiteRT-LM iOS package targets." : "Using App Store-safe iOS package targets without Gemma LiteRT binaries.");
+
+  if (existsSync(capacitorConfigPath)) {
+    const capacitorConfig = JSON.parse(readFileSync(capacitorConfigPath, "utf8"));
+    capacitorConfig.packageClassList = [
+      "JipbabGemmaPlugin",
+      "CapApp_SPM.JipbabGemmaPlugin",
+    ];
+    writeFileSync(capacitorConfigPath, `${JSON.stringify(capacitorConfig, null, "\t")}\n`, "utf8");
+    console.log("Registered JipbabGemma Capacitor plugin for iOS.");
+  }
+}
+
+process.exit(0);

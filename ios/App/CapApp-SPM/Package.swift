@@ -1,7 +1,7 @@
 // swift-tools-version: 5.9
 import PackageDescription
 
-// DO NOT MODIFY THIS FILE - managed by Capacitor CLI commands
+// DO NOT MODIFY THIS FILE - managed by scripts/sync-capacitor.mjs after Capacitor CLI commands
 let package = Package(
     name: "CapApp-SPM",
     platforms: [.iOS(.v15)],

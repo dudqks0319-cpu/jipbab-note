@@ -157,6 +157,8 @@ public class JipbabGemmaPlugin: CAPPlugin, CAPBridgedPlugin {
             return engine
         }
 
+        ensureModelDirectory()
+
         guard let settings = litert_lm_engine_settings_create(modelFileURL().path, "cpu", nil, nil) else {
             throw GemmaError.engineSettingsFailed
         }

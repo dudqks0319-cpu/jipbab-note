@@ -7,6 +7,10 @@ const config = {
   appName: '집밥노트',
   webDir: 'public',
   bundledWebRuntime: false,
+  packageClassList: [
+    'JipbabGemmaPlugin',
+    'CapApp_SPM.JipbabGemmaPlugin',
+  ],
   ...(useRemoteServer
     ? {
         server: {
