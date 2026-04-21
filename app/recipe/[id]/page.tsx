@@ -6,6 +6,7 @@ import { ChevronLeft, Clock3, Heart, ShoppingBasket, Star, Users } from "lucide-
 import { createClient } from "@supabase/supabase-js";
 
 import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
+import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
@@ -460,6 +461,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
       <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
       <RecipeExploreLinks recipeName={recipe.name} />
+      <RecipeCookMode recipeName={recipe.name} steps={recipe.steps} />
 
       <section className="px-5 pt-5">
         <h2 className="text-[17px] font-black text-[#2f2117]">만드는 순서</h2>

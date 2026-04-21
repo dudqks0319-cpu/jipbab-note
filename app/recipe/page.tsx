@@ -82,6 +82,14 @@ export default function RecipePage() {
             {favorites.length}
           </button>
         </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Link href="/meal-plan" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
+            주간 식단
+          </Link>
+          <Link href="/recipe/import" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
+            레시피 가져오기
+          </Link>
+        </div>
 
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
           <Search size={16} className="text-[#b5a493]" />
@@ -181,6 +189,9 @@ export default function RecipePage() {
                         <span className="inline-flex items-center gap-1 text-[#d94d19]">
                           <Star size={12} className="fill-[#f0a51c] text-[#f0a51c]" />
                           {recipe.matchRate}% ({recipe.totalRecipeIngredients})
+                        </span>
+                        <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
+                          데이터 검증
                         </span>
                       </div>
                       <p className="mt-2 text-[11px] font-semibold text-[#a69585]">

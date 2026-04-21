@@ -36,7 +36,7 @@ const unitOptions: Array<{
 ]
 
 export default function SettingsPage() {
-  const { settings, toggleSetting, setUnitSystem, resetSettings } = useAppSettings()
+  const { settings, toggleSetting, setPreferenceText, setServingSize, setUnitSystem, resetSettings } = useAppSettings()
   const [gemmaStatus, setGemmaStatus] = useState<GemmaStatus | null>(null)
   const [gemmaPrompt, setGemmaPrompt] = useState('양파, 계란, 두부로 오늘 저녁 메뉴 추천해줘')
   const [gemmaAnswer, setGemmaAnswer] = useState('')
@@ -114,6 +114,38 @@ export default function SettingsPage() {
             </button>
           ))}
           <SettingLink title="고객센터" value="" href="/support" />
+        </div>
+      </section>
+
+      <section className="px-5 pt-4">
+        <div className="jipbab-panel space-y-3 rounded-[16px] px-4 py-4">
+          <div>
+            <h2 className="text-[15px] font-black text-[#2f2117]">취향과 식단</h2>
+            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">추천과 장보기 기준으로 사용할 기본 정보를 저장합니다.</p>
+          </div>
+          <div className="grid grid-cols-[1fr_104px] gap-2">
+            <input
+              value={settings.allergyNotes}
+              onChange={(event) => setPreferenceText('allergyNotes', event.target.value)}
+              placeholder="알레르기: 새우, 땅콩"
+              className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+            />
+            <select
+              value={settings.servingSize}
+              onChange={(event) => setServingSize(Number(event.target.value))}
+              className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-black text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+            >
+              {[1, 2, 3, 4, 5, 6].map((size) => (
+                <option key={size} value={size}>{size}인분</option>
+              ))}
+            </select>
+          </div>
+          <input
+            value={settings.dislikedIngredients}
+            onChange={(event) => setPreferenceText('dislikedIngredients', event.target.value)}
+            placeholder="싫어하는 재료: 오이, 고수"
+            className="w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+          />
         </div>
       </section>
 

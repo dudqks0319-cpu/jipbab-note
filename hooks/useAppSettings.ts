@@ -8,16 +8,22 @@ import type { IngredientUnitSystem } from "@/types";
 const STORAGE_KEY = "jipbab-note-app-settings";
 
 export type AppSettings = {
+  allergyNotes: string;
   expiryAlerts: boolean;
+  dislikedIngredients: string;
   shoppingReminders: boolean;
   recipeDiscoveryTips: boolean;
+  servingSize: number;
   unitSystem: IngredientUnitSystem;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
+  allergyNotes: "",
   expiryAlerts: true,
+  dislikedIngredients: "",
   shoppingReminders: true,
   recipeDiscoveryTips: true,
+  servingSize: 2,
   unitSystem: "metric",
 };
 
@@ -34,7 +40,15 @@ function safeReadSettings(): AppSettings {
   try {
     const parsed = JSON.parse(raw) as Partial<AppSettings>;
     return {
+      allergyNotes:
+        typeof parsed.allergyNotes === "string" && parsed.allergyNotes.length <= 120
+          ? parsed.allergyNotes
+          : DEFAULT_SETTINGS.allergyNotes,
       expiryAlerts: typeof parsed.expiryAlerts === "boolean" ? parsed.expiryAlerts : DEFAULT_SETTINGS.expiryAlerts,
+      dislikedIngredients:
+        typeof parsed.dislikedIngredients === "string" && parsed.dislikedIngredients.length <= 120
+          ? parsed.dislikedIngredients
+          : DEFAULT_SETTINGS.dislikedIngredients,
       shoppingReminders:
         typeof parsed.shoppingReminders === "boolean"
           ? parsed.shoppingReminders
@@ -43,6 +57,10 @@ function safeReadSettings(): AppSettings {
         typeof parsed.recipeDiscoveryTips === "boolean"
           ? parsed.recipeDiscoveryTips
           : DEFAULT_SETTINGS.recipeDiscoveryTips,
+      servingSize:
+        typeof parsed.servingSize === "number" && Number.isInteger(parsed.servingSize) && parsed.servingSize >= 1 && parsed.servingSize <= 8
+          ? parsed.servingSize
+          : DEFAULT_SETTINGS.servingSize,
       unitSystem:
         parsed.unitSystem === "metric" ||
         parsed.unitSystem === "spoon" ||
@@ -66,6 +84,8 @@ function safeWriteSettings(nextSettings: AppSettings) {
 export interface UseAppSettingsResult {
   settings: AppSettings;
   enabledCount: number;
+  setPreferenceText: (key: "allergyNotes" | "dislikedIngredients", value: string) => void;
+  setServingSize: (servingSize: number) => void;
   toggleSetting: (key: keyof AppSettings) => void;
   setUnitSystem: (unitSystem: IngredientUnitSystem) => void;
   resetSettings: () => void;
@@ -74,8 +94,31 @@ export interface UseAppSettingsResult {
 export function useAppSettings(): UseAppSettingsResult {
   const [settings, setSettings] = useState<AppSettings>(() => safeReadSettings());
 
+  const setPreferenceText = useCallback((key: "allergyNotes" | "dislikedIngredients", value: string) => {
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        [key]: value.slice(0, 120),
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const setServingSize = useCallback((servingSize: number) => {
+    const normalized = Number.isFinite(servingSize) ? Math.min(Math.max(Math.round(servingSize), 1), 8) : 2;
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        servingSize: normalized,
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
   const toggleSetting = useCallback((key: keyof AppSettings) => {
-    if (key === "unitSystem") {
+    if (key === "unitSystem" || key === "allergyNotes" || key === "dislikedIngredients" || key === "servingSize") {
       return;
     }
 
@@ -113,6 +156,8 @@ export function useAppSettings(): UseAppSettingsResult {
   return {
     settings,
     enabledCount,
+    setPreferenceText,
+    setServingSize,
     toggleSetting,
     setUnitSystem,
     resetSettings,

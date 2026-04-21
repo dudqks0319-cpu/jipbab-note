@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Check, Plus, Trash2 } from 'lucide-react'
+import { Check, Plus, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
@@ -23,6 +23,14 @@ export default function ShoppingPage() {
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
   const checkedItems = useMemo(() => displayItems.filter((item) => item.checked), [displayItems])
+  const groupedUncheckedItems = useMemo(() => {
+    const groups = new Map<string, typeof uncheckedItems>()
+    for (const item of uncheckedItems) {
+      const key = item.category ?? '기타'
+      groups.set(key, [...(groups.get(key) ?? []), item])
+    }
+    return Array.from(groups.entries())
+  }, [uncheckedItems])
 
   const handleAdd = () => {
     if (!name.trim()) {
@@ -36,6 +44,19 @@ export default function ShoppingPage() {
     setShowAddForm(false)
   }
 
+  const shareList = async () => {
+    const text = uncheckedItems.length === 0
+      ? '집밥노트 장보기 목록이 비어 있어요.'
+      : uncheckedItems.map((item) => `- ${item.name}${item.quantity ? ` ${item.quantity}` : ''}`).join('\n')
+
+    if (navigator.share) {
+      await navigator.share({ title: '집밥노트 장보기 리스트', text })
+      return
+    }
+
+    await navigator.clipboard?.writeText(text)
+  }
+
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
@@ -44,9 +65,14 @@ export default function ShoppingPage() {
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">필요한 재료를 구매 상태별로 확인하세요.</p>
           </div>
-          <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
-            편집
-          </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={shareList} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
+              <Share2 size={15} />
+            </button>
+            <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
+              편집
+            </button>
+          </div>
         </div>
 
         <div className="jipbab-panel mt-4 grid grid-cols-3 overflow-hidden rounded-[16px] text-center">
@@ -110,15 +136,20 @@ export default function ShoppingPage() {
         ) : (
           <div className="space-y-5">
             <ShoppingGroup title={`미구매 (${uncheckedItems.length})`}>
-              {uncheckedItems.map((item) => (
-                <ShoppingRow
-                  key={item.id}
-                  name={item.name}
-                  quantity={item.quantity || '수량 미정'}
-                  checked={false}
-                  onToggle={() => toggleItem(item.id)}
-                  onRemove={() => removeItem(item.id)}
-                />
+              {groupedUncheckedItems.map(([categoryName, group]) => (
+                <div key={categoryName} className="border-b border-[#eadcc9] last:border-b-0">
+                  <p className="bg-[#fff7ed] px-3 py-2 text-[11px] font-black text-[#8a5a2a]">{categoryName}</p>
+                  {group.map((item) => (
+                    <ShoppingRow
+                      key={item.id}
+                      name={item.name}
+                      quantity={item.quantity || '수량 미정'}
+                      checked={false}
+                      onToggle={() => toggleItem(item.id)}
+                      onRemove={() => removeItem(item.id)}
+                    />
+                  ))}
+                </div>
               ))}
             </ShoppingGroup>
 

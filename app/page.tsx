@@ -121,6 +121,17 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="grid grid-cols-2 gap-2 px-5 pt-4">
+        <Link href="/meal-plan" className="jipbab-panel rounded-[16px] px-3 py-3">
+          <p className="text-[12px] font-bold text-[#8f7f70]">이번 주</p>
+          <p className="mt-1 text-[15px] font-black text-[#2f2117]">식단 계획</p>
+        </Link>
+        <Link href="/recipe/import" className="jipbab-panel rounded-[16px] px-3 py-3">
+          <p className="text-[12px] font-bold text-[#8f7f70]">외부 링크</p>
+          <p className="mt-1 text-[15px] font-black text-[#2f2117]">레시피 저장</p>
+        </Link>
+      </section>
+
       <section className="px-5 pt-4">
         <Link
           href="/fridge"
