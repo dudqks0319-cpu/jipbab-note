@@ -2,11 +2,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Clock3, Heart, ShoppingBasket, Star, Users } from "lucide-react";
+import { ChevronLeft, Clock3, ShoppingBasket, Star, Users } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
 import RecipeCookMode from "@/components/recipe/RecipeCookMode";
+import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
@@ -403,9 +404,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           </Link>
         </div>
         <div className="mobile-safe-top absolute right-4 top-0 z-20 flex gap-2">
-          <button className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft" aria-label="레시피 좋아요">
-            <Heart size={17} />
-          </button>
+          <RecipeFavoriteButton
+            id={recipe.id}
+            name={recipe.name}
+            category={recipe.category}
+            thumbnailUrl={recipe.thumbnailUrl}
+          />
         </div>
 
         <div className="relative h-[250px] w-full overflow-hidden">

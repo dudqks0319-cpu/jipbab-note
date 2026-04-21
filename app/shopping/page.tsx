@@ -3,11 +3,12 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Check, Plus, Share2, Trash2 } from 'lucide-react'
+import { Check, ExternalLink, Plus, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useShopping } from '@/hooks/useShopping'
+import { getCoupangSearchUrl } from '@/lib/external-links'
 import { INGREDIENT_CATEGORIES, type IngredientCategory } from '@/types'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
@@ -233,6 +234,17 @@ function ShoppingRow({
         <p className={`truncate text-[14px] font-bold ${checked ? 'text-[#9f9388] line-through' : 'text-[#2f2117]'}`}>{name}</p>
         <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{quantity}</p>
       </div>
+      {!checked ? (
+        <a
+          href={getCoupangSearchUrl(name)}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+        >
+          <ExternalLink size={12} />
+          쿠팡
+        </a>
+      ) : null}
       <button type="button" onClick={onRemove} className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />
       </button>
