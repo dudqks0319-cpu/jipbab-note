@@ -1,7 +1,7 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { AlertCircle, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useAppSettings } from '@/hooks/useAppSettings'
@@ -52,6 +52,14 @@ const expiryQuickOptions = [
   { label: '1달', days: 30 },
 ] as const
 
+function shouldOpenAddFromUrl(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return new URLSearchParams(window.location.search).get('add') === '1'
+}
+
 function buildFutureDate(days: number): string {
   const target = new Date()
   target.setHours(0, 0, 0, 0)
@@ -64,7 +72,7 @@ export default function FridgePage() {
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(() => shouldOpenAddFromUrl())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
@@ -85,6 +93,17 @@ export default function FridgePage() {
       }),
     [form.category, suggestionKeyword],
   )
+
+  const resetForm = useCallback(() => {
+    setForm(initialFormState)
+    setSuggestionKeyword('')
+    setEditingId(null)
+  }, [])
+
+  const openAddModal = useCallback(() => {
+    resetForm()
+    setShowAddModal(true)
+  }, [resetForm])
 
   const suggestionTotal = useMemo(
     () =>
@@ -109,12 +128,6 @@ export default function FridgePage() {
     if (!b.expiryDate) return -1
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
   })
-
-  const resetForm = () => {
-    setForm(initialFormState)
-    setSuggestionKeyword('')
-    setEditingId(null)
-  }
 
   const handleSave = async () => {
     if (!form.name.trim()) return
@@ -186,10 +199,7 @@ export default function FridgePage() {
             </p>
           </div>
           <button
-            onClick={() => {
-              resetForm()
-              setShowAddModal(true)
-            }}
+            onClick={openAddModal}
             aria-label="재료 추가"
             className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.25)]"
           >
@@ -214,6 +224,15 @@ export default function FridgePage() {
           <Search size={16} className="text-[#b5a493]" />
           <span className="text-[13px] font-medium text-[#a69585]">재료 검색</span>
         </div>
+
+        <button
+          type="button"
+          onClick={openAddModal}
+          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] text-[13px] font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+        >
+          <Plus size={16} />
+          재료 바로 추가
+        </button>
 
         <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto">
           {storageTabs.map((tab) => (
@@ -262,10 +281,7 @@ export default function FridgePage() {
             <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
             <p className="mt-1 text-sm text-gray-400">재료를 추가해서 관리를 시작하세요</p>
             <button
-              onClick={() => {
-                resetForm()
-                setShowAddModal(true)
-              }}
+              onClick={openAddModal}
               className="mt-5 rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
             >
               + 첫 재료 추가하기
@@ -357,7 +373,7 @@ export default function FridgePage() {
             role="dialog"
             aria-modal="true"
             aria-label={editingId ? '재료 수정 모달' : '재료 추가 모달'}
-            className="animate-slide-up relative w-full max-w-[430px] rounded-t-[2rem] bg-white px-5 pb-8 pt-4"
+            className="animate-slide-up relative max-h-[86dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[2rem] bg-white px-5 pb-8 pt-4"
           >
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-gray-200" />
 

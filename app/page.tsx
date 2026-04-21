@@ -7,9 +7,9 @@ import { useMemo } from 'react'
 import {
   Bell,
   ChevronRight,
+  Plus,
   Refrigerator,
   Search,
-  ShoppingBasket,
   Star,
   Utensils,
 } from 'lucide-react'
@@ -133,22 +133,30 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pt-4">
-        <Link
-          href="/fridge"
-          className="jipbab-panel flex items-center justify-between rounded-[20px] px-4 py-3"
-        >
+        <div className="jipbab-panel rounded-[20px] px-4 py-4">
           <div>
-            <p className="text-[13px] font-black text-[#2f2117]">장보기 리스트</p>
+            <p className="text-[13px] font-black text-[#2f2117]">냉장고 바로가기</p>
             <p className="mt-1 text-[12px] leading-5 text-[#7d6d5f]">
-              필요한 재료를
-              <br />
-              한 번에 확인해보세요!
+              재료를 빠르게 등록하고 보관 상태를 확인하세요.
             </p>
           </div>
-          <div className="flex h-20 w-28 items-center justify-center rounded-[18px] bg-[#f8ecd9]">
-            <ShoppingBasket size={40} className="text-[#e06a2b]" />
+          <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
+            <Link
+              href="/fridge"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] text-[13px] font-black text-white"
+            >
+              <Refrigerator size={16} />
+              냉장고 보기
+            </Link>
+            <Link
+              href="/fridge?add=1"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] text-[13px] font-black text-white"
+            >
+              <Plus size={16} />
+              재료 바로 추가
+            </Link>
           </div>
-        </Link>
+        </div>
       </section>
 
       <section className="px-5 pt-5">
