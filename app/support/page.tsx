@@ -45,6 +45,12 @@ export default function SupportPage() {
             <li>삭제 요청 대상: 재료 목록, 장보기 목록, 즐겨찾기, 커뮤니티 데이터</li>
             <li>본인 확인 후 지체 없이 처리하며, 결과를 안내합니다.</li>
           </ul>
+          <a
+            href="/account-delete"
+            className="mt-4 inline-flex rounded-full bg-rose-100 px-4 py-2 text-sm font-bold text-rose-600"
+          >
+            계정 삭제 시작하기
+          </a>
         </article>
 
         <article className="rounded-3xl bg-white px-4 py-4 shadow-soft">

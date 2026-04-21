@@ -3,11 +3,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Box, BookOpen, ShoppingCart, User } from 'lucide-react'
+import { BookOpen, Home, Refrigerator, ShoppingCart, User } from 'lucide-react'
 
 const tabs = [
   { label: '홈', icon: Home, href: '/' },
-  { label: '냉장고', icon: Box, href: '/fridge' },
+  { label: '냉장고', icon: Refrigerator, href: '/fridge' },
   { label: '레시피', icon: BookOpen, href: '/recipe' },
   { label: '장보기', icon: ShoppingCart, href: '/shopping' },
   { label: '마이', icon: User, href: '/mypage' },
@@ -17,8 +17,8 @@ export default function BottomTab() {
   const pathname = usePathname()
 
   return (
-    <nav className="relative z-40 w-full border-t border-white/80 bg-[#fffdf9]/92 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))]">
-      <div className="grid grid-cols-5 gap-1">
+    <nav className="relative z-40 w-full border-t border-[#eadcc9] bg-[#fffaf3]/95 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.45rem+env(safe-area-inset-bottom))]">
+      <div className="grid grid-cols-5 gap-0.5">
         {tabs.map((tab) => {
           const isActive = tab.href === '/'
             ? pathname === tab.href
@@ -28,16 +28,15 @@ export default function BottomTab() {
               key={tab.href}
               href={tab.href}
               aria-current={isActive ? 'page' : undefined}
-              className={`group flex flex-col items-center gap-1 rounded-2xl px-1 py-1.5 transition-all ${
-                isActive ? 'bg-gradient-to-b from-mint-100 to-white shadow-soft' : 'hover:bg-white/70'
+              className={`group flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 transition-all ${
+                isActive ? 'bg-[#fff3e7]' : 'hover:bg-white/70'
               }`}
             >
-              {/* 활성 탭은 볼륨감 있는 아이콘 배경을 보여줍니다 */}
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
                   isActive
-                    ? 'bg-white text-mint-500 shadow-[0_4px_12px_rgba(61,191,152,0.3)]'
-                    : 'text-gray-400 group-hover:text-gray-600'
+                    ? 'bg-[#ea5a1f] text-white shadow-[0_6px_14px_rgba(234,90,31,0.28)]'
+                    : 'text-[#9f9388] group-hover:text-[#4b3929]'
                 }`}
               >
                 <tab.icon
@@ -47,7 +46,7 @@ export default function BottomTab() {
               </div>
               <span
                 className={`text-[11px] font-semibold ${
-                  isActive ? 'text-mint-500' : 'text-gray-400'
+                  isActive ? 'text-[#ea5a1f]' : 'text-[#9f9388]'
                 }`}
               >
                 {tab.label}

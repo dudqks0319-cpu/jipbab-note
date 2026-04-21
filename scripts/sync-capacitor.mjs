@@ -1,6 +1,6 @@
 // 이 파일은 모바일 배포 전에 CAPACITOR_SERVER_URL을 읽어 cap sync를 안전하게 실행합니다.
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 function readEnvFile(envFilePath) {
@@ -42,9 +42,36 @@ const platform = process.argv[2] ?? "ios";
 const cwd = process.cwd();
 const envFromFile = readEnvFile(path.join(cwd, ".env.local"));
 const env = {
-  ...process.env,
   ...envFromFile,
+  ...process.env,
 };
+const APP_MARKERS = ["집밥노트", "JIPBAB NOTE", "TODAY'S KITCHEN"];
+const runtimeConfigPath = path.join(cwd, "public", "runtime-app-config.json");
+
+async function verifyAppUrl(serverUrl) {
+  try {
+    const response = await fetch(serverUrl, {
+      redirect: "follow",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const html = await response.text();
+    const matchedMarker = APP_MARKERS.find((marker) => html.includes(marker));
+
+    if (!matchedMarker) {
+      throw new Error("집밥노트 앱 마커를 찾지 못했습니다.");
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "알 수 없는 오류";
+    console.error(
+      `CAPACITOR_SERVER_URL 검증 실패: ${serverUrl}\n- 이유: ${message}\n- 다른 앱 또는 잘못된 서버를 바라보는 상태일 수 있습니다.`,
+    );
+    process.exit(1);
+  }
+}
 
 const serverUrl = env.CAPACITOR_SERVER_URL?.trim() ?? "";
 const allowPlaceholder = env.CAPACITOR_ALLOW_PLACEHOLDER === "1";
@@ -62,9 +89,34 @@ if (serverUrl && !serverUrl.startsWith("https://") && !serverUrl.startsWith("htt
 }
 
 if (serverUrl) {
+  await verifyAppUrl(serverUrl);
+  writeFileSync(
+    runtimeConfigPath,
+    JSON.stringify(
+      {
+        remoteUrl: serverUrl,
+        updatedAt: new Date().toISOString(),
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
   env.CAPACITOR_SERVER_URL = serverUrl;
   console.log(`Using CAPACITOR_SERVER_URL=${serverUrl}`);
 } else {
+  writeFileSync(
+    runtimeConfigPath,
+    JSON.stringify(
+      {
+        remoteUrl: "",
+        updatedAt: new Date().toISOString(),
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
   console.log("Using placeholder web bundle for Capacitor sync.");
 }
 

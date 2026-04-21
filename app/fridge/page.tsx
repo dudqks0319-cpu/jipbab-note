@@ -1,45 +1,36 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { AlertCircle, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
-import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
-import { getDeviceId } from '@/lib/device-id'
-import { getCategoryEmoji, getCategoryBg, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
+import { useAppSettings } from '@/hooks/useAppSettings'
+import { useDemoMode } from '@/hooks/useDemoMode'
+import {
+  INGREDIENT_CATEGORIES,
+  type IngredientCategory,
+  type IngredientRecord,
+  type IngredientStorageType,
+  type IngredientUnit,
+} from '@/types'
+import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
+import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
+import {
+  buildQuantityDisplay,
+  getUnitOptionsForSystem,
+  parseQuantityDisplay,
+} from '@/lib/measurements'
+import { getCategoryBg, getCategoryEmoji, getDday, getIngredientPhotoUrl, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
-const categories: IngredientCategory[] = ['채소', '과일', '육류', '수산물', '유제품', '양념', '기타']
-const localSuggestionFallback: Record<IngredientCategory, string[]> = {
-  채소: ['양파', '대파', '마늘', '감자', '당근', '애호박', '브로콜리', '버섯', '오이', '시금치'],
-  과일: ['사과', '배', '바나나', '딸기', '레몬', '오렌지', '키위', '블루베리'],
-  육류: ['소고기', '돼지고기', '닭고기', '목살', '삼겹살', '닭가슴살', '소시지'],
-  수산물: ['고등어', '연어', '새우', '오징어', '멸치', '미역', '다시마', '바지락'],
-  유제품: ['우유', '치즈', '버터', '요거트', '생크림', '계란', '두부'],
-  양념: ['간장', '고추장', '된장', '소금', '설탕', '식초', '참기름', '고춧가루'],
-  기타: ['쌀', '밀가루', '당면', '김치', '빵가루', '통조림', '견과류'],
-}
 const suggestionFetchLimit = 24
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
-
-const resolveApiUrl = (path: string): string => {
-  if (!API_BASE_URL) return path
-  const normalizedBase = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL
-  return `${normalizedBase}${path}`
-}
-
-type IngredientSuggestionResponse = {
-  items: string[]
-  total: number
-  nextCursor: number | null
-  message?: string
-}
 
 type IngredientFormState = {
   name: string
   category: IngredientCategory
   storage_type: IngredientStorageType
-  quantity: string
+  amount_value: string
+  amount_unit: IngredientUnit
   expiry_date: string
   memo: string
 }
@@ -48,7 +39,8 @@ const initialFormState: IngredientFormState = {
   name: '',
   category: '채소',
   storage_type: '냉장',
-  quantity: '',
+  amount_value: '',
+  amount_unit: 'g',
   expiry_date: '',
   memo: '',
 }
@@ -69,6 +61,8 @@ function buildFutureDate(days: number): string {
 
 export default function FridgePage() {
   const { ingredients, loading, error, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
+  const { settings } = useAppSettings()
+  const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -76,19 +70,38 @@ export default function FridgePage() {
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
-  const [suggestedIngredients, setSuggestedIngredients] = useState<string[]>([])
-  const [suggestionTotal, setSuggestionTotal] = useState(0)
-  const [suggestionNextCursor, setSuggestionNextCursor] = useState<number | null>(0)
-  const [suggestionLoading, setSuggestionLoading] = useState(false)
-  const [suggestionError, setSuggestionError] = useState<string | null>(null)
-  const [hasFetchedSuggestions, setHasFetchedSuggestions] = useState(false)
-  const suggestionRequestIdRef = useRef(0)
-  const suggestionAbortRef = useRef<AbortController | null>(null)
+
+  const unitOptions = useMemo(
+    () => getUnitOptionsForSystem(settings.unitSystem),
+    [settings.unitSystem],
+  )
+
+  const suggestedIngredients = useMemo(
+    () =>
+      searchIngredientCatalog({
+        category: form.category,
+        query: suggestionKeyword,
+        limit: suggestionFetchLimit,
+      }),
+    [form.category, suggestionKeyword],
+  )
+
+  const suggestionTotal = useMemo(
+    () =>
+      searchIngredientCatalog({
+        category: form.category,
+        query: suggestionKeyword,
+        limit: 999,
+      }).length,
+    [form.category, suggestionKeyword],
+  )
+
+  const displayIngredients = isAppStoreDemo ? APPSTORE_DEMO_INGREDIENTS : ingredients
 
   const filtered =
     activeTab === '전체'
-      ? ingredients
-      : ingredients.filter((i) => i.storageType === activeTab)
+      ? displayIngredients
+      : displayIngredients.filter((i) => i.storageType === activeTab)
 
   const sortedIngredients = [...filtered].sort((a, b) => {
     if (!a.expiryDate && !b.expiryDate) return 0
@@ -98,127 +111,30 @@ export default function FridgePage() {
   })
 
   const resetForm = () => {
-    suggestionAbortRef.current?.abort()
     setForm(initialFormState)
     setSuggestionKeyword('')
-    setSuggestedIngredients([])
-    setSuggestionTotal(0)
-    setSuggestionNextCursor(0)
-    setSuggestionLoading(false)
-    setSuggestionError(null)
-    setHasFetchedSuggestions(false)
     setEditingId(null)
   }
 
-  const fetchSuggestions = useCallback(
-    async (mode: 'reset' | 'append') => {
-      if (!showAddModal) return
-
-      const cursor = mode === 'reset' ? 0 : suggestionNextCursor
-      if (mode === 'append' && cursor === null) return
-
-      if (mode === 'reset') {
-        suggestionAbortRef.current?.abort()
-      }
-
-      const requestId = suggestionRequestIdRef.current + 1
-      suggestionRequestIdRef.current = requestId
-      const controller = new AbortController()
-      suggestionAbortRef.current = controller
-
-      setSuggestionLoading(true)
-      setSuggestionError(null)
-      if (mode === 'reset') {
-        setSuggestedIngredients([])
-        setSuggestionTotal(0)
-        setSuggestionNextCursor(0)
-      }
-
-      try {
-        const params = new URLSearchParams({
-          category: form.category,
-          limit: String(suggestionFetchLimit),
-          cursor: String(cursor ?? 0),
-        })
-
-        const trimmedKeyword = suggestionKeyword.trim()
-        if (trimmedKeyword) {
-          params.set('q', trimmedKeyword)
-        }
-
-        const response = await fetch(resolveApiUrl(`/api/ingredients?${params.toString()}`), {
-          cache: 'no-store',
-          signal: controller.signal,
-          headers: {
-            'x-device-id': getDeviceId(),
-          },
-        })
-
-        const payload = (await response.json()) as IngredientSuggestionResponse
-        if (!response.ok) {
-          throw new Error(payload.message ?? '추천 재료를 불러오지 못했습니다.')
-        }
-
-        if (requestId !== suggestionRequestIdRef.current) return
-
-        setSuggestionTotal(payload.total)
-        setSuggestionNextCursor(payload.nextCursor)
-        setSuggestedIngredients((prev) => {
-          const next = mode === 'reset' ? payload.items : [...prev, ...payload.items]
-          return Array.from(new Set(next))
-        })
-        setHasFetchedSuggestions(true)
-      } catch (caught) {
-        if (controller.signal.aborted) return
-        if (requestId !== suggestionRequestIdRef.current) return
-        const message = caught instanceof Error ? caught.message : '추천 재료를 불러오지 못했습니다.'
-        setSuggestionError(message)
-        if (mode === 'reset') {
-          const keyword = suggestionKeyword.trim().toLowerCase()
-          const fallbackItems = localSuggestionFallback[form.category].filter((item) =>
-            keyword ? item.toLowerCase().includes(keyword) : true,
-          )
-          const sliced = fallbackItems.slice(0, suggestionFetchLimit)
-          setSuggestedIngredients(sliced)
-          setSuggestionTotal(fallbackItems.length)
-          setSuggestionNextCursor(fallbackItems.length > suggestionFetchLimit ? suggestionFetchLimit : null)
-        }
-        setHasFetchedSuggestions(true)
-      } finally {
-        if (requestId === suggestionRequestIdRef.current) {
-          setSuggestionLoading(false)
-        }
-      }
-    },
-    [form.category, showAddModal, suggestionKeyword, suggestionNextCursor],
-  )
-
-  useEffect(() => {
-    if (!showAddModal) return
-
-    const timer = window.setTimeout(() => {
-      void fetchSuggestions('reset')
-    }, 250)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [fetchSuggestions, form.category, showAddModal, suggestionKeyword])
-
-  useEffect(() => {
-    return () => {
-      suggestionAbortRef.current?.abort()
-    }
-  }, [])
-
   const handleSave = async () => {
     if (!form.name.trim()) return
+
+    const amountValue = Number(form.amount_value)
+    const normalizedAmountValue =
+      form.amount_value.trim() && Number.isFinite(amountValue) && amountValue > 0
+        ? amountValue
+        : null
+    const quantityDisplay = buildQuantityDisplay(
+      normalizedAmountValue,
+      normalizedAmountValue ? form.amount_unit : null,
+      settings.unitSystem,
+    )
 
     const payload = {
       name: form.name,
       category: form.category,
       storageType: form.storage_type,
-      quantity: form.quantity || null,
+      quantity: quantityDisplay,
       expiryDate: form.expiry_date || null,
       memo: form.memo || null,
     }
@@ -233,11 +149,14 @@ export default function FridgePage() {
   }
 
   const handleEdit = (ingredient: IngredientRecord) => {
+    const parsedQuantity = parseQuantityDisplay(ingredient.quantity)
+
     setForm({
       name: ingredient.name,
       category: ingredient.category || '채소',
       storage_type: ingredient.storageType,
-      quantity: ingredient.quantity || '',
+      amount_value: parsedQuantity.amountValue,
+      amount_unit: parsedQuantity.amountUnit ?? unitOptions[0]?.value ?? 'g',
       expiry_date: ingredient.expiryDate || '',
       memo: ingredient.memo || '',
     })
@@ -252,13 +171,19 @@ export default function FridgePage() {
   }
 
   return (
-    <div className="flex flex-col">
-      {/* 상단 헤더 영역 */}
-      <div className="bg-gradient-to-br from-blue-100 via-lavender-50 to-mint-50 px-5 pb-6 pt-4 rounded-b-[2rem]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl">🧊</span>
-            <h2 className="text-2xl font-bold text-gray-800">냉장고 재고</h2>
+    <div className="min-h-full bg-[#fbf6ee] pb-6">
+      <section className="mobile-safe-top px-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-[24px] font-black text-[#2f2117]">냉장고</h1>
+              <button type="button" aria-label="냉장고 도움말" className="text-[#b8a99a]">
+                <AlertCircle size={16} />
+              </button>
+            </div>
+            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+              {isAppStoreDemo ? '앱스토어 미리보기' : `전체 ${sortedIngredients.length}개 재료`}
+            </p>
           </div>
           <button
             onClick={() => {
@@ -266,50 +191,70 @@ export default function FridgePage() {
               setShowAddModal(true)
             }}
             aria-label="재료 추가"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-soft"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.25)]"
           >
-            <Plus size={22} className="text-mint-500" />
+            <Plus size={22} />
           </button>
         </div>
 
-        {/* 보관 타입 탭 */}
-        <div className="mt-4 flex gap-2">
+        <div className="jipbab-panel mt-4 overflow-hidden rounded-[18px]">
+          <div className="grid grid-cols-[1fr_82px]">
+            <div className="grid grid-cols-3 divide-x divide-[#eadcc9] bg-[#f7f5e9]">
+              <FridgeStat label="전체" value={`${displayIngredients.length}개`} />
+              <FridgeStat label="일반" value={`${displayIngredients.filter((item) => getDday(item.expiryDate) > 3).length}개`} />
+              <FridgeStat label="소진임박" value={`${displayIngredients.filter((item) => getDday(item.expiryDate) <= 3).length}개`} warning />
+            </div>
+            <div className="flex items-center justify-center bg-[#ece8da] text-[#8f7f70]">
+              <Refrigerator size={46} strokeWidth={1.35} />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
+          <Search size={16} className="text-[#b5a493]" />
+          <span className="text-[13px] font-medium text-[#a69585]">재료 검색</span>
+        </div>
+
+        <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto">
           {storageTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-4 py-2 text-sm font-bold transition-all ${
-                activeTab === tab ? 'bg-white text-mint-500 shadow-soft' : 'bg-white/50 text-gray-500'
+              className={`shrink-0 rounded-full border px-4 py-2 text-[12px] font-black transition-all ${
+                activeTab === tab
+                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
               }`}
             >
-              {tab === '냉장' ? '❄️ ' : tab === '냉동' ? '🧊 ' : tab === '실온' ? '🌡️ ' : '📦 '}
               {tab}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* 재료 리스트 */}
-      <div className="px-5 pt-4 pb-6">
+      <section className="px-5 pb-6 pt-4">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-500">총 {sortedIngredients.length}개</span>
+          <p className="text-[12px] font-bold text-[#8f7f70]">
+            {activeTab === '전체' ? '전체 재료' : `${activeTab} 재료`} {sortedIngredients.length}개
+          </p>
           <button
             onClick={() => {
               void listIngredients()
             }}
             aria-label="재료 목록 새로고침"
-            className="text-gray-400"
+            className="flex items-center gap-1 text-[12px] font-bold text-[#8f7f70]"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} />
+            새로고침
           </button>
         </div>
 
-        {loading ? (
+        {!isAppStoreDemo && loading ? (
           <div className="flex flex-col items-center py-16">
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-mint-300 border-t-transparent" />
             <p className="mt-3 text-sm text-gray-400">불러오는 중...</p>
           </div>
-        ) : error ? (
+        ) : error && !isAppStoreDemo ? (
           <div className="rounded-3xl bg-rose-50 p-4 text-center text-sm text-rose-500">{error.message}</div>
         ) : sortedIngredients.length === 0 ? (
           <div className="flex flex-col items-center py-16">
@@ -327,7 +272,7 @@ export default function FridgePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2.5">
             {sortedIngredients.map((item) => {
               const dday = getDday(item.expiryDate)
               const statusLabel = getStatusLabel(dday)
@@ -336,60 +281,67 @@ export default function FridgePage() {
               return (
                 <div
                   key={item.id}
-                  className="relative overflow-hidden rounded-3xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-card"
+                  className="jipbab-panel relative flex items-center gap-3 rounded-[16px] px-3 py-2.5"
                 >
-                  {/* 재료 이미지 영역 */}
-                  <div className={`flex h-28 items-center justify-center ${getCategoryBg(item.category)}`}>
-                    <span className="text-5xl">{getCategoryEmoji(item.category)}</span>
+                  <div className={`relative h-[62px] w-[62px] shrink-0 overflow-hidden rounded-[14px] ${getCategoryBg(item.category)}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getIngredientPhotoUrl(item.name, item.category)}
+                      alt={item.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
 
-                    {/* 더보기 메뉴 버튼 */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="truncate text-[15px] font-black text-[#2f2117]">{item.name}</h4>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${statusBg}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[12px] font-semibold text-[#7d6d5f]">
+                      {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '기한 없음'}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="min-w-[44px] text-right text-[13px] font-bold text-[#4b3929]">
+                      {item.quantity ?? '-'}
+                    </span>
                     <button
                       onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
                       aria-label={`${item.name} 메뉴 열기`}
-                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/80"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
                     >
-                      <MoreVertical size={14} className="text-gray-500" />
+                      <MoreVertical size={15} />
                     </button>
-
-                    {/* 수정/삭제 팝업 */}
-                    {menuOpenId === item.id && (
-                      <div className="absolute right-2 top-10 z-10 overflow-hidden rounded-2xl bg-white shadow-card">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          ✏️ 수정
-                        </button>
-                        <button
-                          onClick={() => {
-                            void handleDelete(item.id)
-                          }}
-                          className="block w-full px-4 py-2.5 text-left text-sm text-rose-500 hover:bg-rose-50"
-                        >
-                          🗑️ 삭제
-                        </button>
-                      </div>
-                    )}
                   </div>
 
-                  {/* 재료 정보 */}
-                  <div className="p-3">
-                    <h4 className="text-base font-bold text-gray-800">{item.name}</h4>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusBg}`}>
-                        {statusLabel}
-                      </span>
-                      {item.expiryDate && (
-                        <span className="text-xs text-gray-400">{item.expiryDate.replace(/-/g, '.')}</span>
-                      )}
+                  {menuOpenId === item.id && (
+                    <div className="absolute right-3 top-12 z-10 overflow-hidden rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] shadow-card">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-[#4b3929] hover:bg-[#f7eee3]"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => {
+                          void handleDelete(item.id)
+                        }}
+                        className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-[#d94d19] hover:bg-[#fff0e4]"
+                      >
+                        삭제
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               )
             })}
           </div>
         )}
-      </div>
+      </section>
 
       {/* 재료 추가/수정 바텀시트 모달 */}
       {showAddModal && (
@@ -439,7 +391,7 @@ export default function FridgePage() {
             <div className="mb-4">
               <label className="mb-2 block text-sm font-bold text-gray-700">카테고리</label>
               <div className="scrollbar-hide flex gap-2 overflow-x-auto">
-                {categories.map((cat) => (
+                {INGREDIENT_CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setForm({ ...form, category: cat })}
@@ -485,103 +437,45 @@ export default function FridgePage() {
               </div>
 
               <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-2.5">
-                {suggestionLoading && suggestedIngredients.length === 0 ? (
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs text-gray-500">
-                      <Loader2 size={12} className="animate-spin" />
-                      식약처 데이터 검색 중...
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <span
-                          key={`suggestion-skeleton-${index}`}
-                          className="h-8 w-20 animate-pulse rounded-full bg-white"
-                        />
-                      ))}
-                    </div>
+                {suggestedIngredients.length === 0 ? (
+                  <div className="rounded-xl bg-white px-3 py-4 text-center">
+                    <p className="text-xs font-semibold text-gray-500">검색 결과가 없습니다.</p>
+                    <p className="mt-1 text-xs text-gray-400">아래 재료명 입력칸에 직접 적어도 저장할 수 있어요.</p>
                   </div>
-                ) : suggestionError && suggestedIngredients.length === 0 ? (
-                  <div className="rounded-xl bg-rose-50 p-3">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle size={14} className="mt-0.5 shrink-0 text-rose-500" />
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-rose-600">추천 재료를 불러오지 못했습니다.</p>
-                        <p className="mt-0.5 text-xs text-rose-500">{suggestionError}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void fetchSuggestions('reset')
-                        }}
-                        className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-rose-500"
-                      >
-                        재시도
-                      </button>
-                    </div>
-                  </div>
-                ) : suggestedIngredients.length === 0 ? (
-                  hasFetchedSuggestions ? (
-                    <div className="rounded-xl bg-white px-3 py-4 text-center">
-                      <p className="text-xs font-semibold text-gray-500">검색 결과가 없습니다.</p>
-                      <p className="mt-1 text-xs text-gray-400">검색어를 바꾸거나 재료명을 직접 입력해 주세요.</p>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl bg-white px-3 py-4 text-center text-xs text-gray-400">
-                      추천 재료를 준비하고 있습니다...
-                    </div>
-                  )
                 ) : (
                   <>
                     <div className="max-h-28 overflow-y-auto pr-1">
                       <div className="flex flex-wrap gap-2">
-                        {suggestedIngredients.map((name) => (
+                        {suggestedIngredients.map((item) => (
                           <button
-                            key={name}
+                            key={item.id}
                             type="button"
-                            onClick={() => setForm((prev) => ({ ...prev, name }))}
-                            aria-pressed={form.name === name}
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                name: item.name,
+                                storage_type: item.defaultStorageType ?? prev.storage_type,
+                                amount_unit: item.defaultUnit ?? prev.amount_unit,
+                              }))
+                            }
+                            aria-pressed={form.name === item.name}
                             className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
-                              form.name === name
+                              form.name === item.name
                                 ? 'bg-mint-300 text-white shadow-soft'
                                 : 'bg-white text-mint-500 hover:bg-mint-100'
                             }`}
                           >
-                            {name}
+                            {item.name}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-between gap-2">
+                    <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2">
                       <p className="text-xs text-gray-400">
                         총 {suggestionTotal}개 중 {suggestedIngredients.length}개 표시
                       </p>
-                      {suggestionNextCursor !== null && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            void fetchSuggestions('append')
-                          }}
-                          className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          disabled={suggestionLoading}
-                        >
-                          {suggestionLoading ? '불러오는 중...' : '더 보기'}
-                        </button>
-                      )}
+                      <span className="text-[11px] font-semibold text-mint-500">목록에 없으면 직접 입력</span>
                     </div>
-                    {suggestionError && (
-                      <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-rose-50 px-3 py-2">
-                        <p className="truncate text-xs text-rose-500">{suggestionError}</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            void fetchSuggestions('append')
-                          }}
-                          className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-rose-500"
-                        >
-                          재시도
-                        </button>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
@@ -608,12 +502,14 @@ export default function FridgePage() {
             {/* 수량 + 유통기한 */}
             <div className="mb-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">수량</label>
+                <label className="mb-2 block text-sm font-bold text-gray-700">수량 숫자</label>
                 <input
-                  type="text"
-                  placeholder="예: 500g"
-                  value={form.quantity}
-                  onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="예: 2"
+                  value={form.amount_value}
+                  onChange={(e) => setForm({ ...form, amount_value: e.target.value })}
                   className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-mint-300 focus:bg-white"
                 />
               </div>
@@ -648,6 +544,34 @@ export default function FridgePage() {
               </div>
             </div>
 
+            <div className="mb-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="block text-sm font-bold text-gray-700">단위 선택</label>
+                <span className="text-xs text-gray-400">
+                  현재 기준: {settings.unitSystem === 'metric' ? 'ml / g' : settings.unitSystem === 'spoon' ? '큰술 / 작은술' : '개 / 봉 / 팩'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {unitOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, amount_unit: option.value })}
+                    className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
+                      form.amount_unit === option.value
+                        ? 'bg-mint-300 text-white shadow-soft'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                저장 시 {form.amount_value.trim() ? buildQuantityDisplay(Number(form.amount_value), form.amount_unit, settings.unitSystem) ?? '수량 미정' : '수량 미정'} 형태로 보입니다.
+              </p>
+            </div>
+
             {/* 메모 */}
             <div className="mb-6">
               <label className="mb-2 block text-sm font-bold text-gray-700">메모</label>
@@ -672,6 +596,23 @@ export default function FridgePage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function FridgeStat({
+  label,
+  value,
+  warning = false,
+}: {
+  label: string
+  value: string
+  warning?: boolean
+}) {
+  return (
+    <div className="px-3 py-3">
+      <p className={`text-[11px] font-bold ${warning ? 'text-[#d94d19]' : 'text-[#7d6d5f]'}`}>{label}</p>
+      <p className={`mt-1 text-[14px] font-black ${warning ? 'text-[#d94d19]' : 'text-[#2f2117]'}`}>{value}</p>
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIngredients } from "@/hooks/useIngredients";
 import { getDeviceId } from "@/lib/device-id";
-import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import { rankRecipeRecommendations, type RecipeRecommendationScore } from "@/lib/matching";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -60,8 +60,12 @@ export interface UseRecipeCatalogResult {
   refresh: () => void;
 }
 
+export type RecommendedRecipe = RecipeWithMatch & {
+  recommendationScore: RecipeRecommendationScore;
+};
+
 export interface UseRecipesResult extends UseRecipeCatalogResult {
-  recipes: RecipeWithMatch[];
+  recipes: RecommendedRecipe[];
   ingredientsLoading: boolean;
 }
 
@@ -212,17 +216,15 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const { ingredients, loading: ingredientsLoading } = useIngredients();
   const catalog = useRecipeCatalog(pageSize);
 
-  const ingredientNames = useMemo(() => ingredients.map((item) => item.name), [ingredients]);
-
-  const recipes = useMemo<RecipeWithMatch[]>(() => {
-    return catalog.recipes.map((recipe) => {
-      const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients);
+  const recipes = useMemo<RecommendedRecipe[]>(() => {
+    return rankRecipeRecommendations(catalog.recipes, ingredients).map(({ recipe, match, score }) => {
       return {
         ...recipe,
         ...match,
+        recommendationScore: score,
       };
     });
-  }, [catalog.recipes, ingredientNames]);
+  }, [catalog.recipes, ingredients]);
 
   return {
     ...catalog,

@@ -5,15 +5,51 @@ export const INGREDIENT_CATEGORIES = [
   "육류",
   "수산물",
   "유제품",
-  "양념",
-  "기타",
+  "냉동식품",
+  "조미료",
+  "곡물/면/빵",
+  "통조림/가공식품",
+  "음료/기타",
 ] as const;
 
 export const INGREDIENT_STORAGE_TYPES = ["냉장", "냉동", "실온"] as const;
 
+export const INGREDIENT_UNIT_SYSTEMS = ["metric", "spoon", "count"] as const;
+
+export const INGREDIENT_UNITS = [
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "tbsp",
+  "tsp",
+  "cup",
+  "piece",
+  "pack",
+  "bag",
+  "can",
+  "bottle",
+  "block",
+  "sheet",
+  "slice",
+] as const;
+
 export type IngredientCategory = (typeof INGREDIENT_CATEGORIES)[number];
 
 export type IngredientStorageType = (typeof INGREDIENT_STORAGE_TYPES)[number];
+
+export type IngredientUnitSystem = (typeof INGREDIENT_UNIT_SYSTEMS)[number];
+
+export type IngredientUnit = (typeof INGREDIENT_UNITS)[number];
+
+export interface IngredientCatalogItem {
+  id: string;
+  category: IngredientCategory;
+  name: string;
+  aliases?: string[];
+  defaultStorageType?: IngredientStorageType;
+  defaultUnit?: IngredientUnit;
+}
 
 export interface IngredientRecord {
   id: string;
@@ -24,6 +60,14 @@ export interface IngredientRecord {
   storageType: IngredientStorageType;
   quantity: string | null;
   expiryDate: string | null;
+  purchaseDate?: string | null;
+  openedAt?: string | null;
+  storageLocation?: string | null;
+  unitPrice?: number | null;
+  purchasePlace?: string | null;
+  consumedAt?: string | null;
+  discardedAt?: string | null;
+  repeatPurchase?: boolean;
   barcode: string | null;
   imageUrl: string | null;
   memo: string | null;
@@ -37,6 +81,14 @@ export interface IngredientFormPayload {
   storageType?: IngredientStorageType;
   quantity?: string | null;
   expiryDate?: string | null;
+  purchaseDate?: string | null;
+  openedAt?: string | null;
+  storageLocation?: string | null;
+  unitPrice?: number | null;
+  purchasePlace?: string | null;
+  consumedAt?: string | null;
+  discardedAt?: string | null;
+  repeatPurchase?: boolean;
   barcode?: string | null;
   imageUrl?: string | null;
   memo?: string | null;
@@ -50,6 +102,14 @@ export interface IngredientInsertPayload {
   storage_type?: IngredientStorageType;
   quantity?: string | null;
   expiry_date?: string | null;
+  purchase_date?: string | null;
+  opened_at?: string | null;
+  storage_location?: string | null;
+  unit_price?: number | null;
+  purchase_place?: string | null;
+  consumed_at?: string | null;
+  discarded_at?: string | null;
+  repeat_purchase?: boolean;
   barcode?: string | null;
   image_url?: string | null;
   memo?: string | null;
@@ -61,6 +121,14 @@ export interface IngredientUpdatePayload {
   storage_type?: IngredientStorageType;
   quantity?: string | null;
   expiry_date?: string | null;
+  purchase_date?: string | null;
+  opened_at?: string | null;
+  storage_location?: string | null;
+  unit_price?: number | null;
+  purchase_place?: string | null;
+  consumed_at?: string | null;
+  discarded_at?: string | null;
+  repeat_purchase?: boolean;
   barcode?: string | null;
   image_url?: string | null;
   memo?: string | null;
@@ -236,4 +304,10 @@ export interface FavoriteRecipeSummary {
   category: string;
   thumbnailUrl: string | null;
   savedAt: string;
+}
+
+export interface QuantityValueParts {
+  amountValue: number | null;
+  amountUnit: IngredientUnit | null;
+  quantityDisplay: string | null;
 }

@@ -6,14 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 
+import { normalizeAuthNextPath } from "@/lib/auth-redirect";
 import { getSupabaseClient } from "@/lib/supabase";
-
-function normalizeNextPath(value: string | null): string {
-  if (!value || !value.startsWith("/")) {
-    return "/mypage";
-  }
-  return value;
-}
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -28,7 +22,7 @@ function AuthCallbackContent() {
     hasStartedRef.current = true;
 
     const code = searchParams.get("code");
-    const next = normalizeNextPath(searchParams.get("next"));
+    const next = normalizeAuthNextPath(searchParams.get("next"));
 
     if (!code) {
       setErrorMessage("로그인 승인 코드를 찾지 못했습니다. 다시 시도해 주세요.");

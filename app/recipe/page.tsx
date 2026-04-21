@@ -1,18 +1,27 @@
-// 이 파일은 레시피 탐색 페이지를 담당합니다 - /api/recipes 연동 + 재료 매칭/즐겨찾기 기능
-"use client";
+// 이 파일은 레시피 목록 화면을 담당하며 참고 이미지의 음식 리스트 스타일을 구현합니다.
+'use client'
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Heart, RefreshCw, Search } from "lucide-react";
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { Bookmark, Clock3, Heart, RefreshCw, Search, SlidersHorizontal, Star, Users } from 'lucide-react'
 
-import { useFavorites } from "@/hooks/useFavorites";
-import { useRecipes } from "@/hooks/useRecipes";
-import { RECIPE_CATEGORIES } from "@/types";
+import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
+import { useDemoMode } from '@/hooks/useDemoMode'
+import { useFavorites } from '@/hooks/useFavorites'
+import { useRecipes } from '@/hooks/useRecipes'
+import { RECIPE_CATEGORIES } from '@/types'
 
 const FALLBACK_RECIPE_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80";
+  'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80'
+const RECIPE_FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1627662168806-efa33a7cda86?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=900&q=85',
+] as const
 
 export default function RecipePage() {
+  const isAppStoreDemo = useDemoMode()
   const {
     recipes,
     loading,
@@ -28,66 +37,75 @@ export default function RecipePage() {
     nextPage,
     prevPage,
     refresh,
-  } = useRecipes();
+  } = useRecipes()
 
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const { favorites, isFavorite, toggleFavorite } = useFavorites()
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const baseRecipes = isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipes
 
   const filteredRecipes = useMemo(() => {
-    if (!favoritesOnly) {
-      return recipes;
-    }
-    return recipes.filter((recipe) => isFavorite(recipe.id));
-  }, [favoritesOnly, isFavorite, recipes]);
+    const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
+
+    return [...base].sort((left, right) => {
+      if (right.matchRate !== left.matchRate) {
+        return right.matchRate - left.matchRate
+      }
+      if (right.matchedIngredients.length !== left.matchedIngredients.length) {
+        return right.matchedIngredients.length - left.matchedIngredients.length
+      }
+      return left.name.localeCompare(right.name, 'ko')
+    })
+  }, [baseRecipes, favoritesOnly, isFavorite])
 
   return (
-    <div className="flex flex-col pb-6">
-      {/* 헤더 */}
-      <section className="px-5 pt-4">
-        <h2 className="text-2xl font-bold text-gray-800">📖 레시피</h2>
-        <p className="mt-1 text-sm text-gray-400">보유 재료 기준으로 매칭률을 계산해 추천해드려요.</p>
-      </section>
+    <div className="min-h-full bg-[#fbf6ee] pb-6">
+      <section className="mobile-safe-top px-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[24px] font-black text-[#2f2117]">레시피</h1>
+            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+              {isAppStoreDemo
+                ? `미리보기 ${baseRecipes.length}개`
+                : `총 ${totalCount.toLocaleString()}개 레시피${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFavoritesOnly((prev) => !prev)}
+            className={`flex h-10 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
+              favoritesOnly
+                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+            }`}
+          >
+            <Heart size={14} className={favoritesOnly ? 'fill-[#ea5a1f]' : ''} />
+            {favorites.length}
+          </button>
+        </div>
 
-      {/* 검색 + 보조 액션 */}
-      <section className="mt-3 px-5">
-        <div className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-3 py-2.5 shadow-soft">
-          <Search size={16} className="text-gray-400" />
+        <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
+          <Search size={16} className="text-[#b5a493]" />
           <input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="레시피 이름을 검색하세요"
-            className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+            placeholder="레시피 검색"
+            className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
           />
-          <button onClick={refresh} aria-label="레시피 새로고침" className="text-gray-400">
+          <button onClick={refresh} aria-label="레시피 새로고침" className="text-[#9f8d7a]">
             <RefreshCw size={15} />
-          </button>
-        </div>
-
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-gray-400">
-            {ingredientsLoading ? "내 재료를 불러오는 중..." : `총 ${totalCount.toLocaleString()}개 레시피`}
-          </p>
-          <button
-            onClick={() => setFavoritesOnly((prev) => !prev)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-              favoritesOnly ? "bg-rose-100 text-rose-500" : "bg-gray-100 text-gray-500"
-            }`}
-          >
-            ❤️ 즐겨찾기 {favorites.length}개
           </button>
         </div>
       </section>
 
-      {/* 카테고리 필터 */}
-      <section className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto px-5">
-        {RECIPE_CATEGORIES.map((category) => (
+      <section className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pt-3">
+        {RECIPE_CATEGORIES.slice(0, 6).map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${
+            className={`shrink-0 rounded-full border px-4 py-2 text-[12px] font-black transition-all ${
               selectedCategory === category
-                ? "bg-mint-200 text-mint-500 shadow-sm"
-                : "bg-gray-100 text-gray-500"
+                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
             }`}
           >
             {category}
@@ -95,92 +113,108 @@ export default function RecipePage() {
         ))}
       </section>
 
-      {/* 목록 본문 */}
-      <section className="mt-4 px-5">
-        {loading ? (
+      <section className="px-5 pt-4">
+        {!isAppStoreDemo && loading ? (
           <div className="flex flex-col items-center py-20">
-            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-mint-300 border-t-transparent" />
-            <p className="mt-3 text-sm text-gray-400">레시피를 불러오는 중...</p>
+            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#ea5a1f] border-t-transparent" />
+            <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>
           </div>
-        ) : error ? (
-          <div className="rounded-3xl bg-rose-50 px-4 py-5 text-sm text-rose-500">{error}</div>
+        ) : error && !isAppStoreDemo ? (
+          <div className="rounded-[16px] bg-[#fff0e4] px-4 py-5 text-sm font-semibold text-[#d94d19]">{error}</div>
         ) : filteredRecipes.length === 0 ? (
-          <div className="rounded-3xl bg-gray-50 px-4 py-8 text-center">
-            <p className="text-sm font-semibold text-gray-500">조건에 맞는 레시피가 없습니다.</p>
-            <p className="mt-1 text-xs text-gray-400">검색어를 바꾸거나 카테고리를 다시 선택해 보세요.</p>
+          <div className="rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
+            <p className="text-sm font-black text-[#4b3929]">조건에 맞는 레시피가 없습니다.</p>
+            <p className="mt-1 text-xs text-[#8f7f70]">검색어나 카테고리를 다시 선택해 보세요.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {filteredRecipes.map((recipe) => {
-              const favorite = isFavorite(recipe.id);
-              const coverImage = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE;
-              return (
-                <article
-                  key={recipe.id}
-                  className="relative overflow-hidden rounded-3xl bg-white shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-card"
-                >
-                  <button
-                    onClick={() =>
-                      toggleFavorite({
-                        id: recipe.id,
-                        name: recipe.name,
-                        category: recipe.category,
-                        thumbnailUrl: recipe.thumbnailUrl,
-                      })
-                    }
-                    aria-label={`${recipe.name} 즐겨찾기 토글`}
-                    className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm"
-                  >
-                    <Heart size={16} className={favorite ? "fill-rose-400 text-rose-400" : "text-gray-400"} />
-                  </button>
+          <div className="space-y-2.5">
+            {filteredRecipes.map((recipe, index) => {
+              const favorite = isFavorite(recipe.id)
+              const coverImage =
+                recipe.thumbnailUrl ||
+                RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] ||
+                FALLBACK_RECIPE_IMAGE
+              const minutes = 15 + (index % 4) * 5
+              const servings = index % 3 === 0 ? '1인분' : index % 3 === 1 ? '2인분' : '2-3인분'
 
-                  <Link href={`/recipe/${recipe.id}`} className="block">
-                    <div className="relative h-36 w-full overflow-hidden">
-                      {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
+              return (
+                <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
+                  <div className="flex gap-3 p-2.5">
+                    <Link href={`/recipe/${recipe.id}`} className="relative h-[86px] w-[96px] shrink-0 overflow-hidden rounded-[13px] bg-[#eadcc9]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={coverImage} alt={recipe.name} className="h-full w-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
-                      <span className="absolute left-3 top-3 rounded-full bg-white/85 px-2 py-1 text-[10px] font-bold text-gray-600">
-                        {recipe.category}
-                      </span>
-                      <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-mint-500">
-                        {recipe.matchRate}% 일치
-                      </span>
-                    </div>
+                    </Link>
 
-                    <div className="p-3">
-                      <h4 className="line-clamp-1 font-bold text-gray-800">{recipe.name}</h4>
-                      <p className="mt-1 text-xs text-gray-400">{recipe.method}</p>
-                      <p className="mt-1.5 text-xs text-peach-400">부족 재료 {recipe.missingIngredients.length}개</p>
+                    <div className="min-w-0 flex-1 py-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link href={`/recipe/${recipe.id}`} className="min-w-0">
+                          <h2 className="line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
+                          <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">
+                            {recipe.category} · {recipe.method}
+                          </p>
+                        </Link>
+                        <button
+                          onClick={() =>
+                            toggleFavorite({
+                              id: recipe.id,
+                              name: recipe.name,
+                              category: recipe.category,
+                              thumbnailUrl: recipe.thumbnailUrl,
+                            })
+                          }
+                          aria-label={`${recipe.name} 즐겨찾기 토글`}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#fff7ed] text-[#7d6d5f]"
+                        >
+                          <Bookmark size={15} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
+                        </button>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#7d6d5f]">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock3 size={12} />
+                          {minutes}분
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Users size={12} />
+                          {servings}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[#d94d19]">
+                          <Star size={12} className="fill-[#f0a51c] text-[#f0a51c]" />
+                          {recipe.matchRate}% ({recipe.totalRecipeIngredients})
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[11px] font-semibold text-[#a69585]">
+                        부족 재료 {recipe.missingIngredients.length}개 · 보유 {recipe.matchedIngredients.length}개
+                      </p>
                     </div>
-                  </Link>
+                  </div>
                 </article>
-              );
+              )
             })}
           </div>
         )}
       </section>
 
-      {/* 페이지네이션 */}
       <section className="mt-5 flex items-center justify-center gap-2 px-5">
         <button
           onClick={prevPage}
           disabled={page <= 1 || loading}
-          className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500 disabled:opacity-40"
+          className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           이전
         </button>
-        <span className="text-xs font-semibold text-gray-500">
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#8f7f70]">
+          <SlidersHorizontal size={13} />
           {page} / {totalPages}
         </span>
         <button
           onClick={nextPage}
           disabled={page >= totalPages || loading}
-          className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500 disabled:opacity-40"
+          className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           다음
         </button>
       </section>
     </div>
-  );
+  )
 }

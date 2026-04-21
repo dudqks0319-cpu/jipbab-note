@@ -6,8 +6,8 @@ import { createClient, type SupabaseClient, type User } from "@supabase/supabase
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
+import { resolveAuthProviderOptions, type ResolvedAuthProviderOption } from "@/lib/auth-config";
 import type {
-  AuthProviderOption,
   AuthQueryError,
   DeviceDataMigrationResult,
   OAuthProvider,
@@ -20,73 +20,26 @@ const PUBLIC_GOOGLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GOOGL
 const PUBLIC_KAKAO_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED;
 const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED;
 
-const PROVIDER_PRIORITY: OAuthProvider[] = ["google", "kakao", "apple"];
-
-const PROVIDER_LABELS: Record<OAuthProvider, string> = {
-  google: "구글",
-  kakao: "카카오",
-  apple: "애플",
-};
-
 const authClientCache = new Map<string, SupabaseClient>();
 
 function toAuthError(message: string, source: AuthQueryError["source"]): AuthQueryError {
   return { message, source };
 }
 
-function parseBooleanFlag(value: string | undefined): boolean | null {
-  if (!value || !value.trim()) {
-    return null;
-  }
-
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "true" || normalized === "1") {
-    return true;
-  }
-  if (normalized === "false" || normalized === "0") {
-    return false;
-  }
-  return null;
+function isIgnorableMissingSessionError(error: { message?: string } | null | undefined): boolean {
+  const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+  return message.includes("auth session missing");
 }
 
-function resolveProviderEnabled(provider: OAuthProvider): boolean {
-  const explicitList = new Set(
-    (PUBLIC_OAUTH_PROVIDER_LIST ?? "")
-      .split(",")
-      .map((item) => item.trim().toLowerCase())
-      .filter(Boolean),
-  );
-
-  const explicitFlags: Record<OAuthProvider, boolean | null> = {
-    google: parseBooleanFlag(PUBLIC_GOOGLE_OAUTH_ENABLED),
-    kakao: parseBooleanFlag(PUBLIC_KAKAO_OAUTH_ENABLED),
-    apple: parseBooleanFlag(PUBLIC_APPLE_OAUTH_ENABLED),
-  };
-
-  const flagValue = explicitFlags[provider];
-  if (flagValue !== null) {
-    return flagValue;
-  }
-
-  if (explicitList.size > 0) {
-    return explicitList.has(provider);
-  }
-
-  // 배포 환경 설정이 없으면 미완성 로그인 버튼을 노출하지 않도록 기본 비활성화합니다.
-  return false;
-}
-
-function buildProviderOptions(): AuthProviderOption[] {
-  const options = PROVIDER_PRIORITY.map((provider) => ({
-    provider,
-    label: PROVIDER_LABELS[provider],
-    enabled: resolveProviderEnabled(provider),
-  }));
-
-  const enabled = options.filter((item) => item.enabled);
-  const disabled = options.filter((item) => !item.enabled);
-
-  return [...enabled, ...disabled];
+function buildProviderOptions(): ResolvedAuthProviderOption[] {
+  return resolveAuthProviderOptions({
+    supabaseUrl: PUBLIC_SUPABASE_URL,
+    supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
+    providerList: PUBLIC_OAUTH_PROVIDER_LIST,
+    googleEnabled: PUBLIC_GOOGLE_OAUTH_ENABLED,
+    kakaoEnabled: PUBLIC_KAKAO_OAUTH_ENABLED,
+    appleEnabled: PUBLIC_APPLE_OAUTH_ENABLED,
+  });
 }
 
 function createAuthClient(deviceId: string): SupabaseClient | null {
@@ -192,7 +145,7 @@ export interface UseAuthResult {
   loading: boolean;
   signingIn: boolean;
   migrating: boolean;
-  providers: AuthProviderOption[];
+  providers: ResolvedAuthProviderOption[];
   error: AuthQueryError | null;
   migrationResult: DeviceDataMigrationResult | null;
   userDisplayName: string;
@@ -261,7 +214,7 @@ export function useAuth(): UseAuthResult {
     }
 
     const { data, error: authError } = await client.auth.getUser();
-    if (authError) {
+    if (authError && !isIgnorableMissingSessionError(authError)) {
       setError(toAuthError(authError.message, "supabase"));
       return;
     }
@@ -282,7 +235,7 @@ export function useAuth(): UseAuthResult {
 
       const providerOption = providers.find((item) => item.provider === provider);
       if (!providerOption?.enabled) {
-        setError(toAuthError("해당 로그인 제공자가 비활성화되어 있습니다. Supabase 설정을 확인해주세요.", "config"));
+        setError(toAuthError(providerOption?.disabledReason ?? "해당 로그인 제공자가 비활성화되어 있습니다.", "config"));
         return;
       }
 
@@ -350,7 +303,7 @@ export function useAuth(): UseAuthResult {
         return;
       }
 
-      if (authError) {
+      if (authError && !isIgnorableMissingSessionError(authError)) {
         setError(toAuthError(authError.message, "supabase"));
       }
 

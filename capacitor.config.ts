@@ -1,5 +1,5 @@
 const runtimeAppUrl = process.env.CAPACITOR_SERVER_URL?.trim()
-const useRemoteServer = Boolean(runtimeAppUrl)
+const useRemoteServer = Boolean(runtimeAppUrl?.startsWith("http://localhost"))
 const cleartext = runtimeAppUrl?.startsWith('http://') ?? false
 
 const config = {

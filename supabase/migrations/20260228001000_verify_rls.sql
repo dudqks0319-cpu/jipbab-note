@@ -4,6 +4,7 @@ declare
   missing_tables text[];
   rls_off_tables text[];
   missing_policies text[];
+  missing_shopping_policies text[];
   expected_tables text[] := array[
     'ingredients',
     'recipes',
@@ -100,6 +101,44 @@ begin
       and 'service_role' = any(pol.roles)
   ) then
     raise exception 'recipes 쓰기 정책의 service_role 권한 검증 실패';
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.tables i
+    where i.table_schema = 'public'
+      and i.table_name = 'shopping_items'
+  ) then
+    if not exists (
+      select 1
+      from pg_tables p
+      where p.schemaname = 'public'
+        and p.tablename = 'shopping_items'
+        and p.rowsecurity = true
+    ) then
+      raise exception 'RLS 미활성 테이블: shopping_items';
+    end if;
+
+    select array_agg(policy_name) into missing_shopping_policies
+    from (
+      select p as policy_name
+      from unnest(array[
+        'shopping_items.shopping_items_select_own',
+        'shopping_items.shopping_items_insert_own',
+        'shopping_items.shopping_items_update_own',
+        'shopping_items.shopping_items_delete_own'
+      ]) as p
+      where not exists (
+        select 1
+        from pg_policies pol
+        where pol.schemaname = 'public'
+          and (pol.tablename || '.' || pol.policyname) = p
+      )
+    ) q;
+
+    if missing_shopping_policies is not null and coalesce(array_length(missing_shopping_policies, 1), 0) > 0 then
+      raise exception '누락 정책: %', array_to_string(missing_shopping_policies, ', ');
+    end if;
   end if;
 
   raise notice 'RLS/정책 검증 통과';

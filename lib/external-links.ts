@@ -9,6 +9,12 @@ const COUPANG_PARTNERS_VEGETABLE_URL =
   process.env.NEXT_PUBLIC_COUPANG_PARTNERS_VEGETABLE_URL?.trim() ?? "";
 const COUPANG_PARTNERS_EGG_URL =
   process.env.NEXT_PUBLIC_COUPANG_PARTNERS_EGG_URL?.trim() ?? "";
+const COUPANG_PARTNERS_DAIRY_URL =
+  process.env.NEXT_PUBLIC_COUPANG_PARTNERS_DAIRY_URL?.trim() ?? "";
+const COUPANG_PARTNERS_FROZEN_URL =
+  process.env.NEXT_PUBLIC_COUPANG_PARTNERS_FROZEN_URL?.trim() ?? "";
+const COUPANG_PARTNERS_SEASONING_URL =
+  process.env.NEXT_PUBLIC_COUPANG_PARTNERS_SEASONING_URL?.trim() ?? "";
 
 type ProductSuggestionSeed = {
   key: string;
@@ -59,6 +65,16 @@ const PRODUCT_SUGGESTIONS: ProductSuggestionSeed[] = [
     imageUrl: getIngredientPhotoUrl("계란", "유제품"),
   },
   {
+    key: "milk",
+    title: "유제품 기본 재료 구매",
+    description: "우유, 버터, 치즈처럼 자주 쓰는 기본 유제품을 빠르게 채웁니다.",
+    matchKeywords: ["우유", "버터", "치즈", "모짜렐라치즈"],
+    matchCategories: ["유제품"],
+    fallbackKeyword: "유제품",
+    partnerUrl: COUPANG_PARTNERS_DAIRY_URL,
+    imageUrl: getIngredientPhotoUrl("우유", "유제품"),
+  },
+  {
     key: "vegetable-box",
     title: "채소 묶음 구매",
     description: "양파, 대파, 당근 같은 기본 채소를 한 번에 보충할 때 쓰기 좋습니다.",
@@ -67,6 +83,26 @@ const PRODUCT_SUGGESTIONS: ProductSuggestionSeed[] = [
     fallbackKeyword: "채소",
     partnerUrl: COUPANG_PARTNERS_VEGETABLE_URL,
     imageUrl: getIngredientPhotoUrl("채소", "채소"),
+  },
+  {
+    key: "frozen-staples",
+    title: "냉동식품 채우기",
+    description: "만두, 새우, 볶음밥 같은 냉동 기본 재료를 보충할 때 좋습니다.",
+    matchKeywords: ["냉동만두", "냉동새우", "냉동볶음밥", "냉동우동면"],
+    matchCategories: ["냉동식품"],
+    fallbackKeyword: "냉동식품",
+    partnerUrl: COUPANG_PARTNERS_FROZEN_URL,
+    imageUrl: getIngredientPhotoUrl("냉동식품", "냉동식품"),
+  },
+  {
+    key: "seasoning-set",
+    title: "기본 조미료 세트",
+    description: "간장, 고추장, 된장처럼 가장 자주 쓰는 조미료를 한 번에 정리합니다.",
+    matchKeywords: ["간장", "고추장", "된장", "굴소스", "고춧가루"],
+    matchCategories: ["조미료"],
+    fallbackKeyword: "조미료",
+    partnerUrl: COUPANG_PARTNERS_SEASONING_URL,
+    imageUrl: getIngredientPhotoUrl("조미료", "조미료"),
   },
 ];
 
@@ -123,14 +159,14 @@ export function getShoppingPartnerSuggestions(items: ShoppingItem[]): ShoppingPa
       PRODUCT_SUGGESTIONS.find((seed) =>
         seed.matchKeywords.some((keyword) => normalizedName.includes(normalizeKeyword(keyword))),
       ) ??
-      PRODUCT_SUGGESTIONS.find((seed) => seed.matchCategories?.includes(item.category ?? "기타"));
+      PRODUCT_SUGGESTIONS.find((seed) => seed.matchCategories?.includes(item.category ?? "음료/기타"));
 
     if (!matchedSeed || usedKeys.has(matchedSeed.key)) {
       continue;
     }
 
     usedKeys.add(matchedSeed.key);
-    const href = matchedSeed.partnerUrl || getCoupangSearchUrl(matchedSeed.fallbackKeyword);
+    const href = getCoupangSearchUrl(item.name || matchedSeed.fallbackKeyword);
     pickedSuggestions.push({
       key: matchedSeed.key,
       title: matchedSeed.title,
@@ -138,8 +174,8 @@ export function getShoppingPartnerSuggestions(items: ShoppingItem[]): ShoppingPa
       href,
       imageUrl: matchedSeed.imageUrl,
       matchedItemName: item.name,
-      isPartnerLink: Boolean(matchedSeed.partnerUrl),
-      ctaLabel: matchedSeed.partnerUrl ? "제휴 링크 열기" : "쿠팡 검색 열기",
+      isPartnerLink: false,
+      ctaLabel: "쿠팡에서 보기",
     });
   }
 
@@ -152,9 +188,9 @@ export function getShoppingPartnerSuggestions(items: ShoppingItem[]): ShoppingPa
     title: `${item.name} 구매 검색`,
     description: "쿠팡 검색으로 바로 이동해 필요한 재료를 장바구니에 담을 수 있습니다.",
     href: getCoupangSearchUrl(item.name),
-    imageUrl: getIngredientPhotoUrl(item.name, item.category),
-    matchedItemName: item.name,
-    isPartnerLink: false,
-    ctaLabel: "쿠팡 검색 열기",
-  }));
+      imageUrl: getIngredientPhotoUrl(item.name, item.category),
+      matchedItemName: item.name,
+      isPartnerLink: false,
+      ctaLabel: "쿠팡 검색 열기",
+    }));
 }

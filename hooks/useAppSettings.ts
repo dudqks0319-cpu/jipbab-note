@@ -3,18 +3,22 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import type { IngredientUnitSystem } from "@/types";
+
 const STORAGE_KEY = "jipbab-note-app-settings";
 
 export type AppSettings = {
   expiryAlerts: boolean;
   shoppingReminders: boolean;
   recipeDiscoveryTips: boolean;
+  unitSystem: IngredientUnitSystem;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   expiryAlerts: true,
   shoppingReminders: true,
   recipeDiscoveryTips: true,
+  unitSystem: "metric",
 };
 
 function safeReadSettings(): AppSettings {
@@ -39,6 +43,12 @@ function safeReadSettings(): AppSettings {
         typeof parsed.recipeDiscoveryTips === "boolean"
           ? parsed.recipeDiscoveryTips
           : DEFAULT_SETTINGS.recipeDiscoveryTips,
+      unitSystem:
+        parsed.unitSystem === "metric" ||
+        parsed.unitSystem === "spoon" ||
+        parsed.unitSystem === "count"
+          ? parsed.unitSystem
+          : DEFAULT_SETTINGS.unitSystem,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -57,6 +67,7 @@ export interface UseAppSettingsResult {
   settings: AppSettings;
   enabledCount: number;
   toggleSetting: (key: keyof AppSettings) => void;
+  setUnitSystem: (unitSystem: IngredientUnitSystem) => void;
   resetSettings: () => void;
 }
 
@@ -64,10 +75,25 @@ export function useAppSettings(): UseAppSettingsResult {
   const [settings, setSettings] = useState<AppSettings>(() => safeReadSettings());
 
   const toggleSetting = useCallback((key: keyof AppSettings) => {
+    if (key === "unitSystem") {
+      return;
+    }
+
     setSettings((prev) => {
       const nextSettings = {
         ...prev,
         [key]: !prev[key],
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const setUnitSystem = useCallback((unitSystem: IngredientUnitSystem) => {
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        unitSystem,
       };
       safeWriteSettings(nextSettings);
       return nextSettings;
@@ -88,6 +114,7 @@ export function useAppSettings(): UseAppSettingsResult {
     settings,
     enabledCount,
     toggleSetting,
+    setUnitSystem,
     resetSettings,
   };
 }

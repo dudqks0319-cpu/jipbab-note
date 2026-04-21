@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { INGREDIENT_SYNC_TIMEOUT_MS, mergeIngredientRecords, withTimeout } from "@/lib/ingredient-sync";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toDateOnlyString } from "@/lib/utils";
 import type {
@@ -28,6 +29,14 @@ type RawIngredientRow = {
   storage_type: IngredientStorageType;
   quantity: string | null;
   expiry_date: string | null;
+  purchase_date: string | null;
+  opened_at: string | null;
+  storage_location: string | null;
+  unit_price: number | null;
+  purchase_place: string | null;
+  consumed_at: string | null;
+  discarded_at: string | null;
+  repeat_purchase: boolean | null;
   barcode: string | null;
   image_url: string | null;
   memo: string | null;
@@ -42,6 +51,16 @@ function normalizeFormPayload(payload: IngredientFormPayload): IngredientFormPay
     storageType: payload.storageType ?? DEFAULT_STORAGE_TYPE,
     quantity: payload.quantity?.trim() || null,
     expiryDate: toDateOnlyString(payload.expiryDate) ?? null,
+    purchaseDate: toDateOnlyString(payload.purchaseDate) ?? null,
+    openedAt: payload.openedAt?.trim() || null,
+    storageLocation: payload.storageLocation?.trim() || null,
+    unitPrice: typeof payload.unitPrice === "number" && Number.isFinite(payload.unitPrice) && payload.unitPrice >= 0
+      ? payload.unitPrice
+      : null,
+    purchasePlace: payload.purchasePlace?.trim() || null,
+    consumedAt: payload.consumedAt?.trim() || null,
+    discardedAt: payload.discardedAt?.trim() || null,
+    repeatPurchase: payload.repeatPurchase ?? false,
     barcode: payload.barcode?.trim() || null,
     imageUrl: payload.imageUrl?.trim() || null,
     memo: payload.memo?.trim() || null,
@@ -58,6 +77,14 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
     storageType: row.storage_type,
     quantity: row.quantity,
     expiryDate: row.expiry_date,
+    purchaseDate: row.purchase_date,
+    openedAt: row.opened_at,
+    storageLocation: row.storage_location,
+    unitPrice: row.unit_price,
+    purchasePlace: row.purchase_place,
+    consumedAt: row.consumed_at,
+    discardedAt: row.discarded_at,
+    repeatPurchase: row.repeat_purchase ?? false,
     barcode: row.barcode,
     imageUrl: row.image_url,
     memo: row.memo,
@@ -145,6 +172,14 @@ function toInsertPayload(
     storage_type: normalized.storageType,
     quantity: normalized.quantity,
     expiry_date: normalized.expiryDate,
+    purchase_date: normalized.purchaseDate,
+    opened_at: normalized.openedAt,
+    storage_location: normalized.storageLocation,
+    unit_price: normalized.unitPrice,
+    purchase_place: normalized.purchasePlace,
+    consumed_at: normalized.consumedAt,
+    discarded_at: normalized.discardedAt,
+    repeat_purchase: normalized.repeatPurchase,
     barcode: normalized.barcode,
     image_url: normalized.imageUrl,
     memo: normalized.memo,
@@ -160,6 +195,14 @@ function toUpdatePayload(payload: IngredientFormPayload): IngredientUpdatePayloa
     storage_type: normalized.storageType,
     quantity: normalized.quantity,
     expiry_date: normalized.expiryDate,
+    purchase_date: normalized.purchaseDate,
+    opened_at: normalized.openedAt,
+    storage_location: normalized.storageLocation,
+    unit_price: normalized.unitPrice,
+    purchase_place: normalized.purchasePlace,
+    consumed_at: normalized.consumedAt,
+    discarded_at: normalized.discardedAt,
+    repeat_purchase: normalized.repeatPurchase,
     barcode: normalized.barcode,
     image_url: normalized.imageUrl,
     memo: normalized.memo,
@@ -183,6 +226,14 @@ function makeLocalRecord(
     storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
     quantity: normalized.quantity ?? null,
     expiryDate: normalized.expiryDate ?? null,
+    purchaseDate: normalized.purchaseDate ?? null,
+    openedAt: normalized.openedAt ?? null,
+    storageLocation: normalized.storageLocation ?? null,
+    unitPrice: normalized.unitPrice ?? null,
+    purchasePlace: normalized.purchasePlace ?? null,
+    consumedAt: normalized.consumedAt ?? null,
+    discardedAt: normalized.discardedAt ?? null,
+    repeatPurchase: normalized.repeatPurchase ?? false,
     barcode: normalized.barcode ?? null,
     imageUrl: normalized.imageUrl ?? null,
     memo: normalized.memo ?? null,
@@ -208,29 +259,35 @@ export interface UseIngredientsResult {
 
 export function useIngredients(): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
-  const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
+  const [ingredients, setIngredients] = useState<IngredientRecord[]>(() => safeReadLocalIngredients(deviceId));
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<IngredientQueryError | null>(null);
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
-    setLoading(true);
+    const localFallback = safeReadLocalIngredients(deviceId);
+    if (localFallback.length > 0) {
+      setIngredients(localFallback);
+    }
+    setLoading(localFallback.length === 0);
     setError(null);
 
     try {
       const client = getSupabaseClient({ deviceId });
-      const { data, error: queryError } = await client
-        .from("ingredients")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error: queryError } = await withTimeout(
+        Promise.resolve(client.from("ingredients").select("*").order("created_at", { ascending: false })),
+        INGREDIENT_SYNC_TIMEOUT_MS,
+        "재료 목록 동기화 시간이 초과되었습니다.",
+      );
 
       if (queryError) {
         throw queryError;
       }
 
       const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
-      setIngredients(mapped);
-      safeWriteLocalIngredients(mapped);
-      return mapped;
+      const merged = mergeIngredientRecords(localFallback, mapped);
+      setIngredients(merged);
+      safeWriteLocalIngredients(merged);
+      return merged;
     } catch (caught) {
       const fallback = safeReadLocalIngredients(deviceId);
       setIngredients(fallback);
@@ -353,6 +410,14 @@ export function useIngredients(): UseIngredientsResult {
           storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
           quantity: normalized.quantity ?? null,
           expiryDate: normalized.expiryDate ?? null,
+          purchaseDate: normalized.purchaseDate ?? null,
+          openedAt: normalized.openedAt ?? null,
+          storageLocation: normalized.storageLocation ?? null,
+          unitPrice: normalized.unitPrice ?? null,
+          purchasePlace: normalized.purchasePlace ?? null,
+          consumedAt: normalized.consumedAt ?? null,
+          discardedAt: normalized.discardedAt ?? null,
+          repeatPurchase: normalized.repeatPurchase ?? false,
           barcode: normalized.barcode ?? null,
           imageUrl: normalized.imageUrl ?? null,
           memo: normalized.memo ?? null,

@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:mobile": "next dev --webpack --port 3002",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "pnpm lint && pnpm exec tsc --noEmit",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.ts",
+    "test": "pnpm lint && pnpm exec tsc --noEmit && pnpm test:unit",
+    "release:check": "node scripts/release-readiness-check.mjs",
     "recipes:seed:generate": "node scripts/generate-mfds-recipes-migration.mjs",
     "mobile:sync": "node scripts/sync-capacitor.mjs ios",
     "mobile:sync:ios": "node scripts/sync-capacitor.mjs ios",
@@ -23,7 +26,7 @@
     "@capacitor/ios": "^8.3.1",
     "@supabase/supabase-js": "^2.98.0",
     "lucide-react": "^0.575.0",
-    "next": "16.1.6",
+    "next": "16.2.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "uuid": "^13.0.0"
@@ -40,5 +43,16 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@xmldom/xmldom": "0.8.12",
+      "brace-expansion@<2.0.0": "1.1.13",
+      "brace-expansion@>=4.0.0 <5.0.5": "5.0.5",
+      "flatted": "3.4.2",
+      "picomatch@<4.0.0": "2.3.2",
+      "picomatch@>=4.0.0 <4.0.4": "4.0.4",
+      "tar": "7.5.11"
+    }
   }
 }
