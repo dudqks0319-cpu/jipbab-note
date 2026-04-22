@@ -7,6 +7,10 @@ import AppShell from '@/components/layout/AppShell'
 export const metadata: Metadata = {
   title: '집밥노트',
   description: '냉장고 속 재료로 오늘 뭐 해먹지? 집밥노트가 알려줄게!',
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({
