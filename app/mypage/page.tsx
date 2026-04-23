@@ -1,9 +1,11 @@
 // 이 파일은 마이페이지를 담당하며 OAuth 로그인 상태와 계정 동기화 정보를 보여줍니다.
 'use client'
 
+import { useState } from 'react'
 import { ChevronRight, LoaderCircle, LogOut, RefreshCw } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
+import { useFamilyFridge } from '@/hooks/useFamilyFridge'
 import type { OAuthProvider } from '@/types'
 
 const menuItems = [
@@ -44,6 +46,9 @@ export default function MyPage() {
     signOut,
     refreshUser,
   } = useAuth()
+  const { family, maxMembers, createFamilyFridge, joinFamilyFridge, leaveFamilyFridge } = useFamilyFridge()
+  const [familyName, setFamilyName] = useState('나')
+  const [inviteCode, setInviteCode] = useState('')
 
   const enabledProviders = providers.filter((item) => item.enabled)
   const disabledProviders = providers.filter((item) => !item.enabled)
@@ -158,6 +163,74 @@ export default function MyPage() {
             {error.message}
           </div>
         ) : null}
+      </div>
+
+      <div className="mt-5 rounded-3xl bg-white p-4 shadow-soft">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">가족 냉장고 공유</h3>
+            <p className="mt-1 text-sm text-gray-500">최대 {maxMembers}명까지 같은 냉장고를 함께 볼 수 있습니다.</p>
+          </div>
+          {family.inviteCode ? (
+            <span className="rounded-full bg-mint-50 px-3 py-1 text-xs font-bold text-mint-500">
+              {family.inviteCode}
+            </span>
+          ) : null}
+        </div>
+
+        {family.fridgeId ? (
+          <div className="mt-3 space-y-2">
+            <div className="rounded-2xl bg-gray-50 px-3 py-2 text-sm text-gray-600">
+              참여 가족: {family.memberNames.join(', ')} ({family.memberNames.length}/{maxMembers})
+            </div>
+            <button
+              type="button"
+              onClick={leaveFamilyFridge}
+              className="w-full rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600"
+            >
+              가족 냉장고 나가기
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 space-y-2">
+            <input
+              value={familyName}
+              onChange={(event) => setFamilyName(event.target.value)}
+              placeholder="내 표시 이름"
+              className="w-full rounded-xl border border-gray-100 px-3 py-2 text-sm outline-none ring-mint-300 focus:ring-2"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => createFamilyFridge(familyName)}
+                className="rounded-xl bg-mint-300 px-3 py-2 text-sm font-bold text-white"
+              >
+                공유 시작
+              </button>
+              <input
+                value={inviteCode}
+                onChange={(event) => setInviteCode(event.target.value)}
+                placeholder="초대코드"
+                className="rounded-xl border border-gray-100 px-3 py-2 text-sm outline-none ring-mint-300 focus:ring-2"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => joinFamilyFridge(inviteCode, familyName)}
+              className="w-full rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600"
+            >
+              초대코드로 참여
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-5 rounded-3xl bg-white p-4 text-sm text-gray-600 shadow-soft">
+        <p className="font-bold text-gray-800">구글 로그인 차단 해결 안내</p>
+        <p className="mt-1">
+          iPhone에서 구글이 앱 내 브라우저를 차단하면 Supabase Redirect URL, iOS URL Scheme, 외부 브라우저 복귀 설정을 맞춰야 합니다.
+          현재 앱은 구글/카카오/애플 제공자를 노출하며, 실제 배포 전 Supabase Auth Provider와 Apple/Kakao 개발자 콘솔 값을 연결해야 합니다.
+        </p>
       </div>
 
       {/* 메뉴 리스트 */}

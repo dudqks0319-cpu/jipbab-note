@@ -6,13 +6,38 @@
 
 :root {
   color-scheme: light;
+  touch-action: manipulation;
 }
 
+html,
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
   background: #f3efe7;
   color: #2b2f36;
+  overscroll-behavior: none;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+@media (pointer: coarse) {
+  button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* 모바일 앱 프레임 바깥쪽 배경 텍스처 */

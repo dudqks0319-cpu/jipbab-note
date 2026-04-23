@@ -41,6 +41,7 @@ create table if not exists public.ingredients (
   id uuid primary key default gen_random_uuid(),
   device_id text not null,
   user_id uuid null references auth.users(id) on delete set null,
+  family_fridge_id uuid null,
   name text not null,
   category text,
   storage_type text not null default '냉장',
@@ -86,8 +87,34 @@ create table if not exists public.community_posts (
   author_name text not null default '익명 집밥러',
   title text not null,
   content text not null,
+  post_type text not null default 'story',
+  image_url text,
+  link_url text,
+  recipe_id uuid null references public.recipes(id) on delete set null,
+  consent_recipe_use boolean not null default false,
+  adopted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+-- 가족 냉장고 테이블입니다.
+create table if not exists public.family_fridges (
+  id uuid primary key default gen_random_uuid(),
+  invite_code text not null unique,
+  owner_user_id uuid null references auth.users(id) on delete set null,
+  owner_device_id text not null,
+  name text not null default '우리집 냉장고',
+  created_at timestamptz not null default now()
+);
+
+-- 가족 냉장고 멤버 테이블입니다. 최대 4명 제한은 RLS insert 정책으로 보조합니다.
+create table if not exists public.family_fridge_members (
+  id uuid primary key default gen_random_uuid(),
+  family_fridge_id uuid not null references public.family_fridges(id) on delete cascade,
+  user_id uuid null references auth.users(id) on delete cascade,
+  device_id text not null,
+  display_name text not null default '가족',
+  created_at timestamptz not null default now()
 );
 
 -- 커뮤니티 댓글 테이블입니다.
@@ -114,6 +141,7 @@ create table if not exists public.community_likes (
 create index if not exists idx_ingredients_device_id on public.ingredients(device_id);
 create index if not exists idx_ingredients_user_id on public.ingredients(user_id);
 create index if not exists idx_ingredients_expiry_date on public.ingredients(expiry_date);
+create index if not exists idx_ingredients_family_fridge_id on public.ingredients(family_fridge_id);
 
 create index if not exists idx_recipes_category on public.recipes(category);
 create index if not exists idx_recipes_difficulty on public.recipes(difficulty);
@@ -125,6 +153,13 @@ create index if not exists idx_favorites_recipe_id on public.favorites(recipe_id
 create index if not exists idx_community_posts_device_id on public.community_posts(device_id);
 create index if not exists idx_community_posts_user_id on public.community_posts(user_id);
 create index if not exists idx_community_posts_created_at on public.community_posts(created_at desc);
+create index if not exists idx_community_posts_post_type on public.community_posts(post_type);
+create index if not exists idx_community_posts_recipe_id on public.community_posts(recipe_id);
+
+create index if not exists idx_family_fridges_invite_code on public.family_fridges(invite_code);
+create index if not exists idx_family_members_family_fridge_id on public.family_fridge_members(family_fridge_id);
+create index if not exists idx_family_members_device_id on public.family_fridge_members(device_id);
+create index if not exists idx_family_members_user_id on public.family_fridge_members(user_id);
 
 create index if not exists idx_community_comments_post_id on public.community_comments(post_id);
 create index if not exists idx_community_comments_device_id on public.community_comments(device_id);
@@ -150,6 +185,14 @@ where user_id is not null;
 create unique index if not exists community_likes_device_post_unique
 on public.community_likes(device_id, post_id)
 where user_id is null and device_id is not null;
+
+create unique index if not exists family_members_user_unique
+on public.family_fridge_members(family_fridge_id, user_id)
+where user_id is not null;
+
+create unique index if not exists family_members_device_unique
+on public.family_fridge_members(family_fridge_id, device_id)
+where user_id is null;
 
 alter table public.favorites alter column device_id set not null;
 alter table public.community_posts alter column author_name set default '익명 집밥러';
@@ -209,6 +252,8 @@ alter table public.recipes enable row level security;
 alter table public.community_posts enable row level security;
 alter table public.community_comments enable row level security;
 alter table public.community_likes enable row level security;
+alter table public.family_fridges enable row level security;
+alter table public.family_fridge_members enable row level security;
 
 drop policy if exists ingredients_select_own on public.ingredients;
 create policy ingredients_select_own

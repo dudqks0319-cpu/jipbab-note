@@ -3,11 +3,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Heart, RefreshCw, Search } from "lucide-react";
+import { Dice5, Heart, RefreshCw, Search, X } from "lucide-react";
 
 import { useFavorites } from "@/hooks/useFavorites";
+import { useMealPreferences } from "@/hooks/useMealPreferences";
 import { useRecipes } from "@/hooks/useRecipes";
-import { RECIPE_CATEGORIES } from "@/types";
+import { RECIPE_CATEGORIES, type RecipeCategory, type RecipeWithMatch } from "@/types";
 
 const FALLBACK_RECIPE_IMAGE =
   "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80";
@@ -31,14 +32,40 @@ export default function RecipePage() {
   } = useRecipes();
 
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { preferences, excludedCategorySet, updateCraving, toggleExcludedCategory } = useMealPreferences();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [showExcludeControls, setShowExcludeControls] = useState(false);
+  const [rouletteRecipe, setRouletteRecipe] = useState<RecipeWithMatch | null>(null);
 
   const filteredRecipes = useMemo(() => {
-    if (!favoritesOnly) {
-      return recipes;
+    const craving = preferences.craving.trim().toLowerCase();
+
+    return recipes
+      .filter((recipe) => !excludedCategorySet.has(recipe.category as RecipeCategory))
+      .filter((recipe) => {
+        if (!favoritesOnly) return true;
+        return isFavorite(recipe.id);
+      })
+      .filter((recipe) => {
+        if (!craving) return true;
+        return `${recipe.name} ${recipe.category} ${recipe.ingredients}`.toLowerCase().includes(craving);
+      })
+      .sort((left, right) => {
+        const favoriteDelta = Number(isFavorite(right.id)) - Number(isFavorite(left.id));
+        if (favoriteDelta !== 0) return favoriteDelta;
+        return right.matchRate - left.matchRate;
+      });
+  }, [excludedCategorySet, favoritesOnly, isFavorite, preferences.craving, recipes]);
+
+  const spinRoulette = () => {
+    if (filteredRecipes.length === 0) {
+      setRouletteRecipe(null);
+      return;
     }
-    return recipes.filter((recipe) => isFavorite(recipe.id));
-  }, [favoritesOnly, isFavorite, recipes]);
+
+    const index = Math.floor(Math.random() * filteredRecipes.length);
+    setRouletteRecipe(filteredRecipes[index] ?? null);
+  };
 
   return (
     <div className="flex flex-col pb-6">
@@ -67,14 +94,60 @@ export default function RecipePage() {
           <p className="text-xs text-gray-400">
             {ingredientsLoading ? "내 재료를 불러오는 중..." : `총 ${totalCount.toLocaleString()}개 레시피`}
           </p>
-          <button
-            onClick={() => setFavoritesOnly((prev) => !prev)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-              favoritesOnly ? "bg-rose-100 text-rose-500" : "bg-gray-100 text-gray-500"
-            }`}
-          >
-            ❤️ 즐겨찾기 {favorites.length}개
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowExcludeControls((prev) => !prev)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                showExcludeControls ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              제외
+            </button>
+            <button
+              onClick={() => setFavoritesOnly((prev) => !prev)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                favoritesOnly ? "bg-rose-100 text-rose-500" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              ❤️ 찜 {favorites.length}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-2xl bg-white p-3 shadow-soft">
+          <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2">
+            <Search size={15} className="text-gray-400" />
+            <input
+              value={preferences.craving}
+              onChange={(event) => updateCraving(event.target.value)}
+              placeholder="오늘 땡기는 음식 설정 (예: 찌개, 면, 닭)"
+              className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+            />
+            {preferences.craving ? (
+              <button type="button" onClick={() => updateCraving("")} aria-label="땡기는 음식 지우기">
+                <X size={14} className="text-gray-400" />
+              </button>
+            ) : null}
+          </div>
+
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={spinRoulette}
+              className="inline-flex items-center gap-1 rounded-full bg-peach-100 px-3 py-1.5 text-xs font-bold text-peach-500"
+            >
+              <Dice5 size={13} />
+              메뉴 룰렛
+            </button>
+            {rouletteRecipe ? (
+              <Link
+                href={`/recipe/${rouletteRecipe.id}`}
+                className="min-w-0 truncate rounded-full bg-mint-50 px-3 py-1.5 text-xs font-bold text-mint-500"
+              >
+                오늘은 {rouletteRecipe.name}
+              </Link>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -94,6 +167,29 @@ export default function RecipePage() {
           </button>
         ))}
       </section>
+
+      {showExcludeControls ? (
+        <section className="mt-3 px-5">
+          <div className="rounded-2xl bg-white p-3 shadow-soft">
+            <p className="text-xs font-bold text-gray-500">추천에서 제외할 카테고리</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {RECIPE_CATEGORIES.filter((category) => category !== "전체").map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => toggleExcludedCategory(category)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                    excludedCategorySet.has(category) ? "bg-rose-100 text-rose-500" : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {excludedCategorySet.has(category) ? "제외됨 " : ""}
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* 목록 본문 */}
       <section className="mt-4 px-5">

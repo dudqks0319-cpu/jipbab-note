@@ -281,15 +281,30 @@ export function useAuth(): UseAuthResult {
 
       try {
         const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/mypage` : undefined;
-        const { error: signInError } = await client.auth.signInWithOAuth({
+        const { data, error: signInError } = await client.auth.signInWithOAuth({
           provider,
           options: {
             redirectTo,
+            skipBrowserRedirect: true,
+            queryParams:
+              provider === "google"
+                ? {
+                    access_type: "offline",
+                    prompt: "select_account",
+                  }
+                : undefined,
           },
         });
 
         if (signInError) {
           throw signInError;
+        }
+
+        if (data.url && typeof window !== "undefined") {
+          const opened = window.open(data.url, provider === "google" ? "_system" : "_self", "noopener,noreferrer");
+          if (!opened) {
+            window.location.assign(data.url);
+          }
         }
       } catch (caught) {
         const message = caught instanceof Error ? caught.message : "로그인 요청 중 오류가 발생했습니다.";

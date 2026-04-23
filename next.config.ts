@@ -2,12 +2,12 @@ import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
 const scriptSrc = isProduction
-  ? "script-src 'self' 'unsafe-inline'"
-  : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+  ? "script-src 'self' 'unsafe-inline' https://t1.kakaocdn.net"
+  : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://t1.kakaocdn.net";
 
 const connectSrc = isProduction
-  ? "connect-src 'self' https://*.supabase.co https://openapi.foodsafetykorea.go.kr https://world.openfoodfacts.org"
-  : "connect-src 'self' ws: wss: http://localhost:* http://127.0.0.1:* https://*.supabase.co https://openapi.foodsafetykorea.go.kr https://world.openfoodfacts.org";
+  ? "connect-src 'self' https://*.supabase.co https://openapi.foodsafetykorea.go.kr https://world.openfoodfacts.org https://*.kakao.com https://*.kakaocdn.net"
+  : "connect-src 'self' ws: wss: http://localhost:* http://127.0.0.1:* https://*.supabase.co https://openapi.foodsafetykorea.go.kr https://world.openfoodfacts.org https://*.kakao.com https://*.kakaocdn.net";
 
 const nextConfig: NextConfig = {
   devIndicators: false,

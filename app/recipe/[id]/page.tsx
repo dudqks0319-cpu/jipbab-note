@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
+import RecipeActionPanel from "@/components/recipe/RecipeActionPanel";
+import { getSampleRecipeDetail } from "@/lib/sample-recipes";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
@@ -249,6 +251,11 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
 }
 
 async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
+  const fromSample = getSampleRecipeDetail(recipeId);
+  if (fromSample) {
+    return fromSample;
+  }
+
   const fromSupabase = await fetchRecipeDetailFromSupabase(recipeId);
   if (fromSupabase) {
     return fromSupabase;
@@ -359,6 +366,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           ))}
         </section>
       )}
+
+      <RecipeActionPanel
+        recipeId={recipe.id}
+        recipeName={recipe.name}
+        category={recipe.category}
+        imageUrl={heroImage}
+        ingredientList={recipe.ingredientList}
+      />
 
       {/* 재료 목록 */}
       <section className="mt-5 px-5">

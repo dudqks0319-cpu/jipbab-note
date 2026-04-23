@@ -1,5 +1,6 @@
 // 이 파일은 앱 전체의 뼈대(레이아웃)를 담당합니다
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import BottomTab from '@/components/layout/BottomTab'
@@ -7,6 +8,14 @@ import BottomTab from '@/components/layout/BottomTab'
 export const metadata: Metadata = {
   title: '집밥노트',
   description: '냉장고 속 재료로 오늘 뭐 해먹지? 집밥노트가 알려줄게!',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
@@ -23,6 +32,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#f3efe7] antialiased">
+        <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js" strategy="afterInteractive" />
         {/* 배경을 부드럽게 깔고 중앙에 모바일 앱 프레임을 고정합니다 */}
         <div className="bg-app-shell relative min-h-screen overflow-x-hidden">
           <div className="pointer-events-none absolute left-1/2 top-[-7rem] h-64 w-64 -translate-x-1/2 rounded-full bg-mint-200/55 blur-3xl" />

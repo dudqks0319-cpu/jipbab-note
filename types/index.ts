@@ -19,6 +19,7 @@ export interface IngredientRecord {
   id: string;
   deviceId: string;
   userId: string | null;
+  familyFridgeId?: string | null;
   name: string;
   category: IngredientCategory | null;
   storageType: IngredientStorageType;
@@ -35,6 +36,7 @@ export interface IngredientFormPayload {
   name: string;
   category?: IngredientCategory | null;
   storageType?: IngredientStorageType;
+  familyFridgeId?: string | null;
   quantity?: string | null;
   expiryDate?: string | null;
   barcode?: string | null;
@@ -45,6 +47,7 @@ export interface IngredientFormPayload {
 export interface IngredientInsertPayload {
   device_id: string;
   user_id?: string | null;
+  family_fridge_id?: string | null;
   name: string;
   category?: IngredientCategory | null;
   storage_type?: IngredientStorageType;
@@ -56,6 +59,7 @@ export interface IngredientInsertPayload {
 }
 
 export interface IngredientUpdatePayload {
+  family_fridge_id?: string | null;
   name?: string;
   category?: IngredientCategory | null;
   storage_type?: IngredientStorageType;
@@ -107,6 +111,11 @@ export interface CommunityPostRecord {
   authorName: string;
   title: string;
   content: string;
+  postType: CommunityPostType;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  recipeId: string | null;
+  consentRecipeUse: boolean;
   commentCount: number;
   likeCount: number;
   likedByMe: boolean;
@@ -133,9 +142,16 @@ export interface CommunityLikeRecord {
   createdAt: string;
 }
 
+export type CommunityPostType = "story" | "recipe" | "fridge";
+
 export interface CommunityPostPayload {
   title: string;
   content: string;
+  postType?: CommunityPostType;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  recipeId?: string | null;
+  consentRecipeUse?: boolean;
 }
 
 export interface CommunityCommentPayload {
@@ -158,6 +174,10 @@ export const RECIPE_CATEGORIES = [
   "디저트",
   "국·찌개",
   "반찬",
+  "밥",
+  "일품",
+  "샐러드",
+  "면요리",
   "기타",
 ] as const;
 

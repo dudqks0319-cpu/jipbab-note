@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIngredients } from "@/hooks/useIngredients";
 import { getDeviceId } from "@/lib/device-id";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import { getSampleRecipeRecords } from "@/lib/sample-recipes";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -126,15 +127,25 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         }
 
         const recipesFromApi = Array.isArray(payload.recipes) ? payload.recipes : [];
-        setRawRecipes(recipesFromApi);
-        setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : 0);
+        const sampleRecipes =
+          recipesFromApi.length === 0 ? getSampleRecipeRecords(targetQuery, targetCategory) : [];
+        const nextRecipes = recipesFromApi.length > 0 ? recipesFromApi : sampleRecipes;
+        setRawRecipes(nextRecipes);
+        setTotalCount(
+          recipesFromApi.length > 0
+            ? Number.isFinite(payload.totalCount)
+              ? payload.totalCount
+              : recipesFromApi.length
+            : sampleRecipes.length,
+        );
       } catch (caught) {
         if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return;
         }
-        setRawRecipes([]);
-        setTotalCount(0);
-        setError(caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
+        const sampleRecipes = getSampleRecipeRecords(targetQuery, targetCategory);
+        setRawRecipes(sampleRecipes);
+        setTotalCount(sampleRecipes.length);
+        setError(sampleRecipes.length > 0 ? null : caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);

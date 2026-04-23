@@ -5,8 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { consumeQuantityText } from "@/lib/ingredient-quantity";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toDateOnlyString } from "@/lib/utils";
+import { getActiveFamilyFridgeId } from "@/hooks/useFamilyFridge";
 import type {
   IngredientFormPayload,
   IngredientInsertPayload,
@@ -23,6 +25,7 @@ type RawIngredientRow = {
   id: string;
   device_id: string;
   user_id: string | null;
+  family_fridge_id: string | null;
   name: string;
   category: IngredientRecord["category"];
   storage_type: IngredientStorageType;
@@ -53,6 +56,7 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
     id: row.id,
     deviceId: row.device_id,
     userId: row.user_id,
+    familyFridgeId: row.family_fridge_id,
     name: row.name,
     category: row.category,
     storageType: row.storage_type,
@@ -66,7 +70,7 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
   };
 }
 
-function safeReadLocalIngredients(deviceId: string): IngredientRecord[] {
+function safeReadLocalIngredients(deviceId: string, familyFridgeId: string | null): IngredientRecord[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -95,7 +99,7 @@ function safeReadLocalIngredients(deviceId: string): IngredientRecord[] {
           typeof item.name === "string"
         );
       })
-      .filter((item) => item.deviceId === deviceId);
+      .filter((item) => item.deviceId === deviceId || (!!familyFridgeId && item.familyFridgeId === familyFridgeId));
   } catch {
     return [];
   }
@@ -109,7 +113,7 @@ function safeWriteLocalIngredients(nextItems: IngredientRecord[]): void {
 }
 
 function upsertLocalIngredient(nextItem: IngredientRecord): IngredientRecord[] {
-  const current = safeReadLocalIngredients(nextItem.deviceId);
+  const current = safeReadLocalIngredients(nextItem.deviceId, nextItem.familyFridgeId ?? null);
   const index = current.findIndex((item) => item.id === nextItem.id);
   if (index === -1) {
     const next = [nextItem, ...current];
@@ -123,8 +127,8 @@ function upsertLocalIngredient(nextItem: IngredientRecord): IngredientRecord[] {
   return next;
 }
 
-function removeLocalIngredient(deviceId: string, ingredientId: string): IngredientRecord[] {
-  const current = safeReadLocalIngredients(deviceId);
+function removeLocalIngredient(deviceId: string, familyFridgeId: string | null, ingredientId: string): IngredientRecord[] {
+  const current = safeReadLocalIngredients(deviceId, familyFridgeId);
   const next = current.filter((item) => item.id !== ingredientId);
   safeWriteLocalIngredients(next);
   return next;
@@ -140,6 +144,7 @@ function toInsertPayload(
   return {
     device_id: deviceId,
     user_id: userId,
+    family_fridge_id: normalized.familyFridgeId ?? null,
     name: normalized.name,
     category: normalized.category,
     storage_type: normalized.storageType,
@@ -155,6 +160,7 @@ function toUpdatePayload(payload: IngredientFormPayload): IngredientUpdatePayloa
   const normalized = normalizeFormPayload(payload);
 
   return {
+    family_fridge_id: normalized.familyFridgeId ?? null,
     name: normalized.name,
     category: normalized.category,
     storage_type: normalized.storageType,
@@ -178,6 +184,7 @@ function makeLocalRecord(
     id: uuidv4(),
     deviceId,
     userId,
+    familyFridgeId: normalized.familyFridgeId ?? null,
     name: normalized.name,
     category: normalized.category ?? null,
     storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
@@ -204,10 +211,12 @@ export interface UseIngredientsResult {
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
   updateIngredient: (ingredientId: string, payload: IngredientFormPayload) => Promise<IngredientRecord | null>;
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
+  consumeIngredients: (recipeIngredientTexts: string[]) => Promise<number>;
 }
 
 export function useIngredients(): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
+  const familyFridgeId = useMemo(() => getActiveFamilyFridgeId(), []);
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<IngredientQueryError | null>(null);
@@ -232,14 +241,15 @@ export function useIngredients(): UseIngredientsResult {
       safeWriteLocalIngredients(mapped);
       return mapped;
     } catch (caught) {
-      const fallback = safeReadLocalIngredients(deviceId);
+      const fallback = safeReadLocalIngredients(deviceId, familyFridgeId);
       setIngredients(fallback);
-      setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+      const message = caught instanceof Error ? caught.message : "재료 목록 조회 실패";
+      setError(message.includes("환경변수") ? null : makeError(message, "supabase"));
       return fallback;
     } finally {
       setLoading(false);
     }
-  }, [deviceId]);
+  }, [deviceId, familyFridgeId]);
 
   const fetchIngredient = useCallback(
     async (ingredientId: string): Promise<IngredientRecord | null> => {
@@ -260,14 +270,14 @@ export function useIngredients(): UseIngredientsResult {
 
         return data ? rowToRecord(data as RawIngredientRow) : null;
       } catch (caught) {
-        const fallback = safeReadLocalIngredients(deviceId).find((item) => item.id === ingredientId) ?? null;
+        const fallback = safeReadLocalIngredients(deviceId, familyFridgeId).find((item) => item.id === ingredientId) ?? null;
         setError(makeError(caught instanceof Error ? caught.message : "재료 단건 조회 실패", "supabase"));
         return fallback;
       } finally {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, familyFridgeId],
   );
 
   const addIngredient = useCallback(
@@ -281,7 +291,7 @@ export function useIngredients(): UseIngredientsResult {
         const { data: authData } = await client.auth.getUser();
         userId = authData.user?.id ?? null;
 
-        const insertPayload = toInsertPayload(deviceId, payload, userId);
+        const insertPayload = toInsertPayload(deviceId, { ...payload, familyFridgeId }, userId);
         const { data, error: queryError } = await client
           .from("ingredients")
           .insert(insertPayload)
@@ -296,17 +306,16 @@ export function useIngredients(): UseIngredientsResult {
         setIngredients((prev) => [nextRecord, ...prev]);
         upsertLocalIngredient(nextRecord);
         return nextRecord;
-      } catch (caught) {
-        const nextLocal = makeLocalRecord(deviceId, payload, userId);
+      } catch {
+        const nextLocal = makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 추가 실패", "supabase"));
         return nextLocal;
       } finally {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, familyFridgeId],
   );
 
   const updateIngredient = useCallback(
@@ -316,7 +325,10 @@ export function useIngredients(): UseIngredientsResult {
 
       try {
         const client = getSupabaseClient({ deviceId });
-        const updatePayload = toUpdatePayload(payload);
+        const updatePayload = toUpdatePayload({
+          ...payload,
+          familyFridgeId: payload.familyFridgeId ?? familyFridgeId,
+        });
 
         const { data, error: queryError } = await client
           .from("ingredients")
@@ -338,7 +350,7 @@ export function useIngredients(): UseIngredientsResult {
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
-        const current = safeReadLocalIngredients(deviceId);
+        const current = safeReadLocalIngredients(deviceId, familyFridgeId);
         const target = current.find((item) => item.id === ingredientId);
         if (!target) {
           setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
@@ -348,6 +360,7 @@ export function useIngredients(): UseIngredientsResult {
         const normalized = normalizeFormPayload(payload);
         const nextRecord: IngredientRecord = {
           ...target,
+          familyFridgeId: normalized.familyFridgeId ?? target.familyFridgeId ?? null,
           name: normalized.name,
           category: normalized.category ?? null,
           storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
@@ -361,13 +374,12 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
         return nextRecord;
       } finally {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, familyFridgeId],
   );
 
   const deleteIngredient = useCallback(
@@ -384,18 +396,57 @@ export function useIngredients(): UseIngredientsResult {
         }
 
         setIngredients((prev) => prev.filter((item) => item.id !== ingredientId));
-        removeLocalIngredient(deviceId, ingredientId);
+        removeLocalIngredient(deviceId, familyFridgeId, ingredientId);
         return true;
-      } catch (caught) {
-        const nextItems = removeLocalIngredient(deviceId, ingredientId);
+      } catch {
+        const nextItems = removeLocalIngredient(deviceId, familyFridgeId, ingredientId);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 삭제 실패", "supabase"));
         return true;
       } finally {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, familyFridgeId],
+  );
+
+  const consumeIngredients = useCallback(
+    async (recipeIngredientTexts: string[]): Promise<number> => {
+      let changedCount = 0;
+
+      for (const recipeIngredientText of recipeIngredientTexts) {
+        const normalizedRecipeText = recipeIngredientText.replace(/\s+/g, "").toLowerCase();
+        const target = ingredients.find((ingredient) => {
+          const normalizedName = ingredient.name.replace(/\s+/g, "").toLowerCase();
+          return normalizedRecipeText.includes(normalizedName) || normalizedName.includes(normalizedRecipeText);
+        });
+
+        if (!target) {
+          continue;
+        }
+
+        const nextQuantity = consumeQuantityText(target.quantity, recipeIngredientText);
+        if (nextQuantity.depleted) {
+          await deleteIngredient(target.id);
+        } else {
+          await updateIngredient(target.id, {
+            name: target.name,
+            category: target.category,
+            storageType: target.storageType,
+            quantity: nextQuantity.quantity,
+            expiryDate: target.expiryDate,
+            barcode: target.barcode,
+            imageUrl: target.imageUrl,
+            memo: target.memo,
+            familyFridgeId: target.familyFridgeId ?? familyFridgeId,
+          });
+        }
+
+        changedCount += 1;
+      }
+
+      return changedCount;
+    },
+    [deleteIngredient, familyFridgeId, ingredients, updateIngredient],
   );
 
   useEffect(() => {
@@ -411,5 +462,6 @@ export function useIngredients(): UseIngredientsResult {
     addIngredient,
     updateIngredient,
     deleteIngredient,
+    consumeIngredients,
   };
 }

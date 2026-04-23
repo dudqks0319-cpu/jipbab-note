@@ -1,11 +1,12 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle } from 'lucide-react'
+import { type TouchEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle, Trash2 } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
 import { getDeviceId } from '@/lib/device-id'
+import { mergeQuantityText, normalizeIngredientKey } from '@/lib/ingredient-quantity'
 import { getCategoryEmoji, getCategoryBg, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
@@ -53,12 +54,27 @@ const initialFormState: IngredientFormState = {
   memo: '',
 }
 
+const getDefaultCategoryByStorage = (storageType: IngredientStorageType): IngredientCategory => {
+  if (storageType === '실온') return '양념'
+  if (storageType === '냉동') return '육류'
+  return '채소'
+}
+
+const getNextAddFormState = (current: IngredientFormState): IngredientFormState => ({
+  ...initialFormState,
+  category: current.category,
+  storage_type: current.storage_type,
+})
+
 export default function FridgePage() {
   const { ingredients, loading, error, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
   const [activeTab, setActiveTab] = useState<string>('전체')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [swipedId, setSwipedId] = useState<string | null>(null)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const touchStartXRef = useRef<number | null>(null)
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -94,6 +110,7 @@ export default function FridgePage() {
     setSuggestionError(null)
     setHasFetchedSuggestions(false)
     setEditingId(null)
+    setSaveMessage(null)
   }
 
   const fetchSuggestions = useCallback(
@@ -211,11 +228,40 @@ export default function FridgePage() {
 
     if (editingId) {
       await updateIngredient(editingId, payload)
+      setSaveMessage('재료를 수정했습니다.')
+      resetForm()
+      setShowAddModal(false)
     } else {
-      await addIngredient(payload)
+      const duplicate = ingredients.find((ingredient) => {
+        return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(form.name)
+      })
+
+      if (duplicate) {
+        const shouldMerge = window.confirm(`${duplicate.name}이(가) 이미 있습니다. 수량과 메모를 합칠까요?`)
+        if (!shouldMerge) {
+          return
+        }
+
+        await updateIngredient(duplicate.id, {
+          name: duplicate.name,
+          category: duplicate.category ?? form.category,
+          storageType: duplicate.storageType,
+          quantity: mergeQuantityText(duplicate.quantity, form.quantity),
+          expiryDate: duplicate.expiryDate || form.expiry_date || null,
+          barcode: duplicate.barcode,
+          imageUrl: duplicate.imageUrl,
+          memo: [duplicate.memo, form.memo].filter(Boolean).join(' / ') || null,
+          familyFridgeId: duplicate.familyFridgeId ?? null,
+        })
+        setSaveMessage('기존 재료와 합쳤습니다. 바로 다음 재료를 추가할 수 있어요.')
+      } else {
+        await addIngredient(payload)
+        setSaveMessage('저장했습니다. 이어서 다음 재료를 추가해 주세요.')
+      }
+
+      setForm((current) => getNextAddFormState(current))
+      setSuggestionKeyword('')
     }
-    resetForm()
-    setShowAddModal(false)
   }
 
   const handleEdit = (ingredient: IngredientRecord) => {
@@ -235,6 +281,38 @@ export default function FridgePage() {
   const handleDelete = async (id: string) => {
     await deleteIngredient(id)
     setMenuOpenId(null)
+    setSwipedId(null)
+  }
+
+  const handleStorageTypeChange = (storageType: IngredientStorageType) => {
+    setForm((prev) => ({
+      ...prev,
+      storage_type: storageType,
+      category: getDefaultCategoryByStorage(storageType),
+    }))
+  }
+
+  const handleTouchStart = (event: TouchEvent, ingredientId: string) => {
+    touchStartXRef.current = event.touches[0]?.clientX ?? null
+    if (swipedId && swipedId !== ingredientId) {
+      setSwipedId(null)
+    }
+  }
+
+  const handleTouchEnd = (event: TouchEvent, ingredientId: string) => {
+    const startX = touchStartXRef.current
+    touchStartXRef.current = null
+    if (startX === null) return
+
+    const endX = event.changedTouches[0]?.clientX ?? startX
+    const deltaX = endX - startX
+    if (deltaX < -42) {
+      setSwipedId(ingredientId)
+      return
+    }
+    if (deltaX > 24) {
+      setSwipedId(null)
+    }
   }
 
   return (
@@ -322,52 +400,72 @@ export default function FridgePage() {
               return (
                 <div
                   key={item.id}
-                  className="relative overflow-hidden rounded-3xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-card"
+                  className="relative overflow-hidden rounded-3xl bg-rose-500 shadow-soft"
+                  onTouchStart={(event) => handleTouchStart(event, item.id)}
+                  onTouchEnd={(event) => handleTouchEnd(event, item.id)}
                 >
-                  {/* 재료 이미지 영역 */}
-                  <div className={`flex h-28 items-center justify-center ${getCategoryBg(item.category)}`}>
-                    <span className="text-5xl">{getCategoryEmoji(item.category)}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleDelete(item.id)
+                    }}
+                    className="absolute inset-y-0 right-0 flex w-20 items-center justify-center text-white"
+                    aria-label={`${item.name} 삭제`}
+                  >
+                    <Trash2 size={20} />
+                  </button>
 
-                    {/* 더보기 메뉴 버튼 */}
-                    <button
-                      onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
-                      aria-label={`${item.name} 메뉴 열기`}
-                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/80"
-                    >
-                      <MoreVertical size={14} className="text-gray-500" />
-                    </button>
+                  <div
+                    className={`relative overflow-hidden rounded-3xl bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-card ${
+                      swipedId === item.id ? '-translate-x-20' : 'translate-x-0'
+                    }`}
+                  >
+                    {/* 재료 이미지 영역 */}
+                    <div className={`flex h-28 items-center justify-center ${getCategoryBg(item.category)}`}>
+                      <span className="text-5xl">{getCategoryEmoji(item.category)}</span>
 
-                    {/* 수정/삭제 팝업 */}
-                    {menuOpenId === item.id && (
-                      <div className="absolute right-2 top-10 z-10 overflow-hidden rounded-2xl bg-white shadow-card">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          ✏️ 수정
-                        </button>
-                        <button
-                          onClick={() => {
-                            void handleDelete(item.id)
-                          }}
-                          className="block w-full px-4 py-2.5 text-left text-sm text-rose-500 hover:bg-rose-50"
-                        >
-                          🗑️ 삭제
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                      {/* 더보기 메뉴 버튼 */}
+                      <button
+                        onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
+                        aria-label={`${item.name} 메뉴 열기`}
+                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/80"
+                      >
+                        <MoreVertical size={14} className="text-gray-500" />
+                      </button>
 
-                  {/* 재료 정보 */}
-                  <div className="p-3">
-                    <h4 className="text-base font-bold text-gray-800">{item.name}</h4>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusBg}`}>
-                        {statusLabel}
-                      </span>
-                      {item.expiryDate && (
-                        <span className="text-xs text-gray-400">{item.expiryDate.replace(/-/g, '.')}</span>
+                      {/* 수정/삭제 팝업 */}
+                      {menuOpenId === item.id && (
+                        <div className="absolute right-2 top-10 z-10 overflow-hidden rounded-2xl bg-white shadow-card">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            ✏️ 수정
+                          </button>
+                          <button
+                            onClick={() => {
+                              void handleDelete(item.id)
+                            }}
+                            className="block w-full px-4 py-2.5 text-left text-sm text-rose-500 hover:bg-rose-50"
+                          >
+                            🗑️ 삭제
+                          </button>
+                        </div>
                       )}
+                    </div>
+
+                    {/* 재료 정보 */}
+                    <div className="p-3">
+                      <h4 className="text-base font-bold text-gray-800">{item.name}</h4>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusBg}`}>
+                          {statusLabel}
+                        </span>
+                        {item.expiryDate && (
+                          <span className="text-xs text-gray-400">{item.expiryDate.replace(/-/g, '.')}</span>
+                        )}
+                      </div>
+                      {item.quantity ? <p className="mt-1 text-xs text-gray-400">{item.quantity}</p> : null}
                     </div>
                   </div>
                 </div>
@@ -391,7 +489,7 @@ export default function FridgePage() {
             role="dialog"
             aria-modal="true"
             aria-label={editingId ? '재료 수정 모달' : '재료 추가 모달'}
-            className="animate-slide-up relative w-full max-w-[430px] rounded-t-[2rem] bg-white px-5 pb-8 pt-4"
+            className="animate-slide-up relative max-h-[88dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[2rem] bg-white px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4"
           >
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-gray-200" />
 
@@ -408,6 +506,12 @@ export default function FridgePage() {
                 <X size={18} className="text-gray-500" />
               </button>
             </div>
+
+            {saveMessage ? (
+              <div className="mb-4 rounded-2xl bg-mint-50 px-4 py-3 text-sm font-semibold text-mint-500">
+                {saveMessage}
+              </div>
+            ) : null}
 
             {/* 재료명 */}
             <div className="mb-4">
@@ -580,7 +684,8 @@ export default function FridgePage() {
                 {(['냉장', '냉동', '실온'] as const).map((type) => (
                   <button
                     key={type}
-                    onClick={() => setForm({ ...form, storage_type: type })}
+                    type="button"
+                    onClick={() => handleStorageTypeChange(type)}
                     className={`rounded-2xl py-3 text-sm font-bold transition-all ${
                       form.storage_type === type ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
                     }`}
@@ -594,7 +699,9 @@ export default function FridgePage() {
             {/* 수량 + 유통기한 */}
             <div className="mb-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">수량</label>
+                <label className="mb-2 block text-sm font-bold text-gray-700">
+                  수량 {form.category === '양념' || form.storage_type === '실온' ? <span className="text-xs text-gray-400">(선택)</span> : null}
+                </label>
                 <input
                   type="text"
                   placeholder="예: 500g"
@@ -604,7 +711,9 @@ export default function FridgePage() {
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">유통기한</label>
+                <label className="mb-2 block text-sm font-bold text-gray-700">
+                  유통기한 {form.category === '양념' || form.storage_type === '실온' ? <span className="text-xs text-gray-400">(나중에 입력 가능)</span> : null}
+                </label>
                 <input
                   type="date"
                   value={form.expiry_date}

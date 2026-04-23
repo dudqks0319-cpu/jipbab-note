@@ -1,12 +1,22 @@
 // 이 파일은 커뮤니티 페이지를 담당하며 글/댓글/좋아요 CRUD UI를 제공합니다.
 'use client'
 
-import { FormEvent, useState } from 'react'
-import { Heart, LoaderCircle, MessageCircle, Pencil, RefreshCw, SendHorizontal, Trash2 } from 'lucide-react'
+import { FormEvent, useEffect, useState } from 'react'
+import { BookOpen, Heart, Image as ImageIcon, Link2, LoaderCircle, MessageCircle, Pencil, RefreshCw, Refrigerator, SendHorizontal, Trash2 } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { useCommunity } from '@/hooks/useCommunity'
-import type { CommunityCommentRecord, CommunityPostRecord } from '@/types'
+import { useIngredients } from '@/hooks/useIngredients'
+import type { CommunityCommentRecord, CommunityPostRecord, CommunityPostType } from '@/types'
+
+const COMMUNITY_DRAFT_KEY = 'jipbab-note-community-draft'
+const RECIPE_ADOPTION_LIKE_THRESHOLD = 10
+
+const postTypeLabels: Record<CommunityPostType, string> = {
+  story: '집밥 이야기',
+  recipe: '레시피 공유',
+  fridge: '냉장고 공유',
+}
 
 function formatDateLabel(value: string): string {
   const date = new Date(value)
@@ -46,13 +56,58 @@ function canManageRecord(
 export default function CommunityPage() {
   const auth = useAuth()
   const community = useCommunity()
+  const { ingredients } = useIngredients()
 
   const [postTitle, setPostTitle] = useState('')
   const [postContent, setPostContent] = useState('')
+  const [postType, setPostType] = useState<CommunityPostType>('story')
+  const [postImageUrl, setPostImageUrl] = useState('')
+  const [postLinkUrl, setPostLinkUrl] = useState('')
+  const [recipeId, setRecipeId] = useState<string | null>(null)
+  const [consentRecipeUse, setConsentRecipeUse] = useState(false)
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({})
 
   const isSubmitting = community.loading || community.writing
+
+  const resetPostForm = () => {
+    setEditingPostId(null)
+    setPostTitle('')
+    setPostContent('')
+    setPostType('story')
+    setPostImageUrl('')
+    setPostLinkUrl('')
+    setRecipeId(null)
+    setConsentRecipeUse(false)
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const raw = window.localStorage.getItem(COMMUNITY_DRAFT_KEY)
+    if (!raw) return
+
+    try {
+      const draft = JSON.parse(raw) as Partial<{
+        postType: CommunityPostType
+        title: string
+        content: string
+        imageUrl: string | null
+        linkUrl: string | null
+        recipeId: string | null
+      }>
+      setPostType(draft.postType === 'recipe' || draft.postType === 'fridge' ? draft.postType : 'story')
+      setPostTitle(draft.title ?? '')
+      setPostContent(draft.content ?? '')
+      setPostImageUrl(draft.imageUrl ?? '')
+      setPostLinkUrl(draft.linkUrl ?? '')
+      setRecipeId(draft.recipeId ?? null)
+    } catch {
+      // 잘못된 임시 글은 조용히 버립니다.
+    } finally {
+      window.localStorage.removeItem(COMMUNITY_DRAFT_KEY)
+    }
+  }, [])
 
   const handleSubmitPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -61,28 +116,33 @@ export default function CommunityPage() {
       return
     }
 
+    if (postType === 'recipe' && !consentRecipeUse) {
+      return
+    }
+
+    const payload = {
+      title: postTitle,
+      content: postContent,
+      postType,
+      imageUrl: postImageUrl || null,
+      linkUrl: postLinkUrl || null,
+      recipeId,
+      consentRecipeUse,
+    }
+
     if (editingPostId) {
-      const updated = await community.updatePost(editingPostId, {
-        title: postTitle,
-        content: postContent,
-      })
+      const updated = await community.updatePost(editingPostId, payload)
 
       if (updated) {
-        setEditingPostId(null)
-        setPostTitle('')
-        setPostContent('')
+        resetPostForm()
       }
       return
     }
 
-    const created = await community.createPost({
-      title: postTitle,
-      content: postContent,
-    })
+    const created = await community.createPost(payload)
 
     if (created) {
-      setPostTitle('')
-      setPostContent('')
+      resetPostForm()
     }
   }
 
@@ -90,12 +150,40 @@ export default function CommunityPage() {
     setEditingPostId(post.id)
     setPostTitle(post.title)
     setPostContent(post.content)
+    setPostType(post.postType)
+    setPostImageUrl(post.imageUrl ?? '')
+    setPostLinkUrl(post.linkUrl ?? '')
+    setRecipeId(post.recipeId)
+    setConsentRecipeUse(post.consentRecipeUse)
   }
 
   const cancelEditPost = () => {
-    setEditingPostId(null)
-    setPostTitle('')
-    setPostContent('')
+    resetPostForm()
+  }
+
+  const fillFridgeShareDraft = () => {
+    const summary = ingredients.length === 0
+      ? '아직 등록된 재료가 없습니다.'
+      : ingredients
+          .slice(0, 20)
+          .map((ingredient) => `- ${ingredient.name}${ingredient.quantity ? ` (${ingredient.quantity})` : ''}`)
+          .join('\n')
+
+    setPostType('fridge')
+    setPostTitle('우리집 냉장고 재료 공유')
+    setPostContent(`오늘 우리집 냉장고에는 이런 재료가 있어요.\n\n${summary}`)
+  }
+
+  const handleImageFileChange = (file: File | null) => {
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setPostImageUrl(reader.result)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const submitComment = async (postId: string) => {
@@ -183,6 +271,74 @@ export default function CommunityPage() {
           maxLength={1200}
         />
 
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {(['story', 'recipe', 'fridge'] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setPostType(type)}
+              className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-bold ${
+                postType === type ? 'bg-mint-100 text-mint-500' : 'bg-gray-100 text-gray-500'
+              }`}
+            >
+              {type === 'recipe' ? <BookOpen size={13} /> : type === 'fridge' ? <Refrigerator size={13} /> : null}
+              {postTypeLabels[type]}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-2 grid grid-cols-1 gap-2">
+          <label className="flex items-center gap-2 rounded-xl border border-gray-100 px-3 py-2 text-sm text-gray-500">
+            <Link2 size={15} className="text-gray-400" />
+            <input
+              value={postLinkUrl}
+              onChange={(event) => setPostLinkUrl(event.target.value)}
+              placeholder="공유할 링크를 붙여넣으세요"
+              className="min-w-0 flex-1 outline-none"
+            />
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-100 px-3 py-2 text-sm text-gray-500">
+            <ImageIcon size={15} className="text-gray-400" />
+            <span className="shrink-0">사진 올리기</span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)}
+            />
+            {postImageUrl ? <span className="truncate text-xs text-mint-500">사진 선택됨</span> : null}
+          </label>
+        </div>
+
+        {postImageUrl ? (
+          <div className="mt-2 h-36 overflow-hidden rounded-2xl bg-gray-100">
+            {/* 사용자가 올린 사진 미리보기입니다. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={postImageUrl} alt="커뮤니티 첨부 사진" className="h-full w-full object-cover" />
+          </div>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={fillFridgeShareDraft}
+            className="rounded-full bg-mint-50 px-3 py-1.5 text-xs font-bold text-mint-500"
+          >
+            내 냉장고 재료 공유
+          </button>
+          {postType === 'recipe' ? (
+            <label className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+              <input
+                type="checkbox"
+                checked={consentRecipeUse}
+                onChange={(event) => setConsentRecipeUse(event.target.checked)}
+              />
+              앱 내 레시피 채택/활용에 동의
+            </label>
+          ) : null}
+        </div>
+
         <div className="mt-3 flex items-center justify-between">
           <p className="text-xs text-gray-400">{postContent.length}/1200</p>
           <div className="flex items-center gap-2">
@@ -197,7 +353,7 @@ export default function CommunityPage() {
             ) : null}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (postType === 'recipe' && !consentRecipeUse)}
               className="rounded-full bg-mint-300 px-5 py-2 text-sm font-bold text-white shadow-soft disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? '저장 중...' : editingPostId ? '수정 완료' : '글 올리기'}
@@ -260,8 +416,44 @@ export default function CommunityPage() {
                 ) : null}
               </div>
 
-              <h4 className="mt-3 text-base font-bold text-gray-800">{post.title}</h4>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-500">
+                  {postTypeLabels[post.postType]}
+                </span>
+                {post.postType === 'recipe' && post.consentRecipeUse ? (
+                  <span className="rounded-full bg-mint-50 px-2.5 py-1 text-[11px] font-bold text-mint-500">
+                    활용 동의
+                  </span>
+                ) : null}
+                {post.postType === 'recipe' && post.likeCount >= RECIPE_ADOPTION_LIKE_THRESHOLD ? (
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                    채택 레시피 후보
+                  </span>
+                ) : null}
+              </div>
+
+              <h4 className="mt-2 text-base font-bold text-gray-800">{post.title}</h4>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">{post.content}</p>
+
+              {post.imageUrl ? (
+                <div className="mt-3 h-48 overflow-hidden rounded-2xl bg-gray-100">
+                  {/* 커뮤니티 첨부 이미지입니다. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={post.imageUrl} alt={`${post.title} 첨부 이미지`} className="h-full w-full object-cover" />
+                </div>
+              ) : null}
+
+              {post.linkUrl ? (
+                <a
+                  href={post.linkUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 flex items-center gap-2 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600"
+                >
+                  <Link2 size={13} />
+                  <span className="truncate">{post.linkUrl}</span>
+                </a>
+              ) : null}
 
               <div className="mt-3 flex items-center gap-3 border-t border-gray-100 pt-3">
                 <button

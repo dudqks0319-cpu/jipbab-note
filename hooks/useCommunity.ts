@@ -196,6 +196,7 @@ async function resolveViewer(client: SupabaseClient | null, deviceId: string): P
 
 function mapPostRow(row: Record<string, unknown>, fallbackDeviceId: string): CommunityPostRecord {
   const createdAt = readString(row.created_at ?? row.createdAt, new Date().toISOString());
+  const postType = readString(row.post_type ?? row.postType, "story");
 
   return {
     id: readString(row.id, uuidv4()),
@@ -204,6 +205,11 @@ function mapPostRow(row: Record<string, unknown>, fallbackDeviceId: string): Com
     authorName: readString(row.author_name ?? row.authorName, "집밥러"),
     title: readString(row.title, "제목 없음"),
     content: readString(row.content),
+    postType: postType === "recipe" || postType === "fridge" ? postType : "story",
+    imageUrl: readNullableString(row.image_url ?? row.imageUrl),
+    linkUrl: readNullableString(row.link_url ?? row.linkUrl),
+    recipeId: readNullableString(row.recipe_id ?? row.recipeId),
+    consentRecipeUse: Boolean(row.consent_recipe_use ?? row.consentRecipeUse),
     commentCount:
       typeof row.commentCount === "number" && Number.isFinite(row.commentCount) ? row.commentCount : 0,
     likeCount: typeof row.likeCount === "number" && Number.isFinite(row.likeCount) ? row.likeCount : 0,
@@ -365,9 +371,16 @@ function groupCommentsByPost(comments: CommunityCommentRecord[]): Record<string,
 }
 
 function normalizePostPayload(payload: CommunityPostPayload): CommunityPostPayload {
+  const postType = payload.postType === "recipe" || payload.postType === "fridge" ? payload.postType : "story";
+
   return {
     title: payload.title.trim(),
     content: payload.content.trim(),
+    postType,
+    imageUrl: payload.imageUrl?.trim() || null,
+    linkUrl: payload.linkUrl?.trim() || null,
+    recipeId: payload.recipeId?.trim() || null,
+    consentRecipeUse: Boolean(payload.consentRecipeUse),
   };
 }
 
@@ -385,6 +398,11 @@ async function insertPostWithOptionalAuthor(
     title: string;
     content: string;
     author_name: string;
+    post_type: string;
+    image_url: string | null;
+    link_url: string | null;
+    recipe_id: string | null;
+    consent_recipe_use: boolean;
   },
 ): Promise<Record<string, unknown>> {
   const firstAttempt = await client.from(POSTS_TABLE).insert(payload).select("*").single();
@@ -604,6 +622,11 @@ export function useCommunity(): UseCommunityResult {
           title: normalized.title,
           content: normalized.content,
           author_name: actor.authorName,
+          post_type: normalized.postType ?? "story",
+          image_url: normalized.imageUrl ?? null,
+          link_url: normalized.linkUrl ?? null,
+          recipe_id: normalized.recipeId ?? null,
+          consent_recipe_use: Boolean(normalized.consentRecipeUse),
         });
 
         const createdRecord = mapPostRow(inserted, actor.deviceId);
@@ -626,6 +649,11 @@ export function useCommunity(): UseCommunityResult {
           authorName: actor.authorName,
           title: normalized.title,
           content: normalized.content,
+          postType: normalized.postType ?? "story",
+          imageUrl: normalized.imageUrl ?? null,
+          linkUrl: normalized.linkUrl ?? null,
+          recipeId: normalized.recipeId ?? null,
+          consentRecipeUse: Boolean(normalized.consentRecipeUse),
           commentCount: 0,
           likeCount: 0,
           likedByMe: false,
@@ -686,6 +714,11 @@ export function useCommunity(): UseCommunityResult {
           .update({
             title: normalized.title,
             content: normalized.content,
+            post_type: normalized.postType ?? "story",
+            image_url: normalized.imageUrl ?? null,
+            link_url: normalized.linkUrl ?? null,
+            recipe_id: normalized.recipeId ?? null,
+            consent_recipe_use: Boolean(normalized.consentRecipeUse),
           })
           .eq("id", postId)
           .select("*")
@@ -701,6 +734,11 @@ export function useCommunity(): UseCommunityResult {
               ...targetPost,
               title: normalized.title,
               content: normalized.content,
+              postType: normalized.postType ?? targetPost.postType,
+              imageUrl: normalized.imageUrl ?? null,
+              linkUrl: normalized.linkUrl ?? null,
+              recipeId: normalized.recipeId ?? null,
+              consentRecipeUse: Boolean(normalized.consentRecipeUse),
               updatedAt: new Date().toISOString(),
             };
 
@@ -718,6 +756,11 @@ export function useCommunity(): UseCommunityResult {
           ...targetPost,
           title: normalized.title,
           content: normalized.content,
+          postType: normalized.postType ?? targetPost.postType,
+          imageUrl: normalized.imageUrl ?? null,
+          linkUrl: normalized.linkUrl ?? null,
+          recipeId: normalized.recipeId ?? null,
+          consentRecipeUse: Boolean(normalized.consentRecipeUse),
           updatedAt: new Date().toISOString(),
         };
 

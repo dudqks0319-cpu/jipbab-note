@@ -3,12 +3,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Box, BookOpen, Users, User } from 'lucide-react'
+import { Home, Box, BookOpen, ShoppingCart, Users, User } from 'lucide-react'
 
 const tabs = [
   { label: '홈', icon: Home, href: '/' },
   { label: '냉장고', icon: Box, href: '/fridge' },
   { label: '레시피', icon: BookOpen, href: '/recipe' },
+  { label: '장보기', icon: ShoppingCart, href: '/shopping' },
   { label: '커뮤니티', icon: Users, href: '/community' },
   { label: '마이', icon: User, href: '/mypage' },
 ]
@@ -18,7 +19,7 @@ export default function BottomTab() {
 
   return (
     <nav className="relative z-40 w-full border-t border-white/80 bg-[#fffdf9]/92 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))]">
-      <div className="grid grid-cols-5 gap-1">
+      <div className="grid grid-cols-6 gap-1">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href
           return (
@@ -32,19 +33,19 @@ export default function BottomTab() {
             >
               {/* 활성 탭은 볼륨감 있는 아이콘 배경을 보여줍니다 */}
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
                   isActive
                     ? 'bg-white text-mint-500 shadow-[0_4px_12px_rgba(61,191,152,0.3)]'
                     : 'text-gray-400 group-hover:text-gray-600'
                 }`}
               >
                 <tab.icon
-                  size={18}
+                  size={17}
                   className="transition-colors"
                 />
               </div>
               <span
-                className={`text-[11px] font-semibold ${
+                className={`text-[10px] font-semibold ${
                   isActive ? 'text-mint-500' : 'text-gray-400'
                 }`}
               >

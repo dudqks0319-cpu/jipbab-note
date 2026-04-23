@@ -13,7 +13,33 @@ const MAX_REQUESTS_PER_WINDOW = 45
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const RATE_LIMIT_MAX_REQUESTS = IS_PRODUCTION ? MAX_REQUESTS_PER_WINDOW : 5000
 
-const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '국·찌개', '국&찌개', '반찬', '기타'])
+const CATEGORY_ALLOWLIST = new Set([
+  '한식',
+  '중식',
+  '양식',
+  '일식',
+  '분식',
+  '디저트',
+  '국·찌개',
+  '국&찌개',
+  '반찬',
+  '밥',
+  '일품',
+  '샐러드',
+  '면요리',
+  '기타',
+])
+const DIRECT_DB_CATEGORIES = new Set(['국&찌개', '반찬', '밥', '일품', '기타'])
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  한식: ['국', '찌개', '김치', '된장', '비빔', '불고기', '나물', '전', '밥'],
+  중식: ['짜장', '짬뽕', '탕수', '마라', '깐풍', '볶음밥', '만두'],
+  양식: ['파스타', '스테이크', '샐러드', '리조또', '피자', '그라탕', '스프'],
+  일식: ['우동', '라멘', '초밥', '돈부리', '가츠', '카레', '오코노미'],
+  분식: ['떡볶이', '김밥', '라면', '국수', '만두', '튀김'],
+  디저트: ['케이크', '쿠키', '푸딩', '젤리', '아이스', '과일', '빵'],
+  샐러드: ['샐러드'],
+  면요리: ['국수', '면', '우동', '라면', '파스타'],
+}
 const QUERY_PATTERN = /^[0-9A-Za-z가-힣\s\-_/(),.&]+$/
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
@@ -90,6 +116,11 @@ const normalizeCategory = (value: string | null): string | null => {
   if (!value || value === '전체') return null
   const normalized = value === '국·찌개' ? '국&찌개' : value.trim()
   return CATEGORY_ALLOWLIST.has(normalized) ? normalized : null
+}
+
+const getCategoryKeywords = (category: string | null): string[] => {
+  if (!category) return []
+  return CATEGORY_KEYWORDS[category] ?? []
 }
 
 const getClientKey = (request: Request): string => {
@@ -246,7 +277,9 @@ const fetchRecipesFromSupabase = async (
       request = request.ilike('title', `%${query}%`)
     }
 
-    if (category) {
+    const categoryKeywords = getCategoryKeywords(category)
+
+    if (category && DIRECT_DB_CATEGORIES.has(category)) {
       request = request.eq('category', category)
     }
 
@@ -256,9 +289,22 @@ const fetchRecipesFromSupabase = async (
     }
 
     const rows = Array.isArray(data) ? (data as SupabaseRecipeRow[]) : []
+    const filteredRows =
+      categoryKeywords.length > 0
+        ? rows.filter((row) => {
+            const haystack = `${row.title} ${row.category ?? ''} ${stringifyIngredients(row.ingredients)}`.toLowerCase()
+            return categoryKeywords.some((keyword) => haystack.includes(keyword.toLowerCase()))
+          })
+        : rows
+    const rowsToReturn = categoryKeywords.length > 0 && filteredRows.length === 0 ? rows : filteredRows
+
     return {
-      recipes: rows.map(supabaseRowToRecipe),
-      totalCount: Number.isFinite(count ?? 0) ? (count ?? 0) : rows.length,
+      recipes: rowsToReturn.map(supabaseRowToRecipe),
+      totalCount: categoryKeywords.length > 0
+        ? Math.max(rowsToReturn.length, rows.length)
+        : Number.isFinite(count ?? 0)
+          ? (count ?? 0)
+          : rows.length,
     }
   } catch (error) {
     console.error('Supabase recipes 조회 실패', error)
@@ -325,7 +371,8 @@ export async function GET(request: Request) {
     )
   }
 
-  const filterSegment = buildFilterSegment(query, category)
+  const mfdsCategory = category && DIRECT_DB_CATEGORIES.has(category) ? category : null
+  const filterSegment = buildFilterSegment(query, mfdsCategory)
 
   const endpoint = `${BASE_URL}/${apiKey}/${SERVICE_ID}/json/${start}/${end}${filterSegment}`
 
