@@ -241,14 +241,16 @@ export interface CommunityQueryError {
 // 레시피 페이지에서 공통으로 사용하는 카테고리/응답/매칭 타입 정의입니다.
 export const RECIPE_CATEGORIES = [
   "전체",
+  "반찬",
+  "국·찌개",
+  "밥",
+  "일품",
   "한식",
   "중식",
   "양식",
   "일식",
   "분식",
   "디저트",
-  "국·찌개",
-  "반찬",
   "기타",
 ] as const;
 

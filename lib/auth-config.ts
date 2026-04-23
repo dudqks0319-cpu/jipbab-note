@@ -26,6 +26,7 @@ export interface AuthProviderConfig {
 
 export interface ResolvedAuthProviderOption extends AuthProviderOption {
   disabledReason: string | null;
+  userDisabledReason: string | null;
 }
 
 function parseBooleanFlag(value: string | undefined): boolean | null {
@@ -56,6 +57,14 @@ function getProviderFlag(config: AuthProviderConfig, provider: OAuthProvider): s
     return config.appleEnabled;
   }
   return config.kakaoEnabled;
+}
+
+function buildUserDisabledReason(provider: OAuthProvider, missingSupabaseKey: string | null): string {
+  if (missingSupabaseKey) {
+    return "지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.";
+  }
+
+  return `현재 ${PROVIDER_LABELS[provider]} 로그인은 준비 중입니다. 이메일로 계속해주세요.`;
 }
 
 export function resolveAuthProviderOptions(config: AuthProviderConfig): ResolvedAuthProviderOption[] {
@@ -104,6 +113,7 @@ export function resolveAuthProviderOptions(config: AuthProviderConfig): Resolved
       label: PROVIDER_LABELS[provider],
       enabled,
       disabledReason,
+      userDisabledReason: enabled ? null : buildUserDisabledReason(provider, missingSupabaseKey),
     };
   });
 

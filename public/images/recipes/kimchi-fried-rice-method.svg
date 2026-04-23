@@ -1,0 +1,111 @@
+<svg width="1080" height="1350" viewBox="0 0 1080 1350" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#111827" flood-opacity="0.10"/>
+    </filter>
+    <linearGradient id="heroWarm" x1="64" y1="260" x2="1016" y2="548" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0FDF4"/>
+      <stop offset="0.56" stop-color="#FFF7ED"/>
+      <stop offset="1" stop-color="#FEF3C7"/>
+    </linearGradient>
+    <linearGradient id="riceRed" x1="322" y1="340" x2="555" y2="511" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF8C42"/>
+      <stop offset="1" stop-color="#E94D2F"/>
+    </linearGradient>
+    <style>
+      .font { font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif; }
+      .title { font-size: 58px; font-weight: 800; fill: #333333; letter-spacing: 0; }
+      .subtitle { font-size: 28px; font-weight: 500; fill: #666666; letter-spacing: 0; }
+      .eyebrow { font-size: 24px; font-weight: 800; fill: #166534; letter-spacing: 0; }
+      .section { font-size: 29px; font-weight: 800; fill: #333333; letter-spacing: 0; }
+      .body { font-size: 26px; font-weight: 500; fill: #666666; letter-spacing: 0; }
+      .stepTitle { font-size: 30px; font-weight: 800; fill: #333333; letter-spacing: 0; }
+      .stepBody { font-size: 25px; font-weight: 500; fill: #666666; letter-spacing: 0; }
+      .stepNumber { font-size: 28px; font-weight: 900; fill: #FFFFFF; letter-spacing: 0; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#FAFAFA"/>
+  <circle cx="982" cy="142" r="156" fill="#DCFCE7"/>
+  <circle cx="72" cy="1190" r="190" fill="#FFEDD5"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="40" y="40" width="1000" height="1270" rx="36" fill="#FFFFFF"/>
+  </g>
+
+  <rect x="72" y="78" width="214" height="52" rx="26" fill="#DCFCE7"/>
+  <text x="100" y="113" class="font eyebrow">집밥노트 레시피</text>
+
+  <text x="72" y="188" class="font title">김치볶음밥 만드는 방법</text>
+  <text x="74" y="238" class="font subtitle">15분 · 쉬움 · 1인분 · 냉장고 김치 활용</text>
+
+  <rect x="64" y="274" width="952" height="284" rx="30" fill="url(#heroWarm)"/>
+  <g transform="translate(120 316)">
+    <ellipse cx="250" cy="142" rx="222" ry="90" fill="#F8FAFC"/>
+    <ellipse cx="250" cy="127" rx="190" ry="76" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="8"/>
+    <ellipse cx="250" cy="124" rx="146" ry="52" fill="url(#riceRed)"/>
+    <circle cx="252" cy="101" r="55" fill="#FFFFFF"/>
+    <circle cx="252" cy="101" r="28" fill="#FBBF24"/>
+    <rect x="176" y="86" width="38" height="10" rx="5" fill="#22C55E" transform="rotate(-19 176 86)"/>
+    <rect x="302" y="87" width="46" height="10" rx="5" fill="#22C55E" transform="rotate(23 302 87)"/>
+    <rect x="210" y="150" width="86" height="8" rx="4" fill="#FDE68A"/>
+    <rect x="184" y="131" width="40" height="8" rx="4" fill="#FDE68A" transform="rotate(15 184 131)"/>
+  </g>
+  <g transform="translate(644 332)">
+    <rect x="0" y="0" width="292" height="160" rx="26" fill="#FFFFFF" fill-opacity="0.78"/>
+    <text x="28" y="52" class="font section">오늘의 핵심</text>
+    <text x="28" y="96" class="font body">파기름을 먼저 내고</text>
+    <text x="28" y="132" class="font body">김치를 충분히 볶아주세요.</text>
+  </g>
+
+  <rect x="72" y="596" width="936" height="108" rx="26" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="2"/>
+  <text x="104" y="639" class="font section">준비 재료</text>
+  <text x="104" y="677" class="font body">밥 1공기 · 김치 1/2컵 · 달걀 1개 · 대파 · 간장 · 참기름</text>
+
+  <g transform="translate(72 742)">
+    <rect width="936" height="110" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <circle cx="58" cy="55" r="32" fill="#22C55E"/>
+    <text x="49" y="65" class="font stepNumber">1</text>
+    <text x="112" y="45" class="font stepTitle">재료 손질</text>
+    <text x="112" y="82" class="font stepBody">김치는 잘게 썰고, 대파는 송송 썰어 준비합니다.</text>
+    <path d="M806 68c43-44 81-45 119-5-49 13-86 15-119 5Z" fill="#22C55E"/>
+    <path d="M843 38c22 28 20 57-5 89-27-35-25-63 5-89Z" fill="#86EFAC"/>
+  </g>
+
+  <g transform="translate(72 868)">
+    <rect width="936" height="110" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <circle cx="58" cy="55" r="32" fill="#22C55E"/>
+    <text x="49" y="65" class="font stepNumber">2</text>
+    <text x="112" y="45" class="font stepTitle">파기름 내기</text>
+    <text x="112" y="82" class="font stepBody">중불 팬에 기름을 두르고 대파 향이 올라올 때까지 볶습니다.</text>
+    <ellipse cx="870" cy="65" rx="70" ry="28" fill="#111827"/>
+    <ellipse cx="870" cy="58" rx="57" ry="20" fill="#374151"/>
+    <path d="M835 32c-11-18 16-25 5-43M870 31c-13-20 20-28 7-50M905 32c-9-17 14-23 5-39" stroke="#FF8C42" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(72 994)">
+    <rect width="936" height="110" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <circle cx="58" cy="55" r="32" fill="#22C55E"/>
+    <text x="49" y="65" class="font stepNumber">3</text>
+    <text x="112" y="45" class="font stepTitle">김치 볶기</text>
+    <text x="112" y="82" class="font stepBody">김치를 넣고 2분 정도 볶아 신맛을 부드럽게 만듭니다.</text>
+    <rect x="816" y="31" width="104" height="62" rx="18" fill="#F97316"/>
+    <path d="M828 54h80M834 76h62" stroke="#FDE68A" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(72 1120)">
+    <rect width="936" height="110" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <circle cx="58" cy="55" r="32" fill="#22C55E"/>
+    <text x="49" y="65" class="font stepNumber">4</text>
+    <text x="112" y="45" class="font stepTitle">밥 넣고 간 맞추기</text>
+    <text x="112" y="82" class="font stepBody">밥과 간장 1작은술을 넣고 고슬고슬하게 볶습니다.</text>
+    <ellipse cx="862" cy="69" rx="74" ry="30" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="6"/>
+    <ellipse cx="862" cy="61" rx="52" ry="18" fill="#FFF7ED"/>
+    <rect x="894" y="19" width="30" height="70" rx="12" fill="#A16207" transform="rotate(22 894 19)"/>
+  </g>
+
+  <g transform="translate(72 1246)">
+    <rect width="936" height="44" rx="22" fill="#22C55E"/>
+    <text x="104" y="31" class="font" style="font-size:24px;font-weight:800;fill:#FFFFFF;letter-spacing:0;">마무리: 참기름과 깨를 넣고 반숙 달걀을 올리면 완성</text>
+  </g>
+</svg>

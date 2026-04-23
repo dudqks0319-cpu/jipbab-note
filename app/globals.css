@@ -15,6 +15,15 @@ body {
   color: #2b2118;
 }
 
+/* iOS WebView/Safari가 작은 입력 글꼴을 자동 확대해 레이아웃을 깨지 않도록 합니다. */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* 가로 스크롤 시 스크롤바 숨기기 */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

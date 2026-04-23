@@ -57,6 +57,15 @@ def fill_gradient(buf: bytearray, width: int, height: int, top: tuple[int, int, 
             buf[index:index + 4] = bytes((r, g, b, 255))
 
 
+def fill_solid(buf: bytearray, width: int, height: int, color: tuple[int, int, int]) -> None:
+    r, g, b = color
+    for y in range(height):
+        row = y * width * 4
+        for x in range(width):
+            index = row + x * 4
+            buf[index:index + 4] = bytes((r, g, b, 255))
+
+
 def draw_ellipse(buf: bytearray, width: int, cx: float, cy: float, rx: float, ry: float, color: tuple[int, int, int, int]) -> None:
     left = max(0, math.floor(cx - rx))
     right = min(width - 1, math.ceil(cx + rx))
@@ -212,10 +221,10 @@ def draw_ellipse_clipped(
 
 def draw_leaf(buf: bytearray, width: int, scale: float) -> None:
     s = lambda value: value * scale
-    cx = s(778)
-    cy = s(236)
-    half_length = s(82)
-    half_width = s(48)
+    cx = s(789)
+    cy = s(255)
+    half_length = s(74)
+    half_width = s(46)
     angle = math.radians(-42)
     direction_x = math.cos(angle)
     direction_y = math.sin(angle)
@@ -239,20 +248,20 @@ def draw_leaf(buf: bytearray, width: int, scale: float) -> None:
                     blend_pixel(buf, width, x, y, green)
 
     # 잎맥은 원본 이미지처럼 크림색 짧은 곡선으로 넣습니다.
-    draw_quadratic_line(buf, width, s(743), s(287), s(761), s(254), s(789), s(228), s(4), rgba("#fff7e8"))
+    draw_quadratic_line(buf, width, s(749), s(309), s(772), s(273), s(804), s(246), s(4), rgba("#fff7e8"))
 
 
 def draw_rice_mound(buf: bytearray, width: int, scale: float, color: tuple[int, int, int, int]) -> None:
     s = lambda value: value * scale
-    draw_rounded_rect(buf, width, s(407), s(632), s(617), s(678), s(22), color)
+    draw_rounded_rect(buf, width, s(405), s(648), s(619), s(696), s(24), color)
     for cx, cy, rx, ry in (
-        (432, 632, 30, 30),
-        (468, 610, 36, 34),
-        (512, 598, 38, 34),
-        (554, 611, 35, 34),
-        (592, 634, 32, 31),
-        (407, 655, 26, 26),
-        (621, 655, 27, 27),
+        (432, 650, 32, 32),
+        (469, 626, 37, 35),
+        (512, 612, 40, 36),
+        (555, 626, 37, 35),
+        (593, 650, 32, 32),
+        (411, 674, 26, 26),
+        (617, 674, 26, 26),
     ):
         draw_ellipse(buf, width, s(cx), s(cy), s(rx), s(ry), color)
 
@@ -263,60 +272,60 @@ def draw_icon(buf: bytearray, width: int, transparent: bool) -> None:
     s = lambda value: value * scale
 
     if not transparent:
-        fill_gradient(buf, width, height, (255, 248, 235), (255, 246, 232))
+        fill_solid(buf, width, height, (248, 236, 216))
 
     cream = rgba("#fff7e8")
     cream_shadow = rgba("#f7d9b8")
-    orange_top = (255, 137, 49)
-    orange_mid = (255, 118, 29)
-    orange_bottom = (245, 82, 15)
+    orange_top = (255, 139, 55)
+    orange_mid = (255, 124, 36)
+    orange_bottom = (248, 90, 13)
     leg_orange = rgba("#d94a0c")
 
     draw_leaf(buf, width, scale)
 
     # 냉장고 다리는 본체 아래에서 살짝 보이도록 먼저 그립니다.
-    draw_rounded_rect(buf, width, s(338), s(824), s(406), s(876), s(20), leg_orange)
-    draw_rounded_rect(buf, width, s(618), s(824), s(686), s(876), s(20), leg_orange)
+    draw_rounded_rect(buf, width, s(340), s(846), s(407), s(894), s(20), leg_orange)
+    draw_rounded_rect(buf, width, s(617), s(846), s(684), s(894), s(20), leg_orange)
 
     # 첨부 이미지의 2단 냉장고 실루엣을 그대로 유지합니다.
     draw_rounded_rect_gradient(
         buf,
         width,
-        s(292),
-        s(210),
-        s(732),
-        s(428),
-        (s(84), s(84), s(8), s(8)),
+        s(286),
+        s(180),
+        s(718),
+        s(420),
+        (s(94), s(94), s(10), s(10)),
         orange_top,
         orange_mid,
     )
     draw_rounded_rect_gradient(
         buf,
         width,
-        s(292),
-        s(442),
-        s(732),
-        s(854),
-        (s(8), s(8), s(88), s(88)),
+        s(286),
+        s(434),
+        s(718),
+        s(846),
+        (s(10), s(10), s(96), s(96)),
         orange_mid,
         orange_bottom,
     )
 
     # 문 손잡이.
-    draw_rounded_rect(buf, width, s(342), s(296), s(369), s(386), s(14), cream)
-    draw_rounded_rect(buf, width, s(342), s(484), s(369), s(620), s(14), cream)
+    draw_rounded_rect(buf, width, s(336), s(290), s(364), s(382), s(14), cream)
+    draw_rounded_rect(buf, width, s(336), s(488), s(364), s(624), s(14), cream)
 
     # 밥 김.
-    draw_quadratic_line(buf, width, s(471), s(562), s(459), s(543), s(471), s(524), s(18), cream)
-    draw_quadratic_line(buf, width, s(512), s(542), s(499), s(520), s(516), s(502), s(20), cream)
-    draw_quadratic_line(buf, width, s(557), s(562), s(545), s(543), s(557), s(524), s(18), cream)
+    draw_quadratic_line(buf, width, s(470), s(590), s(457), s(567), s(470), s(545), s(18), cream)
+    draw_quadratic_line(buf, width, s(512), s(566), s(498), s(540), s(515), s(518), s(20), cream)
+    draw_quadratic_line(buf, width, s(556), s(590), s(544), s(567), s(556), s(545), s(18), cream)
 
     # 밥과 그릇.
     draw_rice_mound(buf, width, scale, cream)
-    draw_ellipse_clipped(buf, width, s(512), s(660), s(118), s(108), s(660), s(775), cream)
-    draw_ellipse(buf, width, s(512), s(660), s(120), s(10), cream_shadow)
-    draw_ellipse(buf, width, s(512), s(656), s(118), s(8), cream)
-    draw_rounded_rect(buf, width, s(464), s(756), s(560), s(788), s(12), cream)
+    draw_ellipse_clipped(buf, width, s(512), s(718), s(118), s(120), s(690), s(844), cream)
+    draw_ellipse(buf, width, s(512), s(690), s(116), s(10), cream_shadow)
+    draw_ellipse(buf, width, s(512), s(686), s(114), s(8), cream)
+    draw_rounded_rect(buf, width, s(468), s(812), s(556), s(844), s(12), cream)
 
 
 def downsample(buf: bytearray, src_size: int, dst_size: int) -> bytearray:
@@ -389,7 +398,6 @@ def main() -> None:
         "AppIcon-76@2x.png": 152,
         "AppIcon-83.5@2x.png": 167,
         "AppIcon-1024@1x.png": 1024,
-        "AppIcon-512@2x.png": 1024,
     }
     for filename, size in ios_sizes.items():
         make_png(ios_dir / filename, size)

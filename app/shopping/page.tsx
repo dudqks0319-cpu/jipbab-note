@@ -86,27 +86,27 @@ export default function ShoppingPage() {
       <section className="px-5 pt-4">
         {showAddForm ? (
           <div className="jipbab-panel rounded-[16px] p-4">
-            <div className="grid grid-cols-[1fr_92px] gap-2">
+            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_92px]">
               <input
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="재료명"
-                className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+                className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
               />
               <input
                 type="text"
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
                 placeholder="수량"
-                className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+                className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
               />
             </div>
-            <div className="mt-2 grid grid-cols-[1fr_96px] gap-2">
+            <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_96px]">
               <select
                 value={category}
                 onChange={(event) => setCategory(event.target.value as IngredientCategory)}
-                className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+                className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
               >
                 {INGREDIENT_CATEGORIES.map((option) => (
                   <option key={option} value={option}>
@@ -118,7 +118,7 @@ export default function ShoppingPage() {
                 type="button"
                 onClick={handleAdd}
                 disabled={!name.trim()}
-                className="inline-flex items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-3 py-3 text-sm font-black text-white disabled:bg-[#e6b49a]"
+                className="inline-flex min-w-0 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-3 py-3 text-sm font-black text-white disabled:bg-[#e6b49a]"
               >
                 <Plus size={15} />
                 추가

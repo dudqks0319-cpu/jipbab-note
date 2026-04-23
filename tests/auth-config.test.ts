@@ -52,3 +52,23 @@ test("reports provider flags configured off", () => {
   assert.equal(apple?.enabled, false);
   assert.equal(apple?.disabledReason, "NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED=false로 꺼져 있습니다.");
 });
+
+test("keeps developer config details out of user-facing disabled messages", () => {
+  const providers = resolveAuthProviderOptions({
+    ...BASE_CONFIG,
+    appleEnabled: "false",
+  });
+  const apple = providers.find((item) => item.provider === "apple");
+
+  assert.equal(apple?.userDisabledReason, "현재 애플 로그인은 준비 중입니다. 이메일로 계속해주세요.");
+  assert.doesNotMatch(apple?.userDisabledReason ?? "", /NEXT_PUBLIC|false|true/);
+});
+
+test("shows a generic user-facing message when Supabase public config is unavailable", () => {
+  const providers = resolveAuthProviderOptions({
+    supabaseAnonKey: "public-anon-key",
+  });
+
+  assert.equal(providers[0].userDisabledReason, "지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.");
+  assert.doesNotMatch(providers[0].userDisabledReason ?? "", /NEXT_PUBLIC|public-anon-key/);
+});

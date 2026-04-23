@@ -1,7 +1,7 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useAppSettings } from '@/hooks/useAppSettings'
@@ -72,7 +72,7 @@ export default function FridgePage() {
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
-  const [showAddModal, setShowAddModal] = useState(() => shouldOpenAddFromUrl())
+  const [showAddModal, setShowAddModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
@@ -93,6 +93,16 @@ export default function FridgePage() {
       }),
     [form.category, suggestionKeyword],
   )
+
+  useEffect(() => {
+    if (shouldOpenAddFromUrl()) {
+      const frame = window.requestAnimationFrame(() => {
+        setShowAddModal(true)
+      })
+      return () => window.cancelAnimationFrame(frame)
+    }
+    return undefined
+  }, [])
 
   const resetForm = useCallback(() => {
     setForm(initialFormState)
@@ -373,7 +383,7 @@ export default function FridgePage() {
             role="dialog"
             aria-modal="true"
             aria-label={editingId ? '재료 수정 모달' : '재료 추가 모달'}
-            className="animate-slide-up relative max-h-[86dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[2rem] bg-white px-5 pb-8 pt-4"
+            className="animate-slide-up relative max-h-[calc(100dvh_-_env(safe-area-inset-top)_-_0.75rem)] w-full max-w-[430px] overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white px-5 pb-[calc(1rem_+_env(safe-area-inset-bottom))] pt-4"
           >
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-gray-200" />
 
@@ -601,14 +611,16 @@ export default function FridgePage() {
             </div>
 
             {/* 저장 버튼 */}
-            <button
-              onClick={() => {
-                void handleSave()
-              }}
-              className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400"
-            >
-              {editingId ? '수정 완료 ✨' : '저장하기 ✨'}
-            </button>
+            <div className="sticky bottom-0 -mx-5 bg-white px-5 pb-[calc(1rem_+_env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_24px_rgba(255,255,255,0.95)]">
+              <button
+                onClick={() => {
+                  void handleSave()
+                }}
+                className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400"
+              >
+                {editingId ? '수정 완료 ✨' : '저장하기 ✨'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -22,6 +22,8 @@ const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_
 
 const authClientCache = new Map<string, SupabaseClient>();
 
+const AUTH_UNAVAILABLE_MESSAGE = "지금은 로그인 기능을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
+
 function toAuthError(message: string, source: AuthQueryError["source"]): AuthQueryError {
   return { message, source };
 }
@@ -153,6 +155,8 @@ export interface UseAuthResult {
   userAvatarUrl: string | null;
   currentProvider: string | null;
   signInWithProvider: (provider: OAuthProvider) => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string, nickname?: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -209,7 +213,7 @@ export function useAuth(): UseAuthResult {
   const refreshUser = useCallback(async () => {
     const client = createAuthClient(deviceId);
     if (!client) {
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
@@ -229,13 +233,15 @@ export function useAuth(): UseAuthResult {
     async (provider: OAuthProvider) => {
       const client = createAuthClient(deviceId);
       if (!client) {
-        setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
         return;
       }
 
       const providerOption = providers.find((item) => item.provider === provider);
       if (!providerOption?.enabled) {
-        setError(toAuthError(providerOption?.disabledReason ?? "해당 로그인 제공자가 비활성화되어 있습니다.", "config"));
+        setError(
+          toAuthError(providerOption?.userDisabledReason ?? "해당 로그인 제공자가 비활성화되어 있습니다.", "config"),
+        );
         return;
       }
 
@@ -264,10 +270,96 @@ export function useAuth(): UseAuthResult {
     [deviceId, providers],
   );
 
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      const client = createAuthClient(deviceId);
+      if (!client) {
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
+        return false;
+      }
+
+      setSigningIn(true);
+      setError(null);
+
+      try {
+        const { data, error: signInError } = await client.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (signInError) {
+          throw signInError;
+        }
+
+        const sessionUser = data.session?.user ?? null;
+        setUser(sessionUser);
+        if (sessionUser) {
+          await runMigration(sessionUser);
+        }
+        return true;
+      } catch (caught) {
+        const message = caught instanceof Error ? caught.message : "이메일 로그인 중 오류가 발생했습니다.";
+        setError(toAuthError(message, "supabase"));
+        return false;
+      } finally {
+        setSigningIn(false);
+      }
+    },
+    [deviceId, runMigration],
+  );
+
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, nickname?: string) => {
+      const client = createAuthClient(deviceId);
+      if (!client) {
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
+        return false;
+      }
+
+      setSigningIn(true);
+      setError(null);
+
+      try {
+        const displayName = nickname?.trim();
+        const { data, error: signUpError } = await client.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: displayName
+              ? {
+                  name: displayName,
+                  full_name: displayName,
+                }
+              : undefined,
+            emailRedirectTo: buildAuthRedirectUrl("/mypage"),
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        const sessionUser = data.session?.user ?? null;
+        setUser(sessionUser);
+        if (sessionUser) {
+          await runMigration(sessionUser);
+        }
+        return true;
+      } catch (caught) {
+        const message = caught instanceof Error ? caught.message : "이메일 회원가입 중 오류가 발생했습니다.";
+        setError(toAuthError(message, "supabase"));
+        return false;
+      } finally {
+        setSigningIn(false);
+      }
+    },
+    [deviceId, runMigration],
+  );
+
   const signOut = useCallback(async () => {
     const client = createAuthClient(deviceId);
     if (!client) {
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그아웃 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
@@ -288,7 +380,7 @@ export function useAuth(): UseAuthResult {
     const client = createAuthClient(deviceId);
     if (!client) {
       setLoading(false);
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
@@ -349,6 +441,8 @@ export function useAuth(): UseAuthResult {
     userAvatarUrl: resolveUserAvatar(user),
     currentProvider: resolveCurrentProvider(user),
     signInWithProvider,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
     refreshUser,
   };

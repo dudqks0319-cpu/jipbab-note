@@ -14,6 +14,11 @@ type ImportedRecipe = {
   createdAt: string
 }
 
+type ImportFormErrors = {
+  title?: string
+  url?: string
+}
+
 function readImportedRecipes(): ImportedRecipe[] {
   if (typeof window === 'undefined') {
     return []
@@ -39,31 +44,45 @@ export default function RecipeImportPage() {
   const [items, setItems] = useState<ImportedRecipe[]>([])
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<ImportFormErrors>({})
 
   useEffect(() => {
     setItems(readImportedRecipes())
   }, [])
 
   const addRecipe = () => {
-    setError('')
     const trimmedUrl = url.trim()
     const trimmedTitle = title.trim()
+    const nextErrors: ImportFormErrors = {}
 
-    try {
-      const parsed = new URL(trimmedUrl)
-      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-        throw new Error('지원하지 않는 URL입니다.')
+    if (!trimmedTitle) {
+      nextErrors.title = '레시피 이름을 입력해 주세요.'
+    }
+
+    if (!trimmedUrl) {
+      nextErrors.url = '레시피 URL을 입력해 주세요.'
+    }
+
+    if (trimmedUrl) {
+      try {
+        const parsed = new URL(trimmedUrl)
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+          throw new Error('지원하지 않는 URL입니다.')
+        }
+      } catch {
+        nextErrors.url = 'http 또는 https로 시작하는 올바른 URL을 입력해 주세요.'
       }
-    } catch {
-      setError('올바른 레시피 URL을 입력해 주세요.')
+    }
+
+    if (nextErrors.title || nextErrors.url) {
+      setErrors(nextErrors)
       return
     }
 
     const next = [
       {
         id: crypto.randomUUID(),
-        title: trimmedTitle || '저장한 레시피',
+        title: trimmedTitle,
         url: trimmedUrl,
         createdAt: new Date().toISOString(),
       },
@@ -74,6 +93,7 @@ export default function RecipeImportPage() {
     writeImportedRecipes(next)
     setTitle('')
     setUrl('')
+    setErrors({})
   }
 
   const removeRecipe = (id: string) => {
@@ -100,15 +120,24 @@ export default function RecipeImportPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="레시피 이름"
-            className="w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold outline-none focus:border-[#ea5a1f]"
+            aria-invalid={Boolean(errors.title)}
+            aria-describedby={errors.title ? 'recipe-import-title-error' : undefined}
+            className={`w-full rounded-[12px] border bg-[#fffaf3] px-3 py-3 text-sm font-semibold outline-none focus:border-[#ea5a1f] ${
+              errors.title ? 'border-[#d94d19]' : 'border-[#eadcc9]'
+            }`}
           />
+          {errors.title ? <p id="recipe-import-title-error" className="text-[12px] font-bold text-[#d94d19]">{errors.title}</p> : null}
           <input
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder="https://..."
-            className="w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold outline-none focus:border-[#ea5a1f]"
+            aria-invalid={Boolean(errors.url)}
+            aria-describedby={errors.url ? 'recipe-import-url-error' : undefined}
+            className={`w-full rounded-[12px] border bg-[#fffaf3] px-3 py-3 text-sm font-semibold outline-none focus:border-[#ea5a1f] ${
+              errors.url ? 'border-[#d94d19]' : 'border-[#eadcc9]'
+            }`}
           />
-          {error ? <p className="text-[12px] font-bold text-[#d94d19]">{error}</p> : null}
+          {errors.url ? <p id="recipe-import-url-error" className="text-[12px] font-bold text-[#d94d19]">{errors.url}</p> : null}
           <button type="button" onClick={addRecipe} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-[#ea5a1f] text-sm font-black text-white">
             <Plus size={16} />
             저장하기

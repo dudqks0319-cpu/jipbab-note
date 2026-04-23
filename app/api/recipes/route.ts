@@ -22,7 +22,7 @@ const INGREDIENT_FRACTION_DENOMINATOR_PATTERN =
 const INGREDIENT_MEASUREMENT_PATTERN =
   /\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)/i
 
-const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '국·찌개', '국&찌개', '반찬', '기타'])
+const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '후식', '국·찌개', '국&찌개', '반찬', '밥', '일품', '기타'])
 const QUERY_PATTERN = /^[0-9A-Za-z가-힣\s\-_/(),.&]+$/
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
@@ -97,7 +97,7 @@ const sanitizeQuery = (value: string | null): string | null => {
 
 const normalizeCategory = (value: string | null): string | null => {
   if (!value || value === '전체') return null
-  const normalized = value === '국·찌개' ? '국&찌개' : value.trim()
+  const normalized = value === '국·찌개' ? '국&찌개' : value === '디저트' ? '후식' : value.trim()
   return CATEGORY_ALLOWLIST.has(normalized) ? normalized : null
 }
 

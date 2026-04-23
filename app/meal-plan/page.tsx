@@ -48,8 +48,8 @@ export default function MealPlanPage() {
           <div className="space-y-2.5">
             {WEEK_DAYS.map((day, index) => {
               const recipe = recipes[index % Math.max(recipes.length, 1)]
-              return (
-                <article key={day} className="jipbab-panel flex items-center gap-3 rounded-[16px] px-3 py-3">
+              const rowContent = (
+                <>
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] bg-[#fff0e4] text-[14px] font-black text-[#d94d19]">
                     {day}
                   </div>
@@ -60,10 +60,25 @@ export default function MealPlanPage() {
                     </p>
                   </div>
                   {recipe ? (
-                    <Link href={`/recipe/${recipe.id}`} className="rounded-full border border-[#eadcc9] px-3 py-1.5 text-[11px] font-black text-[#4b3929]">
+                    <span className="shrink-0 rounded-full border border-[#eadcc9] px-3 py-1.5 text-[11px] font-black text-[#4b3929]">
                       보기
-                    </Link>
+                    </span>
                   ) : null}
+                </>
+              )
+
+              return recipe ? (
+                <Link
+                  key={day}
+                  href={`/recipe/${recipe.id}`}
+                  className="jipbab-panel flex min-h-[72px] items-center gap-3 rounded-[16px] px-3 py-3"
+                  aria-label={`${day}요일 ${recipe.name} 레시피 보기`}
+                >
+                  {rowContent}
+                </Link>
+              ) : (
+                <article key={day} className="jipbab-panel flex min-h-[72px] items-center gap-3 rounded-[16px] px-3 py-3">
+                  {rowContent}
                 </article>
               )
             })}

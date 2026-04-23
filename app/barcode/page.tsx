@@ -55,6 +55,7 @@ export default function BarcodePage() {
   const [lookupResult, setLookupResult] = useState<ProductLookupResult | null>(null)
 
   const detectorSupported = useMemo(() => isWebBarcodeDetectorSupported(), [])
+  const showCameraControls = detectorSupported && cameraStatus !== 'unsupported'
 
   const stopCamera = useCallback(() => {
     if (scanIntervalRef.current !== null) {
@@ -218,6 +219,13 @@ export default function BarcodePage() {
     }
   }, [stopCamera])
 
+  useEffect(() => {
+    if (!detectorSupported) {
+      setCameraStatus('unsupported')
+      setStatusMessage('이 브라우저는 실시간 바코드 감지를 지원하지 않습니다. 바코드 번호를 직접 입력해 주세요.')
+    }
+  }, [detectorSupported])
+
   return (
     <div className="flex flex-col">
       <div className="rounded-b-[2rem] bg-gradient-to-br from-mint-100 via-white to-lavender-100 px-5 pb-6 pt-4">
@@ -229,38 +237,48 @@ export default function BarcodePage() {
           </div>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-3xl border border-white/80 bg-black/90 shadow-soft">
-          <video ref={videoRef} className="aspect-video w-full object-cover" playsInline muted />
-        </div>
+        {showCameraControls ? (
+          <>
+            <div className="mt-4 overflow-hidden rounded-3xl border border-white/80 bg-black/90 shadow-soft">
+              <video ref={videoRef} className="aspect-video w-full object-cover" playsInline muted />
+            </div>
 
-        <div className="mt-3 flex gap-2">
-          {cameraStatus === 'scanning' ? (
-            <button
-              type="button"
-              onClick={stopCamera}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-rose-500 px-4 py-3 font-bold text-white"
-            >
-              <CameraOff size={18} />
-              스캔 중지
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                void startCamera()
-              }}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-mint-400 px-4 py-3 font-bold text-white"
-            >
-              {cameraStatus === 'starting' ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
-              카메라 스캔 시작
-            </button>
-          )}
-        </div>
-
-        {!detectorSupported && (
-          <p className="mt-3 rounded-2xl bg-amber-100 px-4 py-3 text-sm text-amber-700">
-            현재 브라우저는 실시간 바코드 감지를 지원하지 않습니다. 아래 입력창으로 조회해 주세요.
-          </p>
+            <div className="mt-3 flex gap-2">
+              {cameraStatus === 'scanning' ? (
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-rose-500 px-4 py-3 font-bold text-white"
+                >
+                  <CameraOff size={18} />
+                  스캔 중지
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    void startCamera()
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-mint-400 px-4 py-3 font-bold text-white"
+                >
+                  {cameraStatus === 'starting' ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+                  카메라 스캔 시작
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 px-4 py-5 shadow-soft">
+            <div className="flex items-start gap-3">
+              <CameraOff size={20} className="mt-0.5 shrink-0 text-amber-600" />
+              <div>
+                <p className="font-bold text-amber-800">수동 입력 모드</p>
+                <p className="mt-1 text-sm leading-6 text-amber-700">
+                  현재 브라우저는 실시간 바코드 감지를 지원하지 않습니다. 아래 입력창에 바코드 번호를 입력해 조회하세요.
+                </p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 

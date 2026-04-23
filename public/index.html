@@ -129,6 +129,14 @@
             return;
           }
 
+          if (window.location.protocol === "capacitor:") {
+            statusNode.textContent =
+              "앱 연결 설정이 네이티브 셸에 반영되지 않았습니다. 앱을 다시 동기화해 주세요.";
+            retryButton.classList.remove("hidden");
+            supportLink.classList.remove("hidden");
+            return;
+          }
+
           statusNode.textContent = "원격 앱으로 연결합니다.";
           window.location.replace(remoteUrl);
         } catch (_error) {

@@ -259,8 +259,8 @@ export interface UseIngredientsResult {
 
 export function useIngredients(): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
-  const [ingredients, setIngredients] = useState<IngredientRecord[]>(() => safeReadLocalIngredients(deviceId));
-  const [loading, setLoading] = useState<boolean>(false);
+  const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<IngredientQueryError | null>(null);
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {

@@ -2,7 +2,9 @@
 'use client'
 
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+import type { FormEvent, ReactNode } from 'react'
+import { useState } from 'react'
 import { ArrowLeft, Eye, Home, Lock, Mail, UserRound } from 'lucide-react'
 
 import AuthProviderButton from '@/components/auth/AuthProviderButton'
@@ -13,7 +15,15 @@ type AuthScreenProps = {
 }
 
 export default function AuthScreen({ mode }: AuthScreenProps) {
-  const { providers, signingIn, error, signInWithProvider } = useAuth()
+  const router = useRouter()
+  const { providers, signingIn, error, signInWithProvider, signInWithEmail, signUpWithEmail } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const quickProviders = providers.filter((item) => item.provider === 'google' || item.provider === 'apple')
   const quickEnabledProviders = quickProviders.filter((item) => item.enabled)
 
@@ -60,6 +70,40 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   }
 
   const isSignup = mode === 'signup'
+  const authErrorMessage = formError ?? error?.message ?? null
+
+  const handleEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setFormError(null)
+    setSuccessMessage(null)
+
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail || !password) {
+      setFormError('이메일과 비밀번호를 입력해주세요.')
+      return
+    }
+
+    if (isSignup && password !== passwordConfirm) {
+      setFormError('비밀번호가 서로 일치하지 않습니다.')
+      return
+    }
+
+    if (isSignup && !acceptedTerms) {
+      setFormError('이용약관 및 개인정보 처리방침에 동의해 주세요.')
+      return
+    }
+
+    const succeeded = isSignup
+      ? await signUpWithEmail(trimmedEmail, password, nickname)
+      : await signInWithEmail(trimmedEmail, password)
+
+    if (succeeded) {
+      setSuccessMessage(isSignup ? '회원가입이 완료되었습니다. 메일 확인이 필요한 경우 받은편지함을 확인해주세요.' : '로그인되었습니다.')
+      if (!isSignup) {
+        router.push('/mypage')
+      }
+    }
+  }
 
   return (
     <div className="min-h-full bg-[#fbf6ee] px-5 pb-8">
@@ -92,13 +136,13 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
               key={provider.provider}
               className="rounded-[12px] border border-dashed border-[#d8c6b3] bg-[#fffaf3] px-4 py-3 text-center text-sm font-bold text-[#8f7f70]"
             >
-              {provider.label} 로그인 비활성화: {provider.disabledReason ?? '설정 상태를 확인해주세요.'}
+              {provider.userDisabledReason ?? '지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.'}
             </div>
           ),
         )}
         {quickEnabledProviders.length === 0 ? (
           <p className="rounded-[12px] bg-[#fff0e4] px-4 py-3 text-center text-sm font-bold text-[#d94d19]">
-            Google 또는 Apple OAuth 설정을 확인해주세요.
+            지금은 소셜 로그인을 사용할 수 없습니다. 아래 이메일로 계속해주세요.
           </p>
         ) : null}
       </section>
@@ -109,32 +153,77 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         <span className="h-px bg-[#eadcc9]" />
       </div>
 
-      <section className="space-y-3 pt-6">
-        <AuthInput icon={<Mail size={16} />} placeholder="이메일 주소" />
-        <AuthInput icon={<Lock size={16} />} placeholder="비밀번호" password />
+      <form className="space-y-3 pt-6" onSubmit={handleEmailSubmit}>
+        <AuthInput
+          icon={<Mail size={16} />}
+          placeholder="이메일 주소"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          autoComplete="email"
+        />
+        <AuthInput
+          icon={<Lock size={16} />}
+          placeholder="비밀번호"
+          type="password"
+          value={password}
+          onChange={setPassword}
+          autoComplete={isSignup ? 'new-password' : 'current-password'}
+        />
         {isSignup ? (
           <>
-            <AuthInput icon={<Lock size={16} />} placeholder="비밀번호 확인" password />
-            <AuthInput icon={<UserRound size={16} />} placeholder="닉네임" />
+            <AuthInput
+              icon={<Lock size={16} />}
+              placeholder="비밀번호 확인"
+              type="password"
+              value={passwordConfirm}
+              onChange={setPasswordConfirm}
+              autoComplete="new-password"
+            />
+            <AuthInput
+              icon={<UserRound size={16} />}
+              placeholder="닉네임"
+              value={nickname}
+              onChange={setNickname}
+              autoComplete="nickname"
+            />
           </>
         ) : null}
-      </section>
 
-      {isSignup ? (
-        <section className="space-y-3 pt-5">
-          <CheckboxLine text="이용약관 및 개인정보 처리방침에 동의합니다." />
-          <CheckboxLine text="(선택) 마케팅 정보 수신에 동의합니다." />
-        </section>
-      ) : (
-        <section className="flex items-center justify-between pt-5">
-          <CheckboxLine text="로그인 상태 유지" />
-          <Link href="/support" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
-        </section>
-      )}
+        {isSignup ? (
+          <section className="space-y-3 pt-2">
+            <CheckboxLine
+              text="이용약관 및 개인정보 처리방침에 동의합니다."
+              checked={acceptedTerms}
+              onChange={setAcceptedTerms}
+              required
+            />
+            <CheckboxLine text="(선택) 마케팅 정보 수신에 동의합니다." />
+          </section>
+        ) : (
+          <section className="flex items-center justify-between pt-2">
+            <CheckboxLine text="로그인 상태 유지" />
+            <Link href="/support" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
+          </section>
+        )}
 
-      {error ? (
+        <button
+          type="submit"
+          disabled={signingIn}
+          className="mt-2 w-full rounded-[14px] bg-[#ea5a1f] py-4 text-center text-sm font-black text-white shadow-[0_10px_20px_rgba(234,90,31,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {signingIn ? '처리 중...' : isSignup ? '이메일로 회원가입' : '이메일로 로그인'}
+        </button>
+      </form>
+
+      {authErrorMessage ? (
         <p className="mt-3 rounded-[12px] bg-[#fff0e4] px-4 py-3 text-sm font-semibold text-[#d94d19]">
-          {error.message}
+          {authErrorMessage}
+        </p>
+      ) : null}
+      {successMessage ? (
+        <p className="mt-3 rounded-[12px] bg-[#eef9ef] px-4 py-3 text-sm font-semibold text-[#257a3e]">
+          {successMessage}
         </p>
       ) : null}
 
@@ -148,24 +237,58 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   )
 }
 
-function AuthInput({ icon, placeholder, password = false }: { icon: ReactNode; placeholder: string; password?: boolean }) {
+function AuthInput({
+  icon,
+  placeholder,
+  type = 'text',
+  value,
+  onChange,
+  autoComplete,
+}: {
+  icon: ReactNode
+  placeholder: string
+  type?: 'text' | 'email' | 'password'
+  value: string
+  onChange: (value: string) => void
+  autoComplete?: string
+}) {
   return (
     <div className="flex items-center gap-2 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3.5">
       <span className="text-[#a69585]">{icon}</span>
       <input
-        type={password ? 'password' : 'text'}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        autoComplete={autoComplete}
         placeholder={placeholder}
+        required={type !== 'text'}
         className="w-full bg-transparent text-sm font-semibold text-[#4b3929] outline-none placeholder:text-[#b5a493]"
       />
-      {password ? <Eye size={16} className="text-[#a69585]" /> : null}
+      {type === 'password' ? <Eye size={16} className="text-[#a69585]" /> : null}
     </div>
   )
 }
 
-function CheckboxLine({ text }: { text: string }) {
+function CheckboxLine({
+  text,
+  checked,
+  onChange,
+  required = false,
+}: {
+  text: string
+  checked?: boolean
+  onChange?: (checked: boolean) => void
+  required?: boolean
+}) {
   return (
     <label className="flex items-center gap-2 text-[12px] font-semibold text-[#7d6d5f]">
-      <input type="checkbox" className="h-4 w-4 rounded border-[#d9c8b6] accent-[#ea5a1f]" />
+      <input
+        type="checkbox"
+        checked={checked}
+        required={required}
+        onChange={onChange ? (event) => onChange(event.target.checked) : undefined}
+        className="h-4 w-4 rounded border-[#d9c8b6] accent-[#ea5a1f]"
+      />
       <span>{text}</span>
     </label>
   )

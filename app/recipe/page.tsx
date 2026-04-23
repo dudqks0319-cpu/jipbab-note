@@ -106,10 +106,10 @@ export default function RecipePage() {
       </section>
 
       <section className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pt-3">
-        {RECIPE_CATEGORIES.slice(0, 6).map((category) => (
+        {RECIPE_CATEGORIES.map((category) => (
           <button
             key={category}
-            onClick={() => setSelectedCategory(category)}
+            onClick={() => setSelectedCategory(selectedCategory === category ? '전체' : category)}
             className={`shrink-0 rounded-full border px-4 py-2 text-[12px] font-black transition-all ${
               selectedCategory === category
                 ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
@@ -132,7 +132,40 @@ export default function RecipePage() {
         ) : filteredRecipes.length === 0 ? (
           <div className="rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
             <p className="text-sm font-black text-[#4b3929]">조건에 맞는 레시피가 없습니다.</p>
-            <p className="mt-1 text-xs text-[#8f7f70]">검색어나 카테고리를 다시 선택해 보세요.</p>
+            <p className="mt-1 text-xs text-[#8f7f70]">
+              {selectedCategory !== '전체'
+                ? `${selectedCategory} 카테고리에 표시할 레시피가 아직 없습니다.`
+                : '검색어나 즐겨찾기 조건을 다시 확인해 주세요.'}
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {selectedCategory !== '전체' ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('전체')}
+                  className="rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
+                >
+                  전체 레시피 보기
+                </button>
+              ) : null}
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="rounded-full border border-[#eadcc9] px-4 py-2 text-[12px] font-black text-[#4b3929]"
+                >
+                  검색어 지우기
+                </button>
+              ) : null}
+              {favoritesOnly ? (
+                <button
+                  type="button"
+                  onClick={() => setFavoritesOnly(false)}
+                  className="rounded-full border border-[#eadcc9] px-4 py-2 text-[12px] font-black text-[#4b3929]"
+                >
+                  전체 목록 보기
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="space-y-2.5">
