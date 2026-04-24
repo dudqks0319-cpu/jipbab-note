@@ -316,13 +316,14 @@ export function useIngredients(): UseIngredientsResult {
       setLoading(true);
       setError(null);
       let userId: string | null = null;
+      let nextRecord: IngredientRecord | null = null;
 
       try {
         const client = getSupabaseClient({ deviceId });
         const { data: authData } = await client.auth.getUser();
         userId = authData.user?.id ?? null;
 
-        const nextRecord = makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
+        nextRecord = makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
         const insertPayload = toInsertPayload(deviceId, { ...payload, familyFridgeId }, userId, nextRecord.id);
         const { error: queryError } = await client
           .from("ingredients")
@@ -332,11 +333,12 @@ export function useIngredients(): UseIngredientsResult {
           throw queryError;
         }
 
-        setIngredients((prev) => [nextRecord, ...prev.filter((item) => item.id !== nextRecord.id)]);
-        upsertLocalIngredient(nextRecord);
-        return nextRecord;
+        const savedRecord = nextRecord;
+        setIngredients((prev) => [savedRecord, ...prev.filter((item) => item.id !== savedRecord.id)]);
+        upsertLocalIngredient(savedRecord);
+        return savedRecord;
       } catch {
-        const nextLocal = makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
+        const nextLocal = nextRecord ?? makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
         return nextLocal;

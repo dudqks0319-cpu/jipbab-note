@@ -2,16 +2,30 @@
 'use client'
 
 import { Bell, ChevronLeft, ChevronRight, Leaf } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function Header() {
+  const router = useRouter()
+  const pathname = usePathname()
   const today = new Intl.DateTimeFormat('ko-KR', {
     month: 'long',
     day: 'numeric',
     weekday: 'short',
   }).format(new Date())
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      router.back()
+      return
+    }
+
+    if (pathname !== '/') {
+      router.push('/')
+    }
+  }
+
   return (
-    <header className="relative z-40 flex w-full items-center justify-between gap-3 border-b border-white/70 bg-[#fffdf9]/90 px-5 pb-3 pt-[calc(0.9rem+env(safe-area-inset-top))] backdrop-blur-xl">
+    <header className="relative z-40 flex w-full items-center justify-between gap-3 border-b border-white/70 bg-[#fffdf9]/90 px-5 pb-3 pt-[calc(0.9rem+var(--app-safe-area-top))] backdrop-blur-xl">
       {/* 브랜드 블록 */}
       <div className="flex min-w-0 items-center gap-2">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mint-200 to-peach-200 shadow-soft">
@@ -27,7 +41,7 @@ export default function Header() {
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => window.history.back()}
+          onClick={goBack}
           className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-soft"
         >
           <ChevronLeft size={17} className="text-gray-500" />

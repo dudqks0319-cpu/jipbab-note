@@ -21,6 +21,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `NEXT_PUBLIC_KAKAO_JS_KEY`: 카카오톡 레시피 공유용 Kakao JavaScript SDK 키
 - `MFDS_API_KEY` 또는 `FOODSAFETY_API_KEY`: 식약처 레시피/재료 API 키
 - `NEXT_PUBLIC_API_BASE_URL`: 네이티브 WebView에서 API 서버를 별도 도메인으로 호출할 때 사용
+- `CAPACITOR_SERVER_URL`: iOS WebView가 연결할 웹앱 주소. 시뮬레이터는 로컬 주소를, TestFlight/실기기는 배포된 HTTPS 주소를 사용합니다.
 
 Supabase 콘솔에서는 Google, Kakao, Apple OAuth Provider와 Redirect URL을 별도로 등록해야 합니다. 카카오 공유는 Kakao Developers에서 JavaScript 키와 Web 플랫폼 도메인을 등록해야 동작합니다.
 
@@ -33,6 +34,7 @@ CAPACITOR_SERVER_URL=http://127.0.0.1:3000 pnpm exec cap sync ios
 ```
 
 TestFlight 업로드는 Apple Developer Team, iOS Distribution 인증서, provisioning profile, App Store Connect 인증 정보가 필요합니다.
+실기기/TestFlight 빌드 전에는 `CAPACITOR_SERVER_URL=https://배포된-웹앱-주소` 형태로 동기화해야 iPhone에서 실제 앱 화면이 열립니다.
 
 ## Verification
 

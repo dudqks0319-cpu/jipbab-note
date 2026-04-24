@@ -7,6 +7,8 @@
 :root {
   color-scheme: light;
   touch-action: manipulation;
+  --app-safe-area-top: env(safe-area-inset-top, 0px);
+  --app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html,
@@ -16,7 +18,8 @@ body {
   -webkit-text-size-adjust: 100%;
   background: #f3efe7;
   color: #2b2f36;
-  overscroll-behavior: none;
+  overscroll-behavior-x: auto;
+  overscroll-behavior-y: none;
 }
 
 input,
@@ -33,6 +36,11 @@ textarea {
 }
 
 @supports (-webkit-touch-callout: none) {
+  :root {
+    --app-safe-area-top: max(env(safe-area-inset-top), 2rem);
+    --app-safe-area-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+
   input,
   select,
   textarea {
