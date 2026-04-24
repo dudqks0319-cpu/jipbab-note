@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 집밥노트
+
+냉장고 재료 관리, 레시피 추천, 장보기, 가족 냉장고, 커뮤니티 공유를 제공하는 Next.js + Capacitor 앱입니다.
 
 ## Getting Started
 
-First, run the development server:
+개발 서버 실행:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API 설정
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.example`을 참고해 로컬/배포 환경변수를 설정합니다.
 
-## Learn More
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: 로그인, 냉장고, 커뮤니티 데이터 저장
+- `NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS`: 노출할 OAuth 제공자 목록, 예: `google,kakao,apple`
+- `NEXT_PUBLIC_KAKAO_JS_KEY`: 카카오톡 레시피 공유용 Kakao JavaScript SDK 키
+- `MFDS_API_KEY` 또는 `FOODSAFETY_API_KEY`: 식약처 레시피/재료 API 키
+- `NEXT_PUBLIC_API_BASE_URL`: 네이티브 WebView에서 API 서버를 별도 도메인으로 호출할 때 사용
 
-To learn more about Next.js, take a look at the following resources:
+Supabase 콘솔에서는 Google, Kakao, Apple OAuth Provider와 Redirect URL을 별도로 등록해야 합니다. 카카오 공유는 Kakao Developers에서 JavaScript 키와 Web 플랫폼 도메인을 등록해야 동작합니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## iOS 빌드
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+개발 서버를 WebView로 연결해 시뮬레이터에서 확인:
 
-## Deploy on Vercel
+```bash
+CAPACITOR_SERVER_URL=http://127.0.0.1:3000 pnpm exec cap sync ios
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+TestFlight 업로드는 Apple Developer Team, iOS Distribution 인증서, provisioning profile, App Store Connect 인증 정보가 필요합니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification
+
+```bash
+pnpm test
+pnpm build
+```
