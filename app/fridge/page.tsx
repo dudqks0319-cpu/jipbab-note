@@ -16,6 +16,10 @@ import {
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
 import {
+  STARTER_INGREDIENT_TEMPLATES,
+  buildStarterIngredientPayloads,
+} from '@/lib/starter-ingredients'
+import {
   buildQuantityDisplay,
   getUnitOptionsForSystem,
   parseQuantityDisplay,
@@ -44,6 +48,8 @@ const initialFormState: IngredientFormState = {
   expiry_date: '',
   memo: '',
 }
+
+const normalizeIngredientName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '')
 
 const expiryQuickOptions = [
   { label: '3일', days: 3 },
@@ -75,6 +81,8 @@ export default function FridgePage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [saveMessage, setSaveMessage] = useState('')
+  const [swipeStartX, setSwipeStartX] = useState<number | null>(null)
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -108,6 +116,7 @@ export default function FridgePage() {
     setForm(initialFormState)
     setSuggestionKeyword('')
     setEditingId(null)
+    setSaveMessage('')
   }, [])
 
   const openAddModal = useCallback(() => {
@@ -139,6 +148,13 @@ export default function FridgePage() {
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
   })
 
+  const mergeQuantityDisplay = (currentQuantity: string | null, nextQuantity: string | null) => {
+    if (!nextQuantity) return currentQuantity
+    if (!currentQuantity) return nextQuantity
+    if (currentQuantity.includes(nextQuantity)) return currentQuantity
+    return `${currentQuantity} + ${nextQuantity}`
+  }
+
   const handleSave = async () => {
     if (!form.name.trim()) return
 
@@ -164,11 +180,76 @@ export default function FridgePage() {
 
     if (editingId) {
       await updateIngredient(editingId, payload)
+      setSaveMessage('수정했어요.')
+      resetForm()
+      setShowAddModal(false)
     } else {
-      await addIngredient(payload)
+      const duplicate = ingredients.find(
+        (item) => normalizeIngredientName(item.name) === normalizeIngredientName(payload.name),
+      )
+      if (duplicate) {
+        const shouldMerge = window.confirm(`${duplicate.name}이 이미 있어요. 기존 재료에 합칠까요?`)
+        if (!shouldMerge) return
+
+        await updateIngredient(duplicate.id, {
+          ...duplicate,
+          category: payload.category ?? duplicate.category,
+          storageType: payload.storageType,
+          quantity: mergeQuantityDisplay(duplicate.quantity, payload.quantity),
+          expiryDate: payload.expiryDate ?? duplicate.expiryDate,
+          memo: [duplicate.memo, payload.memo].filter(Boolean).join(' · ') || null,
+        })
+        setSaveMessage(`${duplicate.name}에 합쳤어요. 다음 재료를 바로 추가할 수 있어요.`)
+      } else {
+        await addIngredient(payload)
+        setSaveMessage(`${payload.name} 저장 완료. 이어서 다음 재료를 추가하세요.`)
+      }
+      setForm((prev) => ({
+        ...initialFormState,
+        category: prev.category,
+        storage_type: prev.storage_type,
+        amount_unit: prev.amount_unit,
+      }))
+      setSuggestionKeyword('')
     }
-    resetForm()
-    setShowAddModal(false)
+  }
+
+  const handleAddStarterIngredients = async () => {
+    const payloads = buildStarterIngredientPayloads(ingredients.map((item) => item.name))
+    if (payloads.length === 0) {
+      setSaveMessage('기본 재료가 이미 담겨 있어요.')
+      return
+    }
+
+    await Promise.all(payloads.map((payload) => addIngredient(payload)))
+    setSaveMessage(`국민 재료 ${payloads.length}개를 냉장고에 담았어요.`)
+  }
+
+  const handleStorageChange = (type: IngredientStorageType) => {
+    setForm((prev) => ({
+      ...prev,
+      storage_type: type,
+      category:
+        type === '실온'
+          ? '조미료'
+          : type === '냉동'
+            ? '냉동식품'
+            : prev.category === '조미료' || prev.category === '냉동식품'
+              ? '채소'
+              : prev.category,
+      amount_value: type === '실온' ? '' : prev.amount_value,
+      expiry_date: type === '실온' ? '' : prev.expiry_date,
+    }))
+  }
+
+  const handleSwipeDelete = async (item: IngredientRecord, endX: number) => {
+    if (swipeStartX === null) return
+    const deltaX = endX - swipeStartX
+    setSwipeStartX(null)
+    if (deltaX > -72) return
+    const shouldDelete = window.confirm(`${item.name}을 삭제할까요?`)
+    if (!shouldDelete) return
+    await handleDelete(item.id)
   }
 
   const handleEdit = (ingredient: IngredientRecord) => {
@@ -205,7 +286,7 @@ export default function FridgePage() {
               </button>
             </div>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
-              {isAppStoreDemo ? '앱스토어 미리보기' : `전체 ${sortedIngredients.length}개 재료`}
+              전체 {sortedIngredients.length}개 재료
             </p>
           </div>
           <button
@@ -243,6 +324,12 @@ export default function FridgePage() {
           <Plus size={16} />
           재료 바로 추가
         </button>
+
+        {saveMessage ? (
+          <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
+            {saveMessage}
+          </p>
+        ) : null}
 
         <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto">
           {storageTabs.map((tab) => (
@@ -289,13 +376,33 @@ export default function FridgePage() {
           <div className="flex flex-col items-center py-16">
             <span className="text-7xl">🧊</span>
             <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
-            <p className="mt-1 text-sm text-gray-400">재료를 추가해서 관리를 시작하세요</p>
-            <button
-              onClick={openAddModal}
-              className="mt-5 rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
-            >
-              + 첫 재료 추가하기
-            </button>
+            <p className="mt-1 text-center text-sm text-gray-400">
+              국민 재료를 먼저 담으면 바로 추천 레시피가 살아납니다.
+            </p>
+            <div className="mt-4 flex max-w-[320px] flex-wrap justify-center gap-2">
+              {STARTER_INGREDIENT_TEMPLATES.map((item) => (
+                <span key={item.name} className="rounded-full bg-[#fff7ed] px-3 py-1.5 text-[12px] font-black text-[#8a5a2a]">
+                  {item.name}
+                </span>
+              ))}
+            </div>
+            <div className="mt-5 grid w-full max-w-[320px] grid-cols-1 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  void handleAddStarterIngredients()
+                }}
+                className="rounded-full bg-[#ea5a1f] px-8 py-3 font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+              >
+                국민 재료 5개 바로 담기
+              </button>
+              <button
+                onClick={openAddModal}
+                className="rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
+              >
+                + 직접 재료 추가하기
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -308,6 +415,10 @@ export default function FridgePage() {
                 <div
                   key={item.id}
                   className="jipbab-panel relative flex items-center gap-3 rounded-[16px] px-3 py-2.5"
+                  onTouchStart={(event) => setSwipeStartX(event.changedTouches[0]?.clientX ?? null)}
+                  onTouchEnd={(event) => {
+                    void handleSwipeDelete(item, event.changedTouches[0]?.clientX ?? 0)
+                  }}
                 >
                   <div className={`relative h-[62px] w-[62px] shrink-0 overflow-hidden rounded-[14px] ${getCategoryBg(item.category)}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -514,7 +625,7 @@ export default function FridgePage() {
                 {(['냉장', '냉동', '실온'] as const).map((type) => (
                   <button
                     key={type}
-                    onClick={() => setForm({ ...form, storage_type: type })}
+                    onClick={() => handleStorageChange(type)}
                     className={`rounded-2xl py-3 text-sm font-bold transition-all ${
                       form.storage_type === type ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
                     }`}
@@ -533,7 +644,7 @@ export default function FridgePage() {
                   type="number"
                   min="0"
                   step="0.5"
-                  placeholder="예: 2"
+                  placeholder={form.category === '조미료' ? '비워도 저장돼요' : '예: 2'}
                   value={form.amount_value}
                   onChange={(e) => setForm({ ...form, amount_value: e.target.value })}
                   className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-mint-300 focus:bg-white"
@@ -618,8 +729,11 @@ export default function FridgePage() {
                 }}
                 className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400"
               >
-                {editingId ? '수정 완료 ✨' : '저장하기 ✨'}
+                {editingId ? '수정 완료 ✨' : '저장하고 계속 추가 ✨'}
               </button>
+              {saveMessage ? (
+                <p className="mt-2 text-center text-xs font-semibold text-mint-500">{saveMessage}</p>
+              ) : null}
             </div>
           </div>
         </div>

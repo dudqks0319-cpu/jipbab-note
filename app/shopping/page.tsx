@@ -7,16 +7,21 @@ import { Check, ExternalLink, Plus, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
+import { useIngredients } from '@/hooks/useIngredients'
 import { useShopping } from '@/hooks/useShopping'
 import { getCoupangSearchUrl } from '@/lib/external-links'
+import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
 import { INGREDIENT_CATEGORIES, type IngredientCategory } from '@/types'
+import type { ShoppingItem } from '@/types'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
 
 export default function ShoppingPage() {
   const isAppStoreDemo = useDemoMode()
   const { items, addItem, toggleItem, removeItem, clearCheckedItems } = useShopping()
+  const { ingredients, addIngredient, updateIngredient } = useIngredients()
   const [showAddForm, setShowAddForm] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
   const [name, setName] = useState('')
   const [quantity, setQuantity] = useState('')
   const [category, setCategory] = useState<IngredientCategory>(DEFAULT_CATEGORY)
@@ -38,11 +43,66 @@ export default function ShoppingPage() {
       return
     }
 
-    addItem({ name, quantity, category })
+    void addItem({ name, quantity, category })
     setName('')
     setQuantity('')
     setCategory(DEFAULT_CATEGORY)
-    setShowAddForm(false)
+    setStatusMessage('장보기 항목을 추가했어요. 계속 추가할 수 있습니다.')
+  }
+
+  const getStorageTypeForCategory = (itemCategory: IngredientCategory | null) => {
+    if (itemCategory === '냉동식품') return '냉동' as const
+    if (itemCategory === '조미료' || itemCategory === '곡물/면/빵' || itemCategory === '통조림/가공식품') return '실온' as const
+    return '냉장' as const
+  }
+
+  const addShoppingItemToFridge = async (item: ShoppingItem) => {
+    const duplicate = ingredients.find(
+      (ingredient) => ingredient.name.trim().toLowerCase() === item.name.trim().toLowerCase(),
+    )
+    if (duplicate) {
+      const shouldMerge = window.confirm(`${item.name}이 이미 냉장고에 있어요. 기존 재료와 합칠까요?`)
+      if (!shouldMerge) return
+
+      await updateIngredient(duplicate.id, {
+        name: duplicate.name,
+        category: duplicate.category ?? item.category,
+        storageType: duplicate.storageType,
+        quantity: duplicate.quantity || item.quantity,
+        expiryDate: duplicate.expiryDate,
+        purchaseDate: duplicate.purchaseDate,
+        openedAt: duplicate.openedAt,
+        storageLocation: duplicate.storageLocation,
+        unitPrice: duplicate.unitPrice,
+        purchasePlace: duplicate.purchasePlace,
+        consumedAt: duplicate.consumedAt,
+        discardedAt: duplicate.discardedAt,
+        repeatPurchase: duplicate.repeatPurchase,
+        barcode: duplicate.barcode,
+        imageUrl: duplicate.imageUrl,
+        memo: [duplicate.memo, item.sourceRecipeName ? `${item.sourceRecipeName} 장보기에서 합침` : '장보기에서 합침']
+          .filter(Boolean)
+          .join(' · '),
+      })
+      if (!item.checked) {
+        await toggleItem(item.id)
+      }
+      setStatusMessage(`${item.name}을 기존 냉장고 재료와 합쳤어요.`)
+      return
+    }
+
+    await addIngredient({
+      name: item.name,
+      category: item.category,
+      storageType: getStorageTypeForCategory(item.category),
+      quantity: item.quantity,
+      expiryDate: null,
+      memo: item.sourceRecipeName ? `${item.sourceRecipeName} 장보기에서 추가` : '장보기에서 추가',
+    })
+    if (!item.checked) {
+      await toggleItem(item.id)
+    }
+    setStatusMessage(`${item.name}을 냉장고에 추가했어요. 유통기한은 나중에 입력할 수 있습니다.`)
   }
 
   const shareList = async () => {
@@ -64,7 +124,7 @@ export default function ShoppingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
-            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">필요한 재료를 구매 상태별로 확인하세요.</p>
+            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">필요한 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.</p>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={shareList} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
@@ -81,6 +141,11 @@ export default function ShoppingPage() {
           <ShoppingStat label="구매완료" value={`${checkedItems.length}개`} good />
           <ShoppingStat label="미구매" value={`${uncheckedItems.length}개`} warning />
         </div>
+        {statusMessage ? (
+          <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
+            {statusMessage}
+          </p>
+        ) : null}
       </section>
 
       <section className="px-5 pt-4">
@@ -133,6 +198,19 @@ export default function ShoppingPage() {
           <div className="jipbab-panel rounded-[18px] px-4 py-12 text-center">
             <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
             <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => (
+                <a
+                  key={item.name}
+                  href={getCoupangSearchUrl(item.name)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
+                >
+                  {item.name} 바로 사기
+                </a>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="space-y-5">
@@ -148,6 +226,7 @@ export default function ShoppingPage() {
                       checked={false}
                       onToggle={() => toggleItem(item.id)}
                       onRemove={() => removeItem(item.id)}
+                      onAddToFridge={() => addShoppingItemToFridge(item)}
                     />
                   ))}
                 </div>
@@ -164,6 +243,7 @@ export default function ShoppingPage() {
                     checked
                     onToggle={() => toggleItem(item.id)}
                     onRemove={() => removeItem(item.id)}
+                    onAddToFridge={() => addShoppingItemToFridge(item)}
                   />
                 ))}
               </ShoppingGroup>
@@ -211,12 +291,14 @@ function ShoppingRow({
   checked,
   onToggle,
   onRemove,
+  onAddToFridge,
 }: {
   name: string
   quantity: string
   checked: boolean
   onToggle: () => void
   onRemove: () => void
+  onAddToFridge: () => void
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-3">
@@ -235,15 +317,24 @@ function ShoppingRow({
         <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{quantity}</p>
       </div>
       {!checked ? (
-        <a
-          href={getCoupangSearchUrl(name)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
-        >
-          <ExternalLink size={12} />
-          쿠팡
-        </a>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={onAddToFridge}
+            className="inline-flex h-8 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
+          >
+            재료 추가
+          </button>
+          <a
+            href={getCoupangSearchUrl(name)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+          >
+            <ExternalLink size={12} />
+            구매
+          </a>
+        </div>
       ) : null}
       <button type="button" onClick={onRemove} className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />

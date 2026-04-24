@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIngredients } from "@/hooks/useIngredients";
+import { CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
 import { getDeviceId } from "@/lib/device-id";
 import { rankRecipeRecommendations, type RecipeRecommendationScore } from "@/lib/matching";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
@@ -216,15 +217,33 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const { ingredients, loading: ingredientsLoading } = useIngredients();
   const catalog = useRecipeCatalog(pageSize);
 
+  const mergedCatalogRecipes = useMemo(() => {
+    const query = catalog.searchQuery.trim().toLowerCase();
+    const category = catalog.selectedCategory;
+    const curatedMatches = CURATED_RECIPE_RECORDS.filter((recipe) => {
+      const matchesCategory = category === "전체" || recipe.category === category;
+      const matchesQuery =
+        query.length === 0 ||
+        recipe.name.toLowerCase().includes(query) ||
+        recipe.ingredients.toLowerCase().includes(query);
+      return matchesCategory && matchesQuery;
+    });
+    const existingIds = new Set(catalog.recipes.map((recipe) => recipe.id));
+    return [
+      ...curatedMatches.filter((recipe) => !existingIds.has(recipe.id)),
+      ...catalog.recipes,
+    ];
+  }, [catalog.recipes, catalog.searchQuery, catalog.selectedCategory]);
+
   const recipes = useMemo<RecommendedRecipe[]>(() => {
-    return rankRecipeRecommendations(catalog.recipes, ingredients).map(({ recipe, match, score }) => {
+    return rankRecipeRecommendations(mergedCatalogRecipes, ingredients).map(({ recipe, match, score }) => {
       return {
         ...recipe,
         ...match,
         recommendationScore: score,
       };
     });
-  }, [catalog.recipes, ingredients]);
+  }, [ingredients, mergedCatalogRecipes]);
 
   return {
     ...catalog,

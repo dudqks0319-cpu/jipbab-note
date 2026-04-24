@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { Bookmark, Clock3, Heart, RefreshCw, Search, SlidersHorizontal, Star, Users } from 'lucide-react'
 
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
+import { CURATED_JIPBAB_RECIPES } from '@/lib/curated-recipes'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
@@ -19,6 +20,9 @@ const RECIPE_FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=85',
   'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=900&q=85',
 ] as const
+const curatedRecipeMeta = new Map(
+  CURATED_JIPBAB_RECIPES.map((recipe) => [recipe.id, recipe]),
+)
 
 export default function RecipePage() {
   const isAppStoreDemo = useDemoMode()
@@ -47,6 +51,11 @@ export default function RecipePage() {
     const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
 
     return [...base].sort((left, right) => {
+      const leftFavorite = isFavorite(left.id) ? 1 : 0
+      const rightFavorite = isFavorite(right.id) ? 1 : 0
+      if (rightFavorite !== leftFavorite) {
+        return rightFavorite - leftFavorite
+      }
       if (right.matchRate !== left.matchRate) {
         return right.matchRate - left.matchRate
       }
@@ -65,8 +74,8 @@ export default function RecipePage() {
             <h1 className="text-[24px] font-black text-[#2f2117]">레시피</h1>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
               {isAppStoreDemo
-                ? `미리보기 ${baseRecipes.length}개`
-                : `총 ${totalCount.toLocaleString()}개 레시피${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
+                ? `총 ${baseRecipes.length}개 레시피`
+                : `소진임박 재료부터 추천 · 총 ${totalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
             </p>
           </div>
           <button
@@ -177,13 +186,27 @@ export default function RecipePage() {
                 FALLBACK_RECIPE_IMAGE
               const minutes = 15 + (index % 4) * 5
               const servings = index % 3 === 0 ? '1인분' : index % 3 === 1 ? '2인분' : '2-3인분'
+              const curated = curatedRecipeMeta.get(recipe.id)
+              const readyLabel =
+                recipe.missingIngredients.length === 0
+                  ? '바로 조리 가능'
+                  : recipe.matchedIngredients.length > 0
+                    ? `보유 ${recipe.matchedIngredients.length}개 활용`
+                    : curated?.trustLabel ?? '레시피 탐색'
 
               return (
                 <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
                   <div className="flex gap-3 p-2.5">
                     <Link href={`/recipe/${recipe.id}`} className="relative h-[86px] w-[96px] shrink-0 overflow-hidden rounded-[13px] bg-[#eadcc9]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={coverImage} alt={recipe.name} className="h-full w-full object-cover" />
+                      <img
+                        src={coverImage}
+                        alt={recipe.name}
+                        onError={(event) => {
+                          event.currentTarget.src = RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] || FALLBACK_RECIPE_IMAGE
+                        }}
+                        className="h-full w-full object-cover"
+                      />
                     </Link>
 
                     <div className="min-w-0 flex-1 py-1">
@@ -193,6 +216,11 @@ export default function RecipePage() {
                           <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">
                             {recipe.category} · {recipe.method}
                           </p>
+                          {curated ? (
+                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#a66a17]">
+                              {curated.featuredReason}
+                            </p>
+                          ) : null}
                         </Link>
                         <button
                           onClick={() =>
@@ -224,8 +252,13 @@ export default function RecipePage() {
                           {recipe.matchRate}% ({recipe.totalRecipeIngredients})
                         </span>
                         <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
-                          데이터 검증
+                          {readyLabel}
                         </span>
+                        {favorite ? (
+                          <span className="rounded-full bg-[#f2f7e7] px-2 py-0.5 text-[10px] font-black text-[#3d7b38]">
+                            찜 우선
+                          </span>
+                        ) : null}
                       </div>
                       <p className="mt-2 text-[11px] font-semibold text-[#a69585]">
                         부족 재료 {recipe.missingIngredients.length}개 · 보유 {recipe.matchedIngredients.length}개

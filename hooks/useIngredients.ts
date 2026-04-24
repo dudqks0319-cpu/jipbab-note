@@ -257,6 +257,10 @@ export interface UseIngredientsResult {
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
 }
 
+function normalizeIngredientKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, "");
+}
+
 export function useIngredients(): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
@@ -357,7 +361,9 @@ export function useIngredients(): UseIngredientsResult {
         const nextLocal = makeLocalRecord(deviceId, payload, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 추가 실패", "supabase"));
+        // Supabase가 지연되어도 로컬 저장이 성공하면 사용자는 성공 플로우를 유지합니다.
+        console.warn("재료 로컬 저장으로 전환", caught);
+        setError(null);
         return nextLocal;
       } finally {
         setLoading(false);
@@ -426,7 +432,8 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
+        console.warn("재료 수정 로컬 저장으로 전환", caught);
+        setError(null);
         return nextRecord;
       } finally {
         setLoading(false);
@@ -454,7 +461,8 @@ export function useIngredients(): UseIngredientsResult {
       } catch (caught) {
         const nextItems = removeLocalIngredient(deviceId, ingredientId);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 삭제 실패", "supabase"));
+        console.warn("재료 삭제 로컬 저장으로 전환", caught);
+        setError(null);
         return true;
       } finally {
         setLoading(false);
@@ -468,7 +476,10 @@ export function useIngredients(): UseIngredientsResult {
   }, [listIngredients]);
 
   return {
-    ingredients,
+    ingredients: ingredients.filter(
+      (item, index, list) =>
+        list.findIndex((target) => normalizeIngredientKey(target.name) === normalizeIngredientKey(item.name)) === index,
+    ),
     loading,
     error,
     listIngredients,

@@ -24,7 +24,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const quickProviders = providers.filter((item) => item.provider === 'google' || item.provider === 'apple')
+  const quickProviders = providers
   const quickEnabledProviders = quickProviders.filter((item) => item.enabled)
 
   if (mode === 'welcome') {

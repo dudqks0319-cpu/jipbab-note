@@ -8,284 +8,159 @@ export type ExpiryStatus = {
   tone: 'danger' | 'warning' | 'safe' | 'neutral'
 }
 
-const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = {
-  방울토마토:
-    'https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&w=900&q=80',
-  참치캔:
-    'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=900&q=80',
-  모짜렐라치즈:
-    'https://images.unsplash.com/photo-1589881133825-bbb3b9471b1b?auto=format&fit=crop&w=900&q=80',
-  크림치즈:
-    'https://images.unsplash.com/photo-1452195100486-9cc805987862?auto=format&fit=crop&w=900&q=80',
-  닭가슴살:
-    'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=900&q=80',
-  오렌지주스:
-    'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=900&q=80',
-  사과주스:
-    'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=900&q=80',
-  계란:
-    'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=900&q=80',
-  우유:
-    'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=900&q=80',
-  두유:
-    'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=900&q=80',
-  치즈:
-    'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=900&q=80',
-  버터:
-    'https://images.unsplash.com/photo-1589985270958-53d0e57f34b3?auto=format&fit=crop&w=900&q=80',
-  요거트:
-    'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&q=80',
-  생크림:
-    'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80',
-  마요네즈:
-    'https://images.unsplash.com/photo-1604909052743-94e838986d24?auto=format&fit=crop&w=900&q=80',
-  사과:
-    'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=900&q=80',
-  바나나:
-    'https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=900&q=80',
-  딸기:
-    'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=900&q=80',
-  오렌지:
-    'https://images.unsplash.com/photo-1580052614034-c55d20bfee3b?auto=format&fit=crop&w=900&q=80',
-  귤:
-    'https://images.unsplash.com/photo-1605549910170-9f28d1d1f8bd?auto=format&fit=crop&w=900&q=80',
-  레몬:
-    'https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=900&q=80',
-  라임:
-    'https://images.unsplash.com/photo-1611109942996-2619f64d9d0a?auto=format&fit=crop&w=900&q=80',
-  포도:
-    'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=900&q=80',
-  블루베리:
-    'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=900&q=80',
-  키위:
-    'https://images.unsplash.com/photo-1585059895524-72359e06133a?auto=format&fit=crop&w=900&q=80',
-  망고:
-    'https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=900&q=80',
-  파인애플:
-    'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=900&q=80',
-  아보카도:
-    'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=900&q=80',
-  당근:
-    'https://images.unsplash.com/photo-1447175008436-054170c2e979?auto=format&fit=crop&w=900&q=80',
-  양파:
-    'https://user0514.cdnw.net/shared/img/thumb/9V9A5984_TP_V.jpg',
-  대파:
-    'https://images.unsplash.com/photo-1622205313162-be1d5712a43c?auto=format&fit=crop&w=900&q=80',
-  마늘:
-    'https://images.unsplash.com/photo-1587049633312-d628ae50a8ae?auto=format&fit=crop&w=900&q=80',
-  감자:
-    'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80',
-  고구마:
-    'https://images.unsplash.com/photo-1596097635121-14b63b7a0c19?auto=format&fit=crop&w=900&q=80',
-  애호박:
-    'https://images.unsplash.com/photo-1598254817018-d5c7ae43d2a5?auto=format&fit=crop&w=900&q=80',
-  오이:
-    'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=900&q=80',
-  양배추:
-    'https://images.unsplash.com/photo-1594282486552-05b4d80fbb9f?auto=format&fit=crop&w=900&q=80',
-  배추:
-    'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?auto=format&fit=crop&w=900&q=80',
-  브로콜리:
-    'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=900&q=80',
-  버섯:
-    'https://images.unsplash.com/photo-1504545102780-26774c1bb073?auto=format&fit=crop&w=900&q=80',
-  시금치:
-    'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=900&q=80',
-  파프리카:
-    'https://images.unsplash.com/photo-1525607551316-4a8e16d1f9ba?auto=format&fit=crop&w=900&q=80',
-  상추:
-    'https://images.unsplash.com/photo-1622205313162-be1d5712a43c?auto=format&fit=crop&w=900&q=80',
-  깻잎:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  콩나물:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80',
-  숙주:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80',
-  토마토소스:
-    'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=900&q=80',
-  토마토:
-    'https://images.unsplash.com/photo-1546470427-e5ac89cd0b7f?auto=format&fit=crop&w=900&q=80',
-  두부:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  돼지고기:
-    'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=900&q=80',
-  소고기:
-    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80',
-  닭고기:
-    'https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=900&q=80',
-  삼겹살:
-    'https://images.unsplash.com/photo-1603048297172-c92544798d5a?auto=format&fit=crop&w=900&q=80',
-  목살:
-    'https://images.unsplash.com/photo-1602470520998-f4a52199a3d6?auto=format&fit=crop&w=900&q=80',
-  불고기:
-    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80',
-  닭다리:
-    'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=900&q=80',
-  오리고기:
-    'https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=900&q=80',
-  베이컨:
-    'https://images.unsplash.com/photo-1528607929212-2636ec44253e?auto=format&fit=crop&w=900&q=80',
-  햄:
-    'https://images.unsplash.com/photo-1528607929212-2636ec44253e?auto=format&fit=crop&w=900&q=80',
-  소시지:
-    'https://images.unsplash.com/photo-1597714026720-8f74c62310ba?auto=format&fit=crop&w=900&q=80',
-  고등어:
-    'https://images.unsplash.com/photo-1579631542720-3a87824fff86?auto=format&fit=crop&w=900&q=80',
-  연어:
-    'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?auto=format&fit=crop&w=900&q=80',
-  참치:
-    'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=900&q=80',
-  새우:
-    'https://images.unsplash.com/photo-1625943555419-56a2cb596640?auto=format&fit=crop&w=900&q=80',
-  오징어:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  문어:
-    'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?auto=format&fit=crop&w=900&q=80',
-  멸치:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  다시마:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  미역:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  바지락:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  명란:
-    'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=900&q=80',
-  어묵:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  냉동만두:
-    'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=900&q=80',
-  냉동볶음밥:
-    'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80',
-  냉동피자:
-    'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80',
-  냉동우동면:
-    'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80',
-  냉동새우:
-    'https://images.unsplash.com/photo-1625943555419-56a2cb596640?auto=format&fit=crop&w=900&q=80',
-  냉동오징어:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  냉동닭가슴살:
-    'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=900&q=80',
-  냉동돈까스:
-    'https://images.unsplash.com/photo-1604908177522-cbc5d95c2f3d?auto=format&fit=crop&w=900&q=80',
-  냉동어묵:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  냉동야채믹스:
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80',
-  냉동블루베리:
-    'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=900&q=80',
-  냉동감자튀김:
-    'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=900&q=80',
-  간장:
-    'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=900&q=80',
-  고추장:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  된장:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  쌈장:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  소금:
-    'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?auto=format&fit=crop&w=900&q=80',
-  설탕:
-    'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=900&q=80',
-  식초:
-    'https://images.unsplash.com/photo-1620589125156-fd5028c5e06c?auto=format&fit=crop&w=900&q=80',
-  참기름:
-    'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=900&q=80',
-  들기름:
-    'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=900&q=80',
-  후추:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  고춧가루:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  굴소스:
-    'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=900&q=80',
-  카레가루:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  케첩:
-    'https://images.unsplash.com/photo-1604909052743-94e838986d24?auto=format&fit=crop&w=900&q=80',
-  쌀:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80',
-  현미:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80',
-  밀가루:
-    'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80',
-  전분:
-    'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80',
-  국수:
-    'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80',
-  라면:
-    'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80',
-  파스타면:
-    'https://images.unsplash.com/photo-1551462147-37885acc36f1?auto=format&fit=crop&w=900&q=80',
-  우동면:
-    'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80',
-  식빵:
-    'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80',
-  바게트:
-    'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=900&q=80',
-  빵가루:
-    'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80',
-  떡:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  옥수수캔:
-    'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=900&q=80',
-  콩통조림:
-    'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=900&q=80',
-  스팸:
-    'https://images.unsplash.com/photo-1528607929212-2636ec44253e?auto=format&fit=crop&w=900&q=80',
-  김치:
-    'https://images.unsplash.com/photo-1583224964978-2257b960c3d3?auto=format&fit=crop&w=900&q=80',
-  피클:
-    'https://images.unsplash.com/photo-1606851091851-e8c8c0fca5ba?auto=format&fit=crop&w=900&q=80',
-  올리브:
-    'https://images.unsplash.com/photo-1607532941433-304659e8198a?auto=format&fit=crop&w=900&q=80',
-  잼:
-    'https://images.unsplash.com/photo-1607026092261-7ac42e7c8809?auto=format&fit=crop&w=900&q=80',
-  육수팩:
-    'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80',
-  생수:
-    'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=900&q=80',
-  탄산수:
-    'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80',
-  커피:
-    'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80',
-  티백:
-    'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=900&q=80',
-  견과류:
-    'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=900&q=80',
-  꿀:
-    'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=900&q=80',
-  올리고당:
-    'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=900&q=80',
-  코코아가루:
-    'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=900&q=80',
-}
+const ingredientAsset = (filename: string): string => `/images/ingredients/${filename}`
+
+const mapIngredientPhotos = (
+  entries: Array<[keywords: string[], filename: string]>,
+): Record<string, string> =>
+  Object.fromEntries(
+    entries.flatMap(([keywords, filename]) =>
+      keywords.map((keyword) => [keyword, ingredientAsset(filename)]),
+    ),
+  )
+
+// 재료명과 별칭을 같은 쇼핑형 썸네일로 연결합니다.
+const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos([
+  [['양파', '흰양파', '적양파'], 'onion-shop.png'],
+  [['대파', '쪽파'], 'green-onion-shop.png'],
+  [['계란', '달걀'], 'egg-shop.png'],
+  [['두부', '연두부', '순두부'], 'tofu-shop.png'],
+  [['마늘', '통마늘', '깐마늘', '다진마늘', '다진 마늘'], 'garlic-shop.png'],
+  [['감자', '수미감자'], 'potato-shop.png'],
+  [['고구마', '밤고구마', '호박고구마'], 'sweet-potato-shop.png'],
+  [['당근'], 'carrot-shop.png'],
+  [['오이'], 'cucumber-shop.png'],
+  [['애호박', '쥬키니'], 'zucchini-shop.png'],
+  [['양배추', '적양배추'], 'cabbage-shop.png'],
+  [['배추'], 'napa-cabbage-shop.png'],
+  [['무', '조선무'], 'radish-shop.png'],
+  [['브로콜리', '브로컬리'], 'broccoli-shop.png'],
+  [['버섯', '양송이버섯', '느타리버섯', '표고버섯', '새송이버섯', '팽이버섯'], 'mushroom-shop.png'],
+  [['시금치'], 'spinach-shop.png'],
+  [['파프리카', '빨강 파프리카', '노랑 파프리카', '피망', '청피망', '홍피망'], 'paprika-shop.png'],
+  [['상추', '양상추'], 'lettuce-shop.png'],
+  [['깻잎'], 'perilla-leaf-shop.png'],
+  [['콩나물'], 'bean-sprout-shop.png'],
+  [['숙주', '숙주나물'], 'mung-bean-sprout-shop.png'],
+  [['고추', '청양고추', '홍고추', '풋고추'], 'chili-pepper-shop.png'],
+  [['방울토마토', '체리토마토'], 'cherry-tomato-shop.png'],
+  [['토마토'], 'tomato-shop.png'],
+
+  [['사과'], 'apple-shop.png'],
+  [['배', '신고배'], 'pear-shop.png'],
+  [['바나나'], 'banana-shop.png'],
+  [['딸기'], 'strawberry-shop.png'],
+  [['오렌지'], 'orange-shop.png'],
+  [['귤'], 'tangerine-shop.png'],
+  [['레몬', '레몬즙', '레몬주스'], 'lemon-shop.png'],
+  [['라임'], 'lime-shop.png'],
+  [['포도'], 'grape-shop.png'],
+  [['블루베리'], 'blueberry-shop.png'],
+  [['키위'], 'kiwi-shop.png'],
+  [['망고'], 'mango-shop.png'],
+  [['파인애플'], 'pineapple-shop.png'],
+  [['아보카도'], 'avocado-shop.png'],
+
+  [['소고기', '불고기용 소고기', '불고기', '국거리'], 'beef-shop.png'],
+  [['돼지고기', '앞다리살', '뒷다리살', '목살', '오리고기'], 'pork-shop.png'],
+  [['삼겹살'], 'pork-belly-shop.png'],
+  [['닭고기'], 'meat-shop.png'],
+  [['닭다리'], 'chicken-leg-shop.png'],
+  [['닭가슴살'], 'chicken-breast-shop.png'],
+  [['베이컨'], 'bacon-shop.png'],
+  [['햄'], 'ham-shop.png'],
+  [['소시지', '비엔나'], 'sausage-shop.png'],
+
+  [['연어'], 'salmon-shop.png'],
+  [['고등어'], 'mackerel-shop.png'],
+  [['새우', '새우살', '칵테일새우'], 'shrimp-shop.png'],
+  [['오징어'], 'squid-shop.png'],
+  [['멸치', '국물멸치', '국멸치', '육수용 멸치'], 'anchovy-shop.png'],
+  [['다시마', '건다시마'], 'kelp-shop.png'],
+  [['미역', '미역 줄기', '미역줄기'], 'wakame-shop.png'],
+  [['바지락', '조개'], 'clam-shop.png'],
+  [['김', '조미김', '김밥김'], 'seaweed-shop.png'],
+  [['참치', '생참치', '문어', '낙지'], 'salmon-shop.png'],
+  [['어묵'], 'fish-cake-shop.png'],
+
+  [['우유'], 'milk-shop.png'],
+  [['두유'], 'soy-milk-shop.png'],
+  [['치즈', '슬라이스치즈'], 'cheese-shop.png'],
+  [['모짜렐라치즈', '모짜렐라'], 'mozzarella-shop.png'],
+  [['크림치즈'], 'cream-cheese-shop.png'],
+  [['파마산치즈', '파마산'], 'parmesan-shop.png'],
+  [['버터', '무염버터'], 'butter-shop.png'],
+  [['요거트', '플레인요거트', '요구르트', '그릭요거트'], 'yogurt-shop.png'],
+  [['생크림', '휘핑크림'], 'cream-shop.png'],
+  [['마요네즈'], 'mayonnaise-shop.png'],
+
+  [['냉동만두'], 'dumpling-shop.png'],
+  [['냉동볶음밥', '냉동피자', '냉동우동면', '냉동돈까스', '냉동야채믹스', '냉동감자튀김'], 'dumpling-shop.png'],
+  [['냉동새우'], 'shrimp-shop.png'],
+  [['냉동오징어'], 'squid-shop.png'],
+  [['냉동닭가슴살'], 'chicken-breast-shop.png'],
+  [['냉동어묵'], 'fish-cake-shop.png'],
+  [['냉동블루베리'], 'blueberry-shop.png'],
+
+  [['간장', '국간장', '조선간장', '진간장', '양조간장'], 'soy-sauce-shop.png'],
+  [['고추장'], 'gochujang-shop.png'],
+  [['된장', '저염된장'], 'doenjang-shop.png'],
+  [['쌈장'], 'doenjang-shop.png'],
+  [['소금', '굵은소금', '꽃소금'], 'salt-shop.png'],
+  [['설탕', '백설탕', '갈색설탕'], 'sugar-shop.png'],
+  [['식초'], 'vinegar-shop.png'],
+  [['참기름'], 'sesame-oil-shop.png'],
+  [['들기름'], 'sesame-oil-shop.png'],
+  [['후추', '후춧가루', '흰후추'], 'pepper-shop.png'],
+  [['고춧가루'], 'red-pepper-powder-shop.png'],
+  [['굴소스'], 'oyster-sauce-shop.png'],
+  [['카레가루'], 'curry-powder-shop.png'],
+  [['케첩'], 'ketchup-shop.png'],
+  [['식용유', '올리브오일', '카놀라유', '포도씨유', '해바라기유'], 'cooking-oil-shop.png'],
+
+  [['참치캔', '참치 통조림'], 'tuna-can-shop.png'],
+  [['옥수수캔'], 'corn-can-shop.png'],
+  [['콩통조림', '병아리콩', '강낭콩'], 'tuna-can-shop.png'],
+  [['스팸', '햄통조림'], 'spam-shop.png'],
+  [['김치', '배추김치'], 'kimchi-shop.png'],
+  [['피클'], 'pickle-shop.png'],
+  [['올리브'], 'olive-shop.png'],
+  [['잼', '딸기잼', '블루베리잼'], 'jam-shop.png'],
+  [['토마토소스', '파스타소스'], 'pasta-sauce-shop.png'],
+
+  [['쌀', '현미'], 'rice-bag-shop.png'],
+  [['밀가루'], 'flour-shop.png'],
+  [['전분', '감자전분', '옥수수전분'], 'flour-shop.png'],
+  [['국수', '당면'], 'noodle-shop.png'],
+  [['라면'], 'ramen-pack-shop.png'],
+  [['파스타면', '스파게티면'], 'spaghetti-shop.png'],
+  [['우동면'], 'udon-shop.png'],
+  [['식빵'], 'white-bread-shop.png'],
+  [['바게트'], 'baguette-shop.png'],
+  [['빵가루'], 'bread-crumbs-shop.png'],
+  [['떡', '떡국떡', '떡볶이떡'], 'rice-cake-shop.png'],
+
+  [['생수', '탄산수'], 'water-bottle-shop.png'],
+  [['오렌지주스', '사과주스'], 'water-bottle-shop.png'],
+  [['커피', '원두커피'], 'water-bottle-shop.png'],
+  [['티백', '홍차', '녹차'], 'tea-bag-shop.png'],
+  [['견과류', '아몬드', '호두'], 'mixed-nuts-shop.png'],
+  [['꿀'], 'honey-shop.png'],
+  [['올리고당', '코코아가루'], 'water-bottle-shop.png'],
+])
 
 const INGREDIENT_PHOTO_BY_CATEGORY: Record<string, string> = {
-  채소:
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80',
-  과일:
-    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=900&q=80',
-  육류:
-    'https://images.unsplash.com/photo-1603048297172-c92544798d5a?auto=format&fit=crop&w=900&q=80',
-  수산물:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  유제품:
-    'https://images.unsplash.com/photo-1559598467-f8b76c8155d0?auto=format&fit=crop&w=900&q=80',
-  냉동식품:
-    'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80',
-  조미료:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  '곡물/면/빵':
-    'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80',
-  '통조림/가공식품':
-    'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=900&q=80',
-  '음료/기타':
-    'https://images.unsplash.com/photo-1543168256-418811576931?auto=format&fit=crop&w=900&q=80',
-  기타:
-    'https://images.unsplash.com/photo-1543168256-418811576931?auto=format&fit=crop&w=900&q=80',
+  채소: ingredientAsset('onion-shop.png'),
+  과일: ingredientAsset('apple-shop.png'),
+  육류: ingredientAsset('meat-shop.png'),
+  수산물: ingredientAsset('salmon-shop.png'),
+  유제품: ingredientAsset('milk-shop.png'),
+  냉동식품: ingredientAsset('dumpling-shop.png'),
+  조미료: ingredientAsset('soy-sauce-shop.png'),
+  '곡물/면/빵': ingredientAsset('rice-bag-shop.png'),
+  '통조림/가공식품': ingredientAsset('tuna-can-shop.png'),
+  '음료/기타': ingredientAsset('water-bottle-shop.png'),
+  기타: ingredientAsset('water-bottle-shop.png'),
 }
 
 export function getIngredientPhotoUrl(
@@ -294,9 +169,9 @@ export function getIngredientPhotoUrl(
 ): string {
   const normalizedName = (name ?? '').trim()
   if (normalizedName) {
-    const keywordHit = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD).find((keyword) =>
-      normalizedName.includes(keyword),
-    )
+    const keywordHit = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD)
+      .sort((left, right) => right.length - left.length)
+      .find((keyword) => normalizedName.includes(keyword))
     if (keywordHit) {
       return INGREDIENT_PHOTO_BY_KEYWORD[keywordHit]
     }

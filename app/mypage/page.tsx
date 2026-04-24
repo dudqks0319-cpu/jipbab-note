@@ -10,11 +10,11 @@ import {
   LoaderCircle,
   LogOut,
   MessageCircle,
+  Users,
   RefreshCw,
   Refrigerator,
   Settings,
   ShoppingBasket,
-  Star,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -23,9 +23,9 @@ import { useAuth } from '@/hooks/useAuth'
 const menuItems = [
   { icon: BookOpen, label: '내 레시피', href: '/favorites' },
   { icon: Heart, label: '찜한 레시피', href: '/favorites' },
-  { icon: Star, label: '작성한 후기', href: '/community' },
   { icon: ShoppingBasket, label: '장보기 리스트', href: '/shopping' },
   { icon: Refrigerator, label: '냉장고 관리', href: '/fridge' },
+  { icon: Users, label: '가족 냉장고 공유', href: '/family' },
 ]
 
 export default function MyPage() {
@@ -98,9 +98,9 @@ export default function MyPage() {
         ) : (
           <div className="jipbab-panel overflow-hidden rounded-[18px] bg-[#2f302d] text-white">
             <div className="grid grid-cols-3 divide-x divide-white/10 px-2 py-4 text-center">
-              <ProfileStat label="레시피" value="42" />
-              <ProfileStat label="찜한 레시피" value="128" />
-              <ProfileStat label="작성한 후기" value="16" />
+              <ProfileStat label="계정" value="연결됨" />
+              <ProfileStat label="동기화" value={migrating ? '진행중' : '정상'} />
+              <ProfileStat label="지원" value="운영중" />
             </div>
             <div className="border-t border-white/10 px-4 py-3 text-[12px] font-semibold text-white/75">
               현재 로그인: {currentProvider ?? 'OAuth'}
@@ -132,6 +132,7 @@ export default function MyPage() {
           {menuItems.map((item) => (
             <MenuLink key={item.label} href={item.href} icon={item.icon} label={item.label} />
           ))}
+          <MenuLink href="/community" icon={MessageCircle} label="커뮤니티 안내" />
           <MenuLink href="/support" icon={MessageCircle} label="고객센터" />
           {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제 요청" danger /> : null}
           {isAdminUser ? <MenuLink href="/admin/account-deletions" icon={Settings} label="운영자 삭제 요청함" /> : null}

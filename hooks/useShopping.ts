@@ -280,7 +280,8 @@ export function useShopping(): UseShoppingResult {
           return nextItems;
         });
         setSource("local");
-        setError(makeError(caught instanceof Error ? caught.message : "장보기 항목 추가 실패", "supabase"));
+        console.warn("장보기 항목 로컬 저장으로 전환", caught);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -346,7 +347,8 @@ export function useShopping(): UseShoppingResult {
           return nextItems;
         });
         setSource("local");
-        setError(makeError(caught instanceof Error ? caught.message : "장보기 항목 업데이트 실패", "supabase"));
+        console.warn("장보기 항목 업데이트 로컬 저장으로 전환", caught);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -376,7 +378,8 @@ export function useShopping(): UseShoppingResult {
         const nextItems = removeLocalItem(deviceId, itemId);
         setItems(nextItems);
         setSource("local");
-        setError(makeError(caught instanceof Error ? caught.message : "장보기 항목 삭제 실패", "supabase"));
+        console.warn("장보기 항목 삭제 로컬 저장으로 전환", caught);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -411,7 +414,8 @@ export function useShopping(): UseShoppingResult {
       const nextItems = removeLocalCheckedItems(deviceId);
       setItems(nextItems);
       setSource("local");
-      setError(makeError(caught instanceof Error ? caught.message : "완료 항목 정리 실패", "supabase"));
+      console.warn("완료 항목 정리 로컬 저장으로 전환", caught);
+      setError(null);
     } finally {
       setLoading(false);
     }

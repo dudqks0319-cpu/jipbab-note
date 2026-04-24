@@ -224,6 +224,23 @@ export interface CommunityLikeRecord {
   createdAt: string;
 }
 
+export interface FamilyMemberRecord {
+  id: string;
+  name: string;
+  role: "owner" | "member";
+  joinedAt: string;
+}
+
+export interface FamilyGroupRecord {
+  id: string;
+  name: string;
+  inviteCode: string;
+  ownerName: string;
+  members: FamilyMemberRecord[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CommunityPostPayload {
   title: string;
   content: string;

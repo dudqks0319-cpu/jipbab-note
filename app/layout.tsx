@@ -1,5 +1,5 @@
 // 이 파일은 앱 전체의 뼈대(레이아웃)를 담당합니다
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
 import AppShell from '@/components/layout/AppShell'
@@ -11,6 +11,14 @@ export const metadata: Metadata = {
     icon: '/icon.png',
     apple: '/apple-icon.png',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

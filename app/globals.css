@@ -11,6 +11,9 @@
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   background: #f4eee5;
   color: #2b2118;
 }

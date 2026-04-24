@@ -27,7 +27,7 @@ export default function RecipeShoppingAssistant({
   recipeName,
   ingredientList,
 }: RecipeShoppingAssistantProps) {
-  const { ingredients, loading } = useIngredients();
+  const { ingredients, loading, deleteIngredient } = useIngredients();
   const { items, addItems } = useShopping();
 
   const ownedCategories = useMemo(
@@ -60,6 +60,25 @@ export default function RecipeShoppingAssistant({
         })),
     [match.missingIngredients, ownedCategories, recipeId, recipeName, shoppingNames],
   );
+
+  const matchedInventoryItems = useMemo(
+    () =>
+      ingredients.filter((item) =>
+        match.matchedIngredients.some(
+          (ingredient) => ingredient.trim().toLowerCase() === item.name.trim().toLowerCase(),
+        ),
+      ),
+    [ingredients, match.matchedIngredients],
+  );
+
+  const removeCookedIngredients = async () => {
+    if (matchedInventoryItems.length === 0) return;
+    const shouldRemove = window.confirm(
+      `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 냉장고에서 뺄까요? 현재는 수량 차감 대신 재료 항목 제거로 처리됩니다.`,
+    );
+    if (!shouldRemove) return;
+    await Promise.all(matchedInventoryItems.map((item) => deleteIngredient(item.id)));
+  };
 
   if (ingredientList.length === 0) {
     return null;
@@ -131,6 +150,26 @@ export default function RecipeShoppingAssistant({
             >
               <ShoppingCart size={16} />
               {missingDrafts.length === 0 ? "이미 장보기에 있음" : "장보기에 추가"}
+            </button>
+          </div>
+        ) : null}
+
+        {matchedInventoryItems.length > 0 ? (
+          <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
+            <p className="text-sm font-black text-[#2f2117]">
+              조리 후 사용한 재료를 바로 뺄 수 있어요.
+            </p>
+            <p className="mt-1 text-xs text-[#7d6d5f]">
+              수량 단위가 아직 제각각이라 이번 버전은 항목 제거로 먼저 처리합니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                void removeCookedIngredients();
+              }}
+              className="mt-3 rounded-full bg-[#3d7b38] px-4 py-2 text-sm font-bold text-white"
+            >
+              사용한 재료 냉장고에서 빼기
             </button>
           </div>
         ) : null}

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const isProduction = process.env.NODE_ENV === "production";
 const scriptSrc = isProduction
@@ -11,6 +12,7 @@ const connectSrc = isProduction
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  outputFileTracingRoot: path.dirname(new URL(import.meta.url).pathname),
   async headers() {
     return [
       {

@@ -19,6 +19,7 @@ import { useRecipeCatalog } from '@/hooks/useRecipes'
 import { useShopping } from '@/hooks/useShopping'
 import { calculateRecipeIngredientMatch } from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
+import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday } from '@/lib/utils'
 
 const FALLBACK_RECIPE_IMAGE =
@@ -26,7 +27,7 @@ const FALLBACK_RECIPE_IMAGE =
 
 export default function HomePage() {
   const isAppStoreDemo = useDemoMode()
-  const { ingredients, loading: ingredientsLoading } = useIngredients()
+  const { ingredients, loading: ingredientsLoading, addIngredient } = useIngredients()
   const { recipes: recipeCatalog, loading: recipesLoading } = useRecipeCatalog(12)
   const { uncheckedCount } = useShopping()
 
@@ -54,13 +55,17 @@ export default function HomePage() {
   }, [displayRecipeCatalog, ingredientNames])
 
   const isLoading = ingredientsLoading || recipesLoading
+  const addStarterIngredients = async () => {
+    const payloads = buildStarterIngredientPayloads(ingredients.map((item) => item.name))
+    await Promise.all(payloads.map((payload) => addIngredient(payload)))
+  }
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-5">
       <section className="mobile-safe-top px-5">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-[#9b8979]">오늘 뭐 먹지?</p>
+        <div>
+            <p className="text-[11px] font-semibold text-[#9b8979]">소진임박 재료부터</p>
             <h1 className="mt-1 text-[20px] font-black text-[#ea5a1f]">집밥노트</h1>
           </div>
           <Link
@@ -77,7 +82,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between">
           <h2 className="text-[17px] font-black text-[#2f2117]">냉장고 요약</h2>
           <span className="text-[11px] font-semibold text-[#8f7f70]">
-            {isAppStoreDemo ? '미리보기' : isLoading ? '동기화 중' : `전체 ${displayIngredients.length}개`}
+            {isLoading ? '동기화 중' : `전체 ${displayIngredients.length}개`}
           </span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -101,11 +106,28 @@ export default function HomePage() {
       <section className="px-5 pt-4">
         <div className="jipbab-panel rounded-[20px] px-4 py-4">
           <div>
-            <p className="text-[13px] font-black text-[#2f2117]">냉장고 바로가기</p>
+            <p className="text-[13px] font-black text-[#2f2117]">냉장고 재료로 오늘 메뉴 찾기</p>
             <p className="mt-1 text-[12px] leading-5 text-[#7d6d5f]">
-              재료를 빠르게 등록하고 보관 상태를 확인하세요.
+              재료를 빠르게 등록하면 부족한 재료와 바로 만들 수 있는 레시피가 함께 보입니다.
             </p>
           </div>
+          {!isAppStoreDemo && displayIngredients.length === 0 ? (
+            <div className="mt-3 rounded-[14px] bg-[#fff7ed] px-3 py-3">
+              <p className="text-[12px] font-black text-[#4b3929]">처음이면 국민 재료부터 담아보세요.</p>
+              <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
+                {STARTER_INGREDIENT_NAMES.join(' · ')}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  void addStarterIngredients()
+                }}
+                className="mt-2 rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
+              >
+                5개 바로 담기
+              </button>
+            </div>
+          ) : null}
           <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
             <Link
               href="/fridge"
@@ -141,6 +163,9 @@ export default function HomePage() {
                   <img
                     src={recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE}
                     alt={recipe.name}
+                    onError={(event) => {
+                      event.currentTarget.src = FALLBACK_RECIPE_IMAGE
+                    }}
                     className="h-full w-full object-cover"
                   />
                 </div>

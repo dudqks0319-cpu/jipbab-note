@@ -11,6 +11,8 @@ export type AppSettings = {
   allergyNotes: string;
   expiryAlerts: boolean;
   dislikedIngredients: string;
+  excludedCategories: string[];
+  cravingKeyword: string;
   shoppingReminders: boolean;
   recipeDiscoveryTips: boolean;
   servingSize: number;
@@ -21,6 +23,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   allergyNotes: "",
   expiryAlerts: true,
   dislikedIngredients: "",
+  excludedCategories: [],
+  cravingKeyword: "",
   shoppingReminders: true,
   recipeDiscoveryTips: true,
   servingSize: 2,
@@ -49,6 +53,14 @@ function safeReadSettings(): AppSettings {
         typeof parsed.dislikedIngredients === "string" && parsed.dislikedIngredients.length <= 120
           ? parsed.dislikedIngredients
           : DEFAULT_SETTINGS.dislikedIngredients,
+      excludedCategories:
+        Array.isArray(parsed.excludedCategories)
+          ? parsed.excludedCategories.filter((item): item is string => typeof item === "string").slice(0, 12)
+          : DEFAULT_SETTINGS.excludedCategories,
+      cravingKeyword:
+        typeof parsed.cravingKeyword === "string" && parsed.cravingKeyword.length <= 40
+          ? parsed.cravingKeyword
+          : DEFAULT_SETTINGS.cravingKeyword,
       shoppingReminders:
         typeof parsed.shoppingReminders === "boolean"
           ? parsed.shoppingReminders
@@ -85,6 +97,8 @@ export interface UseAppSettingsResult {
   settings: AppSettings;
   enabledCount: number;
   setPreferenceText: (key: "allergyNotes" | "dislikedIngredients", value: string) => void;
+  setCravingKeyword: (value: string) => void;
+  toggleExcludedCategory: (category: string) => void;
   setServingSize: (servingSize: number) => void;
   toggleSetting: (key: keyof AppSettings) => void;
   setUnitSystem: (unitSystem: IngredientUnitSystem) => void;
@@ -99,6 +113,31 @@ export function useAppSettings(): UseAppSettingsResult {
       const nextSettings = {
         ...prev,
         [key]: value.slice(0, 120),
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const setCravingKeyword = useCallback((value: string) => {
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        cravingKeyword: value.slice(0, 40),
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const toggleExcludedCategory = useCallback((category: string) => {
+    setSettings((prev) => {
+      const exists = prev.excludedCategories.includes(category);
+      const nextSettings = {
+        ...prev,
+        excludedCategories: exists
+          ? prev.excludedCategories.filter((item) => item !== category)
+          : [...prev.excludedCategories, category].slice(0, 12),
       };
       safeWriteSettings(nextSettings);
       return nextSettings;
@@ -157,6 +196,8 @@ export function useAppSettings(): UseAppSettingsResult {
     settings,
     enabledCount,
     setPreferenceText,
+    setCravingKeyword,
+    toggleExcludedCategory,
     setServingSize,
     toggleSetting,
     setUnitSystem,

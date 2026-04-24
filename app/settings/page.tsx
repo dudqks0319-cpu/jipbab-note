@@ -15,7 +15,7 @@ import {
   removeGemmaModel,
   type GemmaStatus,
 } from '@/lib/gemma'
-import type { IngredientUnitSystem } from '@/types'
+import { RECIPE_CATEGORIES, type IngredientUnitSystem } from '@/types'
 
 const toggleItems: Array<{
   key: 'expiryAlerts' | 'shoppingReminders' | 'recipeDiscoveryTips'
@@ -36,7 +36,16 @@ const unitOptions: Array<{
 ]
 
 export default function SettingsPage() {
-  const { settings, toggleSetting, setPreferenceText, setServingSize, setUnitSystem, resetSettings } = useAppSettings()
+  const {
+    settings,
+    toggleSetting,
+    setPreferenceText,
+    setCravingKeyword,
+    toggleExcludedCategory,
+    setServingSize,
+    setUnitSystem,
+    resetSettings,
+  } = useAppSettings()
   const [gemmaStatus, setGemmaStatus] = useState<GemmaStatus | null>(null)
   const [gemmaPrompt, setGemmaPrompt] = useState('양파, 계란, 두부로 오늘 저녁 메뉴 추천해줘')
   const [gemmaAnswer, setGemmaAnswer] = useState('')
@@ -146,6 +155,31 @@ export default function SettingsPage() {
             placeholder="싫어하는 재료: 오이, 고수"
             className="w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
           />
+          <input
+            value={settings.cravingKeyword}
+            onChange={(event) => setCravingKeyword(event.target.value)}
+            placeholder="오늘 땡기는 음식: 매콤한 국물, 면, 고기"
+            className="w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+          />
+          <div>
+            <p className="mb-2 text-[12px] font-black text-[#4b3929]">추천에서 제외할 카테고리</p>
+            <div className="flex flex-wrap gap-2">
+              {RECIPE_CATEGORIES.filter((category) => category !== '전체').map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => toggleExcludedCategory(category)}
+                  className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                    settings.excludedCategories.includes(category)
+                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                      : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

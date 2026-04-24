@@ -8,7 +8,9 @@ import { createClient } from "@supabase/supabase-js";
 import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
 import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
+import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
+import { findCuratedRecipe } from "@/lib/curated-recipes";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
@@ -318,6 +320,11 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
 }
 
 async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
+  const curated = findCuratedRecipe(recipeId);
+  if (curated) {
+    return curated;
+  }
+
   const fromSupabase = await fetchRecipeDetailFromSupabase(recipeId);
   if (fromSupabase) {
     return fromSupabase;
@@ -404,6 +411,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           </Link>
         </div>
         <div className="mobile-safe-top absolute right-4 top-0 z-20 flex gap-2">
+          <RecipeShareButton recipeName={recipe.name} recipeId={recipe.id} />
           <RecipeFavoriteButton
             id={recipe.id}
             name={recipe.name}
@@ -415,7 +423,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         <div className="relative h-[250px] w-full overflow-hidden">
           {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={heroImage} alt={recipe.name} className="h-full w-full object-cover" />
+          <img
+            src={heroImage}
+            alt={recipe.name}
+            onError={(event) => {
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
+            className="h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2f2117]/60 via-transparent to-transparent" />
         </div>
 
@@ -482,7 +497,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
                 <div className="h-44 w-full overflow-hidden border-t border-[#eadcc9]">
                   {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={step.imageUrl} alt={`${recipe.name} 조리 순서 ${step.index}`} className="h-full w-full object-cover" />
+                  <img
+                    src={step.imageUrl}
+                    alt={`${recipe.name} 조리 순서 ${step.index}`}
+                    onError={(event) => {
+                      event.currentTarget.closest("div")?.remove();
+                    }}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               )}
             </li>

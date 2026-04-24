@@ -2,16 +2,58 @@
 'use client'
 
 import Link from 'next/link'
-import { CalendarDays, ChevronLeft, ShoppingBasket } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { CalendarDays, ChevronLeft, RotateCcw, ShoppingBasket, Sparkles } from 'lucide-react'
 
 import { useAppSettings } from '@/hooks/useAppSettings'
 import { useRecipes } from '@/hooks/useRecipes'
 
 const WEEK_DAYS = ['월', '화', '수', '목', '금', '토', '일'] as const
 
+function normalizeFoodText(value: string): string {
+  return value.toLowerCase().replace(/[·&/,\s]/g, '')
+}
+
 export default function MealPlanPage() {
   const { settings } = useAppSettings()
   const { recipes, loading } = useRecipes(7)
+  const [rouletteIndex, setRouletteIndex] = useState(0)
+
+  const filteredRecipes = useMemo(() => {
+    const dislikedTokens = [
+      settings.allergyNotes,
+      settings.dislikedIngredients,
+    ]
+      .join(',')
+      .split(/[,，\s]+/g)
+      .map((item) => normalizeFoodText(item))
+      .filter(Boolean)
+    const craving = normalizeFoodText(settings.cravingKeyword)
+    const excluded = new Set(settings.excludedCategories.map(normalizeFoodText))
+
+    const base = recipes.filter((recipe) => {
+      const category = normalizeFoodText(recipe.category)
+      const haystack = normalizeFoodText(`${recipe.name} ${recipe.category} ${recipe.ingredients}`)
+      if (excluded.has(category)) return false
+      return !dislikedTokens.some((token) => token && haystack.includes(token))
+    })
+
+    if (!craving) return base
+    return [...base].sort((left, right) => {
+      const leftHit = normalizeFoodText(`${left.name} ${left.category} ${left.ingredients}`).includes(craving)
+      const rightHit = normalizeFoodText(`${right.name} ${right.category} ${right.ingredients}`).includes(craving)
+      return Number(rightHit) - Number(leftHit)
+    })
+  }, [recipes, settings.allergyNotes, settings.cravingKeyword, settings.dislikedIngredients, settings.excludedCategories])
+
+  const rouletteRecipe = filteredRecipes.length > 0
+    ? filteredRecipes[rouletteIndex % filteredRecipes.length]
+    : null
+
+  const spinRoulette = () => {
+    if (filteredRecipes.length === 0) return
+    setRouletteIndex((prev) => prev + Math.floor(Math.random() * filteredRecipes.length) + 1)
+  }
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
@@ -32,10 +74,39 @@ export default function MealPlanPage() {
             <h2 className="text-[17px] font-black text-[#2f2117]">{settings.servingSize}인 기준 추천</h2>
           </div>
           <p className="mt-2 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
-            {settings.allergyNotes || settings.dislikedIngredients
-              ? `제외 참고: ${[settings.allergyNotes, settings.dislikedIngredients].filter(Boolean).join(' · ')}`
+            {settings.allergyNotes || settings.dislikedIngredients || settings.excludedCategories.length > 0
+              ? `제외 참고: ${[settings.allergyNotes, settings.dislikedIngredients, ...settings.excludedCategories].filter(Boolean).join(' · ')}`
               : '취향과 알레르기를 설정하면 더 정확한 계획으로 다듬을 수 있어요.'}
           </p>
+          {settings.cravingKeyword ? (
+            <p className="mt-2 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
+              오늘 땡김: {settings.cravingKeyword}
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="px-5 pt-4">
+        <div className="jipbab-panel rounded-[18px] px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Sparkles size={17} className="text-[#ea5a1f]" />
+                <h2 className="text-[15px] font-black text-[#2f2117]">오늘 메뉴 룰렛</h2>
+              </div>
+              <p className="mt-1 truncate text-[18px] font-black text-[#d94d19]">
+                {rouletteRecipe?.name ?? '추천 가능한 메뉴 없음'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={spinRoulette}
+              className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#2f2117] px-4 text-[13px] font-black text-white"
+            >
+              <RotateCcw size={15} />
+              돌리기
+            </button>
+          </div>
         </div>
       </section>
 
@@ -47,7 +118,7 @@ export default function MealPlanPage() {
         ) : (
           <div className="space-y-2.5">
             {WEEK_DAYS.map((day, index) => {
-              const recipe = recipes[index % Math.max(recipes.length, 1)]
+              const recipe = filteredRecipes[index % Math.max(filteredRecipes.length, 1)]
               const rowContent = (
                 <>
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] bg-[#fff0e4] text-[14px] font-black text-[#d94d19]">

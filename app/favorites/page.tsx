@@ -54,6 +54,9 @@ export default function FavoritesPage() {
                   <img
                     src={recipe.thumbnailUrl || FALLBACK_IMAGE}
                     alt={recipe.name}
+                    onError={(event) => {
+                      event.currentTarget.src = FALLBACK_IMAGE
+                    }}
                     className="h-20 w-20 rounded-2xl object-cover"
                   />
                   <div className="min-w-0 flex-1">

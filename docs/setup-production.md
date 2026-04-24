@@ -55,10 +55,10 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 
 권장:
 
-- `NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS=google,apple` (카카오까지 켤 경우 `google,apple,kakao`)
+- `NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS=google,apple,kakao`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED=true`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED=true`
-- `NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED=false` (카카오 운영 준비 전 기본값)
+- `NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED=true` (Kakao Developers와 Supabase Kakao provider 설정 완료 후 운영)
 - `NEXT_PUBLIC_COUPANG_PARTNERS_POTATO_URL`
 - `NEXT_PUBLIC_COUPANG_PARTNERS_VEGETABLE_URL`
 - `NEXT_PUBLIC_COUPANG_PARTNERS_EGG_URL`
