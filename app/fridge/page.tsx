@@ -22,6 +22,7 @@ const localSuggestionFallback: Record<IngredientCategory, string[]> = {
 }
 const suggestionFetchLimit = 24
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
+const nativeBackSwipeEdgeWidth = 28
 
 const resolveApiUrl = (path: string): string => {
   if (!API_BASE_URL) return path
@@ -74,7 +75,9 @@ export default function FridgePage() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [savingIngredient, setSavingIngredient] = useState(false)
   const touchStartXRef = useRef<number | null>(null)
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -111,6 +114,7 @@ export default function FridgePage() {
     setHasFetchedSuggestions(false)
     setEditingId(null)
     setSaveMessage(null)
+    setSavingIngredient(false)
   }
 
   const fetchSuggestions = useCallback(
@@ -215,7 +219,8 @@ export default function FridgePage() {
   }, [])
 
   const handleSave = async () => {
-    if (!form.name.trim()) return
+    if (savingIngredient || !form.name.trim()) return
+    setSavingIngredient(true)
 
     const payload = {
       name: form.name,
@@ -226,41 +231,48 @@ export default function FridgePage() {
       memo: form.memo || null,
     }
 
-    if (editingId) {
-      await updateIngredient(editingId, payload)
-      setSaveMessage('재료를 수정했습니다.')
-      resetForm()
-      setShowAddModal(false)
-    } else {
-      const duplicate = ingredients.find((ingredient) => {
-        return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(form.name)
-      })
+    try {
+      if (editingId) {
+        await updateIngredient(editingId, payload)
+        setSaveMessage('재료를 수정했습니다.')
+        resetForm()
+        setShowAddModal(false)
+      } else {
+        const duplicate = ingredients.find((ingredient) => {
+          return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(form.name)
+        })
 
-      if (duplicate) {
-        const shouldMerge = window.confirm(`${duplicate.name}이(가) 이미 있습니다. 수량과 메모를 합칠까요?`)
-        if (!shouldMerge) {
-          return
+        if (duplicate) {
+          const shouldMerge = window.confirm(`${duplicate.name}이(가) 이미 있습니다. 수량과 메모를 합칠까요?`)
+          if (!shouldMerge) {
+            return
+          }
+
+          await updateIngredient(duplicate.id, {
+            name: duplicate.name,
+            category: duplicate.category ?? form.category,
+            storageType: duplicate.storageType,
+            quantity: mergeQuantityText(duplicate.quantity, form.quantity),
+            expiryDate: duplicate.expiryDate || form.expiry_date || null,
+            barcode: duplicate.barcode,
+            imageUrl: duplicate.imageUrl,
+            memo: [duplicate.memo, form.memo].filter(Boolean).join(' / ') || null,
+            familyFridgeId: duplicate.familyFridgeId ?? null,
+          })
+          setSaveMessage('기존 재료와 합쳤습니다. 바로 다음 재료를 추가할 수 있어요.')
+        } else {
+          await addIngredient(payload)
+          setSaveMessage('저장했습니다. 이어서 다음 재료를 추가해 주세요.')
         }
 
-        await updateIngredient(duplicate.id, {
-          name: duplicate.name,
-          category: duplicate.category ?? form.category,
-          storageType: duplicate.storageType,
-          quantity: mergeQuantityText(duplicate.quantity, form.quantity),
-          expiryDate: duplicate.expiryDate || form.expiry_date || null,
-          barcode: duplicate.barcode,
-          imageUrl: duplicate.imageUrl,
-          memo: [duplicate.memo, form.memo].filter(Boolean).join(' / ') || null,
-          familyFridgeId: duplicate.familyFridgeId ?? null,
-        })
-        setSaveMessage('기존 재료와 합쳤습니다. 바로 다음 재료를 추가할 수 있어요.')
-      } else {
-        await addIngredient(payload)
-        setSaveMessage('저장했습니다. 이어서 다음 재료를 추가해 주세요.')
+        setForm((current) => getNextAddFormState(current))
+        setSuggestionKeyword('')
+        window.setTimeout(() => {
+          nameInputRef.current?.focus()
+        }, 50)
       }
-
-      setForm((current) => getNextAddFormState(current))
-      setSuggestionKeyword('')
+    } finally {
+      setSavingIngredient(false)
     }
   }
 
@@ -293,7 +305,13 @@ export default function FridgePage() {
   }
 
   const handleTouchStart = (event: TouchEvent, ingredientId: string) => {
-    touchStartXRef.current = event.touches[0]?.clientX ?? null
+    const startX = event.touches[0]?.clientX ?? null
+    touchStartXRef.current = startX
+    if (startX !== null && startX <= nativeBackSwipeEdgeWidth) {
+      touchStartXRef.current = null
+      return
+    }
+
     if (swipedId && swipedId !== ingredientId) {
       setSwipedId(null)
     }
@@ -517,6 +535,7 @@ export default function FridgePage() {
             <div className="mb-4">
               <label className="mb-2 block text-sm font-bold text-gray-700">재료명 *</label>
               <input
+                ref={nameInputRef}
                 type="text"
                 placeholder="예: 돼지고기 목살"
                 value={form.name}
@@ -737,12 +756,14 @@ export default function FridgePage() {
 
             {/* 저장 버튼 */}
             <button
+              type="button"
               onClick={() => {
                 void handleSave()
               }}
-              className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400"
+              disabled={savingIngredient || !form.name.trim()}
+              className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {editingId ? '수정 완료 ✨' : '저장하기 ✨'}
+              {savingIngredient ? '저장 중...' : editingId ? '수정 완료 ✨' : '저장하기 ✨'}
             </button>
           </div>
         </div>

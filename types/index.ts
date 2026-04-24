@@ -45,6 +45,7 @@ export interface IngredientFormPayload {
 }
 
 export interface IngredientInsertPayload {
+  id?: string;
   device_id: string;
   user_id?: string | null;
   family_fridge_id?: string | null;

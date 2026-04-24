@@ -20,6 +20,7 @@ import type {
 
 const STORAGE_KEY = "jipbab-note-ingredients";
 const DEFAULT_STORAGE_TYPE: IngredientStorageType = "냉장";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type RawIngredientRow = {
   id: string;
@@ -43,12 +44,21 @@ function normalizeFormPayload(payload: IngredientFormPayload): IngredientFormPay
     name: payload.name.trim(),
     category: payload.category ?? null,
     storageType: payload.storageType ?? DEFAULT_STORAGE_TYPE,
+    familyFridgeId: payload.familyFridgeId?.trim() || null,
     quantity: payload.quantity?.trim() || null,
     expiryDate: toDateOnlyString(payload.expiryDate) ?? null,
     barcode: payload.barcode?.trim() || null,
     imageUrl: payload.imageUrl?.trim() || null,
     memo: payload.memo?.trim() || null,
   };
+}
+
+function toSupabaseFamilyFridgeId(familyFridgeId: string | null | undefined): string | null {
+  if (!familyFridgeId) {
+    return null;
+  }
+
+  return UUID_PATTERN.test(familyFridgeId) ? familyFridgeId : null;
 }
 
 function rowToRecord(row: RawIngredientRow): IngredientRecord {
@@ -138,13 +148,15 @@ function toInsertPayload(
   deviceId: string,
   payload: IngredientFormPayload,
   userId: string | null,
+  id?: string,
 ): IngredientInsertPayload {
   const normalized = normalizeFormPayload(payload);
 
   return {
+    id,
     device_id: deviceId,
     user_id: userId,
-    family_fridge_id: normalized.familyFridgeId ?? null,
+    family_fridge_id: toSupabaseFamilyFridgeId(normalized.familyFridgeId),
     name: normalized.name,
     category: normalized.category,
     storage_type: normalized.storageType,
@@ -160,7 +172,7 @@ function toUpdatePayload(payload: IngredientFormPayload): IngredientUpdatePayloa
   const normalized = normalizeFormPayload(payload);
 
   return {
-    family_fridge_id: normalized.familyFridgeId ?? null,
+    family_fridge_id: toSupabaseFamilyFridgeId(normalized.familyFridgeId),
     name: normalized.name,
     category: normalized.category,
     storage_type: normalized.storageType,
@@ -176,12 +188,13 @@ function makeLocalRecord(
   deviceId: string,
   payload: IngredientFormPayload,
   userId: string | null,
+  id = uuidv4(),
 ): IngredientRecord {
   const normalized = normalizeFormPayload(payload);
   const now = new Date().toISOString();
 
   return {
-    id: uuidv4(),
+    id,
     deviceId,
     userId,
     familyFridgeId: normalized.familyFridgeId ?? null,
@@ -195,6 +208,24 @@ function makeLocalRecord(
     memo: normalized.memo ?? null,
     createdAt: now,
     updatedAt: now,
+  };
+}
+
+function applyFormPayloadToRecord(target: IngredientRecord, payload: IngredientFormPayload): IngredientRecord {
+  const normalized = normalizeFormPayload(payload);
+
+  return {
+    ...target,
+    familyFridgeId: normalized.familyFridgeId ?? target.familyFridgeId ?? null,
+    name: normalized.name,
+    category: normalized.category ?? null,
+    storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
+    quantity: normalized.quantity ?? null,
+    expiryDate: normalized.expiryDate ?? null,
+    barcode: normalized.barcode ?? null,
+    imageUrl: normalized.imageUrl ?? null,
+    memo: normalized.memo ?? null,
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -291,19 +322,17 @@ export function useIngredients(): UseIngredientsResult {
         const { data: authData } = await client.auth.getUser();
         userId = authData.user?.id ?? null;
 
-        const insertPayload = toInsertPayload(deviceId, { ...payload, familyFridgeId }, userId);
-        const { data, error: queryError } = await client
+        const nextRecord = makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
+        const insertPayload = toInsertPayload(deviceId, { ...payload, familyFridgeId }, userId, nextRecord.id);
+        const { error: queryError } = await client
           .from("ingredients")
-          .insert(insertPayload)
-          .select("*")
-          .single();
+          .insert(insertPayload);
 
         if (queryError) {
           throw queryError;
         }
 
-        const nextRecord = rowToRecord(data as RawIngredientRow);
-        setIngredients((prev) => [nextRecord, ...prev]);
+        setIngredients((prev) => [nextRecord, ...prev.filter((item) => item.id !== nextRecord.id)]);
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch {
@@ -322,6 +351,10 @@ export function useIngredients(): UseIngredientsResult {
     async (ingredientId: string, payload: IngredientFormPayload): Promise<IngredientRecord | null> => {
       setLoading(true);
       setError(null);
+      const target =
+        ingredients.find((item) => item.id === ingredientId) ??
+        safeReadLocalIngredients(deviceId, familyFridgeId).find((item) => item.id === ingredientId) ??
+        null;
 
       try {
         const client = getSupabaseClient({ deviceId });
@@ -330,47 +363,33 @@ export function useIngredients(): UseIngredientsResult {
           familyFridgeId: payload.familyFridgeId ?? familyFridgeId,
         });
 
-        const { data, error: queryError } = await client
+        const { error: queryError } = await client
           .from("ingredients")
           .update(updatePayload)
-          .eq("id", ingredientId)
-          .select("*")
-          .maybeSingle();
+          .eq("id", ingredientId);
 
         if (queryError) {
           throw queryError;
         }
 
-        if (!data) {
+        if (!target) {
           return null;
         }
 
-        const nextRecord = rowToRecord(data as RawIngredientRow);
+        const nextRecord = applyFormPayloadToRecord(target, {
+          ...payload,
+          familyFridgeId: payload.familyFridgeId ?? familyFridgeId,
+        });
         setIngredients((prev) => prev.map((item) => (item.id === ingredientId ? nextRecord : item)));
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
-        const current = safeReadLocalIngredients(deviceId, familyFridgeId);
-        const target = current.find((item) => item.id === ingredientId);
         if (!target) {
           setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
           return null;
         }
 
-        const normalized = normalizeFormPayload(payload);
-        const nextRecord: IngredientRecord = {
-          ...target,
-          familyFridgeId: normalized.familyFridgeId ?? target.familyFridgeId ?? null,
-          name: normalized.name,
-          category: normalized.category ?? null,
-          storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
-          quantity: normalized.quantity ?? null,
-          expiryDate: normalized.expiryDate ?? null,
-          barcode: normalized.barcode ?? null,
-          imageUrl: normalized.imageUrl ?? null,
-          memo: normalized.memo ?? null,
-          updatedAt: new Date().toISOString(),
-        };
+        const nextRecord = applyFormPayloadToRecord(target, payload);
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
@@ -379,7 +398,7 @@ export function useIngredients(): UseIngredientsResult {
         setLoading(false);
       }
     },
-    [deviceId, familyFridgeId],
+    [deviceId, familyFridgeId, ingredients],
   );
 
   const deleteIngredient = useCallback(
