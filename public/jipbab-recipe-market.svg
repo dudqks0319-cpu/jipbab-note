@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="30" x2="1120" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9E9"/>
+      <stop offset="0.48" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E8FFF6"/>
+    </linearGradient>
+    <filter id="shadow" x="80" y="80" width="1040" height="620" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="26" stdDeviation="30" flood-color="#59351F" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="760" rx="64" fill="url(#bg)"/>
+  <circle cx="1010" cy="628" r="118" fill="#24D3A4" opacity="0.14"/>
+  <circle cx="182" cy="142" r="92" fill="#FF7A59" opacity="0.13"/>
+  <g filter="url(#shadow)">
+    <rect x="132" y="112" width="936" height="536" rx="46" fill="#FFFFFF"/>
+    <rect x="186" y="166" width="454" height="390" rx="44" fill="#FFF3E8"/>
+    <rect x="690" y="166" width="324" height="390" rx="44" fill="#F3FFF9"/>
+  </g>
+  <g>
+    <ellipse cx="414" cy="430" rx="174" ry="94" fill="#FFF9EF"/>
+    <ellipse cx="414" cy="430" rx="138" ry="70" fill="#FFD15C"/>
+    <path d="M310 410c54-52 145-71 232-14" stroke="#E95638" stroke-width="34" stroke-linecap="round"/>
+    <path d="M307 458c78 34 151 30 230-12" stroke="#24D3A4" stroke-width="24" stroke-linecap="round"/>
+    <circle cx="374" cy="378" r="24" fill="#FFFFFF"/>
+    <circle cx="454" cy="462" r="22" fill="#FFFFFF"/>
+    <path d="M270 542h300" stroke="#E7D8C8" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g>
+    <rect x="742" y="220" width="222" height="292" rx="30" fill="#FFFFFF"/>
+    <path d="M782 282h144M782 342h126M782 402h150" stroke="#CBD5E1" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="782" cy="282" r="12" fill="#24D3A4"/>
+    <circle cx="782" cy="342" r="12" fill="#FF7A59"/>
+    <circle cx="782" cy="402" r="12" fill="#F4C245"/>
+    <rect x="782" y="452" width="144" height="40" rx="20" fill="#1B74E4"/>
+  </g>
+  <text x="186" y="604" fill="#1F2937" font-family="Arial, sans-serif" font-size="44" font-weight="800">RECIPE PICKS</text>
+  <text x="186" y="646" fill="#6B7280" font-family="Arial, sans-serif" font-size="25" font-weight="700">cook with what you have</text>
+</svg>

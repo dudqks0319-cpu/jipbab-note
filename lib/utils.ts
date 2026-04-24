@@ -1,5 +1,8 @@
 // 이 파일은 여러 곳에서 공통으로 쓰는 도우미 함수들을 담당합니다
 
+import { getIngredientImageUrl } from './ingredient-catalog'
+import type { IngredientCategory } from '@/types'
+
 export type ExpiryStatus = {
   daysLeft: number | null
   isExpired: boolean
@@ -8,69 +11,12 @@ export type ExpiryStatus = {
   tone: 'danger' | 'warning' | 'safe' | 'neutral'
 }
 
-const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = {
-  계란:
-    'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=900&q=80',
-  우유:
-    'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=900&q=80',
-  사과:
-    'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=900&q=80',
-  바나나:
-    'https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=900&q=80',
-  당근:
-    'https://images.unsplash.com/photo-1447175008436-054170c2e979?auto=format&fit=crop&w=900&q=80',
-  양파:
-    'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=900&q=80',
-  감자:
-    'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80',
-  토마토:
-    'https://images.unsplash.com/photo-1546470427-e5ac89cd0b7f?auto=format&fit=crop&w=900&q=80',
-  두부:
-    'https://images.unsplash.com/photo-1604908176997-4318f16e7f00?auto=format&fit=crop&w=900&q=80',
-  돼지고기:
-    'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=900&q=80',
-  소고기:
-    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80',
-  닭고기:
-    'https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=900&q=80',
-  고등어:
-    'https://images.unsplash.com/photo-1579631542720-3a87824fff86?auto=format&fit=crop&w=900&q=80',
-  새우:
-    'https://images.unsplash.com/photo-1625943555419-56a2cb596640?auto=format&fit=crop&w=900&q=80',
-}
-
-const INGREDIENT_PHOTO_BY_CATEGORY: Record<string, string> = {
-  채소:
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80',
-  과일:
-    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=900&q=80',
-  육류:
-    'https://images.unsplash.com/photo-1603048297172-c92544798d5a?auto=format&fit=crop&w=900&q=80',
-  수산물:
-    'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
-  유제품:
-    'https://images.unsplash.com/photo-1559598467-f8b76c8155d0?auto=format&fit=crop&w=900&q=80',
-  양념:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80',
-  기타:
-    'https://images.unsplash.com/photo-1543168256-418811576931?auto=format&fit=crop&w=900&q=80',
-}
-
 export function getIngredientPhotoUrl(
   name: string | null | undefined,
   category: string | null | undefined,
 ): string {
-  const normalizedName = (name ?? '').trim()
-  if (normalizedName) {
-    const keywordHit = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD).find((keyword) =>
-      normalizedName.includes(keyword),
-    )
-    if (keywordHit) {
-      return INGREDIENT_PHOTO_BY_KEYWORD[keywordHit]
-    }
-  }
-
-  return INGREDIENT_PHOTO_BY_CATEGORY[category ?? ''] || INGREDIENT_PHOTO_BY_CATEGORY['기타']
+  const normalizedName = (name ?? '').trim() || category || '재료'
+  return getIngredientImageUrl(normalizedName, category as IngredientCategory | null | undefined)
 }
 
 export function getCoupangSearchUrl(keyword: string): string {

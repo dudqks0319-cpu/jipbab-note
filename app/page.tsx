@@ -90,6 +90,25 @@ export default function HomePage() {
           </h2>
           <p className="relative mt-2 text-sm text-gray-600">유통기한 임박 재료를 먼저 쓰고, 부족한 재료만 빠르게 장보세요.</p>
 
+          <div className="relative mt-4 grid grid-cols-2 gap-2">
+            <Link href="/fridge" className="group overflow-hidden rounded-2xl bg-white/80 shadow-soft">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/jipbab-ingredients-market.png"
+                alt="집밥노트 재료 대표 이미지"
+                className="h-24 w-full object-cover transition duration-200 group-active:scale-[0.98]"
+              />
+            </Link>
+            <Link href="/recipe" className="group overflow-hidden rounded-2xl bg-white/80 shadow-soft">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/jipbab-recipe-market.png"
+                alt="집밥노트 레시피 대표 이미지"
+                className="h-24 w-full object-cover transition duration-200 group-active:scale-[0.98]"
+              />
+            </Link>
+          </div>
+
           <Link
             href="/recipe"
             className="relative mt-4 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/75 px-4 py-3 shadow-soft"
@@ -166,10 +185,14 @@ export default function HomePage() {
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Link href="/fridge" className="rounded-2xl border border-mint-100 bg-mint-50 px-3 py-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/jipbab-ingredients-market.png" alt="" className="mb-2 h-16 w-full rounded-xl object-cover" />
               <p className="text-xs font-semibold text-mint-500">냉장고 정리</p>
               <p className="mt-1 text-sm font-bold text-gray-800">임박 재료 먼저 보기</p>
             </Link>
             <Link href="/recipe" className="rounded-2xl border border-peach-100 bg-peach-50 px-3 py-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/jipbab-recipe-market.png" alt="" className="mb-2 h-16 w-full rounded-xl object-cover" />
               <p className="text-xs font-semibold text-peach-500">맞춤 추천</p>
               <p className="mt-1 text-sm font-bold text-gray-800">부족 재료 확인하기</p>
             </Link>

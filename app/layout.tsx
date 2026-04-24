@@ -6,8 +6,22 @@ import Header from '@/components/layout/Header'
 import BottomTab from '@/components/layout/BottomTab'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://jipbab-note.vercel.app'),
   title: '집밥노트',
   description: '냉장고 속 재료로 오늘 뭐 해먹지? 집밥노트가 알려줄게!',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  openGraph: {
+    title: '집밥노트',
+    description: '냉장고 속 재료로 오늘 뭐 해먹지? 집밥노트가 알려줄게!',
+    images: [{ url: '/jipbab-recipe-market.png', width: 1200, height: 760 }],
+  },
 }
 
 export const viewport: Viewport = {

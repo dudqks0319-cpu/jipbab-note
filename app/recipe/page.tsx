@@ -11,7 +11,7 @@ import { useRecipes } from "@/hooks/useRecipes";
 import { RECIPE_CATEGORIES, type RecipeCategory, type RecipeWithMatch } from "@/types";
 
 const FALLBACK_RECIPE_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80";
+  "/jipbab-recipe-market.png";
 
 export default function RecipePage() {
   const {

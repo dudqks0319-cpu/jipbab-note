@@ -6,20 +6,13 @@ import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle, Trash2 
 import { useIngredients } from '@/hooks/useIngredients'
 import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
 import { getDeviceId } from '@/lib/device-id'
+import { INGREDIENTS_BY_CATEGORY, findCatalogIngredient, getIngredientImageUrl } from '@/lib/ingredient-catalog'
 import { mergeQuantityText, normalizeIngredientKey } from '@/lib/ingredient-quantity'
-import { getCategoryEmoji, getCategoryBg, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
+import { getCategoryEmoji, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
 const categories: IngredientCategory[] = ['채소', '과일', '육류', '수산물', '유제품', '양념', '기타']
-const localSuggestionFallback: Record<IngredientCategory, string[]> = {
-  채소: ['양파', '대파', '마늘', '감자', '당근', '애호박', '브로콜리', '버섯', '오이', '시금치'],
-  과일: ['사과', '배', '바나나', '딸기', '레몬', '오렌지', '키위', '블루베리'],
-  육류: ['소고기', '돼지고기', '닭고기', '목살', '삼겹살', '닭가슴살', '소시지'],
-  수산물: ['고등어', '연어', '새우', '오징어', '멸치', '미역', '다시마', '바지락'],
-  유제품: ['우유', '치즈', '버터', '요거트', '생크림', '계란', '두부'],
-  양념: ['간장', '고추장', '된장', '소금', '설탕', '식초', '참기름', '고춧가루'],
-  기타: ['쌀', '밀가루', '당면', '김치', '빵가루', '통조림', '견과류'],
-}
+const localSuggestionFallback: Record<IngredientCategory, string[]> = INGREDIENTS_BY_CATEGORY
 const suggestionFetchLimit = 24
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
 const nativeBackSwipeEdgeWidth = 28
@@ -228,6 +221,7 @@ export default function FridgePage() {
       storageType: form.storage_type,
       quantity: form.quantity || null,
       expiryDate: form.expiry_date || null,
+      imageUrl: getIngredientImageUrl(form.name, form.category),
       memo: form.memo || null,
     }
 
@@ -301,6 +295,16 @@ export default function FridgePage() {
       ...prev,
       storage_type: storageType,
       category: getDefaultCategoryByStorage(storageType),
+    }))
+  }
+
+  const applySuggestedIngredient = (name: string) => {
+    const catalogItem = findCatalogIngredient(name)
+    setForm((prev) => ({
+      ...prev,
+      name,
+      category: catalogItem?.category ?? prev.category,
+      storage_type: catalogItem?.storageType ?? prev.storage_type,
     }))
   }
 
@@ -439,8 +443,14 @@ export default function FridgePage() {
                     }`}
                   >
                     {/* 재료 이미지 영역 */}
-                    <div className={`flex h-28 items-center justify-center ${getCategoryBg(item.category)}`}>
-                      <span className="text-5xl">{getCategoryEmoji(item.category)}</span>
+                    <div className="flex h-28 items-center justify-center bg-gray-50">
+                      {/* 재료별 자동 생성 이미지를 보여줍니다. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.imageUrl || getIngredientImageUrl(item.name, item.category)}
+                        alt={`${item.name} 이미지`}
+                        className="h-full w-full object-cover"
+                      />
 
                       {/* 더보기 메뉴 버튼 */}
                       <button
@@ -641,23 +651,31 @@ export default function FridgePage() {
                   )
                 ) : (
                   <>
-                    <div className="max-h-28 overflow-y-auto pr-1">
-                      <div className="flex flex-wrap gap-2">
-                        {suggestedIngredients.map((name) => (
-                          <button
-                            key={name}
-                            type="button"
-                            onClick={() => setForm((prev) => ({ ...prev, name }))}
-                            aria-pressed={form.name === name}
-                            className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
-                              form.name === name
-                                ? 'bg-mint-300 text-white shadow-soft'
-                                : 'bg-white text-mint-500 hover:bg-mint-100'
-                            }`}
-                          >
-                            {name}
-                          </button>
-                        ))}
+                    <div className="max-h-60 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-3 gap-2">
+                        {suggestedIngredients.map((name) => {
+                          const catalogItem = findCatalogIngredient(name)
+                          const imageUrl = getIngredientImageUrl(name, catalogItem?.category ?? form.category)
+                          const isSelected = form.name === name
+                          return (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => applySuggestedIngredient(name)}
+                              aria-pressed={isSelected}
+                              className={`overflow-hidden rounded-2xl border text-sm font-medium transition-all ${
+                                isSelected
+                                  ? 'bg-mint-300 text-white shadow-soft'
+                                  : 'border-white bg-white text-gray-700 hover:border-mint-200'
+                              }`}
+                            >
+                              {/* 추천 재료 카드용 자동 생성 이미지입니다. */}
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imageUrl} alt="" className="h-16 w-full object-cover" />
+                              <span className="block truncate px-2 py-1.5">{name}</span>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                     <div className="mt-2 flex items-center justify-between gap-2">

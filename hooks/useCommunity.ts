@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 
+import { uploadCommunityImage } from "@/lib/community-image-upload";
 import { getDeviceId } from "@/lib/device-id";
 import type {
   CommunityCommentPayload,
@@ -488,6 +489,7 @@ export interface UseCommunityResult {
   createComment: (postId: string, payload: CommunityCommentPayload) => Promise<CommunityCommentRecord | null>;
   deleteComment: (commentId: string) => Promise<boolean>;
   toggleLike: (postId: string) => Promise<boolean>;
+  uploadImage: (file: File) => Promise<string | null>;
 }
 
 export function useCommunity(): UseCommunityResult {
@@ -681,6 +683,33 @@ export function useCommunity(): UseCommunityResult {
       }
     },
     [commitState, deviceId, updateViewer],
+  );
+
+  const uploadImage = useCallback(
+    async (file: File): Promise<string | null> => {
+      setError(null);
+
+      const client = createCommunityClient(deviceId);
+
+      try {
+        const actor = await resolveViewer(client, deviceId);
+        updateViewer(actor);
+
+        const publicUrl = await uploadCommunityImage({
+          client,
+          file,
+          deviceId: actor.deviceId,
+          userId: actor.userId,
+        });
+
+        setSource("supabase");
+        return publicUrl;
+      } catch (caught) {
+        setError(createCommunityError(normalizeMessage(caught, "사진 업로드에 실패했습니다."), "supabase"));
+        return null;
+      }
+    },
+    [deviceId, updateViewer],
   );
 
   const updatePost = useCallback(
@@ -1191,5 +1220,6 @@ export function useCommunity(): UseCommunityResult {
     createComment,
     deleteComment,
     toggleLike,
+    uploadImage,
   };
 }

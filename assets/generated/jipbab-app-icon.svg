@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="148" y1="98" x2="876" y2="928" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24D3A4"/>
+      <stop offset="0.52" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#FF7A59"/>
+    </linearGradient>
+    <linearGradient id="door" x1="284" y1="238" x2="756" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFF8E8"/>
+    </linearGradient>
+    <filter id="shadow" x="138" y="140" width="748" height="776" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="34" stdDeviation="38" flood-color="#5A331F" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="196" cy="178" r="72" fill="#FFFFFF" opacity="0.24"/>
+  <circle cx="842" cy="774" r="106" fill="#FFFFFF" opacity="0.20"/>
+  <g filter="url(#shadow)">
+    <path d="M274 278c0-38.66 31.34-70 70-70h336c38.66 0 70 31.34 70 70v488c0 38.66-31.34 70-70 70H344c-38.66 0-70-31.34-70-70V278Z" fill="url(#door)"/>
+    <path d="M274 432h476" stroke="#E8D9B7" stroke-width="22" stroke-linecap="round"/>
+    <path d="M350 314h324" stroke="#23B98F" stroke-width="34" stroke-linecap="round"/>
+    <path d="M388 558c62-54 184-54 248 0 24 20 38 48 38 78 0 83-72 136-162 136s-162-53-162-136c0-30 14-58 38-78Z" fill="#FF7A59"/>
+    <path d="M394 608c68 42 170 42 236 0" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+    <path d="M456 524c-7-57 16-98 56-126 39 28 62 69 55 126" fill="#24D3A4"/>
+    <path d="M512 396v128" stroke="#176A54" stroke-width="18" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,6 +1,7 @@
 // 이 파일은 식약처 레시피 데이터에서 재료명을 추출해 카테고리별 추천 목록 API를 제공합니다.
 import { NextResponse } from "next/server";
 
+import { INGREDIENTS_BY_CATEGORY } from "@/lib/ingredient-catalog";
 import { extractRecipeIngredients } from "@/lib/matching";
 import type { IngredientCategory } from "@/types";
 
@@ -66,15 +67,7 @@ const requestStore = new Map<string, { count: number; startedAt: number }>();
 
 const CATEGORIES: IngredientCategory[] = ["채소", "과일", "육류", "수산물", "유제품", "양념", "기타"];
 const CATEGORY_PRIORITY: IngredientCategory[] = ["양념", "육류", "수산물", "유제품", "채소", "과일", "기타"];
-const LOCAL_FALLBACK_BY_CATEGORY: Record<IngredientCategory, string[]> = {
-  채소: ["양파", "대파", "마늘", "감자", "당근", "애호박", "버섯", "오이", "시금치", "브로콜리"],
-  과일: ["사과", "배", "바나나", "딸기", "레몬", "오렌지", "키위", "블루베리"],
-  육류: ["소고기", "돼지고기", "닭고기", "목살", "삼겹살", "닭가슴살", "소시지"],
-  수산물: ["고등어", "연어", "새우", "오징어", "멸치", "미역", "다시마", "바지락"],
-  유제품: ["우유", "치즈", "버터", "요거트", "생크림", "계란", "두부"],
-  양념: ["간장", "고추장", "된장", "소금", "설탕", "식초", "참기름", "고춧가루"],
-  기타: ["쌀", "밀가루", "당면", "김치", "통조림", "견과류"],
-};
+const LOCAL_FALLBACK_BY_CATEGORY: Record<IngredientCategory, string[]> = INGREDIENTS_BY_CATEGORY;
 const SEARCH_PATTERN = /^[0-9A-Za-z가-힣\s\-_/().,&]+$/;
 const BRACKET_PATTERN = /\([^)]*\)|\[[^\]]*]|\{[^}]*}/g;
 const NON_WORD_PATTERN = /[^0-9a-zA-Z가-힣\s]/g;

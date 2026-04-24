@@ -67,8 +67,9 @@ export default function CommunityPage() {
   const [consentRecipeUse, setConsentRecipeUse] = useState(false)
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({})
+  const [uploadingImage, setUploadingImage] = useState(false)
 
-  const isSubmitting = community.loading || community.writing
+  const isSubmitting = community.loading || community.writing || uploadingImage
 
   const resetPostForm = () => {
     setEditingPostId(null)
@@ -79,6 +80,7 @@ export default function CommunityPage() {
     setPostLinkUrl('')
     setRecipeId(null)
     setConsentRecipeUse(false)
+    setUploadingImage(false)
   }
 
   useEffect(() => {
@@ -174,16 +176,18 @@ export default function CommunityPage() {
     setPostContent(`오늘 우리집 냉장고에는 이런 재료가 있어요.\n\n${summary}`)
   }
 
-  const handleImageFileChange = (file: File | null) => {
+  const handleImageFileChange = async (file: File | null) => {
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setPostImageUrl(reader.result)
+    setUploadingImage(true)
+    try {
+      const uploadedUrl = await community.uploadImage(file)
+      if (uploadedUrl) {
+        setPostImageUrl(uploadedUrl)
       }
+    } finally {
+      setUploadingImage(false)
     }
-    reader.readAsDataURL(file)
   }
 
   const submitComment = async (postId: string) => {
@@ -305,9 +309,12 @@ export default function CommunityPage() {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)}
+              onChange={(event) => {
+                void handleImageFileChange(event.target.files?.[0] ?? null)
+              }}
             />
-            {postImageUrl ? <span className="truncate text-xs text-mint-500">사진 선택됨</span> : null}
+            {uploadingImage ? <span className="truncate text-xs text-gray-400">업로드 중...</span> : null}
+            {!uploadingImage && postImageUrl ? <span className="truncate text-xs text-mint-500">사진 업로드됨</span> : null}
           </label>
         </div>
 
