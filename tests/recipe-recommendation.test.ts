@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
   calculateRecipeIngredientMatch,
   rankRecipeRecommendations,
 } from "../lib/matching.ts";
+import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
+import {
+  getReadinessBadge,
+  isBeginnerVerifiedRecipe,
+  matchesRecipeQuickFilter,
+} from "../lib/recipe-list-labels.ts";
 
 test("calculateRecipeIngredientMatch keeps the existing match result shape", () => {
   const match = calculateRecipeIngredientMatch(["계란", "대파"], "계란 2개, 대파 1줄기, 간장 1큰술");
@@ -75,4 +83,85 @@ test("ranking ignores invalid expiry metadata instead of adding freshness urgenc
   );
 
   assert.equal(ranked[0].score.freshnessUrgencyPoints, 0);
+});
+
+test("curated beginner recipes keep structured amounts and visual cues", () => {
+  const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-doenjang-jjigae");
+
+  assert.ok(recipe);
+  assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "2큰술"));
+  assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")));
+  assert.ok(recipe.steps.some((step) => step.beginnerTip && step.visualCue));
+});
+
+test("curated recipe batch has competitive beginner coverage", () => {
+  assert.ok(CURATED_JIPBAB_RECIPES.length >= 20);
+
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 4, recipe.id);
+    assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")), recipe.id);
+    assert.ok(recipe.beginnerSummary && recipe.beginnerSummary.length >= 20, recipe.id);
+    assert.ok(recipe.steps.length >= 4, recipe.id);
+    assert.ok(recipe.steps.every((step) => step.beginnerTip && step.visualCue), recipe.id);
+    assert.ok(
+      recipe.ingredientDetails.some((ingredient) => /[0-9]/.test(ingredient.display)),
+      recipe.id,
+    );
+  }
+});
+
+test("curated recipe thumbnails are local release-safe assets", () => {
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    const thumbnailUrl = recipe.thumbnailUrl;
+
+    assert.ok(thumbnailUrl, recipe.id);
+    assert.ok(thumbnailUrl.startsWith("/images/recipes/"), recipe.id);
+    assert.ok(
+      existsSync(join(process.cwd(), "public", thumbnailUrl)),
+      `${recipe.id} missing ${thumbnailUrl}`,
+    );
+  }
+});
+
+test("curated recipe thumbnails are documented in the recipe source ledger", () => {
+  const sourceLedger = readFileSync(
+    join(process.cwd(), "public/images/recipes/SOURCES.md"),
+    "utf8",
+  );
+
+  assert.match(sourceLedger, /not copied from competitor apps/i);
+
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    const thumbnailUrl = recipe.thumbnailUrl;
+    assert.ok(thumbnailUrl, recipe.id);
+
+    const ledgerPath = thumbnailUrl.replace(/^\/images\/recipes\//, "");
+    assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
+  }
+});
+
+test("recipe list quick filters expose beginner and ready states", () => {
+  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-soy-egg-rice");
+  const recipe = {
+    id: "curated-soy-egg-rice",
+    name: "간장계란밥",
+    category: "밥",
+    method: "비비기",
+    calories: "460",
+    thumbnailUrl: curated?.thumbnailUrl ?? null,
+    ingredients: "계란, 밥, 간장, 참기름, 김",
+    hashTag: "",
+    ingredientList: ["계란", "밥", "간장", "참기름", "김"],
+    matchRate: 80,
+    matchedIngredients: ["계란", "밥", "간장", "김"],
+    missingIngredients: ["참기름"],
+    totalRecipeIngredients: 5,
+  };
+
+  assert.equal(getReadinessBadge(0, 5).text, "바로 가능");
+  assert.equal(getReadinessBadge(1, 4).text, "1개만 사면 가능");
+  assert.equal(isBeginnerVerifiedRecipe(curated), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "one-more"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "beginner"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "ready"), false);
 });

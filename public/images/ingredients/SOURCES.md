@@ -47,6 +47,14 @@ These files were generated in-house to reduce repeated fallback images for seaso
 - Seasonings and dairy: `pepper-shop.png`, `cooking-oil-shop.png`, `oyster-sauce-shop.png`, `ketchup-shop.png`, `soy-milk-shop.png`, `mozzarella-shop.png`, `cream-cheese-shop.png`, `parmesan-shop.png`
 - Meat and processed foods: `bacon-shop.png`, `ham-shop.png`, `sausage-shop.png`, `pork-shop.png`, `beef-shop.png`, `chicken-leg-shop.png`, `jam-shop.png`, `olive-shop.png`
 
+## Generated photorealistic assets, batch 4
+
+These files were generated in-house for release-safe, realistic ingredient thumbnails where the older shopping-style fallback could mislead users. They use a neutral ceramic background, no hands, no text, no packaging, no logos, and no watermarks.
+
+- Meat and seafood: `chicken-raw-photo.png`, `tuna-raw-photo.png`, `octopus-photo.png`
+- Frozen, drinks, and canned substitutes: `frozen-vegetable-mix-photo.png`, `orange-juice-photo.png`, `mixed-beans-photo.png`
+- Seasoning and powder substitutes: `starch-powder-photo.png`, `perilla-oil-photo.png`, `ssamjang-photo.png`
+
 ## Pixabay fallback assets
 
 - `onion-pixabay.jpg`: https://pixabay.com/photos/search/onion/

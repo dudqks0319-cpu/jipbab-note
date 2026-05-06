@@ -44,6 +44,28 @@ const buildQueryParams = (
   return params;
 };
 
+const getCuratedFallbackPage = (
+  page: number,
+  size: number,
+  searchQuery: string,
+  selectedCategory: RecipeCategory,
+): { recipes: RecipeRecord[]; totalCount: number } => {
+  const query = searchQuery.trim().toLowerCase();
+  const filtered = CURATED_RECIPE_RECORDS.filter((recipe) => {
+    const matchesCategory = selectedCategory === "전체" || recipe.category === selectedCategory;
+    const matchesQuery =
+      query.length === 0 ||
+      recipe.name.toLowerCase().includes(query) ||
+      recipe.ingredients.toLowerCase().includes(query);
+    return matchesCategory && matchesQuery;
+  });
+  const start = (page - 1) * size;
+  return {
+    recipes: filtered.slice(start, start + size),
+    totalCount: filtered.length,
+  };
+};
+
 export interface UseRecipeCatalogResult {
   recipes: RecipeRecord[];
   loading: boolean;
@@ -122,15 +144,23 @@ export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalog
         }
 
         const recipesFromApi = Array.isArray(payload.recipes) ? payload.recipes : [];
-        setRawRecipes(recipesFromApi);
-        setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : 0);
+        if (recipesFromApi.length > 0) {
+          setRawRecipes(recipesFromApi);
+          setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : recipesFromApi.length);
+          return;
+        }
+
+        const fallback = getCuratedFallbackPage(targetPage, pageSize, targetQuery, targetCategory);
+        setRawRecipes(fallback.recipes);
+        setTotalCount(fallback.totalCount);
       } catch (caught) {
         if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return;
         }
-        setRawRecipes([]);
-        setTotalCount(0);
-        setError(caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
+        const fallback = getCuratedFallbackPage(targetPage, pageSize, targetQuery, targetCategory);
+        setRawRecipes(fallback.recipes);
+        setTotalCount(fallback.totalCount);
+        setError(fallback.totalCount > 0 ? null : caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);

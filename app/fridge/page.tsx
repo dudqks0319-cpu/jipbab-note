@@ -83,6 +83,7 @@ export default function FridgePage() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
   const [saveMessage, setSaveMessage] = useState('')
   const [swipeStartX, setSwipeStartX] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -136,10 +137,24 @@ export default function FridgePage() {
 
   const displayIngredients = isAppStoreDemo ? APPSTORE_DEMO_INGREDIENTS : ingredients
 
-  const filtered =
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase()
+
+  const storageFiltered =
     activeTab === '전체'
       ? displayIngredients
       : displayIngredients.filter((i) => i.storageType === activeTab)
+
+  const filtered = normalizedSearchQuery
+    ? storageFiltered.filter((item) =>
+        [
+          item.name,
+          item.category ?? '',
+          item.storageType,
+          item.quantity ?? '',
+          item.memo ?? '',
+        ].some((value) => value.toLowerCase().includes(normalizedSearchQuery)),
+      )
+    : storageFiltered
 
   const sortedIngredients = [...filtered].sort((a, b) => {
     if (!a.expiryDate && !b.expiryDate) return 0
@@ -281,12 +296,19 @@ export default function FridgePage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-[24px] font-black text-[#2f2117]">냉장고</h1>
-              <button type="button" aria-label="냉장고 도움말" className="text-[#b8a99a]">
+              <button
+                type="button"
+                aria-label="냉장고 도움말"
+                onClick={() => setSaveMessage('재료명, 카테고리, 보관 위치, 수량, 메모로 빠르게 찾을 수 있어요.')}
+                className="text-[#b8a99a]"
+              >
                 <AlertCircle size={16} />
               </button>
             </div>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
-              전체 {sortedIngredients.length}개 재료
+              {normalizedSearchQuery
+                ? `전체 ${displayIngredients.length}개 중 ${sortedIngredients.length}개`
+                : `전체 ${displayIngredients.length}개 재료`}
             </p>
           </div>
           <button
@@ -313,7 +335,23 @@ export default function FridgePage() {
 
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
           <Search size={16} className="text-[#b5a493]" />
-          <span className="text-[13px] font-medium text-[#a69585]">재료 검색</span>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="재료, 카테고리, 메모 검색"
+            className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[#4b3929] outline-none placeholder:text-[#a69585]"
+          />
+          {searchQuery ? (
+            <button
+              type="button"
+              aria-label="재료 검색어 지우기"
+              onClick={() => setSearchQuery('')}
+              className="text-[#b5a493]"
+            >
+              <X size={15} />
+            </button>
+          ) : null}
         </div>
 
         <button
@@ -374,35 +412,63 @@ export default function FridgePage() {
           <div className="rounded-3xl bg-rose-50 p-4 text-center text-sm text-rose-500">{error.message}</div>
         ) : sortedIngredients.length === 0 ? (
           <div className="flex flex-col items-center py-16">
-            <span className="text-7xl">🧊</span>
-            <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
-            <p className="mt-1 text-center text-sm text-gray-400">
-              국민 재료를 먼저 담으면 바로 추천 레시피가 살아납니다.
-            </p>
-            <div className="mt-4 flex max-w-[320px] flex-wrap justify-center gap-2">
-              {STARTER_INGREDIENT_TEMPLATES.map((item) => (
-                <span key={item.name} className="rounded-full bg-[#fff7ed] px-3 py-1.5 text-[12px] font-black text-[#8a5a2a]">
-                  {item.name}
-                </span>
-              ))}
-            </div>
-            <div className="mt-5 grid w-full max-w-[320px] grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  void handleAddStarterIngredients()
-                }}
-                className="rounded-full bg-[#ea5a1f] px-8 py-3 font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
-              >
-                국민 재료 5개 바로 담기
-              </button>
-              <button
-                onClick={openAddModal}
-                className="rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
-              >
-                + 직접 재료 추가하기
-              </button>
-            </div>
+            {displayIngredients.length === 0 ? (
+              <>
+                <span className="text-7xl">🧊</span>
+                <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
+                <p className="mt-1 text-center text-sm text-gray-400">
+                  국민 재료를 먼저 담으면 바로 추천 레시피가 살아납니다.
+                </p>
+                <div className="mt-4 flex max-w-[320px] flex-wrap justify-center gap-2">
+                  {STARTER_INGREDIENT_TEMPLATES.map((item) => (
+                    <span key={item.name} className="rounded-full bg-[#fff7ed] px-3 py-1.5 text-[12px] font-black text-[#8a5a2a]">
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-5 grid w-full max-w-[320px] grid-cols-1 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleAddStarterIngredients()
+                    }}
+                    className="rounded-full bg-[#ea5a1f] px-8 py-3 font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+                  >
+                    국민 재료 5개 바로 담기
+                  </button>
+                  <button
+                    onClick={openAddModal}
+                    className="rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
+                  >
+                    + 직접 재료 추가하기
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="text-6xl">🔎</span>
+                <p className="mt-4 text-lg font-bold text-gray-600">조건에 맞는 재료가 없어요</p>
+                <p className="mt-1 text-center text-sm text-gray-400">
+                  검색어를 줄이거나 보관 탭을 전체로 바꿔보세요.
+                </p>
+                <div className="mt-5 flex w-full max-w-[320px] gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="flex-1 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-[13px] font-black text-[#4b3929]"
+                  >
+                    검색어 지우기
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('전체')}
+                    className="flex-1 rounded-full bg-[#ea5a1f] px-4 py-3 text-[13px] font-black text-white"
+                  >
+                    전체 보기
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-2.5">

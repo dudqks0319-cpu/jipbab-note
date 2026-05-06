@@ -33,7 +33,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://images.unsplash.com/photo-1495195134817-aeb325a55b65?auto=format&fit=crop&w=1200&q=85"
+            src="/images/recipes/jipbab-curated/doenjang-jjigae-basic.png"
             alt="집밥이 놓인 식탁"
             className="h-full w-full object-cover opacity-45"
           />

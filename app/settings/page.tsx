@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Download, Send, Sparkles, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Ruler, Send, Sparkles, Trash2 } from 'lucide-react'
 
 import { useAppSettings } from '@/hooks/useAppSettings'
 import {
@@ -33,6 +33,15 @@ const unitOptions: Array<{
   { key: 'metric', title: 'ml / g' },
   { key: 'spoon', title: '큰술 / 작은술' },
   { key: 'count', title: '개 / 봉 / 팩' },
+]
+
+const measurementGuide = [
+  { label: '1큰술', value: '밥숟가락 평평하게 1번', note: '약 15ml' },
+  { label: '1작은술', value: '티스푼 평평하게 1번', note: '약 5ml' },
+  { label: '1컵', value: '일반 종이컵 1컵', note: '약 180ml' },
+  { label: '물 500ml', value: '종이컵 2컵 반', note: '찌개 2인분 기본' },
+  { label: '한줌', value: '한 손으로 가볍게 집히는 양', note: '약 30~50g' },
+  { label: '두부 1모', value: '일반 포장 두부 1팩', note: '약 300g' },
 ]
 
 export default function SettingsPage() {
@@ -289,6 +298,23 @@ export default function SettingsPage() {
                   {option.title}
                 </button>
               ))}
+            </div>
+            <div className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fff7ed] px-3 py-3">
+              <div className="flex items-center gap-2">
+                <Ruler size={16} className="text-[#d94d19]" />
+                <p className="text-[13px] font-black text-[#2f2117]">초보자 계량 계산법</p>
+              </div>
+              <div className="mt-3 grid gap-2">
+                {measurementGuide.map((item) => (
+                  <div key={item.label} className="grid grid-cols-[72px_1fr] gap-2 rounded-[12px] bg-[#fffaf3] px-3 py-2">
+                    <p className="text-[12px] font-black text-[#d94d19]">{item.label}</p>
+                    <div>
+                      <p className="text-[12px] font-bold text-[#4b3929]">{item.value}</p>
+                      <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{item.note}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <SettingLink title="이용약관" value="" href="/privacy" />

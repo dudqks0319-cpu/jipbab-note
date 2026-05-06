@@ -310,11 +310,32 @@ export interface RecipeDetailStep {
   index: number;
   description: string;
   imageUrl: string | null;
+  beginnerTip?: string | null;
+  visualCue?: string | null;
+  imageAlt?: string | null;
+  imageCaption?: string | null;
+}
+
+export interface RecipeIngredientDetail {
+  name: string;
+  display: string;
+  amount?: string | null;
+  unit?: string | null;
+  beginnerNote?: string | null;
+  prepNote?: string | null;
 }
 
 export interface RecipeDetailRecord extends RecipeRecord {
   ingredientList: string[];
+  ingredientDetails?: RecipeIngredientDetail[];
   steps: RecipeDetailStep[];
+  difficulty?: number | string | null;
+  cookingTime?: number | null;
+  servings?: number | null;
+  beginnerSummary?: string | null;
+  measurementTips?: string[];
+  imageAlt?: string | null;
+  imageCaption?: string | null;
 }
 
 export interface FavoriteRecipeSummary {

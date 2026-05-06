@@ -65,8 +65,15 @@ export default function RecipeCookMode({ recipeName, steps }: RecipeCookModeProp
                 <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-[#3d7b38] bg-[#3d7b38] text-white' : 'border-[#c9b7a4] text-[#8f7f70]'}`}>
                   {checked ? <Check size={13} /> : step.index}
                 </span>
-                <span className={`text-sm leading-6 ${checked ? 'text-[#9f9388] line-through' : 'text-[#4b3929]'}`}>
-                  {step.description}
+                <span className="min-w-0">
+                  <span className={`block text-sm leading-6 ${checked ? 'text-[#9f9388] line-through' : 'text-[#4b3929]'}`}>
+                    {step.description}
+                  </span>
+                  {step.beginnerTip ? (
+                    <span className={`mt-1 block text-[12px] font-semibold leading-5 ${checked ? 'text-[#b5a493]' : 'text-[#8f7f70]'}`}>
+                      {step.beginnerTip}
+                    </span>
+                  ) : null}
                 </span>
               </button>
             )

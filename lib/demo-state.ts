@@ -4,7 +4,21 @@ import type {
   ShoppingItem,
 } from "@/types";
 
-const now = new Date("2026-04-21T09:00:00+09:00").toISOString();
+const now = new Date().toISOString();
+
+function toDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function demoExpiryDate(daysFromToday: number): string {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + daysFromToday);
+  return toDateOnly(date);
+}
 
 export const APPSTORE_DEMO_INGREDIENTS: IngredientRecord[] = [
   {
@@ -15,7 +29,7 @@ export const APPSTORE_DEMO_INGREDIENTS: IngredientRecord[] = [
     category: "채소",
     storageType: "냉장",
     quantity: "2개",
-    expiryDate: "2026-04-23",
+    expiryDate: demoExpiryDate(2),
     barcode: null,
     imageUrl: null,
     memo: null,
@@ -30,7 +44,7 @@ export const APPSTORE_DEMO_INGREDIENTS: IngredientRecord[] = [
     category: "유제품",
     storageType: "냉장",
     quantity: "10개",
-    expiryDate: "2026-04-25",
+    expiryDate: demoExpiryDate(4),
     barcode: null,
     imageUrl: null,
     memo: null,
@@ -45,7 +59,7 @@ export const APPSTORE_DEMO_INGREDIENTS: IngredientRecord[] = [
     category: "유제품",
     storageType: "냉장",
     quantity: "1모",
-    expiryDate: "2026-04-22",
+    expiryDate: demoExpiryDate(1),
     barcode: null,
     imageUrl: null,
     memo: null,
@@ -60,7 +74,7 @@ export const APPSTORE_DEMO_INGREDIENTS: IngredientRecord[] = [
     category: "채소",
     storageType: "냉장",
     quantity: "1단",
-    expiryDate: "2026-04-24",
+    expiryDate: demoExpiryDate(3),
     barcode: null,
     imageUrl: null,
     memo: null,
@@ -118,7 +132,7 @@ export const APPSTORE_DEMO_RECIPES: RecipeWithMatch[] = [
     category: "반찬",
     method: "찌기",
     calories: "220 kcal",
-    thumbnailUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=1200&q=80",
+    thumbnailUrl: "/images/recipes/jipbab-curated/dubu-jorim-basic.png",
     ingredients: "두부, 계란, 새우, 대파, 소금",
     hashTag: "#집밥 #계란찜",
     matchRate: 60,
@@ -133,7 +147,7 @@ export const APPSTORE_DEMO_RECIPES: RecipeWithMatch[] = [
     category: "한식",
     method: "볶기",
     calories: "410 kcal",
-    thumbnailUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
     ingredients: "양파, 계란, 대파, 간장, 밥",
     hashTag: "#한그릇",
     matchRate: 60,
@@ -148,7 +162,7 @@ export const APPSTORE_DEMO_RECIPES: RecipeWithMatch[] = [
     category: "국·찌개",
     method: "끓이기",
     calories: "180 kcal",
-    thumbnailUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+    thumbnailUrl: "/images/recipes/jipbab-curated/doenjang-jjigae-basic.png",
     ingredients: "두부, 대파, 양파, 소금",
     hashTag: "#국 #두부국",
     matchRate: 75,
@@ -163,7 +177,7 @@ export const APPSTORE_DEMO_RECIPES: RecipeWithMatch[] = [
     category: "반찬",
     method: "부치기",
     calories: "250 kcal",
-    thumbnailUrl: "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=80",
+    thumbnailUrl: "/images/recipes/jipbab-curated/gyeran-mari-basic.png",
     ingredients: "계란, 대파, 양파, 소금",
     hashTag: "#달걀말이",
     matchRate: 75,
@@ -178,7 +192,7 @@ export const APPSTORE_DEMO_RECIPES: RecipeWithMatch[] = [
     category: "디저트",
     method: "기타",
     calories: "150 kcal",
-    thumbnailUrl: "https://images.unsplash.com/photo-1604908177522-cbc5d95c2f3d?auto=format&fit=crop&w=1200&q=80",
+    thumbnailUrl: "/images/ingredients/orange-juice-photo.png",
     ingredients: "오렌지, 당근, 요거트",
     hashTag: "#주스",
     matchRate: 0,

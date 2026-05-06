@@ -277,7 +277,18 @@ const parseMethodAndCalories = (description: string | null): Pick<RecipeDto, 'me
 
 const stringifyIngredients = (value: unknown): string => {
   if (Array.isArray(value)) {
-    return normalizeIngredientDisplayItems(value.map((item) => (typeof item === 'string' ? item : ''))).join(', ')
+    const names = value
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item
+        }
+        if (typeof item === 'object' && item !== null) {
+          const record = item as Record<string, unknown>
+          return typeof record.name === 'string' ? record.name : ''
+        }
+        return ''
+      })
+    return normalizeIngredientDisplayItems(names).join(', ')
   }
   if (typeof value === 'string') {
     return formatIngredientDisplayText(value.trim())

@@ -2,22 +2,29 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Clock3, ShoppingBasket, Star, Users } from "lucide-react";
+import { ChevronLeft, Clock3, Ruler, ShoppingBasket, Star, Users } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
+import RecipeImage from "@/components/recipe/RecipeImage";
 import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
 import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { findCuratedRecipe } from "@/lib/curated-recipes";
-import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
+import type { RecipeDetailRecord, RecipeDetailStep, RecipeIngredientDetail } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
 const BASE_URL = "https://openapi.foodsafetykorea.go.kr/api";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1400&q=80";
+  "/images/recipes/kimchi-fried-rice.png";
+const DEFAULT_DETAIL_MEASUREMENT_TIPS = [
+  "1큰술 = 밥숟가락 평평하게 1번 = 약 15ml",
+  "1작은술 = 티스푼 평평하게 1번 = 약 5ml",
+  "1컵 = 일반 종이컵 1컵 = 약 180ml",
+  "한줌 = 한 손으로 가볍게 집히는 양 = 약 30~50g",
+];
 const INGREDIENT_SPLIT_PLACEHOLDER = "__JIPBAB_FRACTION_SLASH__";
 const INGREDIENT_SECTION_LABEL_PATTERN =
   /^(?:주재료|부재료|양념|양념장|소스|고명|육수|반죽|반죽재료|속재료|초코필링|토핑)$/;
@@ -52,6 +59,9 @@ type SupabaseRecipeRow = {
   title: string;
   description: string | null;
   category: string | null;
+  difficulty: number | null;
+  cooking_time: number | null;
+  servings: number | null;
   thumbnail_url: string | null;
   ingredients: unknown;
   steps: unknown;
@@ -215,13 +225,77 @@ const normalizeIngredientList = (value: unknown): string[] => {
   return [];
 };
 
+const inferIngredientName = (display: string): string => {
+  return display
+    .replace(/\s+\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기).*$/i, "")
+    .replace(/\s+(?:약간|조금|적당량)$/i, "")
+    .trim() || display.trim();
+};
+
+const normalizeIngredientDetails = (value: unknown): RecipeIngredientDetail[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): RecipeIngredientDetail | null => {
+      if (typeof item === "string") {
+        const display = cleanIngredientDisplayText(item);
+        if (!display || INGREDIENT_SECTION_LABEL_PATTERN.test(display)) {
+          return null;
+        }
+        return {
+          name: inferIngredientName(display),
+          display,
+          beginnerNote: null,
+          prepNote: null,
+        } satisfies RecipeIngredientDetail;
+      }
+
+      if (typeof item !== "object" || item === null) {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+      const name = typeof record.name === "string" ? record.name.trim() : "";
+      const rawDisplay = typeof record.display === "string" ? record.display.trim() : "";
+      const amount = typeof record.amount === "string" ? record.amount.trim() : "";
+      const unit = typeof record.unit === "string" ? record.unit.trim() : "";
+      const display = rawDisplay || [amount, unit].filter(Boolean).join("");
+
+      if (!name || !display) {
+        return null;
+      }
+
+      return {
+        name,
+        display,
+        amount: amount || null,
+        unit: unit || null,
+        beginnerNote:
+          typeof record.beginnerNote === "string"
+            ? record.beginnerNote.trim()
+            : typeof record.beginner_note === "string"
+              ? record.beginner_note.trim()
+              : null,
+        prepNote:
+          typeof record.prepNote === "string"
+            ? record.prepNote.trim()
+            : typeof record.prep_note === "string"
+              ? record.prep_note.trim()
+              : null,
+      } satisfies RecipeIngredientDetail;
+    })
+    .filter((item): item is RecipeIngredientDetail => item !== null);
+};
+
 const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
   if (!Array.isArray(value)) {
     return [];
   }
 
   const steps = value
-    .map((item) => {
+    .map((item): RecipeDetailStep | null => {
       if (typeof item !== "object" || item === null) {
         return null;
       }
@@ -254,10 +328,34 @@ const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
         index: Number.isFinite(parsedIndex) && parsedIndex > 0 ? Math.floor(parsedIndex) : 0,
         description,
         imageUrl: normalizeRecipeImageUrl(imageUrl),
+        beginnerTip:
+          typeof record.beginnerTip === "string"
+            ? record.beginnerTip.trim()
+            : typeof record.beginner_tip === "string"
+              ? record.beginner_tip.trim()
+              : null,
+        visualCue:
+          typeof record.visualCue === "string"
+            ? record.visualCue.trim()
+            : typeof record.visual_cue === "string"
+              ? record.visual_cue.trim()
+              : null,
+        imageAlt:
+          typeof record.imageAlt === "string"
+            ? record.imageAlt.trim()
+            : typeof record.image_alt === "string"
+              ? record.image_alt.trim()
+              : null,
+        imageCaption:
+          typeof record.imageCaption === "string"
+            ? record.imageCaption.trim()
+            : typeof record.image_caption === "string"
+              ? record.image_caption.trim()
+              : null,
       } satisfies RecipeDetailStep;
     })
     .filter((item): item is RecipeDetailStep => item !== null)
-    .map((item, idx) => ({
+    .map((item, idx): RecipeDetailStep => ({
       ...item,
       index: item.index > 0 ? item.index : idx + 1,
     }))
@@ -281,7 +379,7 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
     const client = createClient(supabaseUrl, supabaseAnonKey);
     const { data, error } = await client
       .from("recipes")
-      .select("id,title,description,category,thumbnail_url,ingredients,steps,source")
+      .select("id,title,description,category,difficulty,cooking_time,servings,thumbnail_url,ingredients,steps,source")
       .eq("id", recipeId)
       .maybeSingle();
 
@@ -291,7 +389,10 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
 
     const row = data as SupabaseRecipeRow;
     const parsedMeta = parseMethodAndCalories(row.description);
-    const ingredientList = normalizeIngredientList(row.ingredients);
+    const ingredientDetails = normalizeIngredientDetails(row.ingredients);
+    const ingredientList = ingredientDetails.length > 0
+      ? ingredientDetails.map((ingredientItem) => ingredientItem.name)
+      : normalizeIngredientList(row.ingredients);
     const steps = normalizeStepList(row.steps);
 
     return {
@@ -304,6 +405,7 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
       ingredients: ingredientList.join(", "),
       hashTag: "",
       ingredientList,
+      ingredientDetails,
       steps:
         steps.length > 0
           ? steps
@@ -312,6 +414,9 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
               { index: 2, description: "조리법에 맞춰 가열하고, 중간에 간을 맞춰가며 조리합니다.", imageUrl: null },
               { index: 3, description: "불을 끄고 플레이팅한 뒤, 기호에 맞게 마무리합니다.", imageUrl: null },
             ],
+      difficulty: row.difficulty,
+      cookingTime: row.cooking_time,
+      servings: row.servings,
     };
   } catch (error) {
     console.error("Supabase 레시피 상세 조회 실패", error);
@@ -364,6 +469,17 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
   };
 }
 
+function formatDifficulty(difficulty: RecipeDetailRecord["difficulty"]): string {
+  if (typeof difficulty === "number") {
+    if (difficulty <= 1) return "쉬움";
+    if (difficulty === 2) return "보통";
+    return "어려움";
+  }
+
+  const label = difficulty?.toString().trim();
+  return label || "쉬움";
+}
+
 type RecipeDetailPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -396,7 +512,20 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
   const tags = parseHashTags(recipe.hashTag);
-  const cookingMinutes = Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
+  const cookingMinutes = recipe.cookingTime ?? Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
+  const servingLabel = `${recipe.servings ?? 2}인분`;
+  const difficultyLabel = formatDifficulty(recipe.difficulty);
+  const ingredientDetails = recipe.ingredientDetails?.length
+    ? recipe.ingredientDetails
+    : recipe.ingredientList.map((ingredientName) => ({
+        name: ingredientName,
+        display: "적당량",
+        beginnerNote: null,
+        prepNote: null,
+      }));
+  const measurementTips = recipe.measurementTips?.length
+    ? recipe.measurementTips
+    : DEFAULT_DETAIL_MEASUREMENT_TIPS;
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-8">
@@ -421,15 +550,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
 
         <div className="relative h-[250px] w-full overflow-hidden">
-          {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <RecipeImage
             src={heroImage}
-            alt={recipe.name}
-            onError={(event) => {
-              event.currentTarget.src = FALLBACK_IMAGE;
-            }}
-            className="h-full w-full object-cover"
+            fallbackSrc={FALLBACK_IMAGE}
+            alt={recipe.imageAlt || recipe.name}
+            className="h-full w-full"
+            imageClassName="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2f2117]/60 via-transparent to-transparent" />
         </div>
@@ -441,11 +567,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             </span>
             <h1 className="mt-2 text-[24px] font-black leading-tight text-[#2f2117]">{recipe.name}</h1>
             <p className="mt-1 text-[13px] font-semibold text-[#7d6d5f]">{recipe.method} · {recipe.calories} kcal</p>
+            {recipe.imageCaption ? (
+              <p className="mt-2 text-[12px] font-semibold leading-5 text-[#8f7f70]">{recipe.imageCaption}</p>
+            ) : null}
 
             <div className="mt-4 grid grid-cols-4 gap-2 text-center">
               <DetailMetric icon={<Clock3 size={14} />} label={`${cookingMinutes}분`} />
-              <DetailMetric icon={<Users size={14} />} label="2인분" />
-              <DetailMetric icon={<Star size={14} />} label="쉬움" />
+              <DetailMetric icon={<Users size={14} />} label={servingLabel} />
+              <DetailMetric icon={<Star size={14} />} label={difficultyLabel} />
               <DetailMetric icon={<ShoppingBasket size={14} />} label={`${recipe.ingredientList.length}개`} />
             </div>
           </div>
@@ -462,20 +591,53 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </section>
       )}
 
+      {recipe.beginnerSummary ? (
+        <section className="px-5 pt-5">
+          <div className="jipbab-panel rounded-[16px] px-4 py-4">
+            <p className="text-[13px] font-black text-[#2f2117]">처음 만들 때 핵심</p>
+            <p className="mt-2 text-[13px] font-semibold leading-6 text-[#5f4b3a]">{recipe.beginnerSummary}</p>
+          </div>
+        </section>
+      ) : null}
+
       <section className="px-5 pt-5">
         <h2 className="text-[17px] font-black text-[#2f2117]">재료</h2>
-        {recipe.ingredientList.length === 0 ? (
+        {ingredientDetails.length === 0 ? (
           <p className="mt-2 rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-sm text-[#8f7f70]">재료 정보가 없습니다.</p>
         ) : (
           <ul className="jipbab-panel mt-2 divide-y divide-[#eadcc9] overflow-hidden rounded-[16px]">
-            {recipe.ingredientList.map((ingredient) => (
-              <li key={ingredient} className="flex items-center justify-between px-4 py-3 text-[13px] font-semibold text-[#4b3929]">
-                <span>{ingredient}</span>
-                <span className="text-[#a69585]">적당량</span>
+            {ingredientDetails.map((ingredient) => (
+              <li key={`${ingredient.name}-${ingredient.display}`} className="px-4 py-3">
+                <div className="flex items-start justify-between gap-3 text-[13px] font-semibold text-[#4b3929]">
+                  <span>{ingredient.name}</span>
+                  <span className="shrink-0 font-black text-[#d94d19]">{ingredient.display}</span>
+                </div>
+                {ingredient.beginnerNote || ingredient.prepNote ? (
+                  <div className="mt-1 space-y-0.5 text-[11px] font-semibold leading-5 text-[#8f7f70]">
+                    {ingredient.beginnerNote ? <p>{ingredient.beginnerNote}</p> : null}
+                    {ingredient.prepNote ? <p>{ingredient.prepNote}</p> : null}
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="px-5 pt-4">
+        <div className="jipbab-panel rounded-[16px] px-4 py-4">
+          <div className="flex items-center gap-2">
+            <Ruler size={16} className="text-[#d94d19]" />
+            <h2 className="text-[15px] font-black text-[#2f2117]">초보자 계량 기준</h2>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {measurementTips.map((tip) => (
+              <p key={tip} className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
+                {tip}
+              </p>
+            ))}
+          </div>
+        </div>
       </section>
 
       <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
@@ -493,19 +655,20 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
                 </span>
                 <p className="text-sm leading-relaxed text-[#4b3929]">{step.description}</p>
               </div>
-              {step.imageUrl && (
-                <div className="h-44 w-full overflow-hidden border-t border-[#eadcc9]">
-                  {/* Next Image 도메인 설정 전까지는 원본 URL 이미지를 그대로 사용합니다. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={step.imageUrl}
-                    alt={`${recipe.name} 조리 순서 ${step.index}`}
-                    onError={(event) => {
-                      event.currentTarget.closest("div")?.remove();
-                    }}
-                    className="h-full w-full object-cover"
-                  />
+              {step.beginnerTip || step.visualCue ? (
+                <div className="space-y-1 border-t border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-[12px] font-semibold leading-5">
+                  {step.beginnerTip ? <p className="text-[#6e431d]">팁: {step.beginnerTip}</p> : null}
+                  {step.visualCue ? <p className="text-[#8f7f70]">눈으로 확인: {step.visualCue}</p> : null}
                 </div>
+              ) : null}
+              {step.imageUrl && (
+                <RecipeImage
+                  src={step.imageUrl}
+                  alt={step.imageAlt || `${recipe.name} 조리 순서 ${step.index}`}
+                  className="relative h-44 w-full overflow-hidden border-t border-[#eadcc9]"
+                  imageClassName="h-full w-full object-cover"
+                  caption={step.imageCaption}
+                />
               )}
             </li>
           ))}

@@ -23,7 +23,7 @@ import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/
 import { getDday } from '@/lib/utils'
 
 const FALLBACK_RECIPE_IMAGE =
-  'https://images.unsplash.com/photo-1627662168806-efa33a7cda86?auto=format&fit=crop&w=1200&q=85'
+  '/images/recipes/kimchi-fried-rice.png'
 
 export default function HomePage() {
   const isAppStoreDemo = useDemoMode()
@@ -86,8 +86,8 @@ export default function HomePage() {
           </span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
+          <SummaryBox label="전체" value={`${displayIngredients.length}개`} tone="bg-[#fff3d8] text-[#a66a17]" />
           <SummaryBox label="신선" value={`${Math.max(displayIngredients.length - expiringCount, 0)}개`} tone="bg-[#eef6df] text-[#3d7b38]" />
-          <SummaryBox label="일반" value={`${displayIngredients.length}개`} tone="bg-[#fff3d8] text-[#a66a17]" />
           <SummaryBox label="소진임박" value={`${expiringCount}개`} tone="bg-[#ffede4] text-[#d64b25]" />
         </div>
       </section>

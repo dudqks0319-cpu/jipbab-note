@@ -142,6 +142,57 @@ const CATALOG: IngredientCatalogItem[] = [
   { id: "misc-honey", category: "음료/기타", name: "꿀", defaultStorageType: "실온", defaultUnit: "tbsp" },
   { id: "misc-syrup", category: "음료/기타", name: "올리고당", defaultStorageType: "실온", defaultUnit: "tbsp" },
   { id: "misc-cocoa", category: "음료/기타", name: "코코아가루", defaultStorageType: "실온", defaultUnit: "tbsp" },
+
+  { id: "veg-chili-pepper", category: "채소", name: "고추", aliases: ["청양고추", "홍고추", "풋고추"], defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "veg-eggplant", category: "채소", name: "가지", defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "veg-garlic-chive", category: "채소", name: "부추", aliases: ["영양부추"], defaultStorageType: "냉장", defaultUnit: "bag" },
+  { id: "veg-minari", category: "채소", name: "미나리", defaultStorageType: "냉장", defaultUnit: "bag" },
+  { id: "veg-bok-choy", category: "채소", name: "청경채", defaultStorageType: "냉장", defaultUnit: "bag" },
+  { id: "veg-young-napa", category: "채소", name: "알배추", aliases: ["알배기배추"], defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "veg-pumpkin-sweet", category: "채소", name: "단호박", defaultStorageType: "실온", defaultUnit: "piece" },
+  { id: "veg-lotus-root", category: "채소", name: "연근", defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "veg-burdock", category: "채소", name: "우엉", defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "veg-bracken", category: "채소", name: "고사리", aliases: ["삶은고사리"], defaultStorageType: "냉장", defaultUnit: "pack" },
+  { id: "veg-balloon-flower-root", category: "채소", name: "도라지", defaultStorageType: "냉장", defaultUnit: "pack" },
+  { id: "veg-chives", category: "채소", name: "실파", aliases: ["잔파"], defaultStorageType: "냉장", defaultUnit: "bag" },
+
+  { id: "meat-ground-pork", category: "육류", name: "다진 돼지고기", aliases: ["돼지고기 다짐육"], defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "meat-ground-beef", category: "육류", name: "다진 소고기", aliases: ["소고기 다짐육"], defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "meat-chicken-tenderloin", category: "육류", name: "닭안심", defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "meat-pork-rib", category: "육류", name: "돼지갈비", defaultStorageType: "냉장", defaultUnit: "g" },
+
+  { id: "sea-hairtail", category: "수산물", name: "갈치", defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "sea-cod", category: "수산물", name: "대구", defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "sea-pollack", category: "수산물", name: "동태", aliases: ["명태"], defaultStorageType: "냉동", defaultUnit: "piece" },
+  { id: "sea-dried-pollack", category: "수산물", name: "황태채", aliases: ["북어채"], defaultStorageType: "실온", defaultUnit: "g" },
+
+  { id: "frozen-tteokbokki", category: "냉동식품", name: "냉동떡볶이", defaultStorageType: "냉동", defaultUnit: "pack" },
+  { id: "frozen-hotdog", category: "냉동식품", name: "냉동핫도그", defaultStorageType: "냉동", defaultUnit: "pack" },
+  { id: "frozen-corn", category: "냉동식품", name: "냉동옥수수", defaultStorageType: "냉동", defaultUnit: "bag" },
+  { id: "frozen-spinach", category: "냉동식품", name: "냉동시금치", defaultStorageType: "냉동", defaultUnit: "bag" },
+
+  { id: "season-cooking-wine", category: "조미료", name: "맛술", aliases: ["미림", "요리술"], defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-fish-sauce-anchovy", category: "조미료", name: "멸치액젓", defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-fish-sauce-sandlance", category: "조미료", name: "까나리액젓", defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-chicken-stock", category: "조미료", name: "치킨스톡", aliases: ["닭육수"], defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-sesame-seed", category: "조미료", name: "깨", aliases: ["참깨", "통깨"], defaultStorageType: "실온", defaultUnit: "tsp" },
+  { id: "season-perilla-powder", category: "조미료", name: "들깨가루", defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-chili-oil", category: "조미료", name: "고추기름", defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-mustard", category: "조미료", name: "겨자", aliases: ["연겨자"], defaultStorageType: "냉장", defaultUnit: "tsp" },
+  { id: "season-plum-syrup", category: "조미료", name: "매실청", defaultStorageType: "실온", defaultUnit: "tbsp" },
+
+  { id: "grain-glass-noodle", category: "곡물/면/빵", name: "당면", defaultStorageType: "실온", defaultUnit: "g" },
+  { id: "grain-somen", category: "곡물/면/빵", name: "소면", aliases: ["잔치국수면"], defaultStorageType: "실온", defaultUnit: "g" },
+  { id: "grain-ramyeon-noodle", category: "곡물/면/빵", name: "라면사리", defaultStorageType: "실온", defaultUnit: "pack" },
+  { id: "grain-tortilla", category: "곡물/면/빵", name: "또띠아", defaultStorageType: "냉장", defaultUnit: "pack" },
+  { id: "grain-rice-paper", category: "곡물/면/빵", name: "라이스페이퍼", defaultStorageType: "실온", defaultUnit: "pack" },
+  { id: "grain-oatmeal", category: "곡물/면/빵", name: "오트밀", defaultStorageType: "실온", defaultUnit: "g" },
+
+  { id: "proc-tomato-can", category: "통조림/가공식품", name: "토마토캔", aliases: ["홀토마토"], defaultStorageType: "실온", defaultUnit: "can" },
+  { id: "proc-whelk-can", category: "통조림/가공식품", name: "골뱅이캔", aliases: ["골뱅이 통조림"], defaultStorageType: "실온", defaultUnit: "can" },
+  { id: "proc-pacific-saury-can", category: "통조림/가공식품", name: "꽁치캔", aliases: ["꽁치 통조림"], defaultStorageType: "실온", defaultUnit: "can" },
+  { id: "proc-mackerel-can", category: "통조림/가공식품", name: "고등어캔", aliases: ["고등어 통조림"], defaultStorageType: "실온", defaultUnit: "can" },
+  { id: "proc-chicken-breast-can", category: "통조림/가공식품", name: "닭가슴살캔", defaultStorageType: "실온", defaultUnit: "can" },
 ];
 
 const normalized = (value: string) => value.trim().toLowerCase();

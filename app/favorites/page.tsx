@@ -7,7 +7,7 @@ import { Heart, Trash2 } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80";
+  "/images/recipes/kimchi-fried-rice.png";
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, clearFavorites } = useFavorites();
