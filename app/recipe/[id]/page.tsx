@@ -66,6 +66,24 @@ type SupabaseRecipeRow = {
   ingredients: unknown;
   steps: unknown;
   source: string | null;
+  content_origin: RecipeDetailRecord["contentOrigin"] | null;
+  reviewed_for_beginner: boolean | null;
+  recipe_sources:
+    | {
+        provider: string | null;
+        external_id: string | null;
+        source_url: string | null;
+        license: string | null;
+        attribution: string | null;
+      }
+    | Array<{
+        provider: string | null;
+        external_id: string | null;
+        source_url: string | null;
+        license: string | null;
+        attribution: string | null;
+      }>
+    | null;
 };
 
 const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
@@ -379,7 +397,28 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
     const client = createClient(supabaseUrl, supabaseAnonKey);
     const { data, error } = await client
       .from("recipes")
-      .select("id,title,description,category,difficulty,cooking_time,servings,thumbnail_url,ingredients,steps,source")
+      .select(`
+        id,
+        title,
+        description,
+        category,
+        difficulty,
+        cooking_time,
+        servings,
+        thumbnail_url,
+        ingredients,
+        steps,
+        source,
+        content_origin,
+        reviewed_for_beginner,
+        recipe_sources (
+          provider,
+          external_id,
+          source_url,
+          license,
+          attribution
+        )
+      `)
       .eq("id", recipeId)
       .maybeSingle();
 
@@ -394,6 +433,13 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
       ? ingredientDetails.map((ingredientItem) => ingredientItem.name)
       : normalizeIngredientList(row.ingredients);
     const steps = normalizeStepList(row.steps);
+    const sourceRecord = Array.isArray(row.recipe_sources)
+      ? row.recipe_sources[0] ?? null
+      : row.recipe_sources;
+    const fallbackProvider = row.source?.startsWith("mfds:") ? "MFDS" : row.source;
+    const fallbackExternalId = row.source?.startsWith("mfds:") ? row.source.replace(/^mfds:/, "") : null;
+    const fallbackAttribution = row.source?.startsWith("mfds:") ? "식품의약품안전처 식품안전나라" : null;
+    const fallbackLicense = row.source?.startsWith("mfds:") ? "공공데이터 OpenAPI" : null;
 
     return {
       id: row.id,
@@ -417,12 +463,13 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
       difficulty: row.difficulty,
       cookingTime: row.cooking_time,
       servings: row.servings,
-      sourceProvider: row.source?.startsWith("mfds:") ? "MFDS" : row.source,
-      sourceExternalId: row.source?.startsWith("mfds:") ? row.source.replace(/^mfds:/, "") : null,
-      sourceAttribution: row.source?.startsWith("mfds:") ? "식품의약품안전처 식품안전나라" : null,
-      sourceLicense: row.source?.startsWith("mfds:") ? "공공데이터 OpenAPI" : null,
-      contentOrigin: row.source?.startsWith("mfds:") ? "public_api" : "licensed",
-      reviewedForBeginner: false,
+      sourceProvider: sourceRecord?.provider ?? fallbackProvider,
+      sourceExternalId: sourceRecord?.external_id ?? fallbackExternalId,
+      sourceUrl: sourceRecord?.source_url ?? null,
+      sourceAttribution: sourceRecord?.attribution ?? fallbackAttribution,
+      sourceLicense: sourceRecord?.license ?? fallbackLicense,
+      contentOrigin: row.content_origin ?? (row.source?.startsWith("mfds:") ? "public_api" : "licensed"),
+      reviewedForBeginner: row.reviewed_for_beginner ?? false,
     };
   } catch (error) {
     console.error("Supabase 레시피 상세 조회 실패", error);
@@ -474,6 +521,7 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
     steps: parseSteps(target),
     sourceProvider: "MFDS",
     sourceExternalId: target.RCP_SEQ ?? recipeId,
+    sourceUrl: "https://www.foodsafetykorea.go.kr",
     sourceAttribution: "식품의약품안전처 식품안전나라",
     sourceLicense: "공공데이터 OpenAPI",
     contentOrigin: "public_api",
@@ -543,6 +591,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const sourceLicense = recipe.sourceLicense
     ?? (recipe.id.startsWith("curated-") ? "직접 작성/제작 콘텐츠" : "원천 데이터 기준 표시");
   const reviewedForBeginner = recipe.reviewedForBeginner ?? recipe.id.startsWith("curated-");
+  const contentOriginLabel = {
+    original: "집밥노트 직접 작성",
+    public_api: "공공 API 기반",
+    licensed: "허가/라이선스 콘텐츠",
+    user_bookmark: "사용자 북마크",
+  }[recipe.contentOrigin ?? (recipe.id.startsWith("curated-") ? "original" : "licensed")];
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-8">
@@ -699,6 +753,20 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <p className="mt-2 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
             출처: {sourceLabel} · 라이선스/권한: {sourceLicense}
           </p>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+            제공자: {recipe.sourceProvider ?? "집밥노트"} · 콘텐츠 기준: {contentOriginLabel}
+            {recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
+          </p>
+          {recipe.sourceUrl ? (
+            <Link
+              href={recipe.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex text-[12px] font-black text-[#d94d19] underline-offset-2 hover:underline"
+            >
+              원천 페이지 확인
+            </Link>
+          ) : null}
           <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
             {reviewedForBeginner
               ? "초보자용 계량, 실패 방지 팁, 조리 문장은 집밥노트 기준으로 검수했습니다."

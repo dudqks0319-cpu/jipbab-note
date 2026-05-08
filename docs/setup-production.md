@@ -106,7 +106,7 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 4. `CAPACITOR_SERVER_URL=https://<public-app-url> npm run mobile:sync:ios` 로 iOS 설정 동기화
 5. Xcode에서 `com.jipbab.note` 번들 ID, Signing Team, Provisioning Profile 확인
 6. 실기기에서 카카오/구글/애플 로그인 확인
-7. 실기기에서 바코드 카메라 스캔과 권한 거부/미지원 환경의 수동 입력 fallback 확인
+7. 실기기에서 유통기한 로컬 알림 권한 허용/거부와 D-3/D-1/당일 예약 확인
 8. 레시피 상세 → 장보기 → 구매 링크 이동 QA
 9. 운영자 계정으로 `/admin/account-deletions` 접근 가능 여부 확인
 10. `/account-delete` 요청 접수 후 운영자 화면에서 상태 변경 QA

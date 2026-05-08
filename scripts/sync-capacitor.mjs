@@ -148,14 +148,16 @@ let package = Package(
             targets: ["CapApp-SPM"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.1")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.1"),
+        .package(name: "CapacitorLocalNotifications", path: "../../../node_modules/@capacitor/local-notifications")
     ],
     targets: [
         .target(
             name: "CapApp-SPM",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")${enableGemmaPlugin ? `,
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "CapacitorLocalNotifications", package: "CapacitorLocalNotifications")${enableGemmaPlugin ? `,
                 "LiteRTLMEngine",
                 "GemmaModelConstraintProvider"` : ""}
             ]
@@ -178,6 +180,7 @@ let package = Package(
   if (existsSync(capacitorConfigPath)) {
     const capacitorConfig = JSON.parse(readFileSync(capacitorConfigPath, "utf8"));
     capacitorConfig.packageClassList = [
+      "LocalNotificationsPlugin",
       "JipbabGemmaPlugin",
       "CapApp_SPM.JipbabGemmaPlugin",
     ];

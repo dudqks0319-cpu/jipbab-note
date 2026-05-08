@@ -1,3 +1,5 @@
+import { LocalNotifications } from '@capacitor/local-notifications'
+
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_REMINDER_DAYS = [3, 1, 0] as const
 const DEFAULT_NOTIFICATION_HOUR = 9
@@ -33,6 +35,12 @@ export type NotificationSchedulerAdapter = {
 
 type NativeNotificationPlugin = {
   requestPermissions?: () => Promise<{ display?: string }>
+  getPending?: () => Promise<{
+    notifications: Array<{ id: number }>
+  }>
+  cancel?: (payload: {
+    notifications: Array<{ id: number }>
+  }) => Promise<void>
   schedule?: (payload: {
     notifications: Array<{
       id: number
@@ -41,7 +49,7 @@ type NativeNotificationPlugin = {
       schedule: { at: Date }
       extra?: Record<string, string>
     }>
-  }) => Promise<void>
+  }) => Promise<unknown>
 }
 
 export type DeviceExpiryNotificationScheduleResult = {
@@ -176,20 +184,31 @@ function persistScheduledJobs(jobs: ExpiryNotificationJob[]) {
   }))
 }
 
-function getNativeNotificationPlugin(): NativeNotificationPlugin | null {
+function readPersistedScheduledJobs(): ExpiryNotificationJob[] {
   if (typeof window === 'undefined') {
-    return null
+    return []
   }
 
-  const maybeWindow = window as Window & {
-    Capacitor?: {
-      Plugins?: {
-        LocalNotifications?: NativeNotificationPlugin
-      }
+  try {
+    const rawPayload = window.localStorage.getItem(SCHEDULE_STORAGE_KEY)
+    if (!rawPayload) {
+      return []
     }
+    const parsed = JSON.parse(rawPayload) as { jobs?: unknown }
+    if (!Array.isArray(parsed.jobs)) {
+      return []
+    }
+    return parsed.jobs.filter((job): job is ExpiryNotificationJob => (
+      typeof job === 'object' &&
+      job !== null &&
+      typeof (job as ExpiryNotificationJob).id === 'string' &&
+      typeof (job as ExpiryNotificationJob).ingredientId === 'string' &&
+      typeof (job as ExpiryNotificationJob).ingredientName === 'string' &&
+      typeof (job as ExpiryNotificationJob).scheduledAt === 'string'
+    ))
+  } catch {
+    return []
   }
-
-  return maybeWindow.Capacitor?.Plugins?.LocalNotifications ?? null
 }
 
 function makeNativeNotificationId(jobId: string): number {
@@ -200,25 +219,42 @@ function makeNativeNotificationId(jobId: string): number {
   return Math.max(1, hash % 2_147_483_647)
 }
 
-export async function scheduleDeviceExpiryNotifications(
-  targets: ExpiryNotificationTarget[],
-  options: ExpiryScheduleOptions = {},
-): Promise<DeviceExpiryNotificationScheduleResult> {
-  const jobs = buildExpiryNotificationSchedule(targets, options)
-  if (typeof window === 'undefined') {
-    return { mode: 'server', permission: 'unsupported', jobs }
+async function cancelNativeExpiryNotifications(
+  nativePlugin: NativeNotificationPlugin,
+  jobs: ExpiryNotificationJob[],
+) {
+  if (!nativePlugin.cancel || jobs.length === 0) {
+    return
   }
 
-  persistScheduledJobs(jobs)
+  const ids = new Set(jobs.map((job) => makeNativeNotificationId(job.id)))
+  const pending = nativePlugin.getPending ? await nativePlugin.getPending() : null
+  const notifications = pending?.notifications
+    ? pending.notifications.filter((item) => ids.has(item.id)).map((item) => ({ id: item.id }))
+    : [...ids].map((id) => ({ id }))
 
-  const nativePlugin = getNativeNotificationPlugin()
-  if (nativePlugin?.schedule) {
-    const permission = await nativePlugin.requestPermissions?.()
-    const displayPermission = permission?.display ?? 'granted'
-    if (displayPermission !== 'granted') {
-      return { mode: 'native', permission: 'native-denied', jobs }
-    }
+  if (notifications.length > 0) {
+    await nativePlugin.cancel({ notifications })
+  }
+}
 
+export async function scheduleNativeNotifications(
+  jobs: ExpiryNotificationJob[],
+  previousJobs: ExpiryNotificationJob[] = [],
+): Promise<'native-granted' | 'native-denied'> {
+  const nativePlugin = LocalNotifications as unknown as NativeNotificationPlugin
+  const permission = await nativePlugin.requestPermissions?.()
+  const displayPermission = permission?.display ?? 'granted'
+
+  if (displayPermission !== 'granted') {
+    await cancelNativeExpiryNotifications(nativePlugin, previousJobs)
+    persistScheduledJobs([])
+    return 'native-denied'
+  }
+
+  await cancelNativeExpiryNotifications(nativePlugin, [...previousJobs, ...jobs])
+
+  if (jobs.length > 0 && nativePlugin.schedule) {
     await nativePlugin.schedule({
       notifications: jobs.map((job) => ({
         id: makeNativeNotificationId(job.id),
@@ -231,7 +267,28 @@ export async function scheduleDeviceExpiryNotifications(
         },
       })),
     })
-    return { mode: 'native', permission: 'native-granted', jobs }
+  }
+
+  persistScheduledJobs(jobs)
+  return 'native-granted'
+}
+
+export async function scheduleDeviceExpiryNotifications(
+  targets: ExpiryNotificationTarget[],
+  options: ExpiryScheduleOptions = {},
+): Promise<DeviceExpiryNotificationScheduleResult> {
+  const jobs = buildExpiryNotificationSchedule(targets, options)
+  if (typeof window === 'undefined') {
+    return { mode: 'server', permission: 'unsupported', jobs }
+  }
+
+  const previousJobs = readPersistedScheduledJobs()
+
+  try {
+    const permission = await scheduleNativeNotifications(jobs, previousJobs)
+    return { mode: 'native', permission, jobs }
+  } catch {
+    persistScheduledJobs(jobs)
   }
 
   const browserPermission = await requestBrowserNotificationPermission()

@@ -37,6 +37,8 @@ const REQUIRED_ROUTE_FILES = [
   ["recipe list", "app/recipe/page.tsx"],
   ["recipe detail", "app/recipe/[id]/page.tsx"],
   ["shopping", "app/shopping/page.tsx"],
+  ["privacy", "app/privacy/page.tsx"],
+  ["terms", "app/terms/page.tsx"],
   ["account delete", "app/account-delete/page.tsx"],
   ["account deletion api", "app/api/account-deletion-requests/route.ts"],
   ["admin account deletions", "app/admin/account-deletions/page.tsx"],
@@ -304,6 +306,19 @@ for (const [label, relativePath] of REQUIRED_STORE_FILES) {
   }
 }
 
+const packageJsonPath = "package.json";
+if (existsSync(path.join(cwd, packageJsonPath))) {
+  const packageJson = JSON.parse(readProjectFile(packageJsonPath));
+  const dependencies = packageJson.dependencies ?? {};
+  if (dependencies["@capacitor/local-notifications"]) {
+    addResult(results, "pass", "@capacitor/local-notifications", "native local notification plugin is installed");
+  } else {
+    addResult(results, "fail", "@capacitor/local-notifications", "native local notification plugin is required for release alarm claims");
+  }
+} else {
+  addResult(results, "fail", packageJsonPath, "package.json is missing");
+}
+
 const curatedRecipesPath = "lib/curated-recipes.ts";
 let curatedThumbnailPaths = [];
 if (existsSync(path.join(cwd, curatedRecipesPath))) {
@@ -488,7 +503,7 @@ if (!COUPANG_LINK_KEYS.some((key) => isPresent(env[key]))) {
 }
 
 addResult(results, "warn", "Real-device login QA", "manual verification still required");
-addResult(results, "warn", "Camera and barcode QA", "manual permission and scanning checks still required");
+addResult(results, "warn", "Local notification QA", "manual permission, scheduling, and delivery checks still required");
 addResult(results, "warn", "App Store Connect", "metadata, privacy answers, screenshots, and review notes are manual");
 addResult(results, "warn", "External provider dashboards", "Supabase/Google/Apple/Kakao consoles are manual");
 

@@ -338,6 +338,7 @@ export interface RecipeDetailRecord extends RecipeRecord {
   imageCaption?: string | null;
   sourceProvider?: string | null;
   sourceExternalId?: string | null;
+  sourceUrl?: string | null;
   sourceAttribution?: string | null;
   sourceLicense?: string | null;
   contentOrigin?: "original" | "public_api" | "licensed" | "user_bookmark" | null;

@@ -126,9 +126,20 @@ export async function PATCH(
     }
   }
 
+  const updatePayload = isAccountDeletion
+    ? {
+        status: nextStatus,
+        user_id: null,
+        email: null,
+        reason: null,
+      }
+    : {
+        status: nextStatus,
+      };
+
   const { data, error } = await client
     .from("account_deletion_requests")
-    .update({ status: nextStatus })
+    .update(updatePayload)
     .eq("id", id)
     .select("id,user_id,email,reason,status,created_at,updated_at")
     .maybeSingle();

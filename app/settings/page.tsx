@@ -45,6 +45,7 @@ const measurementGuide = [
   { label: '한줌', value: '한 손으로 가볍게 집히는 양', note: '약 30~50g' },
   { label: '두부 1모', value: '일반 포장 두부 1팩', note: '약 300g' },
 ]
+const GEMMA_SETTINGS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_GEMMA === 'true'
 
 export default function SettingsPage() {
   const {
@@ -69,6 +70,10 @@ export default function SettingsPage() {
   const [notificationBusy, setNotificationBusy] = useState(false)
 
   useEffect(() => {
+    if (!GEMMA_SETTINGS_ENABLED) {
+      return
+    }
+
     let cancelled = false
 
     getGemmaStatus()
@@ -287,6 +292,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {GEMMA_SETTINGS_ENABLED ? (
       <section className="px-5 pt-4">
         <div className="jipbab-panel overflow-hidden rounded-[16px] px-4 py-4">
           <div className="flex items-start justify-between gap-3">
@@ -365,6 +371,7 @@ export default function SettingsPage() {
           ) : null}
         </div>
       </section>
+      ) : null}
 
       <section className="px-5 pt-4">
         <div className="jipbab-panel divide-y divide-[#eadcc9] overflow-hidden rounded-[16px]">
@@ -412,7 +419,7 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-          <SettingLink title="이용약관" value="" href="/privacy" />
+          <SettingLink title="이용약관" value="" href="/terms" />
           <SettingLink title="개인정보 처리방침" value="" href="/privacy" />
           <div className="flex items-center justify-between px-4 py-3.5">
             <span className="text-[14px] font-bold text-[#4b3929]">앱 정보</span>
