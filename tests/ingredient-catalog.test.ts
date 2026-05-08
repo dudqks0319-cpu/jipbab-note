@@ -6,6 +6,10 @@ import {
   getIngredientCatalogByCategory,
   searchIngredientCatalog,
 } from "../lib/ingredient-catalog.ts";
+import {
+  normalizeIngredientInput,
+  suggestIngredientCategory,
+} from "../lib/ingredient-category.ts";
 import { getIngredientPhotoUrl } from "../lib/utils.ts";
 
 test("returns many curated items for frozen foods", () => {
@@ -54,4 +58,17 @@ test("ingredient photos avoid misleading generic fallbacks for common confusing 
   assert.equal(getIngredientPhotoUrl("냉동야채믹스", "냉동식품"), "/images/ingredients/frozen-vegetable-mix-photo.png");
   assert.equal(getIngredientPhotoUrl("들기름", "조미료"), "/images/ingredients/perilla-oil-photo.png");
   assert.equal(getIngredientPhotoUrl("쌈장", "조미료"), "/images/ingredients/ssamjang-photo.png");
+});
+
+test("ingredient category suggestion uses catalog names and aliases", () => {
+  assert.equal(suggestIngredientCategory("사과", "채소"), "과일");
+  assert.equal(suggestIngredientCategory("양조간장", "채소"), "조미료");
+  assert.equal(suggestIngredientCategory("목살", "채소"), "육류");
+  assert.equal(suggestIngredientCategory("모르는재료", "채소"), "채소");
+});
+
+test("ingredient input normalization trims whitespace and conservative trailing jamo", () => {
+  assert.equal(normalizeIngredientInput("  테스트재료ㅍ  "), "테스트재료");
+  assert.equal(normalizeIngredientInput("청양 고추"), "청양 고추");
+  assert.equal(normalizeIngredientInput("ㅋㅋ"), "ㅋㅋ");
 });

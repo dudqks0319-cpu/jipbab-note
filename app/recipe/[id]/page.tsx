@@ -582,14 +582,16 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
       </section>
 
       {tags.length > 0 && (
-        <section className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pt-4">
+        <section className="flex flex-wrap gap-2 px-5 pt-4">
           {tags.map((tag) => (
-            <span key={tag} className="shrink-0 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f]">
+            <span key={tag} className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f]">
               {tag}
             </span>
           ))}
         </section>
       )}
+
+      <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
 
       {recipe.beginnerSummary ? (
         <section className="px-5 pt-5">
@@ -640,7 +642,6 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
       <RecipeExploreLinks recipeName={recipe.name} />
       <RecipeCookMode recipeName={recipe.name} steps={recipe.steps} />
 

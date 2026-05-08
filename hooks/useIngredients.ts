@@ -295,7 +295,12 @@ export function useIngredients(): UseIngredientsResult {
     } catch (caught) {
       const fallback = safeReadLocalIngredients(deviceId);
       setIngredients(fallback);
-      setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+      if (fallback.length > 0) {
+        console.warn("재료 목록 로컬 표시로 전환", caught);
+        setError(null);
+      } else {
+        setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+      }
       return fallback;
     } finally {
       setLoading(false);

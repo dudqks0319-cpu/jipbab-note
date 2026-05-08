@@ -4,6 +4,7 @@ import { FormEvent, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { normalizeIngredientInput, suggestIngredientCategory } from "@/lib/ingredient-category";
 import { INGREDIENT_CATEGORIES, INGREDIENT_STORAGE_TYPES } from "@/types";
 
 export type IngredientFormMode = "create" | "edit";
@@ -74,13 +75,18 @@ export function AddIngredientForm({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
+    const normalizedName = normalizeIngredientInput(String(formData.get("name") ?? ""));
+    const selectedCategory = String(formData.get("category") ?? "");
+
     await onSubmit({
-      name: String(formData.get("name") ?? ""),
-      category: String(formData.get("category") ?? ""),
+      name: normalizedName,
+      category: normalizedName && selectedCategory === DEFAULT_VALUES.category
+        ? suggestIngredientCategory(normalizedName, "채소")
+        : selectedCategory,
       storage_type: String(formData.get("storage_type") ?? ""),
-      quantity: String(formData.get("quantity") ?? ""),
+      quantity: String(formData.get("quantity") ?? "").trim(),
       expiry_date: String(formData.get("expiry_date") ?? ""),
-      memo: String(formData.get("memo") ?? ""),
+      memo: String(formData.get("memo") ?? "").trim(),
     });
   };
 

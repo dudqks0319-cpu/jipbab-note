@@ -218,7 +218,12 @@ export function useShopping(): UseShoppingResult {
       const fallback = safeReadLocalItems(deviceId);
       setItems(fallback);
       setSource("local");
-      setError(makeError(caught instanceof Error ? caught.message : "장보기 목록 조회 실패", "supabase"));
+      if (fallback.length > 0) {
+        console.warn("장보기 목록 로컬 표시로 전환", caught);
+        setError(null);
+      } else {
+        setError(makeError(caught instanceof Error ? caught.message : "장보기 목록 조회 실패", "supabase"));
+      }
       return fallback;
     } finally {
       setLoading(false);

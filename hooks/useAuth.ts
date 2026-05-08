@@ -2,10 +2,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
+import { getSupabaseClient } from "@/lib/supabase";
 import { resolveAuthProviderOptions, type ResolvedAuthProviderOption } from "@/lib/auth-config";
 import type {
   AuthQueryError,
@@ -19,8 +20,6 @@ const PUBLIC_OAUTH_PROVIDER_LIST = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_PROVID
 const PUBLIC_GOOGLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED;
 const PUBLIC_KAKAO_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED;
 const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED;
-
-const authClientCache = new Map<string, SupabaseClient>();
 
 const AUTH_UNAVAILABLE_MESSAGE = "지금은 로그인 기능을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
 
@@ -49,34 +48,8 @@ function createAuthClient(deviceId: string): SupabaseClient | null {
     return null;
   }
 
-  const normalizedDeviceId = deviceId.trim();
-  const cacheKey = normalizedDeviceId || "default";
-  const cached = authClientCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  const headers: Record<string, string> = {
-    "x-client-info": "jipbab-note-web-auth",
-  };
-
-  if (normalizedDeviceId) {
-    headers["x-device-id"] = normalizedDeviceId;
-  }
-
-  const client = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-    global: {
-      headers,
-    },
-  });
-
-  authClientCache.set(cacheKey, client);
-  return client;
+  // Auth도 lib/supabase.ts의 캐시된 client를 사용해서 GoTrueClient 중복 생성을 줄입니다.
+  return getSupabaseClient({ deviceId });
 }
 
 function resolveUserDisplayName(user: User | null): string {

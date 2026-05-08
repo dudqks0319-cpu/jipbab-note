@@ -5,7 +5,8 @@ interface SupabaseClientOptions {
   deviceId?: string;
 }
 
-const clientCache = new Map<string, SupabaseClient>();
+let clientCache: SupabaseClient | null = null;
+let latestDeviceId: string | null = null;
 const PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -26,22 +27,26 @@ function getRequiredSupabaseEnv() {
 
 export function getSupabaseClient(options?: SupabaseClientOptions): SupabaseClient {
   const normalizedDeviceId = options?.deviceId?.trim();
-  const cacheKey = normalizedDeviceId ? `device:${normalizedDeviceId}` : "default";
+  if (normalizedDeviceId) {
+    latestDeviceId = normalizedDeviceId;
+  }
 
-  const cachedClient = clientCache.get(cacheKey);
-  if (cachedClient) {
-    return cachedClient;
+  if (clientCache) {
+    return clientCache;
   }
 
   const { supabaseUrl, supabaseAnonKey } = getRequiredSupabaseEnv();
 
-  const headers: Record<string, string> = {
-    "x-client-info": "jipbab-note-web",
+  const fetchWithDeviceHeader: typeof fetch = (input, init) => {
+    const headers = new Headers(init?.headers);
+    if (latestDeviceId) {
+      headers.set("x-device-id", latestDeviceId);
+    }
+    return fetch(input, {
+      ...init,
+      headers,
+    });
   };
-
-  if (normalizedDeviceId) {
-    headers["x-device-id"] = normalizedDeviceId;
-  }
 
   // OAuth 세션이 있는 경우 재료/커뮤니티 동작에도 세션을 공유할 수 있도록 유지합니다.
   const client = createClient(supabaseUrl, supabaseAnonKey, {
@@ -51,10 +56,13 @@ export function getSupabaseClient(options?: SupabaseClientOptions): SupabaseClie
       detectSessionInUrl: true,
     },
     global: {
-      headers,
+      fetch: fetchWithDeviceHeader,
+      headers: {
+        "x-client-info": "jipbab-note-web",
+      },
     },
   });
 
-  clientCache.set(cacheKey, client);
+  clientCache = client;
   return client;
 }

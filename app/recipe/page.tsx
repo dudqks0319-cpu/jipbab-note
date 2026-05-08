@@ -126,12 +126,12 @@ export default function RecipePage() {
         </div>
       </section>
 
-      <section className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pt-3">
+      <section className="grid grid-cols-4 gap-2 px-5 pt-3 min-[380px]:grid-cols-5">
         {RECIPE_CATEGORIES.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(selectedCategory === category ? '전체' : category)}
-            className={`shrink-0 rounded-full border px-4 py-2 text-[12px] font-black transition-all ${
+            className={`min-h-9 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
               selectedCategory === category
                 ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                 : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -142,13 +142,13 @@ export default function RecipePage() {
         ))}
       </section>
 
-      <section className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pt-2">
+      <section className="grid grid-cols-4 gap-2 px-5 pt-2">
         {RECIPE_QUICK_FILTERS.map((filter) => (
           <button
             key={filter.id}
             type="button"
             onClick={() => setQuickFilter(filter.id)}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-black transition-all ${
+            className={`min-h-8 rounded-full border px-2 py-1.5 text-[11px] font-black transition-all ${
               quickFilter === filter.id
                 ? 'border-[#2f6fec] bg-[#eef4ff] text-[#2f6fec]'
                 : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'

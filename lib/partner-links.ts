@@ -7,7 +7,7 @@ type PartnerLinkInput = {
   category: IngredientCategory | null;
 };
 
-type PartnerLinkConfig = {
+export type PartnerLinkConfig = {
   itemLinks: Record<string, string>;
   categoryLinks: Partial<Record<IngredientCategory, string>>;
 };
@@ -18,6 +18,7 @@ type PartnerLinkResult = {
 };
 
 const coupangSearchBase = "https://www.coupang.com/np/search?component=&q=";
+const coupangPartnerUrlPattern = /^https:\/\/link\.coupang\.com\/a\/[A-Za-z0-9_-]+(?:[/?#].*)?$/;
 
 const itemKeyByName: Array<[string, string[]]> = [
   ["egg", ["계란", "달걀"]],
@@ -34,18 +35,63 @@ function searchHref(keyword: string): string {
   return `${coupangSearchBase}${encodeURIComponent(keyword)}`;
 }
 
+export function normalizeLinkKey(value: string): string {
+  return value.trim().replace(/\s+/g, "").toLowerCase();
+}
+
+export function isCoupangPartnerUrl(value: string | null | undefined): value is string {
+  return typeof value === "string" && coupangPartnerUrlPattern.test(value.trim());
+}
+
+function validPartnerHref(value: string | null | undefined): string | null {
+  if (!isCoupangPartnerUrl(value)) {
+    return null;
+  }
+
+  return value.trim();
+}
+
+export function parsePartnerItemLinksJson(value: string | null | undefined): Record<string, string> {
+  if (!value?.trim()) {
+    return {};
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .filter((entry): entry is [string, string] => isCoupangPartnerUrl(entry[1]))
+        .map(([key, href]) => [normalizeLinkKey(key), href.trim()]),
+    );
+  } catch {
+    return {};
+  }
+}
+
 export function resolvePartnerLink(
   input: PartnerLinkInput,
   config: PartnerLinkConfig,
 ): PartnerLinkResult {
   const normalizedName = input.name.trim();
+  const directItemHref = validPartnerHref(config.itemLinks[normalizeLinkKey(normalizedName)]);
+  if (directItemHref) {
+    return {
+      href: directItemHref,
+      kind: "item",
+    };
+  }
 
   for (const [key, keywords] of itemKeyByName) {
     if (keywords.some((keyword) => normalizedName.includes(keyword))) {
       const href = config.itemLinks[key];
-      if (href) {
+      const validHref = validPartnerHref(href);
+      if (validHref) {
         return {
-          href,
+          href: validHref,
           kind: "item",
         };
       }
@@ -53,7 +99,7 @@ export function resolvePartnerLink(
   }
 
   if (input.category) {
-    const categoryHref = config.categoryLinks[input.category];
+    const categoryHref = validPartnerHref(config.categoryLinks[input.category]);
     if (categoryHref) {
       return {
         href: categoryHref,

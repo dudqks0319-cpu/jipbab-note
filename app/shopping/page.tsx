@@ -8,23 +8,33 @@ import { Check, ExternalLink, Plus, Share2, Trash2 } from 'lucide-react'
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useIngredients } from '@/hooks/useIngredients'
+import { usePartnerLinks } from '@/hooks/usePartnerLinks'
 import { useShopping } from '@/hooks/useShopping'
-import { getCoupangSearchUrl } from '@/lib/external-links'
+import { getCoupangPurchaseLink } from '@/lib/external-links'
+import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
 import { INGREDIENT_CATEGORIES, type IngredientCategory } from '@/types'
 import type { ShoppingItem } from '@/types'
+import type { PartnerLinkConfig } from '@/lib/partner-links'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
+const PARTNERS_DISCLOSURE = '일부 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
+
+function externalLinkRel(isPartnerLink: boolean) {
+  return isPartnerLink ? 'sponsored noopener noreferrer' : 'noopener noreferrer'
+}
 
 export default function ShoppingPage() {
   const isAppStoreDemo = useDemoMode()
   const { items, addItem, toggleItem, removeItem, clearCheckedItems } = useShopping()
   const { ingredients, addIngredient, updateIngredient } = useIngredients()
+  const partnerLinks = usePartnerLinks()
   const [showAddForm, setShowAddForm] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [name, setName] = useState('')
   const [quantity, setQuantity] = useState('')
   const [category, setCategory] = useState<IngredientCategory>(DEFAULT_CATEGORY)
+  const [categoryTouched, setCategoryTouched] = useState(false)
 
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
@@ -39,15 +49,27 @@ export default function ShoppingPage() {
   }, [uncheckedItems])
 
   const handleAdd = () => {
-    if (!name.trim()) {
+    const normalizedName = normalizeIngredientInput(name)
+    const normalizedQuantity = quantity.trim()
+    const safeCategory = categoryTouched ? category : suggestIngredientCategory(normalizedName, category)
+
+    if (!normalizedName) {
       return
     }
 
-    void addItem({ name, quantity, category })
+    void addItem({ name: normalizedName, quantity: normalizedQuantity, category: safeCategory })
     setName('')
     setQuantity('')
     setCategory(DEFAULT_CATEGORY)
+    setCategoryTouched(false)
     setStatusMessage('장보기 항목을 추가했어요. 계속 추가할 수 있습니다.')
+  }
+
+  const handleNameChange = (value: string) => {
+    setName(value)
+    if (!categoryTouched) {
+      setCategory(suggestIngredientCategory(value, DEFAULT_CATEGORY))
+    }
   }
 
   const getStorageTypeForCategory = (itemCategory: IngredientCategory | null) => {
@@ -146,6 +168,9 @@ export default function ShoppingPage() {
             {statusMessage}
           </p>
         ) : null}
+        <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
+          {PARTNERS_DISCLOSURE}
+        </p>
       </section>
 
       <section className="px-5 pt-4">
@@ -155,7 +180,8 @@ export default function ShoppingPage() {
               <input
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => handleNameChange(event.target.value)}
+                onBlur={(event) => handleNameChange(normalizeIngredientInput(event.target.value))}
                 placeholder="재료명"
                 className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
               />
@@ -170,7 +196,10 @@ export default function ShoppingPage() {
             <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_96px]">
               <select
                 value={category}
-                onChange={(event) => setCategory(event.target.value as IngredientCategory)}
+                onChange={(event) => {
+                  setCategory(event.target.value as IngredientCategory)
+                  setCategoryTouched(true)
+                }}
                 className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
               >
                 {INGREDIENT_CATEGORIES.map((option) => (
@@ -182,12 +211,15 @@ export default function ShoppingPage() {
               <button
                 type="button"
                 onClick={handleAdd}
-                disabled={!name.trim()}
+                disabled={!normalizeIngredientInput(name)}
                 className="inline-flex min-w-0 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-3 py-3 text-sm font-black text-white disabled:bg-[#e6b49a]"
               >
                 <Plus size={15} />
                 추가
               </button>
+              <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#8a5a2a] min-[360px]:col-span-2">
+                재료명을 입력하면 카테고리를 자동 추천합니다. 직접 바꾸면 선택한 값으로 저장돼요.
+              </p>
             </div>
           </div>
         ) : null}
@@ -199,17 +231,24 @@ export default function ShoppingPage() {
             <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
             <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => (
-                <a
-                  key={item.name}
-                  href={getCoupangSearchUrl(item.name)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
-                >
-                  {item.name} 바로 사기
-                </a>
-              ))}
+              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => {
+                const purchaseLink = getCoupangPurchaseLink({
+                  name: item.name,
+                  category: item.category ?? null,
+                }, partnerLinks)
+
+                return (
+                  <a
+                    key={item.name}
+                    href={purchaseLink.href}
+                    target="_blank"
+                    rel={externalLinkRel(purchaseLink.isPartnerLink)}
+                    className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
+                  >
+                    {item.name} 바로 사기
+                  </a>
+                )
+              })}
             </div>
           </div>
         ) : (
@@ -222,11 +261,13 @@ export default function ShoppingPage() {
                     <ShoppingRow
                       key={item.id}
                       name={item.name}
+                      category={item.category}
                       quantity={item.quantity || '수량 미정'}
                       checked={false}
                       onToggle={() => toggleItem(item.id)}
                       onRemove={() => removeItem(item.id)}
                       onAddToFridge={() => addShoppingItemToFridge(item)}
+                      partnerLinks={partnerLinks}
                     />
                   ))}
                 </div>
@@ -239,11 +280,13 @@ export default function ShoppingPage() {
                   <ShoppingRow
                     key={item.id}
                     name={item.name}
+                    category={item.category}
                     quantity={item.quantity || '수량 미정'}
                     checked
                     onToggle={() => toggleItem(item.id)}
                     onRemove={() => removeItem(item.id)}
                     onAddToFridge={() => addShoppingItemToFridge(item)}
+                    partnerLinks={partnerLinks}
                   />
                 ))}
               </ShoppingGroup>
@@ -287,19 +330,25 @@ function ShoppingGroup({ title, children }: { title: string; children: ReactNode
 
 function ShoppingRow({
   name,
+  category,
   quantity,
   checked,
   onToggle,
   onRemove,
   onAddToFridge,
+  partnerLinks,
 }: {
   name: string
+  category: IngredientCategory | null
   quantity: string
   checked: boolean
   onToggle: () => void
   onRemove: () => void
   onAddToFridge: () => void
+  partnerLinks: PartnerLinkConfig
 }) {
+  const purchaseLink = getCoupangPurchaseLink({ name, category }, partnerLinks)
+
   return (
     <div className="flex items-center gap-3 px-3 py-3">
       <button
@@ -326,10 +375,11 @@ function ShoppingRow({
             재료 추가
           </button>
           <a
-            href={getCoupangSearchUrl(name)}
+            href={purchaseLink.href}
             target="_blank"
-            rel="noreferrer"
+            rel={externalLinkRel(purchaseLink.isPartnerLink)}
             className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+            aria-label={`${name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
           >
             <ExternalLink size={12} />
             구매

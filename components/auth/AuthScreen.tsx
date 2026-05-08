@@ -14,6 +14,16 @@ type AuthScreenProps = {
   mode: 'welcome' | 'login' | 'signup'
 }
 
+type AuthFieldErrors = {
+  email?: string
+  password?: string
+  passwordConfirm?: string
+  terms?: string
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MIN_PASSWORD_LENGTH = 6
+
 export default function AuthScreen({ mode }: AuthScreenProps) {
   const router = useRouter()
   const { providers, signingIn, error, signInWithProvider, signInWithEmail, signUpWithEmail } = useAuth()
@@ -23,6 +33,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   const [nickname, setNickname] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>({})
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const quickProviders = providers
   const quickEnabledProviders = quickProviders.filter((item) => item.enabled)
@@ -75,21 +86,37 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   const handleEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setFormError(null)
+    setFieldErrors({})
     setSuccessMessage(null)
 
     const trimmedEmail = email.trim()
-    if (!trimmedEmail || !password) {
-      setFormError('이메일과 비밀번호를 입력해주세요.')
-      return
+    const nextErrors: AuthFieldErrors = {}
+
+    if (!trimmedEmail) {
+      nextErrors.email = '이메일을 입력해주세요.'
+    } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      nextErrors.email = '올바른 이메일 형식으로 입력해주세요.'
     }
 
-    if (isSignup && password !== passwordConfirm) {
-      setFormError('비밀번호가 서로 일치하지 않습니다.')
-      return
+    if (!password) {
+      nextErrors.password = '비밀번호를 입력해주세요.'
+    } else if (password.length < MIN_PASSWORD_LENGTH) {
+      nextErrors.password = `비밀번호는 ${MIN_PASSWORD_LENGTH}자 이상 입력해주세요.`
+    }
+
+    if (isSignup && passwordConfirm && password !== passwordConfirm) {
+      nextErrors.passwordConfirm = '비밀번호가 서로 일치하지 않습니다.'
+    } else if (isSignup && !passwordConfirm) {
+      nextErrors.passwordConfirm = '비밀번호 확인을 입력해주세요.'
     }
 
     if (isSignup && !acceptedTerms) {
-      setFormError('이용약관 및 개인정보 처리방침에 동의해 주세요.')
+      nextErrors.terms = '이용약관 및 개인정보 처리방침에 동의해 주세요.'
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors)
+      setFormError(Object.values(nextErrors)[0] ?? '입력값을 확인해주세요.')
       return
     }
 
@@ -153,22 +180,30 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         <span className="h-px bg-[#eadcc9]" />
       </div>
 
-      <form className="space-y-3 pt-6" onSubmit={handleEmailSubmit}>
+      <form className="space-y-3 pt-6" onSubmit={handleEmailSubmit} noValidate>
         <AuthInput
           icon={<Mail size={16} />}
           placeholder="이메일 주소"
           type="email"
           value={email}
-          onChange={setEmail}
+          onChange={(value) => {
+            setEmail(value)
+            setFieldErrors((prev) => ({ ...prev, email: undefined }))
+          }}
           autoComplete="email"
+          error={fieldErrors.email}
         />
         <AuthInput
           icon={<Lock size={16} />}
           placeholder="비밀번호"
           type="password"
           value={password}
-          onChange={setPassword}
+          onChange={(value) => {
+            setPassword(value)
+            setFieldErrors((prev) => ({ ...prev, password: undefined }))
+          }}
           autoComplete={isSignup ? 'new-password' : 'current-password'}
+          error={fieldErrors.password}
         />
         {isSignup ? (
           <>
@@ -177,8 +212,12 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
               placeholder="비밀번호 확인"
               type="password"
               value={passwordConfirm}
-              onChange={setPasswordConfirm}
+              onChange={(value) => {
+                setPasswordConfirm(value)
+                setFieldErrors((prev) => ({ ...prev, passwordConfirm: undefined }))
+              }}
               autoComplete="new-password"
+              error={fieldErrors.passwordConfirm}
             />
             <AuthInput
               icon={<UserRound size={16} />}
@@ -192,12 +231,20 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
 
         {isSignup ? (
           <section className="space-y-3 pt-2">
-            <CheckboxLine
-              text="이용약관 및 개인정보 처리방침에 동의합니다."
-              checked={acceptedTerms}
-              onChange={setAcceptedTerms}
-              required
-            />
+              <CheckboxLine
+                text="이용약관 및 개인정보 처리방침에 동의합니다."
+                checked={acceptedTerms}
+                onChange={(checked) => {
+                  setAcceptedTerms(checked)
+                  setFieldErrors((prev) => ({ ...prev, terms: undefined }))
+                }}
+                required
+              />
+              {fieldErrors.terms ? (
+                <p className="rounded-[12px] bg-[#fff0e4] px-3 py-2 text-[12px] font-bold text-[#d94d19]">
+                  {fieldErrors.terms}
+                </p>
+              ) : null}
             <CheckboxLine text="(선택) 마케팅 정보 수신에 동의합니다." />
           </section>
         ) : (
@@ -206,6 +253,12 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
             <Link href="/support" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
           </section>
         )}
+
+        {authErrorMessage ? (
+          <p className="rounded-[12px] bg-[#fff0e4] px-4 py-3 text-sm font-bold text-[#d94d19]" role="alert">
+            {authErrorMessage}
+          </p>
+        ) : null}
 
         <button
           type="submit"
@@ -216,11 +269,6 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         </button>
       </form>
 
-      {authErrorMessage ? (
-        <p className="mt-3 rounded-[12px] bg-[#fff0e4] px-4 py-3 text-sm font-semibold text-[#d94d19]">
-          {authErrorMessage}
-        </p>
-      ) : null}
       {successMessage ? (
         <p className="mt-3 rounded-[12px] bg-[#eef9ef] px-4 py-3 text-sm font-semibold text-[#257a3e]">
           {successMessage}
@@ -244,6 +292,7 @@ function AuthInput({
   value,
   onChange,
   autoComplete,
+  error,
 }: {
   icon: ReactNode
   placeholder: string
@@ -251,20 +300,30 @@ function AuthInput({
   value: string
   onChange: (value: string) => void
   autoComplete?: string
+  error?: string
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3.5">
-      <span className="text-[#a69585]">{icon}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        required={type !== 'text'}
-        className="w-full bg-transparent text-sm font-semibold text-[#4b3929] outline-none placeholder:text-[#b5a493]"
-      />
-      {type === 'password' ? <Eye size={16} className="text-[#a69585]" /> : null}
+    <div>
+      <div className={`flex items-center gap-2 rounded-[12px] border bg-[#fffaf3] px-3 py-3.5 ${
+        error ? 'border-[#ea5a1f] ring-2 ring-[#fff0e4]' : 'border-[#eadcc9]'
+      }`}>
+        <span className="text-[#a69585]">{icon}</span>
+        <input
+          type={type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          aria-invalid={error ? true : undefined}
+          className="w-full bg-transparent text-sm font-semibold text-[#4b3929] outline-none placeholder:text-[#b5a493]"
+        />
+        {type === 'password' ? <Eye size={16} className="text-[#a69585]" /> : null}
+      </div>
+      {error ? (
+        <p className="mt-1.5 rounded-[10px] bg-[#fff0e4] px-3 py-2 text-[12px] font-bold text-[#d94d19]" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }

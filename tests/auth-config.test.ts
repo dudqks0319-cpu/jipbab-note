@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { resolveAuthProviderOptions } from "../lib/auth-config.ts";
@@ -71,4 +72,31 @@ test("shows a generic user-facing message when Supabase public config is unavail
 
   assert.equal(providers[0].userDisabledReason, "지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.");
   assert.doesNotMatch(providers[0].userDisabledReason ?? "", /NEXT_PUBLIC|public-anon-key/);
+});
+
+test("useAuth reuses the shared Supabase client factory", () => {
+  const source = readFileSync(new URL("../hooks/useAuth.ts", import.meta.url), "utf8");
+
+  assert.match(source, /import \{ getSupabaseClient \} from "@\/lib\/supabase";/);
+  assert.match(source, /return getSupabaseClient\(\{ deviceId \}\);/);
+  assert.doesNotMatch(source, /createClient\(/);
+  assert.doesNotMatch(source, /authClientCache/);
+});
+
+test("browser Supabase client is a singleton and injects device id per request", () => {
+  const source = readFileSync(new URL("../lib/supabase.ts", import.meta.url), "utf8");
+
+  assert.match(source, /let clientCache: SupabaseClient \| null = null;/);
+  assert.match(source, /let latestDeviceId: string \| null = null;/);
+  assert.match(source, /headers\.set\("x-device-id", latestDeviceId\);/);
+  assert.doesNotMatch(source, /new Map<string, SupabaseClient>/);
+});
+
+test("community hook uses the shared Supabase client factory", () => {
+  const source = readFileSync(new URL("../hooks/useCommunity.ts", import.meta.url), "utf8");
+
+  assert.match(source, /import \{ getSupabaseClient \} from "@\/lib\/supabase";/);
+  assert.match(source, /return getSupabaseClient\(\{ deviceId \}\);/);
+  assert.doesNotMatch(source, /createClient\(/);
+  assert.doesNotMatch(source, /communityClientCache/);
 });

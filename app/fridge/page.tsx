@@ -15,6 +15,7 @@ import {
 } from '@/types'
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
+import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
 import {
   STARTER_INGREDIENT_TEMPLATES,
   buildStarterIngredientPayloads,
@@ -87,6 +88,7 @@ export default function FridgePage() {
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
+  const [categoryTouched, setCategoryTouched] = useState(false)
 
   const unitOptions = useMemo(
     () => getUnitOptionsForSystem(settings.unitSystem),
@@ -116,6 +118,7 @@ export default function FridgePage() {
   const resetForm = useCallback(() => {
     setForm(initialFormState)
     setSuggestionKeyword('')
+    setCategoryTouched(false)
     setEditingId(null)
     setSaveMessage('')
   }, [])
@@ -171,7 +174,8 @@ export default function FridgePage() {
   }
 
   const handleSave = async () => {
-    if (!form.name.trim()) return
+    const normalizedName = normalizeIngredientInput(form.name)
+    if (!normalizedName) return
 
     const amountValue = Number(form.amount_value)
     const normalizedAmountValue =
@@ -185,12 +189,12 @@ export default function FridgePage() {
     )
 
     const payload = {
-      name: form.name,
-      category: form.category,
+      name: normalizedName,
+      category: categoryTouched ? form.category : suggestIngredientCategory(normalizedName, form.category),
       storageType: form.storage_type,
       quantity: quantityDisplay,
       expiryDate: form.expiry_date || null,
-      memo: form.memo || null,
+      memo: form.memo.trim() || null,
     }
 
     if (editingId) {
@@ -226,6 +230,7 @@ export default function FridgePage() {
         amount_unit: prev.amount_unit,
       }))
       setSuggestionKeyword('')
+      setCategoryTouched(false)
     }
   }
 
@@ -279,6 +284,7 @@ export default function FridgePage() {
       expiry_date: ingredient.expiryDate || '',
       memo: ingredient.memo || '',
     })
+    setCategoryTouched(true)
     setEditingId(ingredient.id)
     setMenuOpenId(null)
     setShowAddModal(true)
@@ -287,6 +293,14 @@ export default function FridgePage() {
   const handleDelete = async (id: string) => {
     await deleteIngredient(id)
     setMenuOpenId(null)
+  }
+
+  const handleIngredientNameChange = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      name: value,
+      category: categoryTouched ? prev.category : suggestIngredientCategory(value, prev.category),
+    }))
   }
 
   return (
@@ -369,12 +383,12 @@ export default function FridgePage() {
           </p>
         ) : null}
 
-        <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto">
+        <div className="mt-3 grid grid-cols-4 gap-2">
           {storageTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-[12px] font-black transition-all ${
+              className={`min-h-10 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
                 activeTab === tab
                   ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                   : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -585,7 +599,8 @@ export default function FridgePage() {
                 type="text"
                 placeholder="예: 돼지고기 목살"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => handleIngredientNameChange(e.target.value)}
+                onBlur={(e) => handleIngredientNameChange(normalizeIngredientInput(e.target.value))}
                 className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-sm outline-none transition-colors focus:border-mint-300 focus:bg-white"
               />
             </div>
@@ -593,12 +608,15 @@ export default function FridgePage() {
             {/* 카테고리 */}
             <div className="mb-4">
               <label className="mb-2 block text-sm font-bold text-gray-700">카테고리</label>
-              <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+              <div className="grid grid-cols-2 gap-2 min-[380px]:grid-cols-3">
                 {INGREDIENT_CATEGORIES.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setForm({ ...form, category: cat })}
-                    className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
+                    onClick={() => {
+                      setForm({ ...form, category: cat })
+                      setCategoryTouched(true)
+                    }}
+                    className={`min-h-11 rounded-2xl px-2.5 py-2 text-[13px] font-bold transition-all ${
                       form.category === cat ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
                     }`}
                   >
@@ -606,6 +624,9 @@ export default function FridgePage() {
                   </button>
                 ))}
               </div>
+              <p className="mt-2 rounded-xl bg-gray-50 px-3 py-2 text-xs font-semibold leading-5 text-gray-500">
+                재료명으로 자동 추천하고, 직접 누른 카테고리는 그대로 저장합니다.
+              </p>
             </div>
 
             {/* 카테고리별 추천 재료 */}

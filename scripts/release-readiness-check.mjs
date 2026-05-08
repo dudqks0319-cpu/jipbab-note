@@ -25,7 +25,9 @@ const COUPANG_LINK_KEYS = [
   "NEXT_PUBLIC_COUPANG_PARTNERS_DAIRY_URL",
   "NEXT_PUBLIC_COUPANG_PARTNERS_FROZEN_URL",
   "NEXT_PUBLIC_COUPANG_PARTNERS_SEASONING_URL",
+  "NEXT_PUBLIC_COUPANG_PARTNERS_ITEM_LINKS_JSON",
 ];
+const PARTNER_LINKS_MIGRATION = "supabase/migrations/20260507010000_add_partner_links.sql";
 
 const REQUIRED_ROUTE_FILES = [
   ["login", "app/login/page.tsx"],
@@ -452,10 +454,19 @@ if (!isPresent(env.MFDS_API_KEY) && !isPresent(env.FOODSAFETY_API_KEY)) {
   addResult(results, "warn", "MFDS_API_KEY or FOODSAFETY_API_KEY", "missing; recipe fallback uses stored data only");
 }
 
-for (const key of COUPANG_LINK_KEYS) {
-  if (!isPresent(env[key])) {
-    addResult(results, "warn", key, "missing; shopping flow uses Coupang search fallback");
-  }
+if (existsSync(path.join(cwd, PARTNER_LINKS_MIGRATION))) {
+  addResult(results, "pass", "partner_links migration", "DB-managed Coupang partner links are configured");
+} else {
+  addResult(results, "fail", "partner_links migration", "DB-managed Coupang partner links migration is missing");
+}
+
+if (!COUPANG_LINK_KEYS.some((key) => isPresent(env[key]))) {
+  addResult(
+    results,
+    "warn",
+    "Coupang partner env fallback",
+    "missing; shopping flow depends on Supabase partner_links rows or Coupang search fallback",
+  );
 }
 
 addResult(results, "warn", "Real-device login QA", "manual verification still required");

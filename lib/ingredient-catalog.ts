@@ -93,7 +93,7 @@ const CATALOG: IngredientCatalogItem[] = [
   { id: "frozen-fries", category: "냉동식품", name: "냉동감자튀김", defaultStorageType: "냉동", defaultUnit: "bag" },
 
   { id: "season-soy-soup", category: "조미료", name: "국간장", aliases: ["조선간장"], defaultStorageType: "실온", defaultUnit: "tbsp" },
-  { id: "season-soy-dark", category: "조미료", name: "진간장", aliases: ["양조간장"], defaultStorageType: "실온", defaultUnit: "tbsp" },
+  { id: "season-soy-dark", category: "조미료", name: "진간장", aliases: ["간장", "양조간장"], defaultStorageType: "실온", defaultUnit: "tbsp" },
   { id: "season-gochujang", category: "조미료", name: "고추장", defaultStorageType: "실온", defaultUnit: "tbsp" },
   { id: "season-doenjang", category: "조미료", name: "된장", defaultStorageType: "실온", defaultUnit: "tbsp" },
   { id: "season-ssamjang", category: "조미료", name: "쌈장", defaultStorageType: "실온", defaultUnit: "tbsp" },

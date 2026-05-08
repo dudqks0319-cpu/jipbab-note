@@ -59,23 +59,44 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 - `NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED=true`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED=true`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED=true` (Kakao Developers와 Supabase Kakao provider 설정 완료 후 운영)
-- `NEXT_PUBLIC_COUPANG_PARTNERS_POTATO_URL`
-- `NEXT_PUBLIC_COUPANG_PARTNERS_VEGETABLE_URL`
-- `NEXT_PUBLIC_COUPANG_PARTNERS_EGG_URL`
-- `NEXT_PUBLIC_COUPANG_PARTNERS_DAIRY_URL`
-- `NEXT_PUBLIC_COUPANG_PARTNERS_FROZEN_URL`
-- `NEXT_PUBLIC_COUPANG_PARTNERS_SEASONING_URL`
+- `NEXT_PUBLIC_COUPANG_PARTNERS_POTATO_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_VEGETABLE_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_EGG_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_DAIRY_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_FROZEN_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_SEASONING_URL` (선택, DB 장애 시 fallback)
+- `NEXT_PUBLIC_COUPANG_PARTNERS_ITEM_LINKS_JSON` (선택, DB 장애 시 fallback)
 - `MFDS_API_KEY`
 
 ## 5. 쿠팡 파트너스
 
 현재 앱은 다음 순서로 링크를 사용합니다.
 
-1. 개별 재료 파트너스 딥링크 환경변수
-2. 카테고리 대표 파트너스 링크
-3. 없으면 쿠팡 검색 링크 fallback
+1. Supabase `partner_links` 테이블의 개별 재료 링크
+2. Supabase `partner_links` 테이블의 카테고리 대표 링크
+3. 환경변수 fallback 링크
+4. 없으면 쿠팡 검색 링크 fallback
 
-즉, 배포 전에는 최소 감자/채소/계란 링크와 유제품/냉동식품/조미료 대표 링크를 실제 파트너스 링크로 교체하는 것이 좋습니다.
+즉, 배포 전에는 `supabase/migrations/20260507010000_add_partner_links.sql`을 운영 Supabase에 적용하고 `partner_links` 테이블에서 링크를 관리합니다. 환경변수 링크는 DB가 비어 있거나 조회 실패할 때만 쓰는 보조 수단입니다.
+
+개별 재료 링크는 DB에 `upsert`로 하나씩 추가합니다.
+
+```sql
+insert into public.partner_links (kind, name, normalized_key, url, display_order, memo)
+values
+  ('item', '계란', '계란', 'https://link.coupang.com/a/your-egg-link', 10, '검색결과 공유 파트너스 링크')
+on conflict (kind, normalized_key) do update
+set url = excluded.url, active = true, display_order = excluded.display_order, memo = excluded.memo;
+```
+
+재료명이 정확히 일치하면 DB 개별 링크가 가장 먼저 쓰이고, 없으면 DB 카테고리 링크, 환경변수 fallback, 쿠팡 검색 링크 순서로 이동합니다. 실제 수익 링크는 쿠팡 파트너스 계정에서 발급한 링크만 사용합니다.
+
+운영 보안 기준:
+
+- `partner_links`는 `active = true` 행만 공개 읽기 가능하고, `anon`/`authenticated` 쓰기는 허용하지 않습니다.
+- 링크 변경은 Supabase SQL editor, migration, 또는 service-role이 보호된 운영자 도구에서만 수행합니다.
+- 운영자 도구를 만들 경우 관리자 이메일 allowlist와 서버 측 service-role 사용을 분리하고, 변경 이력을 남깁니다.
+- `partner_links` 조회 실패는 사용자에게 오류를 띄우지 않고 앱 내 검증된 정적/환경변수 fallback으로 이어집니다. 운영자는 console warning과 링크 점검 스크립트로 상태를 확인합니다.
 
 ## 6. 앱스토어 제출 전
 

@@ -6,6 +6,7 @@ import { CheckCircle2, ShoppingCart } from "lucide-react";
 
 import { useIngredients } from "@/hooks/useIngredients";
 import { useShopping } from "@/hooks/useShopping";
+import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
 import type { IngredientCategory } from "@/types";
 
@@ -19,7 +20,8 @@ function inferCategory(
   ingredientName: string,
   categories: Map<string, IngredientCategory | null>,
 ): IngredientCategory | null {
-  return categories.get(ingredientName.trim().toLowerCase()) ?? null;
+  return categories.get(ingredientName.trim().toLowerCase())
+    ?? suggestIngredientCategory(ingredientName, "채소");
 }
 
 export default function RecipeShoppingAssistant({
@@ -99,6 +101,26 @@ export default function RecipeShoppingAssistant({
           </span>
         </div>
 
+        {match.missingIngredients.length > 0 ? (
+          <div className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3">
+            <p className="text-sm font-black text-[#2f2117]">
+              부족 재료 {match.missingIngredients.length}개를 장보기에 추가할 수 있어요.
+            </p>
+            <p className="mt-1 text-xs text-[#8f7f70]">
+              이미 담긴 항목은 제외하고 추가합니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => addItems(missingDrafts)}
+              disabled={missingDrafts.length === 0}
+              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 py-3 text-sm font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)] disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
+            >
+              <ShoppingCart size={16} />
+              {missingDrafts.length === 0 ? "이미 장보기에 있음" : "장보기에 추가"}
+            </button>
+          </div>
+        ) : null}
+
         <div className="mt-4 grid gap-3">
           <div className="rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
             <p className="text-xs font-black text-[#3d7b38]">보유 재료</p>
@@ -131,29 +153,6 @@ export default function RecipeShoppingAssistant({
             )}
           </div>
         </div>
-
-        {match.missingIngredients.length > 0 ? (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3">
-            <div>
-              <p className="text-sm font-black text-[#2f2117]">
-                부족 재료 {match.missingIngredients.length}개를 장보기에 추가할 수 있어요.
-              </p>
-              <p className="mt-1 text-xs text-[#8f7f70]">
-                이미 담긴 항목은 제외하고 추가합니다.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => addItems(missingDrafts)}
-              disabled={missingDrafts.length === 0}
-              className="inline-flex items-center gap-2 rounded-full bg-[#ea5a1f] px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
-            >
-              <ShoppingCart size={16} />
-              {missingDrafts.length === 0 ? "이미 장보기에 있음" : "장보기에 추가"}
-            </button>
-          </div>
-        ) : null}
-
         {matchedInventoryItems.length > 0 ? (
           <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
             <p className="text-sm font-black text-[#2f2117]">
