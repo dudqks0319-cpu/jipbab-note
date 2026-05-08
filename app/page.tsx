@@ -17,7 +17,11 @@ import { useDemoMode } from '@/hooks/useDemoMode'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useRecipeCatalog } from '@/hooks/useRecipes'
 import { useShopping } from '@/hooks/useShopping'
-import { calculateRecipeIngredientMatch } from '@/lib/matching'
+import {
+  buildRecipeRecommendationReason,
+  findExpiringMatchedIngredients,
+  rankRecipeRecommendations,
+} from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday } from '@/lib/utils'
@@ -37,22 +41,42 @@ export default function HomePage() {
     ? APPSTORE_DEMO_SHOPPING_ITEMS.filter((item) => !item.checked).length
     : uncheckedCount
 
-  const ingredientNames = useMemo(() => displayIngredients.map((item) => item.name), [displayIngredients])
-
-  const expiringCount = useMemo(
-    () => displayIngredients.filter((item) => getDday(item.expiryDate) <= 3).length,
+  const activeDisplayIngredients = useMemo(
+    () => displayIngredients.filter((item) => !item.consumedAt && !item.discardedAt),
     [displayIngredients],
   )
 
+  const expiringCount = useMemo(
+    () => activeDisplayIngredients.filter((item) => getDday(item.expiryDate) <= 3).length,
+    [activeDisplayIngredients],
+  )
+
   const recommendedRecipes = useMemo(() => {
-    return displayRecipeCatalog
-      .map((recipe) => ({
-        ...recipe,
-        ...calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients),
-      }))
-      .sort((left, right) => right.matchRate - left.matchRate)
+    return rankRecipeRecommendations(displayRecipeCatalog, activeDisplayIngredients)
+      .map(({ recipe, match, score }) => {
+        const expiringIngredients = findExpiringMatchedIngredients(match.matchedIngredients, activeDisplayIngredients)
+        return {
+          ...recipe,
+          ...match,
+          recommendationScore: score,
+          recommendationReason: buildRecipeRecommendationReason({
+            recipeName: recipe.name,
+            matchedIngredients: match.matchedIngredients,
+            missingIngredients: match.missingIngredients,
+            expiringIngredients,
+          }),
+          expiringIngredients,
+        }
+      })
       .slice(0, 3)
-  }, [displayRecipeCatalog, ingredientNames])
+  }, [activeDisplayIngredients, displayRecipeCatalog])
+
+  const topRecipe = recommendedRecipes[0]
+  const topExpiringIngredient = useMemo(() => {
+    return activeDisplayIngredients
+      .filter((item) => getDday(item.expiryDate) <= 3)
+      .sort((left, right) => getDday(left.expiryDate) - getDday(right.expiryDate))[0]
+  }, [activeDisplayIngredients])
 
   const isLoading = ingredientsLoading || recipesLoading
   const addStarterIngredients = async () => {
@@ -79,15 +103,50 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pt-5">
+        {topRecipe ? (
+          <div className="mb-4 rounded-[20px] bg-[#2f2117] px-4 py-4 text-white shadow-[0_14px_28px_rgba(47,33,23,0.18)]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-black text-[#ffd8a8]">오늘 뭐 먹지?</p>
+                <h2 className="mt-1 line-clamp-1 text-[22px] font-black">{topRecipe.name} 추천</h2>
+                <p className="mt-2 text-[12px] font-semibold leading-5 text-[#f4dfc8]">
+                  {topRecipe.recommendationReason}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-black text-[#ffe0b7]">
+                부족 {topRecipe.missingIngredients.length}개
+              </span>
+            </div>
+            {topExpiringIngredient ? (
+              <p className="mt-3 rounded-[13px] bg-white/10 px-3 py-2 text-[12px] font-bold text-[#ffe7c9]">
+                {topExpiringIngredient.name} {getDday(topExpiringIngredient.expiryDate) <= 0 ? '오늘까지' : `D-${getDday(topExpiringIngredient.expiryDate)}`}라 먼저 쓰면 좋아요.
+              </p>
+            ) : null}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Link
+                href={`/recipe/${topRecipe.id}`}
+                className="flex min-h-11 items-center justify-center rounded-[13px] bg-white text-[13px] font-black text-[#2f2117]"
+              >
+                요리 시작
+              </Link>
+              <Link
+                href="/shopping"
+                className="flex min-h-11 items-center justify-center rounded-[13px] bg-[#ea5a1f] text-[13px] font-black text-white"
+              >
+                부족 재료 담기
+              </Link>
+            </div>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between">
           <h2 className="text-[17px] font-black text-[#2f2117]">냉장고 요약</h2>
           <span className="text-[11px] font-semibold text-[#8f7f70]">
-            {isLoading ? '동기화 중' : `전체 ${displayIngredients.length}개`}
+            {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개`}
           </span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <SummaryBox label="전체" value={`${displayIngredients.length}개`} tone="bg-[#fff3d8] text-[#a66a17]" />
-          <SummaryBox label="신선" value={`${Math.max(displayIngredients.length - expiringCount, 0)}개`} tone="bg-[#eef6df] text-[#3d7b38]" />
+          <SummaryBox label="보관" value={`${activeDisplayIngredients.length}개`} tone="bg-[#fff3d8] text-[#a66a17]" />
+          <SummaryBox label="신선" value={`${Math.max(activeDisplayIngredients.length - expiringCount, 0)}개`} tone="bg-[#eef6df] text-[#3d7b38]" />
           <SummaryBox label="소진임박" value={`${expiringCount}개`} tone="bg-[#ffede4] text-[#d64b25]" />
         </div>
       </section>
@@ -111,7 +170,7 @@ export default function HomePage() {
               재료를 빠르게 등록하면 부족한 재료와 바로 만들 수 있는 레시피가 함께 보입니다.
             </p>
           </div>
-          {!isAppStoreDemo && displayIngredients.length === 0 ? (
+          {!isAppStoreDemo && activeDisplayIngredients.length === 0 ? (
             <div className="mt-3 rounded-[14px] bg-[#fff7ed] px-3 py-3">
               <p className="text-[12px] font-black text-[#4b3929]">처음이면 국민 재료부터 담아보세요.</p>
               <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
@@ -173,7 +232,7 @@ export default function HomePage() {
                   <h3 className="line-clamp-1 text-[12px] font-black text-[#2f2117]">{recipe.name}</h3>
                   <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-[#a66a17]">
                     <Star size={10} className="fill-[#f0a51c] text-[#f0a51c]" />
-                    {recipe.matchRate}% 일치
+                    {recipe.missingIngredients.length === 0 ? '바로 가능' : `부족 ${recipe.missingIngredients.length}개`}
                   </div>
                 </div>
               </article>
@@ -183,7 +242,7 @@ export default function HomePage() {
       </section>
 
       <section className="grid grid-cols-3 gap-2 px-5 pt-5">
-        <QuickLink href="/fridge" icon={<Refrigerator size={18} />} label="냉장고" value={`${displayIngredients.length}개`} />
+        <QuickLink href="/fridge" icon={<Refrigerator size={18} />} label="냉장고" value={`${activeDisplayIngredients.length}개`} />
         <QuickLink href="/recipe" icon={<Utensils size={18} />} label="레시피" value={`${displayRecipeCatalog.length}개`} />
         <QuickLink href="/shopping" icon={<Search size={18} />} label="장보기" value={`${displayUncheckedCount}개`} />
       </section>

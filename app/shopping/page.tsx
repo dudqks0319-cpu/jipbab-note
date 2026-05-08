@@ -364,6 +364,11 @@ function ShoppingRow({
       <div className="min-w-0 flex-1">
         <p className={`truncate text-[14px] font-bold ${checked ? 'text-[#9f9388] line-through' : 'text-[#2f2117]'}`}>{name}</p>
         <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{quantity}</p>
+        {!checked && purchaseLink.isPartnerLink ? (
+          <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#b45309]">
+            제휴 링크이며 구매 시 수수료를 받을 수 있어요.
+          </p>
+        ) : null}
       </div>
       {!checked ? (
         <div className="flex shrink-0 items-center gap-1">

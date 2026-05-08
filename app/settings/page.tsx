@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Download, Ruler, Send, Sparkles, Trash2 } from 'lucide-react'
 
 import { useAppSettings } from '@/hooks/useAppSettings'
+import { useIngredients } from '@/hooks/useIngredients'
 import {
   downloadGemmaModel,
   formatBytes,
@@ -15,6 +16,7 @@ import {
   removeGemmaModel,
   type GemmaStatus,
 } from '@/lib/gemma'
+import { scheduleDeviceExpiryNotifications } from '@/lib/notifications'
 import { RECIPE_CATEGORIES, type IngredientUnitSystem } from '@/types'
 
 const toggleItems: Array<{
@@ -52,14 +54,19 @@ export default function SettingsPage() {
     setCravingKeyword,
     toggleExcludedCategory,
     setServingSize,
+    toggleExpiryReminderDay,
+    setNotificationHour,
     setUnitSystem,
     resetSettings,
   } = useAppSettings()
+  const { ingredients } = useIngredients()
   const [gemmaStatus, setGemmaStatus] = useState<GemmaStatus | null>(null)
   const [gemmaPrompt, setGemmaPrompt] = useState('양파, 계란, 두부로 오늘 저녁 메뉴 추천해줘')
   const [gemmaAnswer, setGemmaAnswer] = useState('')
   const [gemmaBusy, setGemmaBusy] = useState<'download' | 'remove' | 'generate' | null>(null)
   const [gemmaError, setGemmaError] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState('')
+  const [notificationBusy, setNotificationBusy] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -103,6 +110,35 @@ export default function SettingsPage() {
     }
   }
 
+  const scheduleExpiryAlerts = async () => {
+    setNotificationBusy(true)
+    setNotificationMessage('')
+
+    try {
+      const targets = ingredients
+        .filter((item) => !item.consumedAt && !item.discardedAt)
+        .map((item) => ({
+          ingredientId: item.id,
+          ingredientName: item.name,
+          expiryDate: item.expiryDate,
+        }))
+      const result = await scheduleDeviceExpiryNotifications(targets, {
+        reminderDays: settings.expiryReminderDays.filter((day): day is 0 | 1 | 3 => day === 0 || day === 1 || day === 3),
+        notificationHour: settings.notificationHour,
+      })
+      const modeLabel = result.mode === 'native'
+        ? 'iOS 로컬 알림'
+        : result.mode === 'browser'
+          ? '브라우저 알림'
+          : '앱 내 예약 원장'
+      setNotificationMessage(`${modeLabel}으로 ${result.jobs.length}개 알림을 준비했어요.`)
+    } catch (error) {
+      setNotificationMessage(error instanceof Error ? error.message : '알림 예약 중 오류가 발생했습니다.')
+    } finally {
+      setNotificationBusy(false)
+    }
+  }
+
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
@@ -115,7 +151,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="px-5 pt-4">
+      <section id="notifications" className="scroll-mt-24 px-5 pt-4">
         <div className="jipbab-panel divide-y divide-[#eadcc9] overflow-hidden rounded-[16px]">
           <SettingLink title="계정 정보" value="" href="/mypage" />
           {toggleItems.map((item) => (
@@ -132,6 +168,65 @@ export default function SettingsPage() {
             </button>
           ))}
           <SettingLink title="고객센터" value="" href="/support" />
+        </div>
+      </section>
+
+      <section className="px-5 pt-4">
+        <div className="jipbab-panel rounded-[16px] px-4 py-4">
+          <h2 className="text-[15px] font-black text-[#2f2117]">유통기한 로컬 알림</h2>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+            보관 중 재료의 D-3, D-1, 당일 알림을 준비합니다. iOS 앱에 LocalNotifications 플러그인이 있으면 네이티브 예약으로 전환됩니다.
+          </p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[
+              { day: 3, label: 'D-3' },
+              { day: 1, label: 'D-1' },
+              { day: 0, label: '당일' },
+            ].map((item) => (
+              <button
+                key={item.day}
+                type="button"
+                onClick={() => toggleExpiryReminderDay(item.day)}
+                className={`min-h-10 rounded-[12px] border px-2 text-[12px] font-black ${
+                  settings.expiryReminderDays.includes(item.day)
+                    ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                    : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <label className="mt-3 block text-[12px] font-black text-[#4b3929]" htmlFor="notification-hour">
+            알림 시간
+          </label>
+          <select
+            id="notification-hour"
+            value={settings.notificationHour}
+            onChange={(event) => setNotificationHour(Number(event.target.value))}
+            className="mt-2 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-black text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+          >
+            {Array.from({ length: 15 }, (_, index) => index + 7).map((hour) => (
+              <option key={hour} value={hour}>
+                {hour}:00
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => {
+              void scheduleExpiryAlerts()
+            }}
+            disabled={!settings.expiryAlerts || notificationBusy}
+            className="mt-3 min-h-12 w-full rounded-[14px] bg-[#ea5a1f] px-4 text-[13px] font-black text-white disabled:bg-[#e6b49a]"
+          >
+            {notificationBusy ? '알림 준비 중' : '유통기한 알림 준비'}
+          </button>
+          {notificationMessage ? (
+            <p className="mt-3 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#8a5a2a]">
+              {notificationMessage}
+            </p>
+          ) : null}
         </div>
       </section>
 

@@ -53,6 +53,7 @@ ios/build/
 output/
 android-*.png
 uidump*.xml
+.tmp/
 
 # local agent/orchestration state
 .omx/

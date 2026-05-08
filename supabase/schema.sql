@@ -120,9 +120,32 @@ create table if not exists public.recipes (
   thumbnail_url text,
   ingredients jsonb not null default '[]'::jsonb,
   steps jsonb not null default '[]'::jsonb,
+  source_id uuid,
+  content_origin text check (content_origin is null or content_origin in ('original', 'public_api', 'licensed', 'user_bookmark')),
+  reviewed_for_beginner boolean not null default false,
   source text,
   created_at timestamptz not null default now()
 );
+
+create table if not exists public.recipe_sources (
+  id uuid primary key default gen_random_uuid(),
+  provider text not null,
+  external_id text,
+  title text not null,
+  source_url text,
+  license text not null,
+  attribution text not null,
+  raw_payload jsonb,
+  imported_at timestamptz not null default now(),
+  unique (provider, external_id)
+);
+
+alter table public.recipes
+drop constraint if exists recipes_source_id_fkey;
+
+alter table public.recipes
+add constraint recipes_source_id_fkey
+foreign key (source_id) references public.recipe_sources(id);
 
 -- 즐겨찾기 테이블입니다.
 create table if not exists public.favorites (
@@ -207,6 +230,9 @@ create index if not exists idx_ingredients_expiry_date on public.ingredients(exp
 
 create index if not exists idx_recipes_category on public.recipes(category);
 create index if not exists idx_recipes_difficulty on public.recipes(difficulty);
+create index if not exists idx_recipes_source_id on public.recipes(source_id);
+create index if not exists idx_recipes_content_origin on public.recipes(content_origin);
+create index if not exists idx_recipe_sources_provider_external_id on public.recipe_sources(provider, external_id);
 
 create index if not exists idx_favorites_device_id on public.favorites(device_id);
 create index if not exists idx_favorites_user_id on public.favorites(user_id);
@@ -325,6 +351,7 @@ $$;
 alter table public.ingredients enable row level security;
 alter table public.favorites enable row level security;
 alter table public.recipes enable row level security;
+alter table public.recipe_sources enable row level security;
 alter table public.shopping_items enable row level security;
 alter table public.community_posts enable row level security;
 alter table public.community_comments enable row level security;
@@ -483,6 +510,34 @@ with check (true);
 drop policy if exists recipes_delete_service_role on public.recipes;
 create policy recipes_delete_service_role
 on public.recipes
+for delete
+to service_role
+using (true);
+
+drop policy if exists recipe_sources_select_public on public.recipe_sources;
+create policy recipe_sources_select_public
+on public.recipe_sources
+for select
+using (true);
+
+drop policy if exists recipe_sources_insert_service_role on public.recipe_sources;
+create policy recipe_sources_insert_service_role
+on public.recipe_sources
+for insert
+to service_role
+with check (true);
+
+drop policy if exists recipe_sources_update_service_role on public.recipe_sources;
+create policy recipe_sources_update_service_role
+on public.recipe_sources
+for update
+to service_role
+using (true)
+with check (true);
+
+drop policy if exists recipe_sources_delete_service_role on public.recipe_sources;
+create policy recipe_sources_delete_service_role
+on public.recipe_sources
 for delete
 to service_role
 using (true);

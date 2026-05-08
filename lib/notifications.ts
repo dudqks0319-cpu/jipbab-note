@@ -1,6 +1,7 @@
 const DAY_MS = 24 * 60 * 60 * 1000
-const DEFAULT_REMINDER_DAYS = [3, 1] as const
+const DEFAULT_REMINDER_DAYS = [3, 1, 0] as const
 const DEFAULT_NOTIFICATION_HOUR = 9
+const SCHEDULE_STORAGE_KEY = 'jipbab-note-expiry-notification-jobs'
 
 export type ExpiryReminderDay = (typeof DEFAULT_REMINDER_DAYS)[number]
 
@@ -28,6 +29,25 @@ export type ExpiryScheduleOptions = {
 
 export type NotificationSchedulerAdapter = {
   schedule: (jobs: ExpiryNotificationJob[]) => Promise<void> | void
+}
+
+type NativeNotificationPlugin = {
+  requestPermissions?: () => Promise<{ display?: string }>
+  schedule?: (payload: {
+    notifications: Array<{
+      id: number
+      title: string
+      body: string
+      schedule: { at: Date }
+      extra?: Record<string, string>
+    }>
+  }) => Promise<void>
+}
+
+export type DeviceExpiryNotificationScheduleResult = {
+  mode: 'native' | 'browser' | 'local-ledger' | 'server'
+  permission: BrowserNotificationPermissionResult | 'native-granted' | 'native-denied'
+  jobs: ExpiryNotificationJob[]
 }
 
 export type BrowserNotificationPermissionResult =
@@ -63,10 +83,13 @@ const createNotificationBody = (
   ingredientName: string,
   dDay: ExpiryReminderDay,
 ): string => {
-  if (dDay === 1) {
-    return `${ingredientName} 유통기한이 내일 만료됩니다.`
+  if (dDay === 0) {
+    return `${ingredientName}이 오늘까지예요. 추천 레시피로 소진해볼까요?`
   }
-  return `${ingredientName} 유통기한이 ${dDay}일 후 만료됩니다.`
+  if (dDay === 1) {
+    return `${ingredientName}이 내일까지예요. 오늘 메뉴에 써보세요.`
+  }
+  return `${ingredientName} 유통기한이 ${dDay}일 남았어요.`
 }
 
 export function buildExpiryNotificationJobs(
@@ -97,7 +120,7 @@ export function buildExpiryNotificationJobs(
       ingredientName,
       dDay,
       scheduledAt: notificationDate.toISOString(),
-      title: `유통기한 D-${dDay}`,
+      title: dDay === 0 ? '유통기한 당일' : `유통기한 D-${dDay}`,
       body: createNotificationBody(ingredientName, dDay),
     })
   }
@@ -140,4 +163,81 @@ export async function requestBrowserNotificationPermission(): Promise<BrowserNot
   }
 
   return window.Notification.requestPermission()
+}
+
+function persistScheduledJobs(jobs: ExpiryNotificationJob[]) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify({
+    scheduledAt: new Date().toISOString(),
+    jobs,
+  }))
+}
+
+function getNativeNotificationPlugin(): NativeNotificationPlugin | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const maybeWindow = window as Window & {
+    Capacitor?: {
+      Plugins?: {
+        LocalNotifications?: NativeNotificationPlugin
+      }
+    }
+  }
+
+  return maybeWindow.Capacitor?.Plugins?.LocalNotifications ?? null
+}
+
+function makeNativeNotificationId(jobId: string): number {
+  let hash = 0
+  for (let index = 0; index < jobId.length; index += 1) {
+    hash = (hash * 31 + jobId.charCodeAt(index)) >>> 0
+  }
+  return Math.max(1, hash % 2_147_483_647)
+}
+
+export async function scheduleDeviceExpiryNotifications(
+  targets: ExpiryNotificationTarget[],
+  options: ExpiryScheduleOptions = {},
+): Promise<DeviceExpiryNotificationScheduleResult> {
+  const jobs = buildExpiryNotificationSchedule(targets, options)
+  if (typeof window === 'undefined') {
+    return { mode: 'server', permission: 'unsupported', jobs }
+  }
+
+  persistScheduledJobs(jobs)
+
+  const nativePlugin = getNativeNotificationPlugin()
+  if (nativePlugin?.schedule) {
+    const permission = await nativePlugin.requestPermissions?.()
+    const displayPermission = permission?.display ?? 'granted'
+    if (displayPermission !== 'granted') {
+      return { mode: 'native', permission: 'native-denied', jobs }
+    }
+
+    await nativePlugin.schedule({
+      notifications: jobs.map((job) => ({
+        id: makeNativeNotificationId(job.id),
+        title: job.title,
+        body: job.body,
+        schedule: { at: new Date(job.scheduledAt) },
+        extra: {
+          ingredientId: job.ingredientId,
+          url: `/recipe?expiringIngredient=${encodeURIComponent(job.ingredientName)}`,
+        },
+      })),
+    })
+    return { mode: 'native', permission: 'native-granted', jobs }
+  }
+
+  const browserPermission = await requestBrowserNotificationPermission()
+  return {
+    mode: browserPermission === 'granted' ? 'browser' : 'local-ledger',
+    permission: browserPermission,
+    jobs,
+  }
 }

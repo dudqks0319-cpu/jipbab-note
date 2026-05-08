@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Clock3, Ruler, ShoppingBasket, Star, Users } from "lucide-react";
+import { ChevronLeft, Clock3, PlayCircle, Ruler, ShoppingBasket, Star, Users } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 import RecipeImage from "@/components/recipe/RecipeImage";
@@ -417,6 +417,12 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
       difficulty: row.difficulty,
       cookingTime: row.cooking_time,
       servings: row.servings,
+      sourceProvider: row.source?.startsWith("mfds:") ? "MFDS" : row.source,
+      sourceExternalId: row.source?.startsWith("mfds:") ? row.source.replace(/^mfds:/, "") : null,
+      sourceAttribution: row.source?.startsWith("mfds:") ? "식품의약품안전처 식품안전나라" : null,
+      sourceLicense: row.source?.startsWith("mfds:") ? "공공데이터 OpenAPI" : null,
+      contentOrigin: row.source?.startsWith("mfds:") ? "public_api" : "licensed",
+      reviewedForBeginner: false,
     };
   } catch (error) {
     console.error("Supabase 레시피 상세 조회 실패", error);
@@ -466,6 +472,12 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
     hashTag: target.HASH_TAG?.trim() ?? "",
     ingredientList: parseIngredientDisplayList(target.RCP_PARTS_DTLS?.trim() ?? ""),
     steps: parseSteps(target),
+    sourceProvider: "MFDS",
+    sourceExternalId: target.RCP_SEQ ?? recipeId,
+    sourceAttribution: "식품의약품안전처 식품안전나라",
+    sourceLicense: "공공데이터 OpenAPI",
+    contentOrigin: "public_api",
+    reviewedForBeginner: false,
   };
 }
 
@@ -526,6 +538,11 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const measurementTips = recipe.measurementTips?.length
     ? recipe.measurementTips
     : DEFAULT_DETAIL_MEASUREMENT_TIPS;
+  const sourceLabel = recipe.sourceAttribution
+    ?? (recipe.id.startsWith("curated-") ? "집밥노트 직접 큐레이션" : "출처 정보 확인 필요");
+  const sourceLicense = recipe.sourceLicense
+    ?? (recipe.id.startsWith("curated-") ? "직접 작성/제작 콘텐츠" : "원천 데이터 기준 표시");
+  const reviewedForBeginner = recipe.reviewedForBeginner ?? recipe.id.startsWith("curated-");
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-8">
@@ -675,6 +692,39 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           ))}
         </ol>
       </section>
+
+      <section className="px-5 pb-24 pt-5">
+        <div className="rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
+          <h2 className="text-[14px] font-black text-[#2f2117]">레시피 출처</h2>
+          <p className="mt-2 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
+            출처: {sourceLabel} · 라이선스/권한: {sourceLicense}
+          </p>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+            {reviewedForBeginner
+              ? "초보자용 계량, 실패 방지 팁, 조리 문장은 집밥노트 기준으로 검수했습니다."
+              : "공공 API 원천 정보는 앱 표시 기준으로 정리하며, 초보자 문장은 원문을 그대로 복사하지 않습니다."}
+          </p>
+        </div>
+      </section>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[430px] border-t border-[#eadcc9] bg-[#fffaf3]/95 px-5 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href="#cook-mode"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] px-3 text-[13px] font-black text-white"
+          >
+            <PlayCircle size={16} />
+            요리 시작
+          </a>
+          <a
+            href="#shopping-assistant"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-3 text-[13px] font-black text-white"
+          >
+            <ShoppingBasket size={16} />
+            부족 재료 장보기
+          </a>
+        </div>
+      </nav>
     </div>
   );
 }

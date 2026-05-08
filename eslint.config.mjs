@@ -21,6 +21,7 @@ const eslintConfig = defineConfig([
     "ios/build/**",
     "ios/**/SourcePackages/**",
     "ios/App/App/public/**",
+    ".tmp/**",
     ".vercel/**",
   ]),
 ]);

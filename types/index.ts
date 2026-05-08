@@ -336,6 +336,12 @@ export interface RecipeDetailRecord extends RecipeRecord {
   measurementTips?: string[];
   imageAlt?: string | null;
   imageCaption?: string | null;
+  sourceProvider?: string | null;
+  sourceExternalId?: string | null;
+  sourceAttribution?: string | null;
+  sourceLicense?: string | null;
+  contentOrigin?: "original" | "public_api" | "licensed" | "user_bookmark" | null;
+  reviewedForBeginner?: boolean;
 }
 
 export interface FavoriteRecipeSummary {

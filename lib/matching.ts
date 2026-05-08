@@ -8,6 +8,37 @@ const UNIT_PATTERN =
   /\d+(?:\.\d+)?\s*(kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌)/gi;
 const NON_WORD_PATTERN = /[^0-9a-zA-Z가-힣\s]/g;
 
+export const PANTRY_STAPLES = new Set([
+  "물",
+  "소금",
+  "설탕",
+  "후추",
+  "식용유",
+  "참기름",
+  "간장",
+  "국간장",
+  "진간장",
+  "양조간장",
+  "고춧가루",
+  "고추장",
+  "된장",
+  "마늘",
+  "다진마늘",
+]);
+
+const INGREDIENT_ALIAS_GROUPS: Record<string, string[]> = {
+  계란: ["달걀"],
+  파: ["대파", "쪽파", "실파", "다진파"],
+  김치: ["배추김치", "묵은지", "신김치", "익은김치"],
+  돼지고기: ["앞다리살", "뒷다리살", "목살", "삼겹살", "돼지", "제육용"],
+  닭고기: ["닭다리살", "닭가슴살", "닭안심", "닭봉", "닭날개"],
+  두부: ["부침두부", "찌개두부", "순두부"],
+  멸치육수: ["육수팩", "코인육수", "다시팩", "멸치다시마육수"],
+  간장: ["국간장", "진간장", "양조간장", "맛간장"],
+  마늘: ["다진마늘", "간마늘"],
+  고추: ["청양고추", "홍고추", "풋고추"],
+};
+
 const ALIAS_RULES: Array<[RegExp, string]> = [
   [/다진\s*마늘/g, "마늘"],
   [/다진\s*파/g, "파"],
@@ -20,8 +51,9 @@ const ALIAS_RULES: Array<[RegExp, string]> = [
 
 const MIN_MATCH_LENGTH = 2;
 
-function normalizeIngredientName(value: string): string {
+export function normalizeKoreanIngredient(value: string): string {
   let normalized = value
+    .normalize("NFC")
     .replace(BRACKET_PATTERN, " ")
     .replace(NOISE_PATTERN, " ")
     .replace(UNIT_PATTERN, " ")
@@ -33,11 +65,24 @@ function normalizeIngredientName(value: string): string {
     normalized = normalized.replace(pattern, replacement);
   }
 
-  return normalized
+  normalized = normalized
     .replace(/\s+/g, " ")
     .trim()
     .replace(/^\d+\s*/, "")
     .replace(/\s+\d+$/, "");
+
+  const compact = normalized.replace(/\s+/g, "");
+  for (const [canonical, aliases] of Object.entries(INGREDIENT_ALIAS_GROUPS)) {
+    if (compact === canonical || aliases.some((alias) => compact === alias || compact.includes(alias))) {
+      return canonical;
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeIngredientName(value: string): string {
+  return normalizeKoreanIngredient(value);
 }
 
 function isSameIngredient(base: string, target: string): boolean {
@@ -188,6 +233,60 @@ function findMatchedInventoryIngredient(
   inventory: RecipeRecommendationIngredient[],
 ): RecipeRecommendationIngredient | null {
   return inventory.find((item) => isSameIngredient(normalizeIngredientName(item.name), recipeIngredient)) ?? null;
+}
+
+export function getEssentialMissingIngredients(missingIngredients: string[]): string[] {
+  return missingIngredients.filter((ingredient) => !PANTRY_STAPLES.has(normalizeKoreanIngredient(ingredient)));
+}
+
+export function findExpiringMatchedIngredients(
+  matchedIngredients: string[],
+  inventory: Array<string | RecipeRecommendationIngredient>,
+  today = new Date(),
+): string[] {
+  const normalizedInventory = inventory.map((item) => toRecommendationIngredient(item));
+  const expiring = matchedIngredients
+    .map((recipeIngredient) => {
+      const inventoryIngredient = findMatchedInventoryIngredient(recipeIngredient, normalizedInventory);
+      if (!inventoryIngredient) {
+        return null;
+      }
+      const daysUntilExpiry = getDaysUntilExpiry(getExpiryDate(inventoryIngredient), today);
+      if (daysUntilExpiry === null || daysUntilExpiry > 3) {
+        return null;
+      }
+      return inventoryIngredient.name;
+    })
+    .filter((item): item is string => Boolean(item));
+
+  return Array.from(new Set(expiring));
+}
+
+export function buildRecipeRecommendationReason(params: {
+  recipeName: string;
+  matchedIngredients: string[];
+  missingIngredients: string[];
+  expiringIngredients?: string[];
+}): string {
+  const essentialMissing = getEssentialMissingIngredients(params.missingIngredients);
+  const expiringIngredients = Array.from(new Set(params.expiringIngredients ?? []));
+
+  if (essentialMissing.length === 0) {
+    if (expiringIngredients.length > 0) {
+      return `${expiringIngredients.slice(0, 2).join(", ")} 소진에 좋아요. ${params.recipeName}은 지금 바로 만들 수 있어요.`;
+    }
+    return `${params.recipeName}은 지금 바로 만들 수 있어요.`;
+  }
+
+  if (expiringIngredients.length > 0) {
+    return `${expiringIngredients.slice(0, 2).join(", ")} 소진에 좋아요. 부족 재료는 ${essentialMissing.length}개입니다.`;
+  }
+
+  if (essentialMissing.length === 1) {
+    return `${essentialMissing[0]} 1개만 더 있으면 만들 수 있어요.`;
+  }
+
+  return `보유 재료 ${params.matchedIngredients.length}개가 맞고, ${essentialMissing.length}개만 더 있으면 만들 수 있어요.`;
 }
 
 export function calculateRecipeRecommendationScore(

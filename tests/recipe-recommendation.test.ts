@@ -4,7 +4,10 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
+  buildRecipeRecommendationReason,
   calculateRecipeIngredientMatch,
+  findExpiringMatchedIngredients,
+  getEssentialMissingIngredients,
   rankRecipeRecommendations,
 } from "../lib/matching.ts";
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
@@ -164,4 +167,35 @@ test("recipe list quick filters expose beginner and ready states", () => {
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "one-more"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "beginner"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "ready"), false);
+});
+
+test("Korean ingredient aliases cover common home-cooking variants", () => {
+  const match = calculateRecipeIngredientMatch(
+    ["돼지고기 목살", "묵은지", "코인육수"],
+    "돼지고기, 김치, 멸치육수, 간장",
+  );
+
+  assert.deepEqual(match.matchedIngredients, ["돼지고기", "김치", "멸치육수"]);
+  assert.deepEqual(getEssentialMissingIngredients(match.missingIngredients), []);
+});
+
+test("recommendation reason explains ready and expiring contexts in Korean", () => {
+  const expiring = findExpiringMatchedIngredients(
+    ["두부", "파"],
+    [
+      { name: "두부", expiryDate: "2026-05-08" },
+      { name: "대파", expiryDate: "2026-05-20" },
+    ],
+    new Date("2026-05-07T00:00:00+09:00"),
+  );
+  const reason = buildRecipeRecommendationReason({
+    recipeName: "두부조림",
+    matchedIngredients: ["두부", "파"],
+    missingIngredients: ["간장"],
+    expiringIngredients: expiring,
+  });
+
+  assert.deepEqual(expiring, ["두부"]);
+  assert.match(reason, /두부 소진/);
+  assert.match(reason, /지금 바로/);
 });

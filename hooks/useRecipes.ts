@@ -6,7 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIngredients } from "@/hooks/useIngredients";
 import { CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
 import { getDeviceId } from "@/lib/device-id";
-import { rankRecipeRecommendations, type RecipeRecommendationScore } from "@/lib/matching";
+import {
+  buildRecipeRecommendationReason,
+  findExpiringMatchedIngredients,
+  rankRecipeRecommendations,
+  type RecipeRecommendationScore,
+} from "@/lib/matching";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -85,6 +90,7 @@ export interface UseRecipeCatalogResult {
 
 export type RecommendedRecipe = RecipeWithMatch & {
   recommendationScore: RecipeRecommendationScore;
+  recommendationReason: string;
 };
 
 export interface UseRecipesResult extends UseRecipeCatalogResult {
@@ -267,10 +273,18 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
 
   const recipes = useMemo<RecommendedRecipe[]>(() => {
     return rankRecipeRecommendations(mergedCatalogRecipes, ingredients).map(({ recipe, match, score }) => {
+      const expiringIngredients = findExpiringMatchedIngredients(match.matchedIngredients, ingredients);
+
       return {
         ...recipe,
         ...match,
         recommendationScore: score,
+        recommendationReason: buildRecipeRecommendationReason({
+          recipeName: recipe.name,
+          matchedIngredients: match.matchedIngredients,
+          missingIngredients: match.missingIngredients,
+          expiringIngredients,
+        }),
       };
     });
   }, [ingredients, mergedCatalogRecipes]);

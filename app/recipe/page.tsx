@@ -222,6 +222,9 @@ export default function RecipePage() {
                 curated?.trustLabel,
               )
               const beginnerVerified = isBeginnerVerifiedRecipe(curated)
+              const recommendationReason = 'recommendationReason' in recipe && typeof recipe.recommendationReason === 'string'
+                ? recipe.recommendationReason
+                : readyLabel.text
 
               return (
                 <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
@@ -297,6 +300,9 @@ export default function RecipePage() {
                         ) : null}
                       </div>
                       <p className="mt-2 text-[11px] font-semibold text-[#a69585]">
+                        {recommendationReason}
+                      </p>
+                      <p className="mt-1 text-[11px] font-semibold text-[#a69585]">
                         부족 재료 {recipe.missingIngredients.length}개 · 보유 {recipe.matchedIngredients.length}개
                         {beginnerVerified ? ' · 계량/상태 확인 포함' : ''}
                       </p>

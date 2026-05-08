@@ -29,12 +29,16 @@ export default function RecipeShoppingAssistant({
   recipeName,
   ingredientList,
 }: RecipeShoppingAssistantProps) {
-  const { ingredients, loading, deleteIngredient } = useIngredients();
+  const { ingredients, loading, updateIngredient } = useIngredients();
   const { items, addItems } = useShopping();
+  const activeIngredients = useMemo(
+    () => ingredients.filter((item) => !item.consumedAt && !item.discardedAt),
+    [ingredients],
+  );
 
   const ownedCategories = useMemo(
-    () => new Map(ingredients.map((item) => [item.name.trim().toLowerCase(), item.category])),
-    [ingredients],
+    () => new Map(activeIngredients.map((item) => [item.name.trim().toLowerCase(), item.category])),
+    [activeIngredients],
   );
   const shoppingNames = useMemo(
     () => new Set(items.map((item) => item.name.trim().toLowerCase())),
@@ -44,10 +48,10 @@ export default function RecipeShoppingAssistant({
   const match = useMemo(
     () =>
       calculateRecipeIngredientMatch(
-        ingredients.map((item) => item.name),
+        activeIngredients.map((item) => item.name),
         ingredientList.join(", "),
       ),
-    [ingredientList, ingredients],
+    [ingredientList, activeIngredients],
   );
 
   const missingDrafts = useMemo(
@@ -65,21 +69,38 @@ export default function RecipeShoppingAssistant({
 
   const matchedInventoryItems = useMemo(
     () =>
-      ingredients.filter((item) =>
+      activeIngredients.filter((item) =>
         match.matchedIngredients.some(
           (ingredient) => ingredient.trim().toLowerCase() === item.name.trim().toLowerCase(),
         ),
       ),
-    [ingredients, match.matchedIngredients],
+    [activeIngredients, match.matchedIngredients],
   );
 
   const removeCookedIngredients = async () => {
     if (matchedInventoryItems.length === 0) return;
     const shouldRemove = window.confirm(
-      `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 냉장고에서 뺄까요? 현재는 수량 차감 대신 재료 항목 제거로 처리됩니다.`,
+      `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 소진 처리할까요? 삭제하지 않고 소진 기록으로 남깁니다.`,
     );
     if (!shouldRemove) return;
-    await Promise.all(matchedInventoryItems.map((item) => deleteIngredient(item.id)));
+    await Promise.all(matchedInventoryItems.map((item) => updateIngredient(item.id, {
+      name: item.name,
+      category: item.category,
+      storageType: item.storageType,
+      quantity: item.quantity,
+      expiryDate: item.expiryDate,
+      purchaseDate: item.purchaseDate,
+      openedAt: item.openedAt,
+      storageLocation: item.storageLocation,
+      unitPrice: item.unitPrice,
+      purchasePlace: item.purchasePlace,
+      consumedAt: new Date().toISOString(),
+      discardedAt: null,
+      repeatPurchase: item.repeatPurchase,
+      barcode: item.barcode,
+      imageUrl: item.imageUrl,
+      memo: [item.memo, `${recipeName} 조리 후 소진`].filter(Boolean).join(" · ") || null,
+    })));
   };
 
   if (ingredientList.length === 0) {
@@ -87,7 +108,7 @@ export default function RecipeShoppingAssistant({
   }
 
   return (
-    <section className="px-5 pt-5">
+    <section id="shopping-assistant" className="scroll-mt-24 px-5 pt-5">
       <div className="jipbab-panel rounded-[16px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -159,7 +180,7 @@ export default function RecipeShoppingAssistant({
               조리 후 사용한 재료를 바로 뺄 수 있어요.
             </p>
             <p className="mt-1 text-xs text-[#7d6d5f]">
-              수량 단위가 아직 제각각이라 이번 버전은 항목 제거로 먼저 처리합니다.
+              수량 단위가 제각각이어도 삭제하지 않고 소진 상태로 기록합니다.
             </p>
             <button
               type="button"
@@ -168,7 +189,7 @@ export default function RecipeShoppingAssistant({
               }}
               className="mt-3 rounded-full bg-[#3d7b38] px-4 py-2 text-sm font-bold text-white"
             >
-              사용한 재료 냉장고에서 빼기
+              사용한 재료 소진 처리
             </button>
           </div>
         ) : null}

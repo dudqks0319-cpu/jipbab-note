@@ -10,6 +10,8 @@ const STORAGE_KEY = "jipbab-note-app-settings";
 export type AppSettings = {
   allergyNotes: string;
   expiryAlerts: boolean;
+  expiryReminderDays: number[];
+  notificationHour: number;
   dislikedIngredients: string;
   excludedCategories: string[];
   cravingKeyword: string;
@@ -22,6 +24,8 @@ export type AppSettings = {
 const DEFAULT_SETTINGS: AppSettings = {
   allergyNotes: "",
   expiryAlerts: true,
+  expiryReminderDays: [3, 1, 0],
+  notificationHour: 9,
   dislikedIngredients: "",
   excludedCategories: [],
   cravingKeyword: "",
@@ -49,6 +53,19 @@ function safeReadSettings(): AppSettings {
           ? parsed.allergyNotes
           : DEFAULT_SETTINGS.allergyNotes,
       expiryAlerts: typeof parsed.expiryAlerts === "boolean" ? parsed.expiryAlerts : DEFAULT_SETTINGS.expiryAlerts,
+      expiryReminderDays:
+        Array.isArray(parsed.expiryReminderDays)
+          ? parsed.expiryReminderDays
+              .filter((item): item is number => typeof item === "number" && [0, 1, 3].includes(item))
+              .slice(0, 3)
+          : DEFAULT_SETTINGS.expiryReminderDays,
+      notificationHour:
+        typeof parsed.notificationHour === "number" &&
+        Number.isInteger(parsed.notificationHour) &&
+        parsed.notificationHour >= 0 &&
+        parsed.notificationHour <= 23
+          ? parsed.notificationHour
+          : DEFAULT_SETTINGS.notificationHour,
       dislikedIngredients:
         typeof parsed.dislikedIngredients === "string" && parsed.dislikedIngredients.length <= 120
           ? parsed.dislikedIngredients
@@ -100,6 +117,8 @@ export interface UseAppSettingsResult {
   setCravingKeyword: (value: string) => void;
   toggleExcludedCategory: (category: string) => void;
   setServingSize: (servingSize: number) => void;
+  toggleExpiryReminderDay: (day: number) => void;
+  setNotificationHour: (hour: number) => void;
   toggleSetting: (key: keyof AppSettings) => void;
   setUnitSystem: (unitSystem: IngredientUnitSystem) => void;
   resetSettings: () => void;
@@ -156,8 +175,46 @@ export function useAppSettings(): UseAppSettingsResult {
     });
   }, []);
 
+  const toggleExpiryReminderDay = useCallback((day: number) => {
+    if (![0, 1, 3].includes(day)) {
+      return;
+    }
+
+    setSettings((prev) => {
+      const exists = prev.expiryReminderDays.includes(day);
+      const nextDays = exists
+        ? prev.expiryReminderDays.filter((item) => item !== day)
+        : [...prev.expiryReminderDays, day].sort((left, right) => right - left);
+      const nextSettings = {
+        ...prev,
+        expiryReminderDays: nextDays.length > 0 ? nextDays : DEFAULT_SETTINGS.expiryReminderDays,
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const setNotificationHour = useCallback((hour: number) => {
+    const normalized = Number.isFinite(hour) ? Math.min(Math.max(Math.floor(hour), 0), 23) : DEFAULT_SETTINGS.notificationHour;
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        notificationHour: normalized,
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
   const toggleSetting = useCallback((key: keyof AppSettings) => {
-    if (key === "unitSystem" || key === "allergyNotes" || key === "dislikedIngredients" || key === "servingSize") {
+    if (
+      key === "unitSystem" ||
+      key === "allergyNotes" ||
+      key === "dislikedIngredients" ||
+      key === "servingSize" ||
+      key === "expiryReminderDays" ||
+      key === "notificationHour"
+    ) {
       return;
     }
 
@@ -199,6 +256,8 @@ export function useAppSettings(): UseAppSettingsResult {
     setCravingKeyword,
     toggleExcludedCategory,
     setServingSize,
+    toggleExpiryReminderDay,
+    setNotificationHour,
     toggleSetting,
     setUnitSystem,
     resetSettings,

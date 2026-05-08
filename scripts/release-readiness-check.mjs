@@ -28,6 +28,7 @@ const COUPANG_LINK_KEYS = [
   "NEXT_PUBLIC_COUPANG_PARTNERS_ITEM_LINKS_JSON",
 ];
 const PARTNER_LINKS_MIGRATION = "supabase/migrations/20260507010000_add_partner_links.sql";
+const RECIPE_SOURCES_MIGRATION = "supabase/migrations/20260508010000_add_recipe_sources_and_release_metadata.sql";
 
 const REQUIRED_ROUTE_FILES = [
   ["login", "app/login/page.tsx"],
@@ -458,6 +459,23 @@ if (existsSync(path.join(cwd, PARTNER_LINKS_MIGRATION))) {
   addResult(results, "pass", "partner_links migration", "DB-managed Coupang partner links are configured");
 } else {
   addResult(results, "fail", "partner_links migration", "DB-managed Coupang partner links migration is missing");
+}
+
+if (existsSync(path.join(cwd, RECIPE_SOURCES_MIGRATION))) {
+  const recipeSourcesMigration = readProjectFile(RECIPE_SOURCES_MIGRATION);
+  if (
+    recipeSourcesMigration.includes("public.recipe_sources") &&
+    recipeSourcesMigration.includes("content_origin") &&
+    recipeSourcesMigration.includes("reviewed_for_beginner") &&
+    recipeSourcesMigration.includes("enable row level security") &&
+    recipeSourcesMigration.includes("recipe_sources_insert_service_role")
+  ) {
+    addResult(results, "pass", "Recipe source metadata", "source ledger, RLS, content origin, and beginner review flags are configured");
+  } else {
+    addResult(results, "fail", "Recipe source metadata", "migration must define source ledger, RLS, content origin, and beginner review flags");
+  }
+} else {
+  addResult(results, "fail", "Recipe source metadata", "recipe source metadata migration is missing");
 }
 
 if (!COUPANG_LINK_KEYS.some((key) => isPresent(env[key]))) {
