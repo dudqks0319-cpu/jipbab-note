@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { uploadCommunityImage } from "@/lib/community-image-upload";
 import { getDeviceId } from "@/lib/device-id";
+import { normalizeSafeHttpUrl } from "@/lib/utils";
 import type {
   CommunityCommentPayload,
   CommunityCommentRecord,
@@ -373,13 +374,19 @@ function groupCommentsByPost(comments: CommunityCommentRecord[]): Record<string,
 
 function normalizePostPayload(payload: CommunityPostPayload): CommunityPostPayload {
   const postType = payload.postType === "recipe" || payload.postType === "fridge" ? payload.postType : "story";
+  const rawLinkUrl = payload.linkUrl?.trim() || null;
+  const linkUrl = normalizeSafeHttpUrl(rawLinkUrl);
+
+  if (rawLinkUrl && !linkUrl) {
+    throw new Error("공유 링크는 http 또는 https 주소만 입력할 수 있습니다.");
+  }
 
   return {
     title: payload.title.trim(),
     content: payload.content.trim(),
     postType,
     imageUrl: payload.imageUrl?.trim() || null,
-    linkUrl: payload.linkUrl?.trim() || null,
+    linkUrl,
     recipeId: payload.recipeId?.trim() || null,
     consentRecipeUse: Boolean(payload.consentRecipeUse),
   };
@@ -599,7 +606,14 @@ export function useCommunity(): UseCommunityResult {
 
   const createPost = useCallback(
     async (payload: CommunityPostPayload): Promise<CommunityPostRecord | null> => {
-      const normalized = normalizePostPayload(payload);
+      let normalized: CommunityPostPayload;
+      try {
+        normalized = normalizePostPayload(payload);
+      } catch (caught) {
+        setError(createCommunityError(normalizeMessage(caught, "글 입력값을 확인해주세요."), "local"));
+        return null;
+      }
+
       if (!normalized.title || !normalized.content) {
         setError(createCommunityError("제목과 내용을 모두 입력해주세요.", "local"));
         return null;
@@ -714,7 +728,14 @@ export function useCommunity(): UseCommunityResult {
 
   const updatePost = useCallback(
     async (postId: string, payload: CommunityPostPayload): Promise<CommunityPostRecord | null> => {
-      const normalized = normalizePostPayload(payload);
+      let normalized: CommunityPostPayload;
+      try {
+        normalized = normalizePostPayload(payload);
+      } catch (caught) {
+        setError(createCommunityError(normalizeMessage(caught, "글 입력값을 확인해주세요."), "local"));
+        return null;
+      }
+
       if (!normalized.title || !normalized.content) {
         setError(createCommunityError("제목과 내용을 모두 입력해주세요.", "local"));
         return null;

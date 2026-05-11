@@ -1,7 +1,7 @@
 // 이 파일은 앱 상단 헤더를 담당합니다 - 따뜻한 파스텔 스타일
 'use client'
 
-import { Bell, ChevronLeft, ChevronRight, Leaf } from 'lucide-react'
+import { ChevronLeft, Leaf } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
 export default function Header() {
@@ -38,29 +38,16 @@ export default function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={goBack}
-          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-soft"
-        >
-          <ChevronLeft size={17} className="text-gray-500" />
-        </button>
-        <button
-          type="button"
-          aria-label="앞으로가기"
-          onClick={() => window.history.forward()}
-          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-soft"
-        >
-          <ChevronRight size={17} className="text-gray-500" />
-        </button>
-        <button
-          aria-label="알림 보기"
-          className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-mint-100 bg-white shadow-soft"
-        >
-          <Bell size={17} className="text-mint-500" />
-          <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-400" />
-        </button>
+        {pathname !== '/' ? (
+          <button
+            type="button"
+            aria-label="뒤로가기"
+            onClick={goBack}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-soft"
+          >
+            <ChevronLeft size={17} className="text-gray-500" />
+          </button>
+        ) : null}
       </div>
     </header>
   )

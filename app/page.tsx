@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { Search, Clock3, ChevronRight, Sparkles, Plus, Flame, Heart } from 'lucide-react'
 
 import { useIngredients } from '@/hooks/useIngredients'
+import { useFavorites } from '@/hooks/useFavorites'
 import { calculateRecipeIngredientMatch } from '@/lib/matching'
 import { SAMPLE_RECIPES } from '@/lib/sample-recipes'
 import { getCategoryEmoji, getDday } from '@/lib/utils'
@@ -28,6 +29,7 @@ const recipeFallbackEmoji: Record<string, string> = {
 
 export default function HomePage() {
   const { ingredients } = useIngredients()
+  const { isFavorite, toggleFavorite } = useFavorites()
 
   const expiringIngredients = useMemo(() => {
     return ingredients
@@ -226,10 +228,22 @@ export default function HomePage() {
                 <span className="text-6xl">{recipe.emoji}</span>
 
                 <button
+                  type="button"
                   aria-label={`${recipe.name} 즐겨찾기`}
+                  onClick={() => {
+                    toggleFavorite({
+                      id: recipe.id,
+                      name: recipe.name,
+                      category: recipe.category,
+                      thumbnailUrl: null,
+                    })
+                  }}
                   className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm"
                 >
-                  <Heart size={16} className="text-rose-400" />
+                  <Heart
+                    size={16}
+                    className={isFavorite(recipe.id) ? 'fill-rose-400 text-rose-400' : 'text-rose-400'}
+                  />
                 </button>
 
                 <span className="absolute left-3 top-3 rounded-full bg-mint-200 px-2.5 py-1 text-[10px] font-bold text-mint-500">

@@ -4,15 +4,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 const COMMUNITY_BUCKET = "community-images";
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+]);
 
 function getExtension(file: File): string {
-  const fromName = file.name.split(".").pop()?.toLowerCase();
-  if (fromName && /^[a-z0-9]+$/.test(fromName)) {
-    return fromName === "jpeg" ? "jpg" : fromName;
-  }
-
-  const fromType = file.type.split("/").pop()?.toLowerCase();
-  return fromType && /^[a-z0-9]+$/.test(fromType) ? fromType : "jpg";
+  return ALLOWED_IMAGE_TYPES.get(file.type) ?? "jpg";
 }
 
 function makeStoragePath(file: File, deviceId: string, userId: string | null): string {
@@ -36,8 +35,12 @@ export async function uploadCommunityImage(params: {
     throw new Error("Supabase 환경변수가 없어 사진 업로드를 사용할 수 없습니다.");
   }
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("이미지 파일만 업로드할 수 있습니다.");
+  if (!userId) {
+    throw new Error("사진 업로드는 로그인 후 사용할 수 있습니다.");
+  }
+
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error("사진은 JPG, PNG, WebP 형식만 업로드할 수 있습니다.");
   }
 
   if (file.size > MAX_IMAGE_BYTES) {

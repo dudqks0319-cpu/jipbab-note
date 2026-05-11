@@ -3,13 +3,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Box, BookOpen, ShoppingCart, Users, User } from 'lucide-react'
+import { Home, Box, BookOpen, Users, User } from 'lucide-react'
 
 const tabs = [
   { label: '홈', icon: Home, href: '/' },
   { label: '냉장고', icon: Box, href: '/fridge' },
   { label: '레시피', icon: BookOpen, href: '/recipe' },
-  { label: '장보기', icon: ShoppingCart, href: '/shopping' },
   { label: '커뮤니티', icon: Users, href: '/community' },
   { label: '마이', icon: User, href: '/mypage' },
 ]
@@ -19,7 +18,7 @@ export default function BottomTab() {
 
   return (
     <nav className="relative z-40 w-full border-t border-white/80 bg-[#fffdf9]/92 px-3 pt-2 backdrop-blur-xl [padding-bottom:calc(0.5rem+var(--app-safe-area-bottom))]">
-      <div className="grid grid-cols-6 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href
           return (

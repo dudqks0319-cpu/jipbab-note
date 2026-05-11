@@ -23,6 +23,42 @@ export function getCoupangSearchUrl(keyword: string): string {
   return `https://www.coupang.com/np/search?component=&q=${encodeURIComponent(keyword)}`
 }
 
+// 외부 링크는 http/https만 허용해 앱 내 링크 렌더링을 안전하게 유지합니다.
+export function normalizeSafeHttpUrl(value: string | null | undefined): string | null {
+  const trimmed = value?.trim()
+  if (!trimmed) return null
+
+  const candidate = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed) ? trimmed : `https://${trimmed}`
+
+  try {
+    const url = new URL(candidate)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return null
+    }
+
+    if (!url.hostname || (!url.hostname.includes('.') && url.hostname !== 'localhost')) {
+      return null
+    }
+
+    return url.href
+  } catch {
+    return null
+  }
+}
+
+// 긴 공유 링크 대신 도메인 중심으로 보여줍니다.
+export function formatExternalUrlLabel(value: string | null | undefined): string {
+  const safeUrl = normalizeSafeHttpUrl(value)
+  if (!safeUrl) return ''
+
+  try {
+    const url = new URL(safeUrl)
+    return url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname}`
+  } catch {
+    return safeUrl
+  }
+}
+
 // 카테고리별 이모지
 export function getCategoryEmoji(category: string | null | undefined): string {
   const map: Record<string, string> = {

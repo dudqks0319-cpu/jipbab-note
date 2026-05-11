@@ -1,6 +1,7 @@
 {
   "name": "jipbab-note",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
@@ -16,26 +17,33 @@
     "mobile:run:android": "npx cap run android"
   },
   "dependencies": {
-    "@capacitor/core": "^8.3.1",
-    "@capacitor/ios": "^8.3.1",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/ios": "^8.3.3",
     "@supabase/supabase-js": "^2.98.0",
     "lucide-react": "^0.575.0",
-    "next": "16.1.6",
+    "next": "16.2.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.1.0",
+    "@capacitor/cli": "^8.3.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.27",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "postcss": "^8.5.6",
+    "eslint-config-next": "16.2.6",
+    "postcss": "^8.5.14",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "brace-expansion": "1.1.13",
+      "flatted": "3.4.2",
+      "postcss": "8.5.14"
+    }
   }
 }

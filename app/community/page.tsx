@@ -7,6 +7,7 @@ import { BookOpen, Heart, Image as ImageIcon, Link2, LoaderCircle, MessageCircle
 import { useAuth } from '@/hooks/useAuth'
 import { useCommunity } from '@/hooks/useCommunity'
 import { useIngredients } from '@/hooks/useIngredients'
+import { formatExternalUrlLabel, normalizeSafeHttpUrl } from '@/lib/utils'
 import type { CommunityCommentRecord, CommunityPostRecord, CommunityPostType } from '@/types'
 
 const COMMUNITY_DRAFT_KEY = 'jipbab-note-community-draft'
@@ -307,7 +308,7 @@ export default function CommunityPage() {
             <span className="shrink-0">사진 올리기</span>
             <input
               type="file"
-              accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
               className="hidden"
               onChange={(event) => {
                 void handleImageFileChange(event.target.files?.[0] ?? null)
@@ -387,6 +388,7 @@ export default function CommunityPage() {
         {community.posts.map((post) => {
           const comments = community.commentsByPostId[post.id] ?? []
           const canManagePostRecord = canManageRecord(post, community.viewerUserId, community.viewerDeviceId)
+          const safeLinkUrl = normalizeSafeHttpUrl(post.linkUrl)
 
           return (
             <article key={post.id} className="rounded-3xl bg-white p-4 shadow-soft">
@@ -450,15 +452,15 @@ export default function CommunityPage() {
                 </div>
               ) : null}
 
-              {post.linkUrl ? (
+              {safeLinkUrl ? (
                 <a
-                  href={post.linkUrl}
+                  href={safeLinkUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-3 flex items-center gap-2 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600"
                 >
                   <Link2 size={13} />
-                  <span className="truncate">{post.linkUrl}</span>
+                  <span className="truncate">{formatExternalUrlLabel(safeLinkUrl)}</span>
                 </a>
               ) : null}
 

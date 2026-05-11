@@ -233,16 +233,36 @@ function makeError(message: string, source: IngredientQueryError["source"]): Ing
   return { message, source };
 }
 
+function toRestorePayload(record: IngredientRecord, fallbackDeviceId: string): IngredientInsertPayload {
+  return {
+    id: record.id,
+    device_id: record.deviceId || fallbackDeviceId,
+    user_id: record.userId,
+    family_fridge_id: toSupabaseFamilyFridgeId(record.familyFridgeId),
+    name: record.name,
+    category: record.category,
+    storage_type: record.storageType,
+    quantity: record.quantity,
+    expiry_date: record.expiryDate,
+    barcode: record.barcode,
+    image_url: record.imageUrl,
+    memo: record.memo,
+  };
+}
+
 export interface UseIngredientsResult {
   ingredients: IngredientRecord[];
   loading: boolean;
   error: IngredientQueryError | null;
+  syncStatus: "synced" | "local";
+  syncNotice: string | null;
   listIngredients: () => Promise<IngredientRecord[]>;
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
   updateIngredient: (ingredientId: string, payload: IngredientFormPayload) => Promise<IngredientRecord | null>;
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
   consumeIngredients: (recipeIngredientTexts: string[]) => Promise<number>;
+  restoreIngredientsSnapshot: (snapshot: IngredientRecord[]) => Promise<boolean>;
 }
 
 export function useIngredients(): UseIngredientsResult {
@@ -251,6 +271,8 @@ export function useIngredients(): UseIngredientsResult {
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<IngredientQueryError | null>(null);
+  const [syncStatus, setSyncStatus] = useState<"synced" | "local">("synced");
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
     setLoading(true);
@@ -270,12 +292,16 @@ export function useIngredients(): UseIngredientsResult {
       const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
       setIngredients(mapped);
       safeWriteLocalIngredients(mapped);
+      setSyncStatus("synced");
+      setSyncNotice(null);
       return mapped;
     } catch (caught) {
       const fallback = safeReadLocalIngredients(deviceId, familyFridgeId);
       setIngredients(fallback);
       const message = caught instanceof Error ? caught.message : "재료 목록 조회 실패";
       setError(message.includes("환경변수") ? null : makeError(message, "supabase"));
+      setSyncStatus("local");
+      setSyncNotice(message.includes("환경변수") ? null : "클라우드 동기화가 지연되어 이 기기의 임시 데이터를 보여드립니다.");
       return fallback;
     } finally {
       setLoading(false);
@@ -336,11 +362,15 @@ export function useIngredients(): UseIngredientsResult {
         const savedRecord = nextRecord;
         setIngredients((prev) => [savedRecord, ...prev.filter((item) => item.id !== savedRecord.id)]);
         upsertLocalIngredient(savedRecord);
+        setSyncStatus("synced");
+        setSyncNotice(null);
         return savedRecord;
       } catch {
         const nextLocal = nextRecord ?? makeLocalRecord(deviceId, { ...payload, familyFridgeId }, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
+        setSyncStatus("local");
+        setSyncNotice("클라우드 저장이 지연되어 이 기기에 임시 저장했습니다.");
         return nextLocal;
       } finally {
         setLoading(false);
@@ -384,6 +414,8 @@ export function useIngredients(): UseIngredientsResult {
         });
         setIngredients((prev) => prev.map((item) => (item.id === ingredientId ? nextRecord : item)));
         upsertLocalIngredient(nextRecord);
+        setSyncStatus("synced");
+        setSyncNotice(null);
         return nextRecord;
       } catch (caught) {
         if (!target) {
@@ -395,6 +427,8 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
+        setSyncStatus("local");
+        setSyncNotice("클라우드 수정이 지연되어 이 기기에 먼저 반영했습니다.");
         return nextRecord;
       } finally {
         setLoading(false);
@@ -418,16 +452,54 @@ export function useIngredients(): UseIngredientsResult {
 
         setIngredients((prev) => prev.filter((item) => item.id !== ingredientId));
         removeLocalIngredient(deviceId, familyFridgeId, ingredientId);
+        setSyncStatus("synced");
+        setSyncNotice(null);
         return true;
       } catch {
         const nextItems = removeLocalIngredient(deviceId, familyFridgeId, ingredientId);
         setIngredients(nextItems);
+        setSyncStatus("local");
+        setSyncNotice("클라우드 삭제가 지연되어 이 기기에서 먼저 제거했습니다.");
         return true;
       } finally {
         setLoading(false);
       }
     },
     [deviceId, familyFridgeId],
+  );
+
+  const restoreIngredientsSnapshot = useCallback(
+    async (snapshot: IngredientRecord[]): Promise<boolean> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const client = getSupabaseClient({ deviceId });
+        const payloads = snapshot.map((record) => toRestorePayload(record, deviceId));
+
+        if (payloads.length > 0) {
+          const { error: restoreError } = await client.from("ingredients").upsert(payloads, { onConflict: "id" });
+          if (restoreError) {
+            throw restoreError;
+          }
+        }
+
+        setIngredients(snapshot);
+        safeWriteLocalIngredients(snapshot);
+        setSyncStatus("synced");
+        setSyncNotice(null);
+        return true;
+      } catch {
+        setIngredients(snapshot);
+        safeWriteLocalIngredients(snapshot);
+        setSyncStatus("local");
+        setSyncNotice("되돌리기를 이 기기에 먼저 반영했습니다. 클라우드 동기화는 나중에 다시 시도해 주세요.");
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [deviceId],
   );
 
   const consumeIngredients = useCallback(
@@ -478,11 +550,14 @@ export function useIngredients(): UseIngredientsResult {
     ingredients,
     loading,
     error,
+    syncStatus,
+    syncNotice,
     listIngredients,
     fetchIngredient,
     addIngredient,
     updateIngredient,
     deleteIngredient,
     consumeIngredients,
+    restoreIngredientsSnapshot,
   };
 }

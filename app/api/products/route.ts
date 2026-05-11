@@ -47,18 +47,19 @@ const toTrimmedOrNull = (value: string | undefined): string | null => {
 
 const getClientKey = (request: Request): string => {
   const deviceId = request.headers.get('x-device-id')?.trim()
-  if (deviceId) return `device:${deviceId}`
 
   const forwardedFor = request.headers.get('x-forwarded-for')
+  let ip: string | null = null
   if (forwardedFor) {
-    const ip = forwardedFor.split(',')[0]?.trim()
-    if (ip) return `ip:${ip}`
+    ip = forwardedFor.split(',')[0]?.trim() || null
   }
 
-  const realIp = request.headers.get('x-real-ip')?.trim()
-  if (realIp) return `ip:${realIp}`
+  ip = ip ?? request.headers.get('x-real-ip')?.trim() ?? null
 
   const userAgent = request.headers.get('user-agent')?.trim() ?? 'unknown-ua'
+  if (deviceId && ip) return `device:${deviceId.slice(0, 80)}|ip:${ip}`
+  if (deviceId) return `device:${deviceId.slice(0, 80)}|ua:${userAgent.slice(0, 80)}`
+  if (ip) return `ip:${ip}`
   return `ua:${userAgent.slice(0, 120)}`
 }
 

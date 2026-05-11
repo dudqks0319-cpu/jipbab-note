@@ -225,23 +225,20 @@ const toPositiveInt = (value: string | null, fallback: number): number => {
 
 const getClientKey = (request: Request): string => {
   const deviceId = request.headers.get("x-device-id")?.trim();
-  if (deviceId) {
-    return `device:${deviceId}`;
-  }
 
   const forwardedFor = request.headers.get("x-forwarded-for");
+  let ip: string | null = null;
   if (forwardedFor) {
-    const ip = forwardedFor.split(",")[0]?.trim();
-    if (ip) return `ip:${ip}`;
+    ip = forwardedFor.split(",")[0]?.trim() || null;
   }
 
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) {
-    return `ip:${realIp}`;
-  }
+  ip = ip ?? request.headers.get("x-real-ip")?.trim() ?? null;
 
   // 로컬 개발 환경에서는 IP 헤더가 비어있는 경우가 많아 UA를 보조 키로 사용합니다.
   const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
+  if (deviceId && ip) return `device:${deviceId.slice(0, 80)}|ip:${ip}`;
+  if (deviceId) return `device:${deviceId.slice(0, 80)}|ua:${userAgent.slice(0, 80)}`;
+  if (ip) return `ip:${ip}`;
   return `ua:${userAgent.slice(0, 120)}`;
 };
 

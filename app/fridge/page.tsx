@@ -61,7 +61,16 @@ const getNextAddFormState = (current: IngredientFormState): IngredientFormState 
 })
 
 export default function FridgePage() {
-  const { ingredients, loading, error, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
+  const {
+    ingredients,
+    loading,
+    error,
+    syncNotice,
+    addIngredient,
+    updateIngredient,
+    deleteIngredient,
+    listIngredients,
+  } = useIngredients()
   const [activeTab, setActiveTab] = useState<string>('전체')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -389,6 +398,11 @@ export default function FridgePage() {
             <RefreshCw size={16} />
           </button>
         </div>
+        {syncNotice ? (
+          <div className="mb-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            {syncNotice}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="flex flex-col items-center py-16">

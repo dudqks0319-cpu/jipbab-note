@@ -5,7 +5,7 @@ values (
   'community-images',
   true,
   4194304,
-  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  array['image/jpeg', 'image/png', 'image/webp']
 )
 on conflict (id) do update
 set
@@ -20,10 +20,11 @@ for select
 using (bucket_id = 'community-images');
 
 drop policy if exists community_images_insert_public on storage.objects;
-create policy community_images_insert_public
+drop policy if exists community_images_insert_authenticated on storage.objects;
+create policy community_images_insert_authenticated
 on storage.objects
 for insert
-with check (bucket_id = 'community-images' and auth.role() in ('anon', 'authenticated'));
+with check (bucket_id = 'community-images' and auth.role() = 'authenticated');
 
 drop policy if exists community_images_update_own on storage.objects;
 create policy community_images_update_own
