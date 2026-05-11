@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Dice5, Heart, RefreshCw, Search, X } from "lucide-react";
 
+import {
+  BEGINNER_SITUATIONS,
+  type BeginnerSituationId,
+  getBeginnerRecipeProfile,
+  getSituationRecipeScore,
+} from "@/lib/beginner-recommendations";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMealPreferences } from "@/hooks/useMealPreferences";
 import { useRecipes } from "@/hooks/useRecipes";
@@ -35,6 +41,7 @@ export default function RecipePage() {
   const { preferences, excludedCategorySet, updateCraving, toggleExcludedCategory } = useMealPreferences();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [showExcludeControls, setShowExcludeControls] = useState(false);
+  const [selectedSituationId, setSelectedSituationId] = useState<BeginnerSituationId | null>(null);
   const [rouletteRecipe, setRouletteRecipe] = useState<RecipeWithMatch | null>(null);
 
   const filteredRecipes = useMemo(() => {
@@ -50,12 +57,22 @@ export default function RecipePage() {
         if (!craving) return true;
         return `${recipe.name} ${recipe.category} ${recipe.ingredients}`.toLowerCase().includes(craving);
       })
+      .filter((recipe) => {
+        if (!selectedSituationId) return true;
+        return getSituationRecipeScore(recipe, selectedSituationId, recipe.matchRate) > 0;
+      })
       .sort((left, right) => {
+        if (selectedSituationId) {
+          const situationDelta =
+            getSituationRecipeScore(right, selectedSituationId, right.matchRate) -
+            getSituationRecipeScore(left, selectedSituationId, left.matchRate);
+          if (situationDelta !== 0) return situationDelta;
+        }
         const favoriteDelta = Number(isFavorite(right.id)) - Number(isFavorite(left.id));
         if (favoriteDelta !== 0) return favoriteDelta;
         return right.matchRate - left.matchRate;
       });
-  }, [excludedCategorySet, favoritesOnly, isFavorite, preferences.craving, recipes]);
+  }, [excludedCategorySet, favoritesOnly, isFavorite, preferences.craving, recipes, selectedSituationId]);
 
   const spinRoulette = () => {
     if (filteredRecipes.length === 0) {
@@ -151,6 +168,47 @@ export default function RecipePage() {
         </div>
       </section>
 
+      {/* 초보자 상황 추천 */}
+      <section className="mt-4 px-5">
+        <div className="rounded-3xl bg-white p-3 shadow-soft">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-mint-500">BEGINNER PICK</p>
+              <h3 className="mt-1 text-base font-bold text-gray-800">지금 상황에 맞춰 보기</h3>
+            </div>
+            {selectedSituationId ? (
+              <button
+                type="button"
+                onClick={() => setSelectedSituationId(null)}
+                className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-500"
+              >
+                전체
+              </button>
+            ) : null}
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {BEGINNER_SITUATIONS.map((situation) => {
+              const isSelected = selectedSituationId === situation.id;
+              return (
+                <button
+                  key={situation.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSelectedSituationId(isSelected ? null : situation.id)}
+                  className={`min-h-[4.15rem] rounded-2xl px-2 py-2 text-left transition ${
+                    isSelected ? "bg-mint-100 text-mint-500 ring-2 ring-mint-200" : "bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  <span className="block text-lg">{situation.icon}</span>
+                  <span className="mt-0.5 block text-xs font-bold">{situation.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* 카테고리 필터 */}
       <section className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto px-5">
         {RECIPE_CATEGORIES.map((category) => (
@@ -210,6 +268,7 @@ export default function RecipePage() {
             {filteredRecipes.map((recipe) => {
               const favorite = isFavorite(recipe.id);
               const coverImage = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE;
+              const beginnerProfile = getBeginnerRecipeProfile(recipe);
               return (
                 <article
                   key={recipe.id}
@@ -246,7 +305,15 @@ export default function RecipePage() {
 
                     <div className="p-3">
                       <h4 className="line-clamp-1 font-bold text-gray-800">{recipe.name}</h4>
-                      <p className="mt-1 text-xs text-gray-400">{recipe.method}</p>
+                      <p className="mt-1 text-xs text-gray-400">{beginnerProfile.confidenceLabel}</p>
+                      <div className="mt-2 grid grid-cols-2 gap-1.5">
+                        <span className="rounded-xl bg-gray-50 px-2 py-1 text-center text-[11px] font-bold text-gray-500">
+                          {beginnerProfile.minutes}분
+                        </span>
+                        <span className="rounded-xl bg-mint-50 px-2 py-1 text-center text-[11px] font-bold text-mint-500">
+                          {beginnerProfile.difficultyLabel}
+                        </span>
+                      </div>
                       <p className="mt-1.5 text-xs text-peach-400">부족 재료 {recipe.missingIngredients.length}개</p>
                     </div>
                   </Link>

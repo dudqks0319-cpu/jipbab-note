@@ -1,17 +1,20 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { type TouchEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { type TouchEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Plus, MoreVertical, X, RefreshCw, Loader2, Search, AlertCircle, Trash2 } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import type { IngredientCategory, IngredientRecord, IngredientStorageType } from '@/types'
 import { getDeviceId } from '@/lib/device-id'
 import { INGREDIENTS_BY_CATEGORY, findCatalogIngredient, getIngredientImageUrl } from '@/lib/ingredient-catalog'
 import { mergeQuantityText, normalizeIngredientKey } from '@/lib/ingredient-quantity'
+import { calculateRecipeIngredientMatch } from '@/lib/matching'
+import { SAMPLE_RECIPES } from '@/lib/sample-recipes'
 import { getCategoryEmoji, getDday, getStatusLabel, getStatusBg } from '@/lib/utils'
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
 const categories: IngredientCategory[] = ['채소', '과일', '육류', '수산물', '유제품', '양념', '기타']
+const starterIngredients = ['계란', '김치', '두부', '양파', '대파', '참치캔', '고추장', '밥']
 const localSuggestionFallback: Record<IngredientCategory, string[]> = INGREDIENTS_BY_CATEGORY
 const suggestionFetchLimit = 24
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? ''
@@ -78,6 +81,8 @@ export default function FridgePage() {
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [savingIngredient, setSavingIngredient] = useState(false)
+  const [quickAddingName, setQuickAddingName] = useState<string | null>(null)
+  const [quickAddMessage, setQuickAddMessage] = useState<string | null>(null)
   const touchStartXRef = useRef<number | null>(null)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -104,6 +109,18 @@ export default function FridgePage() {
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
   })
 
+  const beginnerReadyRecipeCount = useMemo(() => {
+    const ingredientNames = ingredients.map((ingredient) => ingredient.name)
+    return SAMPLE_RECIPES.filter((recipe) => {
+      const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients)
+      return match.matchedIngredients.length > 0
+    }).length
+  }, [ingredients])
+
+  const starterProgress = Math.min(ingredients.length, 3)
+  const starterProgressWidthClass =
+    starterProgress >= 3 ? 'w-full' : starterProgress === 2 ? 'w-2/3' : starterProgress === 1 ? 'w-1/3' : 'w-0'
+
   const resetForm = () => {
     suggestionAbortRef.current?.abort()
     setForm(initialFormState)
@@ -117,6 +134,41 @@ export default function FridgePage() {
     setEditingId(null)
     setSaveMessage(null)
     setSavingIngredient(false)
+  }
+
+  const quickAddStarterIngredient = async (name: string) => {
+    if (quickAddingName) return
+
+    const alreadyExists = ingredients.some((ingredient) => {
+      return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(name)
+    })
+
+    if (alreadyExists) {
+      setQuickAddMessage(`${name}은(는) 이미 냉장고에 있습니다.`)
+      return
+    }
+
+    const catalogItem = findCatalogIngredient(name)
+    const category = catalogItem?.category ?? '기타'
+    const storageType = catalogItem?.storageType ?? '실온'
+
+    setQuickAddingName(name)
+    setQuickAddMessage(null)
+
+    try {
+      await addIngredient({
+        name,
+        category,
+        storageType,
+        quantity: null,
+        expiryDate: null,
+        imageUrl: getIngredientImageUrl(name, category),
+        memo: '추천 정확도를 높이기 위해 빠르게 추가',
+      })
+      setQuickAddMessage(`${name} 추가 완료! 추천 메뉴가 더 정확해졌습니다.`)
+    } finally {
+      setQuickAddingName(null)
+    }
   }
 
   const fetchSuggestions = useCallback(
@@ -382,6 +434,43 @@ export default function FridgePage() {
             </button>
           ))}
         </div>
+
+        <div className="mt-4 rounded-3xl bg-white/85 p-4 shadow-soft">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-mint-500">추천 준비도</p>
+              <h3 className="mt-1 text-base font-bold text-gray-800">
+                {ingredients.length < 3
+                  ? `자주 쓰는 재료 ${3 - starterProgress}개만 더 넣어보세요`
+                  : `쉬운 메뉴 ${beginnerReadyRecipeCount}개를 찾을 수 있어요`}
+              </h3>
+              <p className="mt-1 text-xs text-gray-500">
+                재료명만 먼저 넣어도 됩니다. 수량과 유통기한은 나중에 채워도 괜찮아요.
+              </p>
+            </div>
+            <span className="rounded-full bg-mint-50 px-3 py-1 text-xs font-bold text-mint-500">
+              {starterProgress}/3
+            </span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+            <div className={`h-full rounded-full bg-mint-300 transition-all ${starterProgressWidthClass}`} />
+          </div>
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {starterIngredients.slice(0, 4).map((name) => (
+              <button
+                key={name}
+                type="button"
+                disabled={quickAddingName !== null}
+                onClick={() => {
+                  void quickAddStarterIngredient(name)
+                }}
+                className="rounded-2xl bg-mint-50 px-2 py-2 text-xs font-bold text-mint-500 disabled:opacity-50"
+              >
+                {quickAddingName === name ? '추가 중' : name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 재료 리스트 */}
@@ -403,6 +492,11 @@ export default function FridgePage() {
             {syncNotice}
           </div>
         ) : null}
+        {quickAddMessage ? (
+          <div className="mb-3 rounded-2xl bg-mint-50 px-4 py-3 text-sm font-semibold text-mint-500">
+            {quickAddMessage}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="flex flex-col items-center py-16">
@@ -412,18 +506,38 @@ export default function FridgePage() {
         ) : error ? (
           <div className="rounded-3xl bg-rose-50 p-4 text-center text-sm text-rose-500">{error.message}</div>
         ) : sortedIngredients.length === 0 ? (
-          <div className="flex flex-col items-center py-16">
-            <span className="text-7xl">🧊</span>
-            <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
-            <p className="mt-1 text-sm text-gray-400">재료를 추가해서 관리를 시작하세요</p>
+          <div className="rounded-[2rem] bg-white p-5 text-center shadow-soft">
+            <span className="text-6xl">🍳</span>
+            <p className="mt-4 text-lg font-bold text-gray-800">자주 쓰는 재료 3개만 골라보세요</p>
+            <p className="mt-1 text-sm leading-relaxed text-gray-500">
+              처음부터 냉장고를 다 정리하지 않아도 됩니다. 계란, 김치, 두부처럼 쉬운 재료부터 시작해요.
+            </p>
+
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              {starterIngredients.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  disabled={quickAddingName !== null}
+                  onClick={() => {
+                    void quickAddStarterIngredient(name)
+                  }}
+                  className="rounded-2xl bg-mint-50 px-2 py-2.5 text-xs font-bold text-mint-500 disabled:opacity-50"
+                >
+                  {quickAddingName === name ? '추가 중' : name}
+                </button>
+              ))}
+            </div>
+
             <button
+              type="button"
               onClick={() => {
                 resetForm()
                 setShowAddModal(true)
               }}
-              className="mt-5 rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
+              className="mt-5 w-full rounded-2xl bg-mint-300 px-6 py-3.5 font-bold text-white shadow-soft"
             >
-              + 첫 재료 추가하기
+              직접 재료 추가하기
             </button>
           </div>
         ) : (
@@ -535,8 +649,13 @@ export default function FridgePage() {
           >
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-gray-200" />
 
-            <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-800">{editingId ? '✏️ 재료 수정' : '➕ 재료 추가'}</h3>
+            <div className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">{editingId ? '✏️ 재료 수정' : '재료명만 먼저 추가해도 돼요'}</h3>
+                {!editingId ? (
+                  <p className="mt-1 text-sm text-gray-500">수량과 유통기한은 나중에 채워도 추천은 바로 시작됩니다.</p>
+                ) : null}
+              </div>
               <button
                 onClick={() => {
                   setShowAddModal(false)

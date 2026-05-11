@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 import RecipeActionPanel from "@/components/recipe/RecipeActionPanel";
+import { getBeginnerRecipeProfile } from "@/lib/beginner-recommendations";
 import { getSampleRecipeDetail } from "@/lib/sample-recipes";
 import type { RecipeDetailRecord, RecipeDetailStep } from "@/types";
 
@@ -327,6 +328,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
   const tags = parseHashTags(recipe.hashTag);
+  const beginnerProfile = getBeginnerRecipeProfile(recipe);
 
   return (
     <div className="pb-10">
@@ -366,6 +368,29 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           ))}
         </section>
       )}
+
+      <section className="mt-4 px-5">
+        <div className="rounded-3xl bg-white p-4 shadow-soft">
+          <p className="text-xs font-semibold tracking-[0.14em] text-mint-500">초보자 체크</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="rounded-2xl bg-mint-50 px-2 py-3 text-center">
+              <p className="text-lg font-bold text-mint-500">{beginnerProfile.minutes}분</p>
+              <p className="mt-0.5 text-[11px] font-semibold text-gray-500">예상 시간</p>
+            </div>
+            <div className="rounded-2xl bg-peach-50 px-2 py-3 text-center">
+              <p className="text-sm font-bold text-peach-500">{beginnerProfile.difficultyLabel}</p>
+              <p className="mt-0.5 text-[11px] font-semibold text-gray-500">난이도</p>
+            </div>
+            <div className="rounded-2xl bg-gray-50 px-2 py-3 text-center">
+              <p className="text-lg font-bold text-gray-700">{beginnerProfile.ingredientCount}개</p>
+              <p className="mt-0.5 text-[11px] font-semibold text-gray-500">주요 재료</p>
+            </div>
+          </div>
+          <p className="mt-3 rounded-2xl bg-cream-100 px-3 py-2 text-sm font-semibold text-gray-600">
+            {beginnerProfile.confidenceLabel}. 순서를 위에서부터 하나씩 따라가면 됩니다.
+          </p>
+        </div>
+      </section>
 
       <RecipeActionPanel
         recipeId={recipe.id}
