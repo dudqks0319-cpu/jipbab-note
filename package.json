@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "pnpm lint && pnpm exec tsc --noEmit",
+    "test:mobile-flow": "node scripts/mobile-flow-harness.mjs",
     "recipes:seed:generate": "node scripts/generate-mfds-recipes-migration.mjs",
     "mobile:sync": "npm run build && npx cap sync",
     "mobile:open:ios": "npx cap open ios",
