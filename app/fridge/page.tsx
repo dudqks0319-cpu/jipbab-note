@@ -365,6 +365,18 @@ export default function FridgePage() {
     await restoreIngredientsSnapshot(snapshot)
   }
 
+  useEffect(() => {
+    if (!deleteUndo) return
+
+    const timer = window.setTimeout(() => {
+      setDeleteUndo(null)
+    }, 6500)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [deleteUndo])
+
   const handleStorageTypeChange = (storageType: IngredientStorageType) => {
     setForm((prev) => ({
       ...prev,

@@ -135,7 +135,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         setRawRecipes(nextRecipes);
         setFallbackNotice(
           recipesFromApi.length === 0 && sampleRecipes.length > 0
-            ? "레시피 API가 지연되어 기본 추천 메뉴를 보여드려요."
+            ? "기본 추천 메뉴를 먼저 보여드려요."
             : null,
         );
         setTotalCount(
@@ -152,7 +152,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         const sampleRecipes = getSampleRecipeRecords(targetQuery, targetCategory);
         setRawRecipes(sampleRecipes);
         setTotalCount(sampleRecipes.length);
-        setFallbackNotice(sampleRecipes.length > 0 ? "네트워크가 불안정해서 기본 추천 메뉴를 보여드려요." : null);
+        setFallbackNotice(sampleRecipes.length > 0 ? "잠시 기본 추천으로 안내드려요." : null);
         setError(sampleRecipes.length > 0 ? null : caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
         if (requestId === requestIdRef.current) {

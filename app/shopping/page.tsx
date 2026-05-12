@@ -1,11 +1,11 @@
-// 이 파일은 장보기에서 재료를 바로 추가하고 쿠팡 검색으로 이동하는 화면을 담당합니다.
+// 이 파일은 장보기에서 부족 재료를 확인하고 냉장고 추가/구매로 이어지는 화면을 담당합니다.
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, ExternalLink, Plus, Search, ShoppingCart } from "lucide-react";
 
 import { useIngredients } from "@/hooks/useIngredients";
-import { mergeQuantityText, normalizeIngredientKey } from "@/lib/ingredient-quantity";
+import { normalizeIngredientKey } from "@/lib/ingredient-quantity";
 import { getCoupangSearchUrl } from "@/lib/utils";
 import type { IngredientCategory, IngredientStorageType } from "@/types";
 
@@ -39,10 +39,27 @@ const inferStorageType = (category: IngredientCategory): IngredientStorageType =
   return "냉장";
 };
 
+const parseShoppingItems = (rawItems: string | null): string[] => {
+  if (!rawItems) return [];
+
+  const uniqueItems = new Map<string, string>();
+  for (const item of rawItems.split(",")) {
+    const trimmed = item.trim();
+    if (!trimmed) continue;
+    uniqueItems.set(normalizeIngredientKey(trimmed), trimmed);
+  }
+  return Array.from(uniqueItems.values()).slice(0, 12);
+};
+
 export default function ShoppingPage() {
-  const { ingredients, addIngredient, updateIngredient } = useIngredients();
+  const { ingredients, addIngredient } = useIngredients();
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [requestedItems, setRequestedItems] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRequestedItems(parseShoppingItems(new URLSearchParams(window.location.search).get("items")));
+  }, []);
 
   const filteredQuickIngredients = useMemo(() => {
     const normalizedKeyword = normalizeIngredientKey(keyword);
@@ -53,27 +70,15 @@ export default function ShoppingPage() {
     return quickIngredients.filter((item) => normalizeIngredientKey(item.name).includes(normalizedKeyword));
   }, [keyword]);
 
+  const findOwnedIngredient = (name: string) => {
+    return ingredients.find((ingredient) => normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(name));
+  };
+
   const addToFridge = async (name: string, category = inferCategory(name), storageType = inferStorageType(category)) => {
-    const duplicate = ingredients.find((ingredient) => normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(name));
+    const duplicate = findOwnedIngredient(name);
 
     if (duplicate) {
-      const shouldMerge = window.confirm(`${duplicate.name}이(가) 이미 있습니다. 기존 재료와 합칠까요?`);
-      if (!shouldMerge) {
-        return;
-      }
-
-      await updateIngredient(duplicate.id, {
-        name: duplicate.name,
-        category: duplicate.category ?? category,
-        storageType: duplicate.storageType,
-        quantity: mergeQuantityText(duplicate.quantity, null),
-        expiryDate: duplicate.expiryDate,
-        barcode: duplicate.barcode,
-        imageUrl: duplicate.imageUrl,
-        memo: duplicate.memo,
-        familyFridgeId: duplicate.familyFridgeId ?? null,
-      });
-      setStatus(`${duplicate.name}을(를) 기존 재료와 합쳤습니다.`);
+      setStatus(`${duplicate.name}은(는) 이미 냉장고에 있습니다.`);
       return;
     }
 
@@ -141,40 +146,115 @@ export default function ShoppingPage() {
         ) : null}
       </section>
 
+      {requestedItems.length > 0 ? (
+        <section className="mt-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-bold text-gray-800">부족 재료 장보기</h3>
+              <p className="mt-1 text-xs text-gray-400">레시피에서 넘어온 재료입니다. 이미 있는 재료는 표시해드려요.</p>
+            </div>
+          </div>
+
+          <div className="mt-3 space-y-2">
+            {requestedItems.map((name) => {
+              const ownedIngredient = findOwnedIngredient(name);
+              const category = ownedIngredient?.category ?? inferCategory(name);
+              const storageType = ownedIngredient?.storageType ?? inferStorageType(category);
+
+              return (
+                <article
+                  key={name}
+                  className="flex items-center justify-between gap-3 rounded-3xl bg-white p-3 shadow-soft"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-base font-bold text-gray-800">{name}</p>
+                      {ownedIngredient ? (
+                        <span className="shrink-0 rounded-full bg-mint-50 px-2 py-0.5 text-[10px] font-bold text-mint-500">
+                          보유 중
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-400">
+                      {category} · {storageType}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void addToFridge(name, category, storageType);
+                      }}
+                      className={`inline-flex h-9 items-center gap-1 rounded-xl px-3 text-xs font-bold ${
+                        ownedIngredient ? "bg-gray-100 text-gray-500" : "bg-mint-100 text-mint-500"
+                      }`}
+                    >
+                      {ownedIngredient ? <Check size={13} /> : <Plus size={13} />}
+                      {ownedIngredient ? "보유" : "추가"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openCoupang(name)}
+                      className="inline-flex h-9 items-center gap-1 rounded-xl bg-peach-100 px-3 text-xs font-bold text-peach-500"
+                    >
+                      <ExternalLink size={13} />
+                      구매
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-5">
         <h3 className="text-lg font-bold text-gray-800">바로 살 재료</h3>
         <div className="mt-3 grid grid-cols-2 gap-3">
-          {filteredQuickIngredients.map((item) => (
-            <article key={item.name} className="rounded-3xl bg-white p-4 shadow-soft">
-              <p className="text-base font-bold text-gray-800">{item.name}</p>
-              <p className="mt-1 text-xs text-gray-400">
-                {item.category} · {item.storageType}
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    void addToFridge(item.name, item.category, item.storageType);
-                  }}
-                  className="inline-flex items-center justify-center gap-1 rounded-xl bg-mint-100 px-2 py-2 text-xs font-bold text-mint-500"
-                >
-                  <Plus size={13} />
-                  내 재료
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openCoupang(item.name)}
-                  className="inline-flex items-center justify-center gap-1 rounded-xl bg-peach-100 px-2 py-2 text-xs font-bold text-peach-500"
-                >
-                  <ExternalLink size={13} />
-                  구매
-                </button>
-              </div>
-            </article>
-          ))}
+          {filteredQuickIngredients.map((item) => {
+            const ownedIngredient = findOwnedIngredient(item.name);
+
+            return (
+              <article key={item.name} className="rounded-3xl bg-white p-4 shadow-soft">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 truncate text-base font-bold text-gray-800">{item.name}</p>
+                  {ownedIngredient ? (
+                    <span className="shrink-0 rounded-full bg-mint-50 px-2 py-0.5 text-[10px] font-bold text-mint-500">
+                      보유 중
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-1 text-xs text-gray-400">
+                  {item.category} · {item.storageType}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void addToFridge(item.name, item.category, item.storageType);
+                    }}
+                    className={`inline-flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-bold ${
+                      ownedIngredient ? "bg-gray-100 text-gray-500" : "bg-mint-100 text-mint-500"
+                    }`}
+                  >
+                    {ownedIngredient ? <Check size={13} /> : <Plus size={13} />}
+                    {ownedIngredient ? "보유" : "내 재료"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openCoupang(item.name)}
+                    className="inline-flex items-center justify-center gap-1 rounded-xl bg-peach-100 px-2 py-2 text-xs font-bold text-peach-500"
+                  >
+                    <ExternalLink size={13} />
+                    구매
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>
   );
 }
-

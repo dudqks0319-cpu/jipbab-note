@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Dice5, Heart, RefreshCw, Search, X } from "lucide-react";
+import { Dice5, Heart, RefreshCw, Search, ShoppingCart, X } from "lucide-react";
 
 import {
   BEGINNER_SITUATIONS,
@@ -253,7 +253,7 @@ export default function RecipePage() {
       {/* 목록 본문 */}
       <section className="mt-4 px-5">
         {fallbackNotice ? (
-          <div className="mb-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+          <div className="mb-3 rounded-2xl bg-mint-50 px-4 py-3 text-sm font-semibold text-mint-500">
             {fallbackNotice}
           </div>
         ) : null}
@@ -276,6 +276,10 @@ export default function RecipePage() {
               const favorite = isFavorite(recipe.id);
               const coverImage = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE;
               const beginnerProfile = getBeginnerRecipeProfile(recipe);
+              const shoppingHref =
+                recipe.missingIngredients.length > 0
+                  ? `/shopping?items=${encodeURIComponent(recipe.missingIngredients.slice(0, 8).join(","))}`
+                  : null;
               return (
                 <article
                   key={recipe.id}
@@ -331,6 +335,16 @@ export default function RecipePage() {
                       </div>
                     </div>
                   </Link>
+
+                  {shoppingHref ? (
+                    <Link
+                      href={shoppingHref}
+                      className="mx-3 mb-3 flex min-h-9 items-center justify-center gap-1.5 rounded-2xl bg-peach-100 px-3 py-2 text-xs font-bold text-peach-500"
+                    >
+                      <ShoppingCart size={13} />
+                      부족 재료 장보기
+                    </Link>
+                  ) : null}
                 </article>
               );
             })}

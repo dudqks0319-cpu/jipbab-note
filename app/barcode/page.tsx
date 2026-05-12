@@ -445,6 +445,9 @@ export default function BarcodePage() {
                   <label htmlFor="manual-product-name" className="mb-2 block text-xs font-bold text-gray-500">
                     재료명 직접 입력
                   </label>
+                  <p className="mb-2 text-xs text-gray-400">
+                    저장하면 이 바코드와 함께 냉장고에 남습니다.
+                  </p>
                   <div className="flex gap-2">
                     <input
                       id="manual-product-name"
