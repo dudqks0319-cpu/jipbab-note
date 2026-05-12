@@ -11,6 +11,7 @@ const OPEN_FOOD_FACTS_FIELDS = [
   'categories',
   'image_url',
 ] as const
+const PRODUCT_FETCH_TIMEOUT_MS = 4000
 const REQUEST_WINDOW_MS = 60_000
 const MAX_REQUESTS_PER_WINDOW = 30
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
@@ -119,16 +120,26 @@ async function fetchFromOpenFoodFacts(
   barcode: string,
 ): Promise<ProductLookupResult | null> {
   const endpoint = `${OPEN_FOOD_FACTS_URL}/${encodeURIComponent(barcode)}.json?fields=${OPEN_FOOD_FACTS_FIELDS.join(',')}`
-  const response = await fetch(endpoint, {
-    cache: 'no-store',
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), PRODUCT_FETCH_TIMEOUT_MS)
 
-  if (!response.ok) {
+  try {
+    const response = await fetch(endpoint, {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const payload = (await response.json()) as OpenFoodFactsPayload
+    return parseOpenFoodFactsProduct(barcode, payload)
+  } catch {
     return null
+  } finally {
+    clearTimeout(timeoutId)
   }
-
-  const payload = (await response.json()) as OpenFoodFactsPayload
-  return parseOpenFoodFactsProduct(barcode, payload)
 }
 
 export async function GET(request: Request) {

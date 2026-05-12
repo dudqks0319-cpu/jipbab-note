@@ -251,6 +251,25 @@ const supabaseRowToRecipe = (row: SupabaseRecipeRow): RecipeDto => {
   }
 }
 
+const createEmptyRecipeFallback = (
+  page: number,
+  size: number,
+  code: string,
+  message: string,
+) => {
+  return NextResponse.json(
+    {
+      recipes: [],
+      totalCount: 0,
+      page,
+      size,
+      code,
+      message,
+    },
+    { status: 200 },
+  )
+}
+
 const fetchRecipesFromSupabase = async (
   page: number,
   size: number,
@@ -383,9 +402,11 @@ export async function GET(request: Request) {
     })
 
     if (!response.ok) {
-      return NextResponse.json(
-        { message: `식약처 API 호출 실패 (${response.status})` },
-        { status: 502 },
+      return createEmptyRecipeFallback(
+        page,
+        size,
+        `MFDS-${response.status}`,
+        '레시피 API가 지연되어 빈 목록으로 전환했습니다. 잠시 후 다시 시도해 주세요.',
       )
     }
 
@@ -420,11 +441,11 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('MFDS API 요청 실패', error)
-    return NextResponse.json(
-      {
-        message: '레시피 정보를 가져오는 중 오류가 발생했습니다.',
-      },
-      { status: 500 },
+    return createEmptyRecipeFallback(
+      page,
+      size,
+      'FALLBACK-EMPTY',
+      '레시피 API가 지연되어 빈 목록으로 전환했습니다. 잠시 후 다시 시도해 주세요.',
     )
   }
 }

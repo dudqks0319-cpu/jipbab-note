@@ -314,7 +314,14 @@ export default function RecipePage() {
                           {beginnerProfile.difficultyLabel}
                         </span>
                       </div>
-                      <p className="mt-1.5 text-xs text-peach-400">부족 재료 {recipe.missingIngredients.length}개</p>
+                      <div className="mt-2 space-y-1">
+                        <p className="line-clamp-1 text-[11px] font-semibold text-mint-500">
+                          있는 재료 {recipe.matchedIngredients.slice(0, 2).join(', ') || '등록 전'}
+                        </p>
+                        <p className="line-clamp-1 text-[11px] font-semibold text-peach-500">
+                          부족 재료 {recipe.missingIngredients.slice(0, 2).join(', ') || '없음'}
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 </article>

@@ -14,9 +14,13 @@ import {
 } from '@/lib/beginner-recommendations'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useIngredients } from '@/hooks/useIngredients'
+import { findCatalogIngredient, getIngredientImageUrl } from '@/lib/ingredient-catalog'
+import { normalizeIngredientKey } from '@/lib/ingredient-quantity'
 import { calculateRecipeIngredientMatch } from '@/lib/matching'
 import { SAMPLE_RECIPES } from '@/lib/sample-recipes'
 import { getCategoryEmoji, getDday } from '@/lib/utils'
+
+const starterIngredients = ['계란', '김치', '두부', '대파', '양파', '참치캔', '우유', '감자']
 
 const recipeFallbackEmoji: Record<string, string> = {
   한식: '🍲',
@@ -34,9 +38,11 @@ const recipeFallbackEmoji: Record<string, string> = {
 }
 
 export default function HomePage() {
-  const { ingredients } = useIngredients()
+  const { ingredients, addIngredient } = useIngredients()
   const { isFavorite, toggleFavorite } = useFavorites()
   const [selectedSituationId, setSelectedSituationId] = useState<BeginnerSituationId>('quick')
+  const [quickAddingName, setQuickAddingName] = useState<string | null>(null)
+  const [quickAddMessage, setQuickAddMessage] = useState<string | null>(null)
 
   const selectedSituation = getBeginnerSituation(selectedSituationId)
 
@@ -93,6 +99,41 @@ export default function HomePage() {
     { label: '임박 재료', value: `${urgentIngredientCount}개`, tone: 'bg-rose-100 text-rose-500' },
     { label: '추천 메뉴', value: `${recommendedRecipes.length}개`, tone: 'bg-mint-100 text-mint-500' },
   ]
+
+  const quickAddStarterIngredient = async (name: string) => {
+    if (quickAddingName) return
+
+    const alreadyExists = ingredients.some((ingredient) => {
+      return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(name)
+    })
+
+    if (alreadyExists) {
+      setQuickAddMessage(`${name}은(는) 이미 냉장고에 있습니다.`)
+      return
+    }
+
+    const catalogItem = findCatalogIngredient(name)
+    const category = catalogItem?.category ?? '기타'
+    const storageType = catalogItem?.storageType ?? '실온'
+
+    setQuickAddingName(name)
+    setQuickAddMessage(null)
+
+    try {
+      await addIngredient({
+        name,
+        category,
+        storageType,
+        quantity: null,
+        expiryDate: null,
+        imageUrl: getIngredientImageUrl(name, category),
+        memo: '홈에서 추천을 시작하기 위해 빠르게 추가',
+      })
+      setQuickAddMessage(`${name} 추가 완료! 가능한 메뉴를 다시 골라드릴게요.`)
+    } finally {
+      setQuickAddingName(null)
+    }
+  }
 
   return (
     <div className="flex flex-col pb-4">
@@ -160,9 +201,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 재료 입력 보상 CTA */}
+      {/* 첫 방문 재료 3개 선택 */}
       <section className="px-5 pt-4">
-        <Link href="/fridge" className="block rounded-3xl bg-white px-4 py-4 shadow-soft">
+        <div className="rounded-3xl bg-white px-4 py-4 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold tracking-[0.14em] text-mint-500">추천 정확도</p>
@@ -180,7 +221,30 @@ export default function HomePage() {
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-100">
             <div className={`h-full rounded-full bg-mint-300 transition-all ${progressWidthClass}`} />
           </div>
-        </Link>
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {starterIngredients.map((name) => (
+              <button
+                key={name}
+                type="button"
+                disabled={quickAddingName !== null}
+                onClick={() => {
+                  void quickAddStarterIngredient(name)
+                }}
+                className="rounded-2xl bg-mint-50 px-2 py-2 text-xs font-bold text-mint-500 disabled:opacity-50"
+              >
+                {quickAddingName === name ? '추가 중' : name}
+              </button>
+            ))}
+          </div>
+          {quickAddMessage ? (
+            <p className="mt-3 rounded-2xl bg-cream-100 px-3 py-2 text-xs font-semibold text-gray-600">
+              {quickAddMessage}
+            </p>
+          ) : null}
+          <Link href="/fridge" className="mt-3 flex items-center justify-center gap-1 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-bold text-gray-500">
+            자세히 입력하기 <ChevronRight size={13} />
+          </Link>
+        </div>
       </section>
 
       {/* 상황 기반 추천 레시피 */}
@@ -255,6 +319,20 @@ export default function HomePage() {
                     </span>
                   </div>
                   <p className="mt-2 text-xs font-semibold text-gray-500">{recipe.beginnerProfile.difficultyLabel}</p>
+                  <div className="mt-2 space-y-1.5">
+                    {ingredients.length > 0 ? (
+                      <>
+                        <p className="line-clamp-1 text-[11px] font-semibold text-mint-500">
+                          있는 재료: {recipe.matchedIngredients.slice(0, 3).join(', ') || '아직 없음'}
+                        </p>
+                        <p className="line-clamp-1 text-[11px] font-semibold text-peach-500">
+                          부족 재료: {recipe.missingIngredients.slice(0, 3).join(', ') || '없음'}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[11px] font-semibold text-gray-400">재료 3개를 고르면 가능 여부를 바로 계산합니다.</p>
+                    )}
+                  </div>
                 </Link>
               </article>
             )

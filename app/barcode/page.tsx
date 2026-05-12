@@ -1,7 +1,7 @@
 'use client'
 
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Camera, CameraOff, Loader2, Search } from 'lucide-react'
+import { Camera, CameraOff, Check, Loader2, Plus, Search } from 'lucide-react'
 import {
   createWebBarcodeDetector,
   isValidFoodBarcode,
@@ -11,6 +11,10 @@ import {
   type BarcodeDetectorLike,
 } from '@/lib/barcode'
 import { getDeviceId } from '@/lib/device-id'
+import { useIngredients } from '@/hooks/useIngredients'
+import { findCatalogIngredient, getIngredientImageUrl } from '@/lib/ingredient-catalog'
+import { mergeQuantityText, normalizeIngredientKey } from '@/lib/ingredient-quantity'
+import type { IngredientCategory, IngredientStorageType } from '@/types'
 
 const SCAN_INTERVAL_MS = 700
 
@@ -37,7 +41,28 @@ type ErrorResponse = {
   message?: string
 }
 
+const inferCategoryFromProduct = (product: ProductLookupResult): IngredientCategory => {
+  const catalogItem = findCatalogIngredient(product.name)
+  if (catalogItem) return catalogItem.category
+
+  const source = `${product.name} ${product.category ?? ''}`.toLowerCase()
+  if (/(milk|dairy|cheese|yogurt|우유|치즈|요거트|요구르트|두부|계란|달걀)/.test(source)) return '유제품'
+  if (/(meat|pork|beef|chicken|ham|sausage|고기|돼지|소고기|닭|햄|소시지)/.test(source)) return '육류'
+  if (/(fish|seafood|tuna|shrimp|참치|생선|고등어|새우|오징어|김|미역)/.test(source)) return '수산물'
+  if (/(fruit|apple|banana|과일|사과|바나나|딸기|포도)/.test(source)) return '과일'
+  if (/(vegetable|채소|양파|대파|감자|당근|오이|버섯)/.test(source)) return '채소'
+  if (/(sauce|seasoning|oil|간장|고추장|소스|기름|참기름|설탕|소금)/.test(source)) return '양념'
+  return '기타'
+}
+
+const inferStorageType = (category: IngredientCategory): IngredientStorageType => {
+  if (category === '육류' || category === '수산물') return '냉동'
+  if (category === '양념' || category === '기타') return '실온'
+  return '냉장'
+}
+
 export default function BarcodePage() {
+  const { ingredients, addIngredient, updateIngredient } = useIngredients()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const detectorRef = useRef<BarcodeDetectorLike | null>(null)
@@ -51,8 +76,10 @@ export default function BarcodePage() {
   const [manualBarcode, setManualBarcode] = useState('')
   const [activeBarcode, setActiveBarcode] = useState<string | null>(null)
   const [isLookupLoading, setIsLookupLoading] = useState(false)
+  const [isAddingToFridge, setIsAddingToFridge] = useState(false)
   const [lookupError, setLookupError] = useState<string | null>(null)
   const [lookupResult, setLookupResult] = useState<ProductLookupResult | null>(null)
+  const [addMessage, setAddMessage] = useState<string | null>(null)
 
   const detectorSupported = useMemo(() => isWebBarcodeDetectorSupported(), [])
 
@@ -103,6 +130,7 @@ export default function BarcodePage() {
 
       const typed = payload as ProductLookupResponse
       setLookupResult(typed.product)
+      setAddMessage(null)
       setStatusMessage(typed.message)
     } catch (error) {
       console.error('상품 조회 요청 실패', error)
@@ -212,6 +240,51 @@ export default function BarcodePage() {
     [lookupProduct, manualBarcode],
   )
 
+  const addLookupResultToFridge = async () => {
+    if (!lookupResult || isAddingToFridge) return
+
+    const category = inferCategoryFromProduct(lookupResult)
+    const storageType = inferStorageType(category)
+    const duplicate = ingredients.find((ingredient) => {
+      return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(lookupResult.name)
+    })
+
+    setIsAddingToFridge(true)
+    setAddMessage(null)
+
+    try {
+      if (duplicate) {
+        await updateIngredient(duplicate.id, {
+          name: duplicate.name,
+          category: duplicate.category ?? category,
+          storageType: duplicate.storageType,
+          quantity: mergeQuantityText(duplicate.quantity, lookupResult.quantity),
+          expiryDate: duplicate.expiryDate,
+          barcode: lookupResult.barcode,
+          imageUrl: duplicate.imageUrl ?? lookupResult.imageUrl ?? getIngredientImageUrl(lookupResult.name, category),
+          memo: duplicate.memo,
+          familyFridgeId: duplicate.familyFridgeId ?? null,
+        })
+        setAddMessage(`${duplicate.name} 정보에 바코드와 수량을 반영했습니다.`)
+        return
+      }
+
+      await addIngredient({
+        name: lookupResult.name,
+        category,
+        storageType,
+        quantity: lookupResult.quantity,
+        expiryDate: null,
+        barcode: lookupResult.barcode,
+        imageUrl: lookupResult.imageUrl ?? getIngredientImageUrl(lookupResult.name, category),
+        memo: '바코드 조회로 추가',
+      })
+      setAddMessage(`${lookupResult.name}을(를) 냉장고에 추가했습니다.`)
+    } finally {
+      setIsAddingToFridge(false)
+    }
+  }
+
   useEffect(() => {
     return () => {
       stopCamera()
@@ -319,6 +392,23 @@ export default function BarcodePage() {
                 <p className="text-sm text-gray-600">용량: {lookupResult.quantity ?? '정보 없음'}</p>
                 <p className="text-sm text-gray-600">분류: {lookupResult.category ?? '정보 없음'}</p>
                 <p className="text-xs text-gray-400">데이터 소스: {lookupResult.source}</p>
+                <button
+                  type="button"
+                  disabled={isAddingToFridge}
+                  onClick={() => {
+                    void addLookupResultToFridge()
+                  }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-mint-300 px-4 py-3 text-sm font-bold text-white disabled:opacity-60"
+                >
+                  {isAddingToFridge ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  냉장고에 추가하기
+                </button>
+                {addMessage ? (
+                  <p className="flex items-center gap-2 rounded-2xl bg-mint-50 px-3 py-2 text-sm font-semibold text-mint-500">
+                    <Check size={15} />
+                    {addMessage}
+                  </p>
+                ) : null}
               </div>
             ) : (
               <p className="mt-4 text-sm text-gray-500">
