@@ -3,13 +3,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Box, BookOpen, Users, User } from 'lucide-react'
+import { Home, Box, BookOpen, ShoppingCart, User } from 'lucide-react'
 
 const tabs = [
   { label: '홈', icon: Home, href: '/' },
   { label: '냉장고', icon: Box, href: '/fridge' },
   { label: '레시피', icon: BookOpen, href: '/recipe' },
-  { label: '커뮤니티', icon: Users, href: '/community' },
+  { label: '장보기', icon: ShoppingCart, href: '/shopping' },
   { label: '마이', icon: User, href: '/mypage' },
 ]
 

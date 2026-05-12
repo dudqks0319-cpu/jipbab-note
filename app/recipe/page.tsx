@@ -24,6 +24,7 @@ export default function RecipePage() {
     recipes,
     loading,
     error,
+    fallbackNotice,
     page,
     totalCount,
     totalPages,
@@ -251,6 +252,12 @@ export default function RecipePage() {
 
       {/* 목록 본문 */}
       <section className="mt-4 px-5">
+        {fallbackNotice ? (
+          <div className="mb-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            {fallbackNotice}
+          </div>
+        ) : null}
+
         {loading ? (
           <div className="flex flex-col items-center py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-mint-300 border-t-transparent" />

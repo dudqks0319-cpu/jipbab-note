@@ -48,6 +48,7 @@ export interface UseRecipesResult {
   recipes: RecipeWithMatch[];
   loading: boolean;
   error: string | null;
+  fallbackNotice: string | null;
   page: number;
   totalCount: number;
   totalPages: number;
@@ -67,6 +68,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const [rawRecipes, setRawRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
 
   const [page, setPage] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -131,6 +133,11 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
           recipesFromApi.length === 0 ? getSampleRecipeRecords(targetQuery, targetCategory) : [];
         const nextRecipes = recipesFromApi.length > 0 ? recipesFromApi : sampleRecipes;
         setRawRecipes(nextRecipes);
+        setFallbackNotice(
+          recipesFromApi.length === 0 && sampleRecipes.length > 0
+            ? "레시피 API가 지연되어 기본 추천 메뉴를 보여드려요."
+            : null,
+        );
         setTotalCount(
           recipesFromApi.length > 0
             ? Number.isFinite(payload.totalCount)
@@ -145,6 +152,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         const sampleRecipes = getSampleRecipeRecords(targetQuery, targetCategory);
         setRawRecipes(sampleRecipes);
         setTotalCount(sampleRecipes.length);
+        setFallbackNotice(sampleRecipes.length > 0 ? "네트워크가 불안정해서 기본 추천 메뉴를 보여드려요." : null);
         setError(sampleRecipes.length > 0 ? null : caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
         if (requestId === requestIdRef.current) {
@@ -214,6 +222,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
     recipes,
     loading,
     error,
+    fallbackNotice,
     page,
     totalCount,
     totalPages,

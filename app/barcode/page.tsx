@@ -41,11 +41,11 @@ type ErrorResponse = {
   message?: string
 }
 
-const inferCategoryFromProduct = (product: ProductLookupResult): IngredientCategory => {
-  const catalogItem = findCatalogIngredient(product.name)
+const inferCategoryFromText = (name: string, categoryText: string | null): IngredientCategory => {
+  const catalogItem = findCatalogIngredient(name)
   if (catalogItem) return catalogItem.category
 
-  const source = `${product.name} ${product.category ?? ''}`.toLowerCase()
+  const source = `${name} ${categoryText ?? ''}`.toLowerCase()
   if (/(milk|dairy|cheese|yogurt|우유|치즈|요거트|요구르트|두부|계란|달걀)/.test(source)) return '유제품'
   if (/(meat|pork|beef|chicken|ham|sausage|고기|돼지|소고기|닭|햄|소시지)/.test(source)) return '육류'
   if (/(fish|seafood|tuna|shrimp|참치|생선|고등어|새우|오징어|김|미역)/.test(source)) return '수산물'
@@ -53,6 +53,10 @@ const inferCategoryFromProduct = (product: ProductLookupResult): IngredientCateg
   if (/(vegetable|채소|양파|대파|감자|당근|오이|버섯)/.test(source)) return '채소'
   if (/(sauce|seasoning|oil|간장|고추장|소스|기름|참기름|설탕|소금)/.test(source)) return '양념'
   return '기타'
+}
+
+const inferCategoryFromProduct = (product: ProductLookupResult): IngredientCategory => {
+  return inferCategoryFromText(product.name, product.category)
 }
 
 const inferStorageType = (category: IngredientCategory): IngredientStorageType => {
@@ -80,6 +84,7 @@ export default function BarcodePage() {
   const [lookupError, setLookupError] = useState<string | null>(null)
   const [lookupResult, setLookupResult] = useState<ProductLookupResult | null>(null)
   const [addMessage, setAddMessage] = useState<string | null>(null)
+  const [manualProductName, setManualProductName] = useState('')
 
   const detectorSupported = useMemo(() => isWebBarcodeDetectorSupported(), [])
 
@@ -110,6 +115,7 @@ export default function BarcodePage() {
     setIsLookupLoading(true)
     setLookupError(null)
     setLookupResult(null)
+    setManualProductName('')
 
     try {
       const response = await fetch(
@@ -240,13 +246,13 @@ export default function BarcodePage() {
     [lookupProduct, manualBarcode],
   )
 
-  const addLookupResultToFridge = async () => {
-    if (!lookupResult || isAddingToFridge) return
+  const addProductToFridge = async (product: ProductLookupResult) => {
+    if (isAddingToFridge) return
 
-    const category = inferCategoryFromProduct(lookupResult)
+    const category = inferCategoryFromProduct(product)
     const storageType = inferStorageType(category)
     const duplicate = ingredients.find((ingredient) => {
-      return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(lookupResult.name)
+      return normalizeIngredientKey(ingredient.name) === normalizeIngredientKey(product.name)
     })
 
     setIsAddingToFridge(true)
@@ -258,10 +264,10 @@ export default function BarcodePage() {
           name: duplicate.name,
           category: duplicate.category ?? category,
           storageType: duplicate.storageType,
-          quantity: mergeQuantityText(duplicate.quantity, lookupResult.quantity),
+          quantity: mergeQuantityText(duplicate.quantity, product.quantity),
           expiryDate: duplicate.expiryDate,
-          barcode: lookupResult.barcode,
-          imageUrl: duplicate.imageUrl ?? lookupResult.imageUrl ?? getIngredientImageUrl(lookupResult.name, category),
+          barcode: product.barcode,
+          imageUrl: duplicate.imageUrl ?? product.imageUrl ?? getIngredientImageUrl(product.name, category),
           memo: duplicate.memo,
           familyFridgeId: duplicate.familyFridgeId ?? null,
         })
@@ -270,19 +276,39 @@ export default function BarcodePage() {
       }
 
       await addIngredient({
-        name: lookupResult.name,
+        name: product.name,
         category,
         storageType,
-        quantity: lookupResult.quantity,
+        quantity: product.quantity,
         expiryDate: null,
-        barcode: lookupResult.barcode,
-        imageUrl: lookupResult.imageUrl ?? getIngredientImageUrl(lookupResult.name, category),
+        barcode: product.barcode,
+        imageUrl: product.imageUrl ?? getIngredientImageUrl(product.name, category),
         memo: '바코드 조회로 추가',
       })
-      setAddMessage(`${lookupResult.name}을(를) 냉장고에 추가했습니다.`)
+      setAddMessage(`${product.name}을(를) 냉장고에 추가했습니다.`)
     } finally {
       setIsAddingToFridge(false)
     }
+  }
+
+  const addLookupResultToFridge = async () => {
+    if (!lookupResult) return
+    await addProductToFridge(lookupResult)
+  }
+
+  const addManualBarcodeToFridge = async () => {
+    const name = manualProductName.trim()
+    if (!activeBarcode || !name) return
+
+    await addProductToFridge({
+      barcode: activeBarcode,
+      name,
+      brand: null,
+      quantity: null,
+      category: null,
+      imageUrl: null,
+      source: 'stub',
+    })
   }
 
   useEffect(() => {
@@ -411,9 +437,42 @@ export default function BarcodePage() {
                 ) : null}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-gray-500">
-                조회 결과가 없어 수동 입력 흐름으로 이어서 사용해 주세요.
-              </p>
+              <div className="mt-4 space-y-3">
+                <p className="text-sm text-gray-500">
+                  조회 결과가 없어도 바코드는 유지됩니다. 재료명만 입력해서 냉장고에 바로 추가할 수 있어요.
+                </p>
+                <div className="rounded-2xl bg-gray-50 p-3">
+                  <label htmlFor="manual-product-name" className="mb-2 block text-xs font-bold text-gray-500">
+                    재료명 직접 입력
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="manual-product-name"
+                      value={manualProductName}
+                      onChange={(event) => setManualProductName(event.target.value)}
+                      placeholder="예: 우유, 김치, 참치캔"
+                      className="h-11 min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-mint-400"
+                    />
+                    <button
+                      type="button"
+                      disabled={isAddingToFridge || !manualProductName.trim()}
+                      onClick={() => {
+                        void addManualBarcodeToFridge()
+                      }}
+                      className="flex h-11 shrink-0 items-center gap-1 rounded-xl bg-mint-300 px-3 text-xs font-bold text-white disabled:opacity-60"
+                    >
+                      {isAddingToFridge ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+                      추가
+                    </button>
+                  </div>
+                </div>
+                {addMessage ? (
+                  <p className="flex items-center gap-2 rounded-2xl bg-mint-50 px-3 py-2 text-sm font-semibold text-mint-500">
+                    <Check size={15} />
+                    {addMessage}
+                  </p>
+                ) : null}
+              </div>
             )}
           </div>
         )}

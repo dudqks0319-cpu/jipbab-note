@@ -72,6 +72,7 @@ export default function FridgePage() {
     addIngredient,
     updateIngredient,
     deleteIngredient,
+    restoreIngredientsSnapshot,
     listIngredients,
   } = useIngredients()
   const [activeTab, setActiveTab] = useState<string>('전체')
@@ -83,6 +84,7 @@ export default function FridgePage() {
   const [savingIngredient, setSavingIngredient] = useState(false)
   const [quickAddingName, setQuickAddingName] = useState<string | null>(null)
   const [quickAddMessage, setQuickAddMessage] = useState<string | null>(null)
+  const [deleteUndo, setDeleteUndo] = useState<{ name: string; snapshot: IngredientRecord[] } | null>(null)
   const touchStartXRef = useRef<number | null>(null)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -346,9 +348,21 @@ export default function FridgePage() {
   }
 
   const handleDelete = async (id: string) => {
-    await deleteIngredient(id)
+    const snapshot = ingredients
+    const target = ingredients.find((ingredient) => ingredient.id === id)
+    const deleted = await deleteIngredient(id)
+    if (deleted && target) {
+      setDeleteUndo({ name: target.name, snapshot })
+    }
     setMenuOpenId(null)
     setSwipedId(null)
+  }
+
+  const undoDelete = async () => {
+    if (!deleteUndo) return
+    const snapshot = deleteUndo.snapshot
+    setDeleteUndo(null)
+    await restoreIngredientsSnapshot(snapshot)
   }
 
   const handleStorageTypeChange = (storageType: IngredientStorageType) => {
@@ -919,6 +933,21 @@ export default function FridgePage() {
           </div>
         </div>
       )}
+
+      {deleteUndo ? (
+        <div className="fixed inset-x-0 bottom-[calc(5.2rem+var(--app-safe-area-bottom))] z-[65] mx-auto flex w-[min(390px,calc(100%-2rem))] items-center justify-between gap-3 rounded-2xl bg-gray-900 px-4 py-3 text-sm text-white shadow-card">
+          <span className="min-w-0 truncate">{deleteUndo.name}을(를) 삭제했습니다.</span>
+          <button
+            type="button"
+            onClick={() => {
+              void undoDelete()
+            }}
+            className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-800"
+          >
+            되돌리기
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }
