@@ -6,6 +6,7 @@ import { CheckCircle2, MessageCircle, Share2, Utensils } from "lucide-react";
 
 import { useIngredients } from "@/hooks/useIngredients";
 import { shareToKakaoOrNative } from "@/lib/kakao-share";
+import { COMMUNITY_ENABLED } from "@/lib/release-flags";
 import type { IngredientRecord } from "@/types";
 
 const COMMUNITY_DRAFT_KEY = "jipbab-note-community-draft";
@@ -107,7 +108,7 @@ export function RecipeActionPanel({
   return (
     <section className="mt-5 px-5">
       <div className="rounded-3xl bg-white p-4 shadow-soft">
-        <div className="grid grid-cols-3 gap-2">
+        <div className={`grid gap-2 ${COMMUNITY_ENABLED ? "grid-cols-3" : "grid-cols-2"}`}>
           <button
             type="button"
             onClick={() => {
@@ -120,14 +121,16 @@ export function RecipeActionPanel({
             <Utensils size={17} />
             조리 완료
           </button>
-          <button
-            type="button"
-            onClick={shareToCommunity}
-            className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-lavender-100 px-2 py-3 text-xs font-bold text-gray-700"
-          >
-            <MessageCircle size={17} />
-            커뮤니티
-          </button>
+          {COMMUNITY_ENABLED ? (
+            <button
+              type="button"
+              onClick={shareToCommunity}
+              className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-lavender-100 px-2 py-3 text-xs font-bold text-gray-700"
+            >
+              <MessageCircle size={17} />
+              커뮤니티
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => {

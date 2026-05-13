@@ -2,11 +2,13 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { BookOpen, Heart, Image as ImageIcon, Link2, LoaderCircle, MessageCircle, Pencil, RefreshCw, Refrigerator, SendHorizontal, Trash2 } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { useCommunity } from '@/hooks/useCommunity'
 import { useIngredients } from '@/hooks/useIngredients'
+import { COMMUNITY_ENABLED } from '@/lib/release-flags'
 import { formatExternalUrlLabel, normalizeSafeHttpUrl } from '@/lib/utils'
 import type { CommunityCommentRecord, CommunityPostRecord, CommunityPostType } from '@/types'
 
@@ -54,7 +56,34 @@ function canManageRecord(
   return record.deviceId === viewerDeviceId
 }
 
-export default function CommunityPage() {
+function CommunityPaused() {
+  return (
+    <div className="flex flex-col px-5 pb-6 pt-4">
+      <section className="rounded-3xl bg-gradient-to-br from-mint-100 via-cream-100 to-lavender-100 p-5 shadow-soft">
+        <p className="text-xs font-semibold tracking-[0.16em] text-mint-500/80">COMMUNITY</p>
+        <h2 className="mt-2 text-xl font-bold text-gray-800">커뮤니티는 준비 중입니다</h2>
+        <p className="mt-2 text-sm leading-relaxed text-gray-600">
+          첫 출시에서는 냉장고 재료 기반 집밥 추천과 장보기 흐름에 집중합니다.
+          신고/차단/운영 정책을 갖춘 뒤 안전하게 열겠습니다.
+        </p>
+      </section>
+
+      <div className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
+        <p className="text-sm font-bold text-gray-800">지금 바로 쓸 수 있는 기능</p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Link href="/fridge" className="rounded-2xl bg-mint-50 px-3 py-3 text-center text-sm font-bold text-mint-500">
+            냉장고 채우기
+          </Link>
+          <Link href="/recipe" className="rounded-2xl bg-peach-50 px-3 py-3 text-center text-sm font-bold text-peach-500">
+            메뉴 추천 보기
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CommunityExperience() {
   const auth = useAuth()
   const community = useCommunity()
   const { ingredients } = useIngredients()
@@ -555,4 +584,8 @@ export default function CommunityPage() {
       </div>
     </div>
   )
+}
+
+export default function CommunityPage() {
+  return COMMUNITY_ENABLED ? <CommunityExperience /> : <CommunityPaused />
 }

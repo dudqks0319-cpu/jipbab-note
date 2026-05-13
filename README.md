@@ -11,7 +11,7 @@
 - 레시피 검색, 즐겨찾기, 조리 완료 후 재료 차감
 - 장보기 재료 바로 추가 및 외부 쇼핑 검색
 - Supabase OAuth 로그인과 디바이스 데이터 이전
-- 커뮤니티 게시글/댓글/좋아요
+- 선택 기능: 커뮤니티 게시글/댓글/좋아요
 - 브라우저 바코드 스캔 및 수동 바코드 조회
 
 ## 기술 스택
@@ -40,7 +40,10 @@ pnpm dev
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+`SUPABASE_SERVICE_ROLE_KEY`는 계정 삭제 API에서만 사용하는 서버 전용 값입니다. 클라이언트 코드나 `NEXT_PUBLIC_` 환경변수로 노출하면 안 됩니다.
 
 권장:
 
@@ -50,6 +53,7 @@ FOODSAFETY_API_KEY=
 NEXT_PUBLIC_API_BASE_URL=
 NEXT_PUBLIC_KAKAO_JS_KEY=
 NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS=google,kakao,apple
+NEXT_PUBLIC_COMMUNITY_ENABLED=false
 CAPACITOR_SERVER_URL=
 ```
 
@@ -68,9 +72,11 @@ CAPACITOR_SERVER_URL=
 ```bash
 pnpm test
 pnpm build
+pnpm test:mobile-flow
 ```
 
 `pnpm test`는 ESLint와 TypeScript 검사를 실행합니다.
+`pnpm test:mobile-flow`는 실행 중인 로컬 서버를 대상으로 홈, 레시피, 장보기 handoff, 바코드 fallback, API fallback을 확인합니다. 기본 대상은 `http://127.0.0.1:3001`이며 `BASE_URL`로 바꿀 수 있습니다.
 
 ## 웹 배포
 
@@ -79,6 +85,7 @@ Vercel에 프로젝트를 연결하고 로컬과 동일한 환경변수를 등�
 - `pnpm build` 성공
 - Supabase 마이그레이션 적용
 - OAuth Redirect URL 등록
+- `SUPABASE_SERVICE_ROLE_KEY`를 서버 환경변수로만 등록
 - MFDS API 키가 없거나 실패해도 앱이 500으로 깨지지 않는지 확인
 
 ## 모바일 실행
@@ -93,10 +100,20 @@ pnpm mobile:run:android
 
 TestFlight/실기기에서는 `CAPACITOR_SERVER_URL=https://배포된-웹앱-주소` 형태로 동기화해야 합니다.
 
+## App Store/TestFlight 준비
+
+- iOS 앱 표시명은 `집밥노트`로 설정되어 있습니다.
+- 바코드 스캔용 `NSCameraUsageDescription`과 사진 첨부용 `NSPhotoLibraryUsageDescription`을 `ios/App/App/Info.plist`에 선언했습니다.
+- 개인정보 처리방침 URL 후보: `/privacy`
+- 지원 URL 후보: `/support`
+- 이용약관 URL 후보: `/terms`
+- 로그인 사용자는 마이페이지에서 계정 삭제를 시작할 수 있습니다. 운영 환경에서는 `SUPABASE_SERVICE_ROLE_KEY`가 설정되어 있어야 실제 인증 계정 삭제가 완료됩니다.
+- App Store 제출 전에는 `NEXT_PUBLIC_COMMUNITY_ENABLED=false`를 권장합니다. 커뮤니티를 공개하려면 신고, 차단, 관리자 삭제, 스팸 제한 정책을 먼저 구현해야 합니다.
+
 ## 알려진 제한사항
 
 - `x-device-id`는 익명 사용자 구분용이며 강한 인증 수단이 아닙니다.
 - API rate limit은 현재 인메모리 기반이라 서버리스 멀티 인스턴스 환경에서는 보조 장치 수준입니다.
-- 커뮤니티를 공개 운영하려면 신고, 관리자 삭제, 스팸 제한 정책이 추가로 필요합니다.
+- 커뮤니티는 `NEXT_PUBLIC_COMMUNITY_ENABLED=true`일 때만 노출됩니다. 공개 운영하려면 신고, 관리자 삭제, 스팸 제한 정책이 추가로 필요합니다.
 - 브라우저 바코드 스캔은 기기와 브라우저 지원 여부에 따라 수동 입력으로 대체될 수 있습니다.
 - 앱스토어 출시 전에는 개인정보 처리방침, 이용약관, 네이티브 권한 안내, 심사용 문구를 별도로 준비해야 합니다.

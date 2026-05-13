@@ -21,6 +21,16 @@ const PUBLIC_KAKAO_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_
 const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED;
 
 const PROVIDER_PRIORITY: OAuthProvider[] = ["google", "kakao", "apple"];
+const LOCAL_ACCOUNT_STORAGE_KEYS = [
+  "jipbab-note-ingredients",
+  "jipbab-note-favorite-recipes",
+  "jipbab-note-community-draft",
+  "jipbab-note-community-posts",
+  "jipbab-note-community-comments",
+  "jipbab-note-community-likes",
+  "jipbab-note-family-fridge",
+  "jipbab-note-meal-preferences",
+] as const;
 
 const PROVIDER_LABELS: Record<OAuthProvider, string> = {
   google: "구글",
@@ -176,12 +186,23 @@ function resolveCurrentProvider(user: User | null): string | null {
   return provider && provider.trim() ? provider : null;
 }
 
+function clearLocalAccountData() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  for (const key of LOCAL_ACCOUNT_STORAGE_KEYS) {
+    window.localStorage.removeItem(key);
+  }
+}
+
 export interface UseAuthResult {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   signingIn: boolean;
   migrating: boolean;
+  deletingAccount: boolean;
   providers: AuthProviderOption[];
   error: AuthQueryError | null;
   migrationResult: DeviceDataMigrationResult | null;
@@ -191,6 +212,7 @@ export interface UseAuthResult {
   currentProvider: string | null;
   signInWithProvider: (provider: OAuthProvider) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
   refreshUser: () => Promise<void>;
 }
 
@@ -203,6 +225,7 @@ export function useAuth(): UseAuthResult {
   const [loading, setLoading] = useState<boolean>(true);
   const [signingIn, setSigningIn] = useState<boolean>(false);
   const [migrating, setMigrating] = useState<boolean>(false);
+  const [deletingAccount, setDeletingAccount] = useState<boolean>(false);
   const [error, setError] = useState<AuthQueryError | null>(null);
   const [migrationResult, setMigrationResult] = useState<DeviceDataMigrationResult | null>(null);
 
@@ -336,6 +359,49 @@ export function useAuth(): UseAuthResult {
     setUser(null);
   }, [deviceId]);
 
+  const deleteAccount = useCallback(async (): Promise<boolean> => {
+    const client = createAuthClient(deviceId);
+    if (!client) {
+      setError(toAuthError("Supabase 환경변수가 설정되지 않아 계정 삭제를 진행할 수 없습니다.", "config"));
+      return false;
+    }
+
+    setDeletingAccount(true);
+    setError(null);
+
+    try {
+      const { data, error: sessionError } = await client.auth.getSession();
+      if (sessionError || !data.session?.access_token) {
+        throw new Error("로그인 세션을 확인할 수 없습니다. 다시 로그인 후 시도해 주세요.");
+      }
+
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${data.session.access_token}`,
+        },
+      });
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.message ?? "계정 삭제 요청 중 오류가 발생했습니다.");
+      }
+
+      clearLocalAccountData();
+      await client.auth.signOut();
+      migratedKeyRef.current.clear();
+      setMigrationResult(null);
+      setUser(null);
+      return true;
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "계정 삭제 요청 중 오류가 발생했습니다.";
+      setError(toAuthError(message, "supabase"));
+      return false;
+    } finally {
+      setDeletingAccount(false);
+    }
+  }, [deviceId]);
+
   useEffect(() => {
     const client = createAuthClient(deviceId);
     if (!client) {
@@ -393,6 +459,7 @@ export function useAuth(): UseAuthResult {
     loading,
     signingIn,
     migrating,
+    deletingAccount,
     providers,
     error,
     migrationResult,
@@ -402,6 +469,7 @@ export function useAuth(): UseAuthResult {
     currentProvider: resolveCurrentProvider(user),
     signInWithProvider,
     signOut,
+    deleteAccount,
     refreshUser,
   };
 }

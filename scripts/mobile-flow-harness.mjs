@@ -34,6 +34,17 @@ const fetchWithHeaders = async (path) => {
   return response;
 };
 
+const postWithHeaders = async (path) => {
+  const response = await fetch(makeUrl(path), {
+    method: "POST",
+    headers: {
+      "user-agent": "jipbab-mobile-flow-harness/1.0",
+      "x-device-id": deviceId,
+    },
+  });
+  return response;
+};
+
 const fetchText = async (path) => {
   const response = await fetchWithHeaders(path);
   const text = await response.text();
@@ -99,6 +110,30 @@ const run = async () => {
     tokens: ["바코드", "냉장고"],
   });
 
+  await assertPage({
+    name: "community app-store gate",
+    path: "/community",
+    tokens: ["커뮤니티는 준비 중입니다", "냉장고 채우기"],
+  });
+
+  await assertPage({
+    name: "privacy policy url",
+    path: "/privacy",
+    tokens: ["개인정보 처리방침", "계정 삭제"],
+  });
+
+  await assertPage({
+    name: "support url",
+    path: "/support",
+    tokens: ["지원/문의", "계정 데이터를 삭제"],
+  });
+
+  await assertPage({
+    name: "terms url",
+    path: "/terms",
+    tokens: ["이용약관", "사용자 콘텐츠"],
+  });
+
   const recipeApi = await fetchJson("/api/recipes?size=4");
   expect(recipeApi.response.status === 200, "recipes api fallback status", String(recipeApi.response.status));
   expect(Array.isArray(recipeApi.json.recipes), "recipes api returns array", `count=${recipeApi.json.recipes?.length ?? 0}`);
@@ -115,6 +150,9 @@ const run = async () => {
   const productApi = await fetchJson("/api/products?barcode=8800000000000");
   expect(productApi.response.status === 200, "products api fallback status", String(productApi.response.status));
   expect(productApi.json.product === null, "products api keeps manual-add path", productApi.json.source ?? "unknown source");
+
+  const accountDeleteApi = await postWithHeaders("/api/account/delete");
+  expect(accountDeleteApi.status === 401, "account delete requires session", String(accountDeleteApi.status));
 
   const failed = checks.filter((check) => !check.passed);
   console.log("");

@@ -2,18 +2,26 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, LoaderCircle, LogOut, RefreshCw } from 'lucide-react'
+import Link from 'next/link'
+import { AlertTriangle, ChevronRight, LoaderCircle, LogOut, RefreshCw, Trash2 } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
 import { useFamilyFridge } from '@/hooks/useFamilyFridge'
 import type { OAuthProvider } from '@/types'
 
-const menuItems = [
+type MenuItem = {
+  emoji: string
+  label: string
+  href?: string
+}
+
+const menuItems: MenuItem[] = [
   { emoji: '❤️', label: '즐겨찾기한 레시피' },
   { emoji: '🔔', label: '알림 설정' },
   { emoji: '📊', label: '냉장고 통계' },
-  { emoji: '⚙️', label: '앱 설정' },
-  { emoji: '💬', label: '의견 보내기' },
+  { emoji: '🔒', label: '개인정보 처리방침', href: '/privacy' },
+  { emoji: '📄', label: '이용약관', href: '/terms' },
+  { emoji: '💬', label: '지원/문의', href: '/support' },
 ]
 
 const providerBadges: Record<OAuthProvider, string> = {
@@ -34,6 +42,7 @@ export default function MyPage() {
     loading,
     signingIn,
     migrating,
+    deletingAccount,
     isAuthenticated,
     providers,
     error,
@@ -44,14 +53,27 @@ export default function MyPage() {
     currentProvider,
     signInWithProvider,
     signOut,
+    deleteAccount,
     refreshUser,
   } = useAuth()
   const { family, maxMembers, createFamilyFridge, joinFamilyFridge, leaveFamilyFridge } = useFamilyFridge()
   const [familyName, setFamilyName] = useState('나')
   const [inviteCode, setInviteCode] = useState('')
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null)
 
   const enabledProviders = providers.filter((item) => item.enabled)
   const disabledProviders = providers.filter((item) => !item.enabled)
+  const canDeleteAccount = deleteConfirmText.trim() === '계정 삭제'
+
+  const handleDeleteAccount = async () => {
+    setDeleteNotice(null)
+    const deleted = await deleteAccount()
+    if (deleted) {
+      setDeleteConfirmText('')
+      setDeleteNotice('계정과 계정 기반 데이터 삭제 요청이 완료되었습니다.')
+    }
+  }
 
   return (
     <div className="flex flex-col px-5 pt-4">
@@ -233,23 +255,79 @@ export default function MyPage() {
         </p>
       </div>
 
+      <div className="mt-5 rounded-3xl bg-white p-4 shadow-soft">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <AlertTriangle size={18} />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-gray-800">계정 삭제</h3>
+            <p className="mt-1 text-sm leading-relaxed text-gray-500">
+              로그인 계정, 냉장고 재료, 즐겨찾기, 커뮤니티 활동 등 계정과 연결된 데이터를 삭제합니다.
+              삭제 후에는 복구할 수 없습니다.
+            </p>
+          </div>
+        </div>
+
+        {isAuthenticated ? (
+          <div className="mt-3 space-y-2">
+            <input
+              value={deleteConfirmText}
+              onChange={(event) => setDeleteConfirmText(event.target.value)}
+              placeholder="계정 삭제 라고 입력"
+              className="w-full rounded-xl border border-rose-100 px-3 py-2 text-sm outline-none ring-rose-200 focus:ring-2"
+            />
+            <button
+              type="button"
+              disabled={!canDeleteAccount || deletingAccount}
+              onClick={() => {
+                void handleDeleteAccount()
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {deletingAccount ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              {deletingAccount ? '삭제 요청 중...' : '계정과 데이터 삭제'}
+            </button>
+          </div>
+        ) : (
+          <p className="mt-3 rounded-2xl bg-gray-50 px-3 py-2 text-sm text-gray-500">
+            계정 삭제는 로그인 후 진행할 수 있습니다. 비로그인 로컬 데이터는 브라우저 저장소 삭제로 초기화됩니다.
+          </p>
+        )}
+
+        {deleteNotice ? (
+          <div className="mt-3 rounded-2xl bg-mint-50 px-3 py-2 text-sm font-semibold text-mint-500">
+            {deleteNotice}
+          </div>
+        ) : null}
+      </div>
+
       {/* 메뉴 리스트 */}
       <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-soft">
-        {menuItems.map((item, idx) => (
-          <button
-            key={item.label}
-            type="button"
-            className={`flex w-full items-center justify-between px-5 py-4 transition-colors hover:bg-gray-50 ${
-              idx < menuItems.length - 1 ? 'border-b border-gray-50' : ''
-            }`}
-          >
+        {menuItems.map((item, idx) => {
+          const className = `flex w-full items-center justify-between px-5 py-4 transition-colors hover:bg-gray-50 ${
+            idx < menuItems.length - 1 ? 'border-b border-gray-50' : ''
+          }`
+          const content = (
+            <>
             <div className="flex items-center gap-3">
               <span className="text-xl">{item.emoji}</span>
               <span className="text-sm font-medium text-gray-700">{item.label}</span>
             </div>
             <ChevronRight size={16} className="text-gray-300" />
-          </button>
-        ))}
+            </>
+          )
+
+          return item.href ? (
+            <Link key={item.label} href={item.href} className={className}>
+              {content}
+            </Link>
+          ) : (
+            <button key={item.label} type="button" className={className}>
+              {content}
+            </button>
+          )
+        })}
       </div>
 
       <p className="mt-10 pb-6 text-center text-xs text-gray-300">
