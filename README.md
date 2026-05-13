@@ -73,10 +73,14 @@ CAPACITOR_SERVER_URL=
 pnpm test
 pnpm build
 pnpm test:mobile-flow
+pnpm test:android-release
+pnpm test:mobile-release
 ```
 
 `pnpm test`는 ESLint와 TypeScript 검사를 실행합니다.
 `pnpm test:mobile-flow`는 실행 중인 로컬 서버를 대상으로 홈, 레시피, 장보기 handoff, 바코드 fallback, API fallback을 확인합니다. 기본 대상은 `http://127.0.0.1:3001`이며 `BASE_URL`로 바꿀 수 있습니다.
+`pnpm test:android-release`는 Android 앱 이름, 패키지명, SDK 버전, 카메라 권한, 개인정보/삭제 URL 준비 상태를 정적 하네스로 확인합니다.
+`pnpm test:mobile-release`는 iOS/Android 공통 제출 준비, 웹 빌드, 모바일 플로우, Android 정적 제출 조건을 한 번에 검증합니다.
 
 ## 웹 배포
 
@@ -110,10 +114,30 @@ TestFlight/실기기에서는 `CAPACITOR_SERVER_URL=https://배포된-웹앱-주
 - 로그인 사용자는 마이페이지에서 계정 삭제를 시작할 수 있습니다. 운영 환경에서는 `SUPABASE_SERVICE_ROLE_KEY`가 설정되어 있어야 실제 인증 계정 삭제가 완료됩니다.
 - App Store 제출 전에는 `NEXT_PUBLIC_COMMUNITY_ENABLED=false`를 권장합니다. 커뮤니티를 공개하려면 신고, 차단, 관리자 삭제, 스팸 제한 정책을 먼저 구현해야 합니다.
 
+## Google Play/Internal testing 준비
+
+- Android 패키지명은 `com.jipbab.note`입니다.
+- Android 앱 표시명과 Activity 제목은 `집밥노트`입니다.
+- `targetSdkVersion`과 `compileSdkVersion`은 `android/variables.gradle`에서 관리합니다.
+- 바코드 스캔을 위해 `android.permission.CAMERA`를 선언했고, 카메라가 없는 기기를 과도하게 제외하지 않도록 `android.hardware.camera`는 `required=false`로 둡니다.
+- 개인정보 처리방침 URL 후보: `/privacy`
+- Google Play 데이터 삭제 URL 후보: `/account/delete`
+- 지원 URL 후보: `/support`
+- Production 공개 전에는 Google Play Data safety, 연령 등급, 스토어 등록정보, 스크린샷, 테스트 트랙 요건을 Play Console에서 별도로 완료해야 합니다.
+
+Android release AAB 후보는 아래 순서로 확인합니다.
+
+```bash
+pnpm test:mobile-release:full
+```
+
+`test:mobile-release:full`은 iOS 시뮬레이터 빌드와 Android release AAB까지 요구합니다.
+Android AAB 단계는 `@capacitor/android`가 `@capacitor/core`와 같은 버전으로 설치되어 있고, Gradle을 실행할 JDK가 있어야 통과합니다.
+
 ## 알려진 제한사항
 
 - `x-device-id`는 익명 사용자 구분용이며 강한 인증 수단이 아닙니다.
 - API rate limit은 현재 인메모리 기반이라 서버리스 멀티 인스턴스 환경에서는 보조 장치 수준입니다.
 - 커뮤니티는 `NEXT_PUBLIC_COMMUNITY_ENABLED=true`일 때만 노출됩니다. 공개 운영하려면 신고, 관리자 삭제, 스팸 제한 정책이 추가로 필요합니다.
 - 브라우저 바코드 스캔은 기기와 브라우저 지원 여부에 따라 수동 입력으로 대체될 수 있습니다.
-- 앱스토어 출시 전에는 개인정보 처리방침, 이용약관, 네이티브 권한 안내, 심사용 문구를 별도로 준비해야 합니다.
+- 앱스토어와 Google Play 출시 전에는 개인정보 처리방침, 이용약관, 네이티브 권한 안내, 심사용 문구, 스토어 메타데이터를 별도로 확정해야 합니다.

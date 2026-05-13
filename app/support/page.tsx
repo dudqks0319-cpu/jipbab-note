@@ -55,6 +55,9 @@ export default function SupportPage() {
       <Link href="/privacy" className="mt-4 rounded-2xl bg-mint-100 px-4 py-3 text-center text-sm font-bold text-mint-500">
         개인정보 처리방침 보기
       </Link>
+      <Link href="/account/delete" className="mt-3 rounded-2xl bg-gray-100 px-4 py-3 text-center text-sm font-bold text-gray-600">
+        계정 및 데이터 삭제 안내
+      </Link>
     </div>
   );
 }

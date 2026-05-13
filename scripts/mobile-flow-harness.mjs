@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// 이 파일은 모바일 웹/Capacitor 핵심 사용자 흐름이 배포 전에도 깨지지 않는지 확인합니다.
 
 const baseUrl = new URL(process.env.BASE_URL ?? "http://127.0.0.1:3001");
 const deviceId = process.env.HARNESS_DEVICE_ID ?? "jipbab-mobile-flow-harness";
@@ -126,6 +127,12 @@ const run = async () => {
     name: "support url",
     path: "/support",
     tokens: ["지원/문의", "계정 데이터를 삭제"],
+  });
+
+  await assertPage({
+    name: "data deletion url",
+    path: "/account/delete",
+    tokens: ["계정 및 데이터 삭제", "Google Play"],
   });
 
   await assertPage({

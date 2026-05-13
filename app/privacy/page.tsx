@@ -63,9 +63,14 @@ export default function PrivacyPage() {
           로그인 사용자는 마이페이지의 계정 삭제에서 계정과 계정 기반 데이터를 삭제할 수 있습니다.
           비로그인 로컬 데이터는 사용자의 브라우저/기기 저장소에 보관되며 앱 데이터 삭제로 초기화할 수 있습니다.
         </p>
-        <Link href="/mypage" className="mt-3 inline-flex rounded-2xl bg-mint-100 px-4 py-2 text-sm font-bold text-mint-500">
-          마이페이지에서 관리하기
-        </Link>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href="/mypage" className="inline-flex rounded-2xl bg-mint-100 px-4 py-2 text-sm font-bold text-mint-500">
+            마이페이지에서 관리하기
+          </Link>
+          <Link href="/account/delete" className="inline-flex rounded-2xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600">
+            삭제 안내 보기
+          </Link>
+        </div>
       </section>
     </div>
   );
