@@ -19,6 +19,8 @@ const thirdParties = [
   "외부 쇼핑 링크: 사용자가 선택한 재료 검색 이동",
 ];
 
+const effectiveDate = "2026년 5월 13일";
+
 export default function PrivacyPage() {
   return (
     <div className="flex flex-col px-5 pb-6 pt-4">
@@ -27,8 +29,9 @@ export default function PrivacyPage() {
         <h2 className="mt-2 text-xl font-bold text-gray-800">개인정보 처리방침</h2>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
           집밥노트는 냉장고 재료 기반 추천과 데이터 동기화를 제공하기 위해 필요한 정보만 처리합니다.
-          정식 배포 전 운영 주체, 문의처, 보관 기간은 App Store Connect 정보와 동일하게 확정해야 합니다.
+          운영자명은 집밥노트 개발자 정영빈이며, 개인정보 문의와 삭제 요청은 지원/문의 페이지에서 접수합니다.
         </p>
+        <p className="mt-3 text-xs font-semibold text-gray-400">시행일: {effectiveDate}</p>
       </section>
 
       <section className="mt-4 rounded-3xl bg-white p-5 shadow-soft">
@@ -62,6 +65,7 @@ export default function PrivacyPage() {
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
           로그인 사용자는 마이페이지의 계정 삭제에서 계정과 계정 기반 데이터를 삭제할 수 있습니다.
           비로그인 로컬 데이터는 사용자의 브라우저/기기 저장소에 보관되며 앱 데이터 삭제로 초기화할 수 있습니다.
+          계정 삭제가 완료되면 서비스 제공에 필요한 계정 기반 데이터는 즉시 삭제하며, 법령상 보관이 필요한 정보는 해당 기간 동안만 분리 보관할 수 있습니다.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link href="/mypage" className="inline-flex rounded-2xl bg-mint-100 px-4 py-2 text-sm font-bold text-mint-500">

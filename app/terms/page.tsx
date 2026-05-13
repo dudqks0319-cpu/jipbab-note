@@ -31,8 +31,8 @@ export default function TermsPage() {
         <p className="text-xs font-semibold tracking-[0.16em] text-mint-500">TERMS</p>
         <h2 className="mt-2 text-xl font-bold text-gray-800">이용약관</h2>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
-          아래 내용은 TestFlight와 App Store 제출 전 사용자에게 고지할 기본 약관 초안입니다.
-          운영 주체와 문의처는 배포 전 확정 정보로 교체해야 합니다.
+          집밥노트는 사용자의 냉장고 재료를 바탕으로 집밥 추천과 장보기 보조 기능을 제공합니다.
+          운영자명은 집밥노트 개발자 정영빈이며, 서비스 문의는 지원/문의 페이지에서 접수합니다.
         </p>
       </section>
 

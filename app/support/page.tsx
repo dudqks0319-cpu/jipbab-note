@@ -16,6 +16,8 @@ const qaItems = [
   },
 ];
 
+const supportUrl = "https://github.com/dudqks0319-cpu/jipbab-note/issues";
+
 export default function SupportPage() {
   return (
     <div className="flex flex-col px-5 pb-6 pt-4">
@@ -24,7 +26,7 @@ export default function SupportPage() {
         <h2 className="mt-2 text-xl font-bold text-gray-800">지원/문의</h2>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
           집밥노트를 사용하다 막히는 부분이 있으면 아래 안내를 먼저 확인해 주세요.
-          배포 전에는 App Store Connect의 지원 URL과 동일한 주소로 이 화면을 연결하면 됩니다.
+          앱 사용, 개인정보, 계정 삭제와 관련된 문의는 아래 공개 지원 채널에서 접수합니다.
         </p>
       </section>
 
@@ -40,10 +42,11 @@ export default function SupportPage() {
       <section className="mt-4 rounded-3xl bg-white p-5 shadow-soft">
         <h3 className="text-base font-bold text-gray-800">문의 채널</h3>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
-          정식 배포 전 운영 이메일 또는 문의 폼 URL을 확정해 주세요. 현재 개발 단계에서는 GitHub 이슈로 문제를 남길 수 있습니다.
+          오류 제보, 계정 삭제 처리 확인, 개인정보 문의는 GitHub 이슈로 남겨 주세요.
+          공개 저장소 특성상 민감한 개인정보는 작성하지 말고, 필요한 경우 연락 가능한 최소 정보만 남겨 주세요.
         </p>
         <a
-          href="https://github.com/dudqks0319-cpu/jipbab-note/issues"
+          href={supportUrl}
           target="_blank"
           rel="noreferrer"
           className="mt-3 inline-flex rounded-2xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600"

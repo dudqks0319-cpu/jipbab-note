@@ -120,13 +120,13 @@ const run = async () => {
   await assertPage({
     name: "privacy policy url",
     path: "/privacy",
-    tokens: ["개인정보 처리방침", "계정 삭제"],
+    tokens: ["개인정보 처리방침", "정영빈", "계정 삭제"],
   });
 
   await assertPage({
     name: "support url",
     path: "/support",
-    tokens: ["지원/문의", "계정 데이터를 삭제"],
+    tokens: ["지원/문의", "GitHub 이슈", "계정 데이터를 삭제"],
   });
 
   await assertPage({
@@ -138,7 +138,7 @@ const run = async () => {
   await assertPage({
     name: "terms url",
     path: "/terms",
-    tokens: ["이용약관", "사용자 콘텐츠"],
+    tokens: ["이용약관", "정영빈", "사용자 콘텐츠"],
   });
 
   const recipeApi = await fetchJson("/api/recipes?size=4");

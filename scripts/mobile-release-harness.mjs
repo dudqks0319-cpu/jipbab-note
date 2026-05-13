@@ -71,6 +71,25 @@ const getPackageVersion = (packageName) => {
   }
 };
 
+const checkNoLegalPlaceholders = () => {
+  const files = ["app/privacy/page.tsx", "app/support/page.tsx", "app/terms/page.tsx"];
+  const patterns = [
+    /정식 배포/,
+    /배포 전/,
+    /확정해 주세요/,
+    /교체해야 합니다/,
+    /초안/,
+    /TODO/i,
+    /example@/i,
+  ];
+
+  for (const file of files) {
+    const source = read(file);
+    const matched = patterns.find((pattern) => pattern.test(source));
+    expect(!matched, `${file} has no submission placeholder copy`, matched?.source ?? "ready");
+  }
+};
+
 const javaHomeCandidates = [
   process.env.JAVA_HOME,
   "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
@@ -183,6 +202,7 @@ const checkStaticSubmissionReadiness = () => {
   expect(exists("app/terms/page.tsx"), "terms route exists", "/terms");
   expect(exists("app/support/page.tsx"), "support route exists", "/support");
   expect(exists("app/account/delete/page.tsx"), "data deletion route exists", "/account/delete");
+  checkNoLegalPlaceholders();
 
   capacitorCoreVersion = getPackageVersion("@capacitor/core");
   const capacitorIosVersion = getPackageVersion("@capacitor/ios");
