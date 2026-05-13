@@ -18,11 +18,14 @@ const baseUrl = `http://127.0.0.1:${port}`;
 const shouldRunIosBuild = args.has("--ios-build");
 const shouldRunAndroidAab = args.has("--android-aab");
 const requireAab = args.has("--require-aab");
+const requireSignedAab = args.has("--require-signed-aab");
 const skipWebChecks = args.has("--skip-web");
 const skipFlow = args.has("--skip-flow");
 const checks = [];
 let capacitorAndroidVersion = null;
 let capacitorCoreVersion = null;
+let javaHome = null;
+let androidSdk = null;
 
 let serverProcess = null;
 
@@ -68,13 +71,89 @@ const getPackageVersion = (packageName) => {
   }
 };
 
-const hasJavaRuntime = () => {
+const javaHomeCandidates = [
+  process.env.JAVA_HOME,
+  "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk/libexec/openjdk.jdk/Contents/Home",
+].filter(Boolean);
+
+const androidSdkCandidates = [
+  process.env.ANDROID_HOME,
+  process.env.ANDROID_SDK_ROOT,
+  path.join(process.env.HOME ?? "", "Library/Android/sdk"),
+  "/opt/android-sdk",
+  "/usr/local/share/android-sdk",
+].filter(Boolean);
+
+const findJavaHome = () => {
+  for (const candidate of javaHomeCandidates) {
+    const javaPath = path.join(candidate, "bin", "java");
+    if (!fs.existsSync(javaPath)) {
+      continue;
+    }
+    const result = spawnSync(javaPath, ["-version"], {
+      cwd: rootDir,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    if (result.status === 0) {
+      return candidate;
+    }
+  }
+
   const result = spawnSync("java", ["-version"], {
     cwd: rootDir,
     encoding: "utf8",
     stdio: "pipe",
   });
-  return result.status === 0;
+  return result.status === 0 ? process.env.JAVA_HOME ?? "PATH" : null;
+};
+
+const getJavaEnv = () => {
+  if (!javaHome || javaHome === "PATH") {
+    return {};
+  }
+
+  return {
+    JAVA_HOME: javaHome,
+    PATH: `${path.join(javaHome, "bin")}:${process.env.PATH ?? ""}`,
+  };
+};
+
+const findAndroidSdk = () => {
+  for (const candidate of androidSdkCandidates) {
+    if (
+      fs.existsSync(path.join(candidate, "platforms")) &&
+      fs.existsSync(path.join(candidate, "platform-tools"))
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
+
+const getAndroidEnv = () => {
+  const javaEnv = getJavaEnv();
+  if (!androidSdk) {
+    return javaEnv;
+  }
+
+  const extraPaths = [
+    path.join(androidSdk, "platform-tools"),
+    path.join(androidSdk, "emulator"),
+  ];
+
+  return {
+    ...javaEnv,
+    ANDROID_HOME: androidSdk,
+    ANDROID_SDK_ROOT: androidSdk,
+    PATH: [...extraPaths, javaEnv.PATH ?? process.env.PATH ?? ""].join(":"),
+  };
 };
 
 const checkStaticSubmissionReadiness = () => {
@@ -111,7 +190,7 @@ const checkStaticSubmissionReadiness = () => {
   expect(Boolean(capacitorCoreVersion), "Capacitor core installed", capacitorCoreVersion ?? "missing");
   expect(capacitorIosVersion === capacitorCoreVersion, "Capacitor iOS/Core versions match", `${capacitorIosVersion}/${capacitorCoreVersion}`);
 
-  if (shouldRunAndroidAab || requireAab) {
+  if (shouldRunAndroidAab || requireAab || requireSignedAab) {
     expect(Boolean(capacitorAndroidVersion), "Capacitor Android installed for AAB", capacitorAndroidVersion ?? "missing");
     if (capacitorAndroidVersion && capacitorCoreVersion) {
       expect(capacitorAndroidVersion === capacitorCoreVersion, "Capacitor Android/Core versions match", `${capacitorAndroidVersion}/${capacitorCoreVersion}`);
@@ -199,22 +278,29 @@ const runNativeBuildChecks = () => {
     record("iOS simulator build skipped", true, "run with --ios-build");
   }
 
-  if (shouldRunAndroidAab) {
+  if (shouldRunAndroidAab || requireSignedAab) {
     const hasAndroidPackage = Boolean(capacitorAndroidVersion);
-    const hasJava = hasJavaRuntime();
-    expect(hasJava, "Java runtime available for Android AAB", "required for Gradle bundleRelease");
+    javaHome = findJavaHome();
+    const hasJava = Boolean(javaHome);
+    expect(hasJava, "Java runtime available for Android AAB", javaHome ?? "required for Gradle bundleRelease");
+    androidSdk = findAndroidSdk();
+    const hasAndroidSdk = Boolean(androidSdk);
+    expect(hasAndroidSdk, "Android SDK available for Android AAB", androidSdk ?? "set ANDROID_HOME or ANDROID_SDK_ROOT");
 
-    if (!hasAndroidPackage || !hasJava) {
+    if (!hasAndroidPackage || !hasJava || !hasAndroidSdk) {
       record(
         "Android AAB build blocked before Gradle",
         false,
-        "install @capacitor/android and a JDK, then rerun test:mobile-release:full",
+        "install @capacitor/android, JDK, and Android SDK, then rerun test:mobile-release:full",
       );
     } else {
-      const synced = runCommand("Capacitor Android sync", "pnpm", ["exec", "cap", "sync", "android"]);
+      const synced = runCommand("Capacitor Android sync", "pnpm", ["exec", "cap", "sync", "android"], {
+        env: getAndroidEnv(),
+      });
       if (synced) {
         runCommand("Android release AAB", "./gradlew", ["bundleRelease", "--console=plain"], {
           cwd: path.join(rootDir, "android"),
+          env: getAndroidEnv(),
         });
       } else {
         record("Android release AAB skipped", false, "Capacitor Android sync failed");
@@ -226,7 +312,8 @@ const runNativeBuildChecks = () => {
 
   runCommand("Android release harness", "pnpm", [
     "test:android-release",
-    ...(requireAab ? ["--", "--require-aab"] : []),
+    ...((requireAab || requireSignedAab) ? ["--", "--require-aab"] : []),
+    ...(requireSignedAab ? ["--require-signed-aab"] : []),
   ]);
 };
 

@@ -7,9 +7,28 @@ import { spawnSync } from "node:child_process";
 
 const rootDir = process.cwd();
 const requireAab = process.argv.includes("--require-aab");
+const requireSignedAab = process.argv.includes("--require-signed-aab");
 const strictNative = process.argv.includes("--strict-native");
+const requiresAabArtifact = requireAab || requireSignedAab;
 const checks = [];
 const require = createRequire(import.meta.url);
+const javaHomeCandidates = [
+  process.env.JAVA_HOME,
+  "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "/usr/local/opt/openjdk/libexec/openjdk.jdk/Contents/Home",
+].filter(Boolean);
+
+const androidSdkCandidates = [
+  process.env.ANDROID_HOME,
+  process.env.ANDROID_SDK_ROOT,
+  path.join(process.env.HOME ?? "", "Library/Android/sdk"),
+  "/opt/android-sdk",
+  "/usr/local/share/android-sdk",
+].filter(Boolean);
 
 const read = (relativePath) => fs.readFileSync(path.join(rootDir, relativePath), "utf8");
 const exists = (relativePath) => fs.existsSync(path.join(rootDir, relativePath));
@@ -37,9 +56,48 @@ const getPackageVersion = (packageName) => {
   }
 };
 
-const hasJavaRuntime = () => {
+const findJavaHome = () => {
+  for (const candidate of javaHomeCandidates) {
+    const javaPath = path.join(candidate, "bin", "java");
+    if (fs.existsSync(javaPath)) {
+      const result = spawnSync(javaPath, ["-version"], { encoding: "utf8" });
+      if (result.status === 0) {
+        return candidate;
+      }
+    }
+  }
+
   const result = spawnSync("java", ["-version"], { encoding: "utf8" });
-  return result.status === 0;
+  return result.status === 0 ? process.env.JAVA_HOME ?? "PATH" : null;
+};
+
+const findAndroidSdk = () => {
+  for (const candidate of androidSdkCandidates) {
+    if (
+      fs.existsSync(path.join(candidate, "platforms")) &&
+      fs.existsSync(path.join(candidate, "platform-tools"))
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
+
+const verifyAabSignature = (relativePath, javaHome) => {
+  const fullPath = path.join(rootDir, relativePath);
+  const jarsigner =
+    javaHome && javaHome !== "PATH" ? path.join(javaHome, "bin", "jarsigner") : "jarsigner";
+  const result = spawnSync(jarsigner, ["-verify", fullPath], {
+    cwd: rootDir,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
+  return {
+    signed: result.status === 0 && !/jar is unsigned/i.test(output),
+    detail: output.replace(/\s+/g, " ").slice(0, 180) || `exit=${result.status ?? "signal"}`,
+  };
 };
 
 const run = () => {
@@ -101,13 +159,29 @@ const run = () => {
       `${capacitorAndroidVersion}/${capacitorCoreVersion}`,
     );
   }
-  if (strictNative || requireAab) {
-    expect(hasJavaRuntime(), "Java runtime available for Gradle", "required for bundleRelease");
+  let javaHome = null;
+  if (strictNative || requiresAabArtifact) {
+    javaHome = findJavaHome();
+    expect(Boolean(javaHome), "Java runtime available for Gradle", javaHome ?? "required for bundleRelease");
+    const androidSdk = findAndroidSdk();
+    expect(Boolean(androidSdk), "Android SDK available for Gradle", androidSdk ?? "set ANDROID_HOME or ANDROID_SDK_ROOT");
   }
 
   const aabPath = "android/app/build/outputs/bundle/release/app-release.aab";
-  if (requireAab) {
+  if (requiresAabArtifact) {
     expect(exists(aabPath), "release AAB exists", aabPath);
+    if (exists(aabPath)) {
+      const signature = verifyAabSignature(aabPath, javaHome);
+      if (requireSignedAab) {
+        expect(signature.signed, "release AAB is signed for Play upload", signature.detail);
+      } else {
+        record(
+          "release AAB signature optional check",
+          true,
+          signature.signed ? "signed" : "unsigned; rerun with --require-signed-aab before Play upload",
+        );
+      }
+    }
   } else {
     record("release AAB optional check", true, exists(aabPath) ? aabPath : "run ./gradlew bundleRelease to create it");
   }

@@ -13,6 +13,7 @@
     "test:android-release": "node scripts/android-release-harness.mjs",
     "test:mobile-release": "node scripts/mobile-release-harness.mjs",
     "test:mobile-release:full": "node scripts/mobile-release-harness.mjs --ios-build --android-aab --require-aab",
+    "test:mobile-release:submission": "node scripts/mobile-release-harness.mjs --ios-build --android-aab --require-aab --require-signed-aab",
     "recipes:seed:generate": "node scripts/generate-mfds-recipes-migration.mjs",
     "mobile:sync": "npm run build && npx cap sync",
     "mobile:open:ios": "npx cap open ios",
@@ -21,6 +22,7 @@
     "mobile:run:android": "npx cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.3",
     "@capacitor/core": "^8.3.3",
     "@capacitor/ios": "^8.3.3",
     "@supabase/supabase-js": "^2.98.0",

@@ -75,12 +75,14 @@ pnpm build
 pnpm test:mobile-flow
 pnpm test:android-release
 pnpm test:mobile-release
+pnpm test:mobile-release:submission
 ```
 
 `pnpm test`는 ESLint와 TypeScript 검사를 실행합니다.
 `pnpm test:mobile-flow`는 실행 중인 로컬 서버를 대상으로 홈, 레시피, 장보기 handoff, 바코드 fallback, API fallback을 확인합니다. 기본 대상은 `http://127.0.0.1:3001`이며 `BASE_URL`로 바꿀 수 있습니다.
 `pnpm test:android-release`는 Android 앱 이름, 패키지명, SDK 버전, 카메라 권한, 개인정보/삭제 URL 준비 상태를 정적 하네스로 확인합니다.
 `pnpm test:mobile-release`는 iOS/Android 공통 제출 준비, 웹 빌드, 모바일 플로우, Android 정적 제출 조건을 한 번에 검증합니다.
+`pnpm test:mobile-release:submission`은 Google Play 업로드용 AAB 서명까지 요구하는 제출 직전 게이트입니다.
 
 ## 웹 배포
 
@@ -132,7 +134,8 @@ pnpm test:mobile-release:full
 ```
 
 `test:mobile-release:full`은 iOS 시뮬레이터 빌드와 Android release AAB까지 요구합니다.
-Android AAB 단계는 `@capacitor/android`가 `@capacitor/core`와 같은 버전으로 설치되어 있고, Gradle을 실행할 JDK가 있어야 통과합니다.
+Android AAB 단계는 `@capacitor/android`가 `@capacitor/core`와 같은 버전으로 설치되어 있고, Gradle을 실행할 JDK와 Android SDK가 있어야 통과합니다.
+Google Play 업로드 직전에는 `ANDROID_UPLOAD_KEYSTORE`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`를 repo 밖의 업로드 키 기준으로 설정한 뒤 `pnpm test:mobile-release:submission`을 통과시켜야 합니다.
 
 ## 알려진 제한사항
 
