@@ -3,7 +3,7 @@ import path from "node:path";
 
 const cwd = process.cwd();
 const docsPath = path.join(cwd, "docs/coupang-partners-links.md");
-const migrationPath = path.join(cwd, "supabase/migrations/20260507010000_add_partner_links.sql");
+const migrationPath = path.join(cwd, "supabase/migrations/20260508133307_add_partner_links.sql");
 const catalogPath = path.join(cwd, "lib/ingredient-catalog.ts");
 const typesPath = path.join(cwd, "types/index.ts");
 

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { mergeShoppingItems } from "@/lib/shopping-sync";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { IngredientCategory, ShoppingItem, ShoppingItemDraft } from "@/types";
 
@@ -209,11 +210,13 @@ export function useShopping(): UseShoppingResult {
         throw queryError;
       }
 
+      const localFallback = safeReadLocalItems(deviceId);
       const mapped = (data ?? []).map((row) => rowToItem(row as RawShoppingRow));
-      setItems(mapped);
+      const merged = mergeShoppingItems(localFallback, mapped);
+      setItems(merged);
       setSource("supabase");
-      replaceLocalItems(mapped);
-      return mapped;
+      replaceLocalItems(merged);
+      return merged;
     } catch (caught) {
       const fallback = safeReadLocalItems(deviceId);
       setItems(fallback);

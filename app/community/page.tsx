@@ -7,6 +7,7 @@ import { Heart, MessageCircle, RefreshCw, Send, ShieldCheck, Trash2 } from 'luci
 import { useCommunity } from '@/hooks/useCommunity'
 import { useIngredients } from '@/hooks/useIngredients'
 import { getDeviceId } from '@/lib/device-id'
+import { isCommunityEnabled } from '@/lib/release-flags'
 import { getSupabaseClient } from '@/lib/supabase'
 
 function extractFirstUrl(value: string): string | null {
@@ -19,6 +20,32 @@ function isImageUrl(value: string | null): value is string {
 }
 
 export default function CommunityPage() {
+  if (!isCommunityEnabled()) {
+    return <CommunityLockedNotice />
+  }
+
+  return <CommunityEnabledPage />
+}
+
+function CommunityLockedNotice() {
+  return (
+    <div className="min-h-full bg-[#fbf6ee] px-5 pb-6">
+      <section className="mobile-safe-top">
+        <div className="jipbab-panel rounded-[22px] px-5 py-6 text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff0e4] text-[#d94d19]">
+            <ShieldCheck size={24} />
+          </span>
+          <h1 className="mt-4 text-[22px] font-black text-[#2f2117]">커뮤니티는 베타 준비 중</h1>
+          <p className="mt-2 text-[13px] font-semibold leading-6 text-[#7d6d5f]">
+            신고, 차단, 관리자 삭제, 스팸 방지 운영 기준이 준비된 뒤 열립니다. 정식 출시 후보에서는 냉장고와 레시피, 장보기 흐름에 집중합니다.
+          </p>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function CommunityEnabledPage() {
   const {
     source,
     posts,

@@ -19,6 +19,7 @@ import type {
 
 const STORAGE_KEY = "jipbab-note-ingredients";
 const DEFAULT_STORAGE_TYPE: IngredientStorageType = "냉장";
+type IngredientDataSource = "supabase" | "local";
 
 type RawIngredientRow = {
   id: string;
@@ -250,6 +251,7 @@ export interface UseIngredientsResult {
   ingredients: IngredientRecord[];
   loading: boolean;
   error: IngredientQueryError | null;
+  source: IngredientDataSource;
   listIngredients: () => Promise<IngredientRecord[]>;
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
@@ -266,6 +268,7 @@ export function useIngredients(): UseIngredientsResult {
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<IngredientQueryError | null>(null);
+  const [source, setSource] = useState<IngredientDataSource>("local");
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
     const localFallback = safeReadLocalIngredients(deviceId);
@@ -290,11 +293,13 @@ export function useIngredients(): UseIngredientsResult {
       const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
       const merged = mergeIngredientRecords(localFallback, mapped);
       setIngredients(merged);
+      setSource("supabase");
       safeWriteLocalIngredients(merged);
       return merged;
     } catch (caught) {
       const fallback = safeReadLocalIngredients(deviceId);
       setIngredients(fallback);
+      setSource("local");
       if (fallback.length > 0) {
         console.warn("재료 목록 로컬 표시로 전환", caught);
         setError(null);
@@ -360,12 +365,14 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => [nextRecord, ...prev]);
+        setSource("supabase");
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
         const nextLocal = makeLocalRecord(deviceId, payload, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
+        setSource("local");
         // Supabase가 지연되어도 로컬 저장이 성공하면 사용자는 성공 플로우를 유지합니다.
         console.warn("재료 로컬 저장으로 전환", caught);
         setError(null);
@@ -403,6 +410,7 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => prev.map((item) => (item.id === ingredientId ? nextRecord : item)));
+        setSource("supabase");
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
@@ -437,6 +445,7 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
+        setSource("local");
         console.warn("재료 수정 로컬 저장으로 전환", caught);
         setError(null);
         return nextRecord;
@@ -461,11 +470,13 @@ export function useIngredients(): UseIngredientsResult {
         }
 
         setIngredients((prev) => prev.filter((item) => item.id !== ingredientId));
+        setSource("supabase");
         removeLocalIngredient(deviceId, ingredientId);
         return true;
       } catch (caught) {
         const nextItems = removeLocalIngredient(deviceId, ingredientId);
         setIngredients(nextItems);
+        setSource("local");
         console.warn("재료 삭제 로컬 저장으로 전환", caught);
         setError(null);
         return true;
@@ -487,6 +498,7 @@ export function useIngredients(): UseIngredientsResult {
     ),
     loading,
     error,
+    source,
     listIngredients,
     fetchIngredient,
     addIngredient,

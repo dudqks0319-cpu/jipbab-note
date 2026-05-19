@@ -43,14 +43,15 @@
 
 ## 그래픽 / 스크린샷
 
-- 휴대전화 스크린샷 5장 권장
+- 휴대전화 스크린샷 5장: `docs/play-store-assets/phone`, 1080x1920 JPG
   1. 홈 화면
   2. 냉장고 재료 목록과 검색
   3. 레시피 추천 목록
   4. 레시피 상세와 부족 재료
   5. 장보기 목록
 - 고해상도 앱 아이콘: `android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` 및 `app/icon.png` 기준 확인
-- 기능 그래픽은 Play Console 규격에 맞춰 별도 제작 필요
+- 기능 그래픽: `docs/play-store-assets/feature-graphic.png`, 1024x500 RGB PNG
+- 제출 전 `pnpm store-assets:prepare && pnpm check:store-assets`로 최신 자산을 다시 생성하고 규격을 확인합니다.
 
 ## 앱 콘텐츠 / 데이터 보안 답변 초안
 
@@ -90,5 +91,6 @@
 - [ ] 데이터 보안 문항 입력
 - [ ] 콘텐츠 등급 설문 완료
 - [ ] 스크린샷 및 기능 그래픽 업로드
+- [ ] `pnpm check:store-assets` 통과 후 `docs/play-store-assets/phone` 스크린샷 5장과 `docs/play-store-assets/feature-graphic.png` 업로드
 - [ ] 내부 테스트 트랙에 AAB 업로드
 - [ ] Android 실기기에서 로그인, 장보기 링크, 계정 삭제 요청 QA

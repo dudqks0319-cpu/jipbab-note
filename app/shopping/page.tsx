@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Check, ExternalLink, Plus, Share2, Trash2 } from 'lucide-react'
+import { Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
@@ -12,6 +12,11 @@ import { usePartnerLinks } from '@/hooks/usePartnerLinks'
 import { useShopping } from '@/hooks/useShopping'
 import { getCoupangPurchaseLink } from '@/lib/external-links'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
+import {
+  buildIngredientPayloadFromShoppingItem,
+  buildMergedIngredientPayloadFromShoppingItem,
+  normalizeShoppingIngredientName,
+} from '@/lib/shopping-to-fridge'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
 import { INGREDIENT_CATEGORIES, type IngredientCategory } from '@/types'
 import type { ShoppingItem } from '@/types'
@@ -26,8 +31,8 @@ function externalLinkRel(isPartnerLink: boolean) {
 
 export default function ShoppingPage() {
   const isAppStoreDemo = useDemoMode()
-  const { items, addItem, toggleItem, removeItem, clearCheckedItems } = useShopping()
-  const { ingredients, addIngredient, updateIngredient } = useIngredients()
+  const { items, addItem, toggleItem, removeItem, clearCheckedItems, source: shoppingSource } = useShopping()
+  const { ingredients, addIngredient, updateIngredient, source: ingredientSource } = useIngredients()
   const partnerLinks = usePartnerLinks()
   const [showAddForm, setShowAddForm] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
@@ -39,6 +44,7 @@ export default function ShoppingPage() {
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
   const checkedItems = useMemo(() => displayItems.filter((item) => item.checked), [displayItems])
+  const isLocalMode = !isAppStoreDemo && (shoppingSource === 'local' || ingredientSource === 'local')
   const groupedUncheckedItems = useMemo(() => {
     const groups = new Map<string, typeof uncheckedItems>()
     for (const item of uncheckedItems) {
@@ -72,40 +78,15 @@ export default function ShoppingPage() {
     }
   }
 
-  const getStorageTypeForCategory = (itemCategory: IngredientCategory | null) => {
-    if (itemCategory === '냉동식품') return '냉동' as const
-    if (itemCategory === '조미료' || itemCategory === '곡물/면/빵' || itemCategory === '통조림/가공식품') return '실온' as const
-    return '냉장' as const
-  }
-
   const addShoppingItemToFridge = async (item: ShoppingItem) => {
     const duplicate = ingredients.find(
-      (ingredient) => ingredient.name.trim().toLowerCase() === item.name.trim().toLowerCase(),
+      (ingredient) => normalizeShoppingIngredientName(ingredient.name) === normalizeShoppingIngredientName(item.name),
     )
     if (duplicate) {
       const shouldMerge = window.confirm(`${item.name}이 이미 냉장고에 있어요. 기존 재료와 합칠까요?`)
       if (!shouldMerge) return
 
-      await updateIngredient(duplicate.id, {
-        name: duplicate.name,
-        category: duplicate.category ?? item.category,
-        storageType: duplicate.storageType,
-        quantity: duplicate.quantity || item.quantity,
-        expiryDate: duplicate.expiryDate,
-        purchaseDate: duplicate.purchaseDate,
-        openedAt: duplicate.openedAt,
-        storageLocation: duplicate.storageLocation,
-        unitPrice: duplicate.unitPrice,
-        purchasePlace: duplicate.purchasePlace,
-        consumedAt: duplicate.consumedAt,
-        discardedAt: duplicate.discardedAt,
-        repeatPurchase: duplicate.repeatPurchase,
-        barcode: duplicate.barcode,
-        imageUrl: duplicate.imageUrl,
-        memo: [duplicate.memo, item.sourceRecipeName ? `${item.sourceRecipeName} 장보기에서 합침` : '장보기에서 합침']
-          .filter(Boolean)
-          .join(' · '),
-      })
+      await updateIngredient(duplicate.id, buildMergedIngredientPayloadFromShoppingItem(duplicate, item))
       if (!item.checked) {
         await toggleItem(item.id)
       }
@@ -113,18 +94,20 @@ export default function ShoppingPage() {
       return
     }
 
-    await addIngredient({
-      name: item.name,
-      category: item.category,
-      storageType: getStorageTypeForCategory(item.category),
-      quantity: item.quantity,
-      expiryDate: null,
-      memo: item.sourceRecipeName ? `${item.sourceRecipeName} 장보기에서 추가` : '장보기에서 추가',
-    })
+    await addIngredient(buildIngredientPayloadFromShoppingItem(item))
     if (!item.checked) {
       await toggleItem(item.id)
     }
     setStatusMessage(`${item.name}을 냉장고에 추가했어요. 유통기한은 나중에 입력할 수 있습니다.`)
+  }
+
+  const addCheckedItemsToFridge = async () => {
+    if (checkedItems.length === 0) return
+
+    for (const item of checkedItems) {
+      await addShoppingItemToFridge(item)
+    }
+    setStatusMessage(`구매완료 ${checkedItems.length}개를 냉장고에 반영했어요. 확인 후 완료 항목을 정리하세요.`)
   }
 
   const shareList = async () => {
@@ -166,6 +149,11 @@ export default function ShoppingPage() {
         {statusMessage ? (
           <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
             {statusMessage}
+          </p>
+        ) : null}
+        {isLocalMode ? (
+          <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
+            현재 일부 데이터가 이 기기에만 저장되는 로컬 모드입니다. 로그인/네트워크 복구 후 새로고침해 클라우드 동기화 상태를 확인하세요.
           </p>
         ) : null}
         <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
@@ -276,6 +264,18 @@ export default function ShoppingPage() {
 
             {checkedItems.length > 0 ? (
               <ShoppingGroup title={`구매완료 (${checkedItems.length})`}>
+                <div className="bg-[#f2f7e7] px-3 py-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void addCheckedItemsToFridge()
+                    }}
+                    className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[12px] bg-[#2f2117] px-3 text-[12px] font-black text-white"
+                  >
+                    <Refrigerator size={15} />
+                    구매완료 {checkedItems.length}개 냉장고에 반영
+                  </button>
+                </div>
                 {checkedItems.map((item) => (
                   <ShoppingRow
                     key={item.id}
@@ -287,6 +287,7 @@ export default function ShoppingPage() {
                     onRemove={() => removeItem(item.id)}
                     onAddToFridge={() => addShoppingItemToFridge(item)}
                     partnerLinks={partnerLinks}
+                    addToFridgeLabel="냉장고 반영"
                   />
                 ))}
               </ShoppingGroup>
@@ -337,6 +338,7 @@ function ShoppingRow({
   onRemove,
   onAddToFridge,
   partnerLinks,
+  addToFridgeLabel = '냉장고 반영',
 }: {
   name: string
   category: IngredientCategory | null
@@ -346,6 +348,7 @@ function ShoppingRow({
   onRemove: () => void
   onAddToFridge: () => void
   partnerLinks: PartnerLinkConfig
+  addToFridgeLabel?: string
 }) {
   const purchaseLink = getCoupangPurchaseLink({ name, category }, partnerLinks)
 
@@ -372,13 +375,6 @@ function ShoppingRow({
       </div>
       {!checked ? (
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={onAddToFridge}
-            className="inline-flex h-8 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
-          >
-            재료 추가
-          </button>
           <a
             href={purchaseLink.href}
             target="_blank"
@@ -390,7 +386,15 @@ function ShoppingRow({
             구매
           </a>
         </div>
-      ) : null}
+      ) : (
+        <button
+          type="button"
+          onClick={onAddToFridge}
+          className="inline-flex h-8 shrink-0 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
+        >
+          {addToFridgeLabel}
+        </button>
+      )}
       <button type="button" onClick={onRemove} className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />
       </button>

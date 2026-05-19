@@ -4,6 +4,7 @@ import path from "node:path";
 
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
+const androidSigningEnvFilePath = path.join(cwd, ".env.android-signing.local");
 
 const REQUIRED_ENV_KEYS = [
   "NEXT_PUBLIC_SUPABASE_URL",
@@ -27,8 +28,8 @@ const COUPANG_LINK_KEYS = [
   "NEXT_PUBLIC_COUPANG_PARTNERS_SEASONING_URL",
   "NEXT_PUBLIC_COUPANG_PARTNERS_ITEM_LINKS_JSON",
 ];
-const PARTNER_LINKS_MIGRATION = "supabase/migrations/20260507010000_add_partner_links.sql";
-const RECIPE_SOURCES_MIGRATION = "supabase/migrations/20260508010000_add_recipe_sources_and_release_metadata.sql";
+const PARTNER_LINKS_MIGRATION = "supabase/migrations/20260508133307_add_partner_links.sql";
+const RECIPE_SOURCES_MIGRATION = "supabase/migrations/20260508133157_add_recipe_sources_and_release_metadata.sql";
 
 const REQUIRED_ROUTE_FILES = [
   ["login", "app/login/page.tsx"],
@@ -157,8 +158,20 @@ function countMatches(source, pattern) {
   return source.match(pattern)?.length ?? 0;
 }
 
+function missingTerms(source, terms) {
+  return terms.filter((term) => !source.includes(term));
+}
+
 function readProjectFile(relativePath) {
   return readFileSync(path.join(cwd, relativePath), "utf8");
+}
+
+function resolveProjectPath(value) {
+  if (!isPresent(value)) {
+    return "";
+  }
+
+  return path.isAbsolute(value) ? value : path.join(cwd, value);
 }
 
 function printSection(title, items) {
@@ -173,8 +186,10 @@ function printSection(title, items) {
 }
 
 const envFromFile = readEnvFile(envFilePath);
+const androidSigningEnvFromFile = readEnvFile(androidSigningEnvFilePath);
 const env = {
   ...envFromFile,
+  ...androidSigningEnvFromFile,
   ...process.env,
 };
 const results = [];
@@ -286,6 +301,20 @@ if (providerFlags.kakao !== true) {
   addResult(results, "warn", "Kakao OAuth", "disabled; skip or update Kakao real-device QA expectations");
 }
 
+const communityEnabled = parseBooleanFlag(env.NEXT_PUBLIC_COMMUNITY_ENABLED ?? "false");
+if (communityEnabled === "invalid") {
+  addResult(results, "fail", "NEXT_PUBLIC_COMMUNITY_ENABLED", "must be true, false, 1, or 0");
+} else if (communityEnabled === true) {
+  addResult(
+    results,
+    "fail",
+    "Community launch gate",
+    "public community must stay disabled until report/block/admin moderation and spam controls are release-ready",
+  );
+} else {
+  addResult(results, "pass", "Community launch gate", "community is hidden for the release candidate");
+}
+
 for (const [label, relativePath] of REQUIRED_ROUTE_FILES) {
   if (existsSync(path.join(cwd, relativePath))) {
     addResult(results, "pass", relativePath, `${label} route exists`);
@@ -303,6 +332,136 @@ for (const [label, relativePath] of REQUIRED_STORE_FILES) {
     addResult(results, "pass", relativePath, `${label} file exists`);
   } else {
     addResult(results, "fail", relativePath, `${label} file is missing`);
+  }
+}
+
+const privacyPagePath = "app/privacy/page.tsx";
+if (existsSync(path.join(cwd, privacyPagePath))) {
+  const privacyPage = readProjectFile(privacyPagePath);
+  const missingPrivacyTerms = missingTerms(privacyPage, [
+    "Supabase",
+    "Vercel",
+    "Kakao/Google/Apple",
+    "식품안전나라",
+    "쿠팡 파트너스",
+    "유통기한 알림",
+    "계정 삭제",
+    "RLS",
+    "getSupportEmail",
+    "개인정보보호위원회",
+    "118",
+  ]);
+
+  if (missingPrivacyTerms.length === 0) {
+    addResult(results, "pass", "Privacy policy content", "data categories, processors, local notifications, deletion rights, support, and RLS are disclosed");
+  } else {
+    addResult(results, "fail", "Privacy policy content", `missing term(s): ${missingPrivacyTerms.join(", ")}`);
+  }
+}
+
+const termsPagePath = "app/terms/page.tsx";
+if (existsSync(path.join(cwd, termsPagePath))) {
+  const termsPage = readProjectFile(termsPagePath);
+  const missingTermsPageTerms = missingTerms(termsPage, [
+    "정보의 한계",
+    "알레르기",
+    "계정 삭제",
+    "외부 링크",
+    "제휴 링크",
+    "금지 행위",
+    "서비스 변경과 중단",
+  ]);
+
+  if (missingTermsPageTerms.length === 0) {
+    addResult(results, "pass", "Terms content", "service scope, safety limits, external links, account deletion, prohibited acts, and service changes are disclosed");
+  } else {
+    addResult(results, "fail", "Terms content", `missing term(s): ${missingTermsPageTerms.join(", ")}`);
+  }
+}
+
+const supportPagePath = "app/support/page.tsx";
+if (existsSync(path.join(cwd, supportPagePath))) {
+  const supportPage = readProjectFile(supportPagePath);
+  const missingSupportTerms = missingTerms(supportPage, [
+    "getSupportEmail",
+    "getSupportMailtoUrl",
+    "/account-delete",
+    "개인정보 처리방침 URL",
+    "쿠팡 파트너스",
+    "소셜 로그인 리디렉트 URL",
+  ]);
+
+  if (missingSupportTerms.length === 0) {
+    addResult(results, "pass", "Support content", "support email, data requests, partner link correction, account deletion, and external console checks are documented");
+  } else {
+    addResult(results, "fail", "Support content", `missing term(s): ${missingSupportTerms.join(", ")}`);
+  }
+}
+
+const accountDeletePagePath = "app/account-delete/page.tsx";
+if (existsSync(path.join(cwd, accountDeletePagePath))) {
+  const accountDeletePage = readProjectFile(accountDeletePagePath);
+  const missingAccountDeleteTerms = missingTerms(accountDeletePage, [
+    "account_deletion_requests",
+    "로그인 계정 정보",
+    "냉장고 재료",
+    "장보기",
+    "즐겨찾기",
+    "커뮤니티",
+    "메일로도 요청 가능",
+    "삭제 완료",
+  ]);
+
+  if (missingAccountDeleteTerms.length === 0) {
+    addResult(results, "pass", "Account deletion content", "in-app request flow, deletion scope, status tracking, and support fallback are present");
+  } else {
+    addResult(results, "fail", "Account deletion content", `missing term(s): ${missingAccountDeleteTerms.join(", ")}`);
+  }
+}
+
+const appStoreMetadataPath = "docs/app-store-connect-metadata-ko.md";
+if (existsSync(path.join(cwd, appStoreMetadataPath))) {
+  const appStoreMetadata = readProjectFile(appStoreMetadataPath);
+  const missingAppStoreTerms = missingTerms(appStoreMetadata, [
+    "집밥노트",
+    "com.jipbab.note",
+    "개인정보 처리방침 URL",
+    "App Review 메모",
+    "Apple 로그인",
+    "Google 로그인",
+    "계정 삭제",
+    "외부 쇼핑 링크",
+    "커뮤니티 작성/댓글 기능을 열지 않고",
+    "TestFlight - What to Test",
+  ]);
+
+  if (missingAppStoreTerms.length === 0) {
+    addResult(results, "pass", "App Store metadata content", "review notes, auth parity, deletion flow, external links, community gating, and test scope are documented");
+  } else {
+    addResult(results, "fail", "App Store metadata content", `missing term(s): ${missingAppStoreTerms.join(", ")}`);
+  }
+}
+
+const playStoreMetadataPath = "docs/play-store-metadata-ko.md";
+if (existsSync(path.join(cwd, playStoreMetadataPath))) {
+  const playStoreMetadata = readProjectFile(playStoreMetadataPath);
+  const missingPlayStoreTerms = missingTerms(playStoreMetadata, [
+    "com.jipbab.note",
+    "데이터 보안",
+    "이메일 주소",
+    "앱 활동",
+    "기기 또는 기타 ID",
+    "HTTPS",
+    "계정 삭제 요청",
+    "개인정보 처리방침 URL",
+    "지원 URL",
+    "내부 테스트 트랙",
+  ]);
+
+  if (missingPlayStoreTerms.length === 0) {
+    addResult(results, "pass", "Play Store metadata content", "listing identity, data safety, privacy/support URLs, permissions, and internal testing scope are documented");
+  } else {
+    addResult(results, "fail", "Play Store metadata content", `missing term(s): ${missingPlayStoreTerms.join(", ")}`);
   }
 }
 
@@ -466,6 +625,174 @@ if (existsSync(androidStringsPath)) {
   addResult(results, "fail", "android/app/src/main/res/values/strings.xml", "Android strings file is missing");
 }
 
+const androidGradlePath = path.join(cwd, "android/app/build.gradle");
+if (existsSync(androidGradlePath)) {
+  const androidGradle = readFileSync(androidGradlePath, "utf8");
+  const hasReleaseIdentity =
+    /applicationId\s+"com\.jipbab\.note"/.test(androidGradle) &&
+    /versionName\s+"1\.0"/.test(androidGradle) &&
+    /versionCode\s+1\b/.test(androidGradle);
+
+  if (hasReleaseIdentity) {
+    addResult(results, "pass", "Android release identity", "applicationId, versionName, and versionCode are configured");
+  } else {
+    addResult(results, "fail", "Android release identity", "expected applicationId com.jipbab.note, versionName 1.0, versionCode 1");
+  }
+} else {
+  addResult(results, "fail", "android/app/build.gradle", "Android app Gradle file is missing");
+}
+
+const androidSigningKeys = [
+  "ANDROID_UPLOAD_KEYSTORE_PATH",
+  "ANDROID_UPLOAD_KEYSTORE_PASSWORD",
+  "ANDROID_UPLOAD_KEY_ALIAS",
+  "ANDROID_UPLOAD_KEY_PASSWORD",
+];
+const missingAndroidSigningKeys = androidSigningKeys.filter((key) => !isPresent(env[key]) || isPlaceholder(env[key]));
+const androidKeystorePath = resolveProjectPath(env.ANDROID_UPLOAD_KEYSTORE_PATH ?? "");
+if (missingAndroidSigningKeys.length > 0) {
+  addResult(
+    results,
+    "fail",
+    "Android upload signing",
+    `missing release upload signing value(s): ${missingAndroidSigningKeys.join(", ")}`,
+  );
+} else if (!existsSync(androidKeystorePath)) {
+  addResult(results, "fail", "Android upload keystore", "ANDROID_UPLOAD_KEYSTORE_PATH does not point to an existing file");
+} else {
+  addResult(results, "pass", "Android upload signing", "upload keystore path and signing values are configured");
+}
+
+const androidManifestPath = path.join(cwd, "android/app/src/main/AndroidManifest.xml");
+if (existsSync(androidManifestPath)) {
+  const androidManifest = readFileSync(androidManifestPath, "utf8");
+  const hasInternet = androidManifest.includes('android.permission.INTERNET');
+  const hasCamera = androidManifest.includes('android.permission.CAMERA');
+  const cameraOptional = /android\.hardware\.camera"[\s\S]*android:required="false"/.test(androidManifest);
+  const launcherExported = /android:name="\.MainActivity"[\s\S]*android:exported="true"/.test(androidManifest);
+
+  if (hasInternet && hasCamera && cameraOptional && launcherExported) {
+    addResult(results, "pass", "Android manifest", "internet, optional camera, and launcher export settings are configured");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "Android manifest",
+      "must include internet permission, optional camera feature, camera permission, and exported launcher activity",
+    );
+  }
+} else {
+  addResult(results, "fail", "android/app/src/main/AndroidManifest.xml", "Android manifest is missing");
+}
+
+const androidCapacitorConfigPath = path.join(cwd, "android/app/src/main/assets/capacitor.config.json");
+if (existsSync(androidCapacitorConfigPath)) {
+  const androidCapacitorConfig = JSON.parse(readFileSync(androidCapacitorConfigPath, "utf8"));
+  const serverUrl = androidCapacitorConfig.server?.url ?? "";
+  if (
+    androidCapacitorConfig.appId === "com.jipbab.note" &&
+    androidCapacitorConfig.appName === "집밥노트" &&
+    typeof serverUrl === "string" &&
+    serverUrl.startsWith("https://") &&
+    androidCapacitorConfig.server?.cleartext === false
+  ) {
+    addResult(results, "pass", "Android Capacitor config", "release WebView URL is HTTPS and cleartext is disabled");
+  } else {
+    addResult(results, "fail", "Android Capacitor config", "must use com.jipbab.note, 집밥노트, HTTPS server URL, and cleartext=false");
+  }
+} else {
+  addResult(results, "fail", "android/app/src/main/assets/capacitor.config.json", "Android Capacitor config is missing");
+}
+
+const iosCapacitorConfigPath = path.join(cwd, "ios/App/App/capacitor.config.json");
+if (existsSync(iosCapacitorConfigPath)) {
+  const iosCapacitorConfig = JSON.parse(readFileSync(iosCapacitorConfigPath, "utf8"));
+  const serverUrl = iosCapacitorConfig.server?.url ?? "";
+  const packageClassList = Array.isArray(iosCapacitorConfig.packageClassList)
+    ? iosCapacitorConfig.packageClassList
+    : [];
+
+  if (
+    iosCapacitorConfig.appId === "com.jipbab.note" &&
+    iosCapacitorConfig.appName === "집밥노트" &&
+    typeof serverUrl === "string" &&
+    serverUrl.startsWith("https://") &&
+    serverUrl === capacitorServerUrl &&
+    iosCapacitorConfig.server?.cleartext === false &&
+    packageClassList.includes("LocalNotificationsPlugin")
+  ) {
+    addResult(results, "pass", "iOS Capacitor config", "release WebView URL, cleartext, app identity, and local notifications plugin are configured");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "iOS Capacitor config",
+      "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, cleartext=false, and LocalNotificationsPlugin",
+    );
+  }
+} else {
+  addResult(results, "fail", "ios/App/App/capacitor.config.json", "iOS Capacitor config is missing");
+}
+
+const iosInfoPlistPath = path.join(cwd, "ios/App/App/Info.plist");
+if (existsSync(iosInfoPlistPath)) {
+  const iosInfoPlist = readFileSync(iosInfoPlistPath, "utf8");
+  const hasDisplayName = /<key>CFBundleDisplayName<\/key>\s*<string>집밥노트<\/string>/.test(iosInfoPlist);
+  const hasCameraUsage =
+    /<key>NSCameraUsageDescription<\/key>\s*<string>[^<]*바코드[^<]*<\/string>/.test(iosInfoPlist);
+  const hasEncryptionDeclaration = /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\/>/.test(iosInfoPlist);
+  const hasPortraitOrientation =
+    iosInfoPlist.includes("<string>UIInterfaceOrientationPortrait</string>") &&
+    !iosInfoPlist.includes("<string>UIInterfaceOrientationLandscape");
+
+  if (hasDisplayName && hasCameraUsage && hasEncryptionDeclaration && hasPortraitOrientation) {
+    addResult(results, "pass", "iOS Info.plist", "display name, camera purpose, encryption declaration, and portrait orientation are configured");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "iOS Info.plist",
+      "must define 집밥노트 display name, barcode camera purpose text, ITSAppUsesNonExemptEncryption=false, and portrait-only orientation",
+    );
+  }
+} else {
+  addResult(results, "fail", "ios/App/App/Info.plist", "iOS Info.plist is missing");
+}
+
+const iosSpmPackagePath = path.join(cwd, "ios/App/CapApp-SPM/Package.swift");
+if (existsSync(iosSpmPackagePath)) {
+  const iosSpmPackage = readFileSync(iosSpmPackagePath, "utf8");
+  if (
+    iosSpmPackage.includes('platforms: [.iOS(.v15)]') &&
+    iosSpmPackage.includes('exact: "8.3.1"') &&
+    iosSpmPackage.includes('package(name: "CapacitorLocalNotifications"') &&
+    iosSpmPackage.includes('product(name: "CapacitorLocalNotifications"')
+  ) {
+    addResult(results, "pass", "iOS SPM package", "Capacitor 8.3.1, iOS 15 target, and local notifications dependency are pinned");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "iOS SPM package",
+      "must pin Capacitor 8.3.1, target iOS 15, and include CapacitorLocalNotifications",
+    );
+  }
+} else {
+  addResult(results, "fail", "ios/App/CapApp-SPM/Package.swift", "iOS SPM package is missing");
+}
+
+const runtimeAppConfigPath = path.join(cwd, "public/runtime-app-config.json");
+if (existsSync(runtimeAppConfigPath)) {
+  const runtimeAppConfig = JSON.parse(readFileSync(runtimeAppConfigPath, "utf8"));
+  if (runtimeAppConfig.remoteUrl === capacitorServerUrl && isHttpsUrl(runtimeAppConfig.remoteUrl)) {
+    addResult(results, "pass", "Runtime app config", "public runtime remote URL matches CAPACITOR_SERVER_URL");
+  } else {
+    addResult(results, "fail", "Runtime app config", "public runtime remoteUrl must match CAPACITOR_SERVER_URL and use HTTPS");
+  }
+} else {
+  addResult(results, "fail", "public/runtime-app-config.json", "runtime app config is missing");
+}
+
 if (!isPresent(env.MFDS_API_KEY) && !isPresent(env.FOODSAFETY_API_KEY)) {
   addResult(results, "warn", "MFDS_API_KEY or FOODSAFETY_API_KEY", "missing; recipe fallback uses stored data only");
 }
@@ -512,7 +839,12 @@ const warnings = results.filter((item) => item.level === "warn");
 const failures = results.filter((item) => item.level === "fail");
 
 console.log("Release readiness check");
-console.log(`Environment source: ${existsSync(envFilePath) ? ".env.local + process.env" : "process.env only"}`);
+const envSources = [
+  existsSync(envFilePath) ? ".env.local" : null,
+  existsSync(androidSigningEnvFilePath) ? ".env.android-signing.local" : null,
+  "process.env",
+].filter(Boolean);
+console.log(`Environment source: ${envSources.join(" + ")}`);
 console.log(`Hard blockers: ${failures.length}`);
 console.log(`Warnings: ${warnings.length}`);
 

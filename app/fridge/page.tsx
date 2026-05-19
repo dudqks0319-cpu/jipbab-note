@@ -78,7 +78,7 @@ function buildFutureDate(days: number): string {
 }
 
 export default function FridgePage() {
-  const { ingredients, loading, error, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
+  const { ingredients, loading, error, source, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
@@ -513,6 +513,11 @@ export default function FridgePage() {
         {saveMessage ? (
           <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
             {saveMessage}
+          </p>
+        ) : null}
+        {!isAppStoreDemo && source === 'local' ? (
+          <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
+            현재 냉장고 데이터가 이 기기에만 저장되는 로컬 모드입니다. 로그인/네트워크 복구 후 새로고침해 클라우드 동기화 상태를 확인하세요.
           </p>
         ) : null}
 

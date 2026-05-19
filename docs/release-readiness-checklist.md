@@ -2,16 +2,28 @@
 
 ## 1. 로컬 출시 게이트
 
-아래 명령은 필수 운영 환경변수, OAuth 제공자 플래그, 지원 이메일, Capacitor 서버 URL, 핵심 라우트 파일 존재 여부, 스토어 문서, 초보자 큐레이션 레시피 품질, 전용 레시피 이미지, 이미지 출처 문서, 재료 카탈로그 규모를 로컬에서 결정적으로 확인합니다. 환경변수 값은 출력하지 않고 누락/설정 상태만 표시합니다.
+아래 명령은 필수 운영 환경변수, OAuth 제공자 플래그, 지원 이메일, Capacitor 서버 URL, 핵심 라우트 파일 존재 여부, 스토어 문서, App Store/Play Store 이미지 자산 규격, 초보자 큐레이션 레시피 품질, 전용 레시피 이미지, 이미지 출처 문서, 재료 카탈로그 규모, Supabase 출시 스키마/RLS/정책 계약, 쿠팡 파트너 링크 권한, iOS/Android Capacitor 런타임 설정, iOS archive/IPA 산출물, Android AAB 서명 상태를 로컬에서 결정적으로 확인합니다. 환경변수 값은 출력하지 않고 누락/설정 상태만 표시합니다.
 
 ```bash
 pnpm release:check
 ```
 
 - [ ] `pnpm release:check` 실행
-- [ ] hard blocker 0개 확인
+- [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
+- [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인
+- [ ] `pnpm store-assets:prepare` 실행: App Store 6.9형 스크린샷, Play Store 휴대전화 스크린샷, Play Store 기능 그래픽 생성 확인
+- [ ] `pnpm check:store-assets` 실행: App Store 1290x2796 PNG 5장, Play Store 1080x1920 JPG 5장, 1024x500 RGB 기능 그래픽, 512x512 RGB 아이콘 PASS 확인
+- [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live check까지 통과 확인
 - [ ] warning 항목을 검토하고 수동 QA 범위에 반영
 - [ ] `Curated beginner recipes`, `Beginner recipe guidance`, `Recipe image provenance`, `Ingredient catalog coverage` PASS 확인
+- [ ] `iOS Capacitor config`, `iOS Info.plist`, `iOS SPM package`, `Runtime app config` PASS 확인
+- [ ] `Android manifest`, `Android Capacitor config`, `Android release identity`, `Android upload signing` PASS 확인
+- [ ] `Supabase release contract check`에서 required tables/RLS/policies/partner_links 권한 PASS 확인
+- [ ] `pnpm check:ios-release` 실행: iOS archive bundle id/team/version/build, export options, IPA 크기/SHA-256, archive와 IPA freshness 확인
+- [ ] `pnpm check:android-release` 실행: Android release AAB 크기/SHA-256/서명 상태 확인
+- [ ] `pnpm check:supabase-live` 실행: 운영 Supabase REST에서 `recipes`, `recipe_sources`, `partner_links`, `ingredients`, `shopping_items` 조회 가능 확인
+- [ ] `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live` 실행: 임시 재료 insert/read/isolation/delete로 guest `device_id` RLS 확인
+- [ ] `pnpm release:goal-check` 실행: 목표 전체 완료 여부 확인. 차단 항목이 있으면 목표 완료로 표시하지 않음
 
 ## 2. 실기기 QA
 
@@ -43,10 +55,13 @@ pnpm release:check
 
 ## 3. App Store Connect
 
+- [ ] Xcode archive의 build number가 `ios/App/App.xcodeproj`의 `CURRENT_PROJECT_VERSION`과 일치
+- [ ] `pnpm check:ios-release`에서 archive build number / IPA freshness PASS
 - [ ] 앱 설명/프로모션 문구 입력
 - [ ] 지원 URL / 개인정보처리방침 URL 입력
 - [ ] 리뷰 메모 입력
 - [ ] 스크린샷 업로드
+- [ ] `docs/app-store-screenshots/2026-05-19-iphone69`의 1290x2796 PNG 5장 업로드
 - [ ] 가격/배포 지역 설정
 - [ ] App Privacy 문항 입력
 
@@ -68,12 +83,22 @@ pnpm release:check
 
 - [ ] Android 런처 앱 이름이 `집밥노트`로 표시되는지 확인
 - [ ] 패키지명 `com.jipbab.note`, `versionName 1.0`, `versionCode 1` 확인
+- [ ] JDK 21과 Android SDK 경로로 `./gradlew assembleDebug` 또는 release AAB build 통과 확인
+- [ ] `ANDROID_UPLOAD_KEYSTORE_PATH`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD` 설정
+- [ ] 기존 upload key가 없으면 `pnpm android:upload-key:create` 실행 후 `.release-secrets/android-upload.jks`와 `.env.android-signing.local`을 안전하게 백업
+- [ ] `pnpm android:bundle-release` 실행
+- [ ] `pnpm check:android-release` 실행: release AAB 존재, 파일 크기, SHA-256, 서명 상태 확인
+- [ ] `jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab`에서 AAB 서명 검증
 - [ ] `docs/play-store-metadata-ko.md` 기준으로 짧은 설명/전체 설명 입력
+- [ ] `docs/play-store-assets/phone`의 1080x1920 JPG 5장 업로드
+- [ ] `docs/play-store-assets/feature-graphic.png` 기능 그래픽 업로드
 - [ ] 데이터 보안 문항 입력: 이메일/앱 활동/기기 ID/알림 사용 범위 확인
 - [ ] 개인정보 처리방침 URL 및 지원 URL 입력
 - [ ] 콘텐츠 등급 설문 완료
 - [ ] 내부 테스트 트랙에 AAB 업로드
 - [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 삭제 요청 QA
+- [ ] Android emulator가 흰 화면이면 DNS 문제 여부 확인: `adb shell ping -c 1 jipbab-note-app-youngbeens-projects.vercel.app`
+- [ ] emulator DNS 실패 시 `-dns-server 8.8.8.8,1.1.1.1` 옵션으로 재부팅 후 Home/장보기 화면 캡처
 
 ## 6. 사진 / 레시피 품질
 
@@ -94,7 +119,8 @@ pnpm release:check
 - [ ] analytics 이벤트는 개인정보 최소 수집 원칙과 사용자 식별자 정책 확인 후 활성화
 - [ ] crash reporting 도입 전 수집 항목, 보관 기간, 사용자 고지 문구 확인
 - [ ] 보안 모니터링 알림 기준 정의: 비정상 API 오류율, 권한 거부 급증, 관리자 기능 실패
-- [ ] RLS negative-path 테스트 확인: 다른 `device_id`/`user_id` 데이터 조회·수정·삭제 거부
+- [ ] `pnpm check:supabase-release` 통과: 출시 필수 테이블, RLS, ownership policy, service_role policy, `partner_links` read-only 권한 확인
+- [ ] 운영 Supabase에서 `supabase/migrations/20260228001000_verify_rls.sql` 또는 동등한 SQL 검증 실행: 다른 `device_id`/`user_id` 데이터 조회·수정·삭제 거부
 - [ ] 운영 알림 담당자와 장애/보안 이벤트 triage 경로 지정
 
 ## 8. 수동 잔여 리스크
@@ -106,6 +132,26 @@ pnpm release:check
 | App Store/Play Console 입력 | 개인정보 문항, 스크린샷, 심사 메모는 콘솔에서만 완료 가능 | 앱 운영자 | 각 콘솔 저장 및 내부 테스트 빌드 연결 확인 | 스토어 제출 전 |
 | 외부 provider 대시보드 | Supabase/Google/Apple/Kakao redirect와 권한 설정은 로컬 코드로 강제 불가 | 앱 운영자 | 운영 도메인 redirect URL, OAuth 앱 상태, Supabase Auth provider 확인 | 스토어 제출 전 |
 | MFDS/파트너 링크 운영 키 | 키가 없으면 앱은 fallback으로 동작하지만 데이터/수익화 품질이 낮아짐 | 앱 운영자 | `pnpm release:check` warning 해소 또는 fallback 출시 결정 기록 | 출시 전 의사결정 |
+
+## 8-1. 목표 완료 판정
+
+아래 명령은 현재 장부 기준으로 “이 목표를 완료라고 말할 수 있는가”를 보수적으로 판정합니다.
+
+```bash
+pnpm release:goal-check
+```
+
+- [ ] `핵심 루프` PASS
+- [ ] `Supabase 로컬 RLS/스키마 계약` PASS
+- [ ] `운영 Supabase live/read/write/RLS` PASS
+- [ ] `OAuth/로그인/데이터 이전` PASS
+- [ ] `모바일 시뮬레이터/에뮬레이터 QA` PASS
+- [ ] `실기기 QA` PASS
+- [ ] `정책/스토어 문서` PASS
+- [ ] `App Store Connect/TestFlight` PASS
+- [ ] `Play Console 내부 테스트` PASS
+
+하나라도 `BLOCKED` 또는 `MISSING`이면 활성 goal은 완료 처리하지 않습니다.
 
 ## 9. 출시 후 검토
 

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 
 import { useAuth } from '@/hooks/useAuth'
+import { summarizeAuthMigrationState } from '@/lib/auth-migration-summary'
 
 const menuItems = [
   { icon: BookOpen, label: '내 레시피', href: '/favorites' },
@@ -35,6 +36,7 @@ export default function MyPage() {
     migrating,
     isAuthenticated,
     migrationResult,
+    error,
     userDisplayName,
     userEmail,
     userAvatarUrl,
@@ -44,6 +46,7 @@ export default function MyPage() {
   } = useAuth()
 
   const isAdminUser = Boolean(userEmail && userEmail === 'dudqks0319@gmail.com')
+  const syncSummary = summarizeAuthMigrationState({ migrating, error, migrationResult })
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
@@ -99,7 +102,7 @@ export default function MyPage() {
           <div className="jipbab-panel overflow-hidden rounded-[18px] bg-[#2f302d] text-white">
             <div className="grid grid-cols-3 divide-x divide-white/10 px-2 py-4 text-center">
               <ProfileStat label="계정" value="연결됨" />
-              <ProfileStat label="동기화" value={migrating ? '진행중' : '정상'} />
+              <ProfileStat label="동기화" value={syncSummary.statLabel} />
               <ProfileStat label="지원" value="운영중" />
             </div>
             <div className="border-t border-white/10 px-4 py-3 text-[12px] font-semibold text-white/75">
@@ -122,6 +125,18 @@ export default function MyPage() {
         <section className="px-5 pt-3">
           <div className="jipbab-panel rounded-[16px] px-4 py-3 text-sm font-semibold text-[#4b3929]">
             계정 이전 완료: <span className="font-black text-[#d94d19]">{migrationResult.totalMigratedCount}건</span>
+          </div>
+        </section>
+      ) : null}
+
+      {isAuthenticated && syncSummary.message && syncSummary.health !== 'running' ? (
+        <section className="px-5 pt-3">
+          <div
+            className={`jipbab-panel rounded-[16px] px-4 py-3 text-sm font-semibold ${
+              syncSummary.health === 'needs-attention' ? 'text-[#9a4f14]' : 'text-[#7d6d5f]'
+            }`}
+          >
+            {syncSummary.message}
           </div>
         </section>
       ) : null}

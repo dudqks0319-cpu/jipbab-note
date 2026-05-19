@@ -7,6 +7,8 @@
 1. 새 프로젝트를 만들고 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 발급합니다.
 2. `supabase/migrations/*`를 순서대로 반영합니다.
 3. `recipes`, `ingredients`, `favorites`, `shopping_items`, `community_*` 테이블이 생성됐는지 확인합니다.
+4. Free-tier pause 메일을 받았거나 `pnpm check:supabase-live`가 `ENOTFOUND`로 실패하면 Supabase Dashboard에서 프로젝트를 Resume/Restore 한 뒤 다시 확인합니다.
+5. 제출 전에는 `pnpm release:full-check`로 로컬 게이트와 운영 Supabase REST 확인을 같이 통과시킵니다.
 
 ## 2. OAuth 제공자
 
@@ -52,6 +54,10 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 - `ADMIN_EMAILS`
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
 - `CAPACITOR_SERVER_URL` (모바일 앱이 연결할 공개 HTTPS 웹 주소)
+- `ANDROID_UPLOAD_KEYSTORE_PATH`
+- `ANDROID_UPLOAD_KEYSTORE_PASSWORD`
+- `ANDROID_UPLOAD_KEY_ALIAS`
+- `ANDROID_UPLOAD_KEY_PASSWORD`
 
 권장:
 
@@ -77,7 +83,7 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 3. 환경변수 fallback 링크
 4. 없으면 쿠팡 검색 링크 fallback
 
-즉, 배포 전에는 `supabase/migrations/20260507010000_add_partner_links.sql`을 운영 Supabase에 적용하고 `partner_links` 테이블에서 링크를 관리합니다. 환경변수 링크는 DB가 비어 있거나 조회 실패할 때만 쓰는 보조 수단입니다.
+즉, 배포 전에는 `supabase/migrations/20260508133307_add_partner_links.sql`을 운영 Supabase에 적용하고 `partner_links` 테이블에서 링크를 관리합니다. 환경변수 링크는 DB가 비어 있거나 조회 실패할 때만 쓰는 보조 수단입니다.
 
 개별 재료 링크는 DB에 `upsert`로 하나씩 추가합니다.
 
@@ -105,11 +111,26 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 3. App Privacy 답변 입력
 4. `CAPACITOR_SERVER_URL=https://<public-app-url> npm run mobile:sync:ios` 로 iOS 설정 동기화
 5. Xcode에서 `com.jipbab.note` 번들 ID, Signing Team, Provisioning Profile 확인
-6. 실기기에서 카카오/구글/애플 로그인 확인
-7. 실기기에서 유통기한 로컬 알림 권한 허용/거부와 D-3/D-1/당일 예약 확인
-8. 레시피 상세 → 장보기 → 구매 링크 이동 QA
-9. 운영자 계정으로 `/admin/account-deletions` 접근 가능 여부 확인
-10. `/account-delete` 요청 접수 후 운영자 화면에서 상태 변경 QA
+6. 현재 코드로 새 archive/export를 만들고, archive build number가 `ios/App/App.xcodeproj`의 `CURRENT_PROJECT_VERSION`과 일치하는지 확인
+7. `pnpm check:ios-release` 또는 `pnpm release:check` 실행
+8. archive 경로가 기본값과 다르면 `IOS_ARCHIVE_PATH=/path/to/App.xcarchive pnpm check:ios-release`로 확인
+9. IPA 경로가 기본값과 다르면 `IOS_IPA_PATH=/path/to/App.ipa pnpm check:ios-release`로 확인
+10. 실기기에서 카카오/구글/애플 로그인 확인
+11. 실기기에서 유통기한 로컬 알림 권한 허용/거부와 D-3/D-1/당일 예약 확인
+12. 레시피 상세 → 장보기 → 구매 링크 이동 QA
+13. 운영자 계정으로 `/admin/account-deletions` 접근 가능 여부 확인
+14. `/account-delete` 요청 접수 후 운영자 화면에서 상태 변경 QA
+
+## 6-1. Play Store 제출 전
+
+1. Google Play Console에서 Play App Signing을 활성화하고 upload key 전략을 확정합니다.
+2. 기존 upload key가 없다면 `pnpm android:upload-key:create`로 후보 키를 생성합니다.
+3. 생성된 `.release-secrets/android-upload.jks`와 `.env.android-signing.local`은 git에서 제외되지만, Play Console에 쓰기로 결정했다면 반드시 별도 보관합니다. 이 파일을 잃으면 같은 upload key로 업데이트를 올릴 수 없습니다.
+4. 기존 upload key가 있다면 `.env.android-signing.local`에 `ANDROID_UPLOAD_KEYSTORE_PATH`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`를 넣고 keystore 파일은 git 밖에 보관합니다.
+5. `pnpm android:bundle-release`를 실행합니다.
+6. `pnpm check:android-release` 또는 `jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab`에서 unsigned가 아닌 서명 검증 결과를 확인합니다.
+6. Android emulator smoke에서 흰 화면이 나오면 원격 WebView URL DNS 문제를 먼저 확인합니다.
+7. DNS가 실패하면 `emulator -avd Medium_Phone_API_36.1 -no-snapshot -no-audio -no-boot-anim -dns-server 8.8.8.8,1.1.1.1`로 재부팅한 뒤 앱을 다시 실행합니다.
 
 ## 7. 운영자 삭제 요청 처리
 

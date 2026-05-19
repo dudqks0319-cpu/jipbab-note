@@ -364,8 +364,8 @@ create policy ingredients_select_own
 on public.ingredients
 for select
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists ingredients_insert_own on public.ingredients;
@@ -373,8 +373,8 @@ create policy ingredients_insert_own
 on public.ingredients
 for insert
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists ingredients_update_own on public.ingredients;
@@ -382,12 +382,12 @@ create policy ingredients_update_own
 on public.ingredients
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists ingredients_delete_own on public.ingredients;
@@ -395,8 +395,8 @@ create policy ingredients_delete_own
 on public.ingredients
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists favorites_select_own on public.favorites;
@@ -404,8 +404,8 @@ create policy favorites_select_own
 on public.favorites
 for select
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists favorites_insert_own on public.favorites;
@@ -414,8 +414,8 @@ on public.favorites
 for insert
 with check (
   (
-    (auth.uid() is not null and user_id = auth.uid())
-    or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+    ((select auth.uid()) is not null and user_id = (select auth.uid()))
+    or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
   )
   and exists (
     select 1
@@ -429,12 +429,12 @@ create policy favorites_update_own
 on public.favorites
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists favorites_delete_own on public.favorites;
@@ -442,8 +442,8 @@ create policy favorites_delete_own
 on public.favorites
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists shopping_items_select_own on public.shopping_items;
@@ -451,8 +451,8 @@ create policy shopping_items_select_own
 on public.shopping_items
 for select
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists shopping_items_insert_own on public.shopping_items;
@@ -460,8 +460,8 @@ create policy shopping_items_insert_own
 on public.shopping_items
 for insert
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists shopping_items_update_own on public.shopping_items;
@@ -469,12 +469,12 @@ create policy shopping_items_update_own
 on public.shopping_items
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists shopping_items_delete_own on public.shopping_items;
@@ -482,8 +482,8 @@ create policy shopping_items_delete_own
 on public.shopping_items
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists recipes_select_public on public.recipes;
@@ -553,8 +553,8 @@ create policy community_posts_insert_own
 on public.community_posts
 for insert
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_posts_update_own on public.community_posts;
@@ -562,12 +562,12 @@ create policy community_posts_update_own
 on public.community_posts
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_posts_delete_own on public.community_posts;
@@ -575,8 +575,8 @@ create policy community_posts_delete_own
 on public.community_posts
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_comments_select_public on public.community_comments;
@@ -591,8 +591,8 @@ on public.community_comments
 for insert
 with check (
   (
-    (auth.uid() is not null and user_id = auth.uid())
-    or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+    ((select auth.uid()) is not null and user_id = (select auth.uid()))
+    or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
   )
   and exists (
     select 1
@@ -606,12 +606,12 @@ create policy community_comments_update_own
 on public.community_comments
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_comments_delete_own on public.community_comments;
@@ -619,8 +619,8 @@ create policy community_comments_delete_own
 on public.community_comments
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_likes_select_public on public.community_likes;
@@ -635,8 +635,8 @@ on public.community_likes
 for insert
 with check (
   (
-    (auth.uid() is not null and user_id = auth.uid())
-    or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+    ((select auth.uid()) is not null and user_id = (select auth.uid()))
+    or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
   )
   and exists (
     select 1
@@ -650,12 +650,12 @@ create policy community_likes_update_own
 on public.community_likes
 for update
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 )
 with check (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists community_likes_delete_own on public.community_likes;
@@ -663,21 +663,21 @@ create policy community_likes_delete_own
 on public.community_likes
 for delete
 using (
-  (auth.uid() is not null and user_id = auth.uid())
-  or (auth.uid() is null and user_id is null and device_id = app.current_device_id())
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
 );
 
 drop policy if exists account_deletion_requests_select_own on public.account_deletion_requests;
 create policy account_deletion_requests_select_own
 on public.account_deletion_requests
 for select
-using (auth.uid() is not null and user_id = auth.uid());
+using ((select auth.uid()) is not null and user_id = (select auth.uid()));
 
 drop policy if exists account_deletion_requests_insert_own on public.account_deletion_requests;
 create policy account_deletion_requests_insert_own
 on public.account_deletion_requests
 for insert
-with check (auth.uid() is not null and user_id = auth.uid());
+with check ((select auth.uid()) is not null and user_id = (select auth.uid()));
 
 drop policy if exists account_deletion_request_events_select_own on public.account_deletion_request_events;
 create policy account_deletion_request_events_select_own
@@ -688,7 +688,7 @@ using (
     select 1
     from public.account_deletion_requests r
     where r.id = account_deletion_request_events.request_id
-      and auth.uid() is not null
-      and r.user_id = auth.uid()
+      and (select auth.uid()) is not null
+      and r.user_id = (select auth.uid())
   )
 );
