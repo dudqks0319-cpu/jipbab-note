@@ -1,53 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-19 20:53 KST
+Updated: 2026-05-19 21:44 KST
 
 ## Local code state
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
 - Branch: `codex/jipbab-store-readiness`
-- Latest commit: `b998116 chore(supabase): align release migrations`
-- Dirty release-related edits:
-  - `supabase/schema.sql`
-  - `supabase/migrations/20260508143719_optimize_rls_initplan.sql`
-  - `android/app/build.gradle`
-  - `app/shopping/page.tsx`
-  - `app/fridge/page.tsx`
-  - `app/community/page.tsx`
-  - `app/mypage/page.tsx`
-  - `hooks/useIngredients.ts`
-  - `hooks/useShopping.ts`
-  - `lib/auth-migration-summary.ts`
-  - `lib/shopping-to-fridge.ts`
-  - `lib/shopping-sync.ts`
-  - `lib/release-flags.ts`
-  - `.env.example`
-  - `.gitignore`
-  - `package.json`
-  - `docs/app-store-screenshots/README.md`
-  - `docs/app-store-screenshots/2026-05-19-iphone69`
-  - `docs/app-store-connect-metadata-ko.md`
-  - `docs/play-store-assets`
-  - `docs/play-store-metadata-ko.md`
-  - `docs/release-readiness-checklist.md`
-  - `docs/setup-production.md`
-  - `public/runtime-app-config.json`
-  - `scripts/check-partner-links.mjs`
-  - `scripts/check-store-assets.mjs`
-  - `scripts/check-android-release-artifact.mjs`
-  - `scripts/check-ios-release-artifact.mjs`
-  - `scripts/check-supabase-release.mjs`
-  - `scripts/check-supabase-live.mjs`
-  - `scripts/build-android-release.mjs`
-  - `scripts/create-android-upload-keystore.mjs`
-  - `scripts/prepare-store-assets.mjs`
-  - `scripts/release-readiness-check.mjs`
-  - `scripts/run-release-gates.mjs`
-  - `scripts/verify-goal-completion.mjs`
-  - `tests/auth-migration-summary.test.ts`
-  - `tests/shopping-to-fridge.test.ts`
-  - `tests/shopping-sync.test.ts`
-  - `docs/current-release-state.md`
+- Latest pushed release commit: `0a62340 feat(release): finalize store readiness gates`
+- Remote tracking branch: `origin/codex/jipbab-store-readiness`
+- Working tree before this ledger-only update: clean
+- `origin/main` comparison before this ledger-only update: 20 commits ahead, 0 commits behind
+- Main branch state: latest store readiness work is not merged into `origin/main` yet.
+- PR readiness: PR creation is allowed after this ledger refresh and the local verification rerun.
+- Release verdict: local release candidate branch, not a production release. External Supabase, OAuth, real-device QA, and store console confirmations remain blocked.
 
 ## Build identity
 
@@ -71,6 +36,8 @@ Updated: 2026-05-19 20:53 KST
 - `pnpm release:external-check`: blocked again on 2026-05-19 20:53 KST with `ENOTFOUND` for `xqelabiwtjntwrjqcteo.supabase.co`; escalated network rerun failed the same way.
 - `git diff --check`: pass on 2026-05-19 20:53 KST.
 - Secret scan: pass on 2026-05-19 20:53 KST. No matches found outside ignored env, secret, build, output, and dependency paths.
+- Git push: pass on 2026-05-19. Commit `0a62340 feat(release): finalize store readiness gates` was pushed to `origin/codex/jipbab-store-readiness`.
+- Branch comparison: pass on 2026-05-19. `origin/codex/jipbab-store-readiness` is 20 commits ahead of `origin/main` and 0 commits behind.
 - `pnpm check:supabase-release`: pass on 2026-05-19. 68 Supabase contract checks passed, failures 0.
 - `pnpm check:partner-links`: pass on 2026-05-19. 6 partner-link checks passed, warnings 0, failures 0.
 - `pnpm check:ios-release`: pass on 2026-05-19 after creating a fresh archive/export for current build `2026050802`.
