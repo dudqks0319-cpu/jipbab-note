@@ -1,0 +1,32 @@
+# dependencies and package-manager caches
+node_modules
+.pnpm-store
+
+# local framework outputs
+.next
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# native build outputs are release artifacts, not Vercel web deploy input
+android/.gradle
+android/build
+android/app/build
+ios/build
+docs/app-store-screenshots
+docs/play-store-assets
+
+# local runtime, captures, and private release material
+.git
+.vercel
+.env*
+!.env.example
+output
+.tmp
+.release-secrets
+android-*.png
+uidump*.xml
+
+# OS/editor noise
+.DS_Store
