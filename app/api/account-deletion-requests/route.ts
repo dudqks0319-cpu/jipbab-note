@@ -5,20 +5,24 @@ import {
   getServerSupabaseAdminClient,
   hasConfiguredAdminEmails,
 } from "@/lib/supabase-server";
+import { noStoreHeaders } from "@/lib/request-security";
 import { logTelemetry } from "@/lib/telemetry";
 
 const INTERNAL_ERROR_MESSAGE = "요청 처리 중 오류가 발생했습니다.";
 
 function internalError(event: string, metadata: unknown) {
   logTelemetry("error", event, metadata);
-  return NextResponse.json({ message: INTERNAL_ERROR_MESSAGE }, { status: 500 });
+  return NextResponse.json(
+    { message: INTERNAL_ERROR_MESSAGE },
+    { status: 500, headers: noStoreHeaders() },
+  );
 }
 
 export async function GET(request: Request) {
   if (!hasConfiguredAdminEmails()) {
     return NextResponse.json(
-      { message: "ADMIN_EMAILS 환경변수가 설정되지 않았습니다." },
-      { status: 500 },
+      { message: INTERNAL_ERROR_MESSAGE },
+      { status: 500, headers: noStoreHeaders() },
     );
   }
 
@@ -26,7 +30,7 @@ export async function GET(request: Request) {
   if (!adminEmail) {
     return NextResponse.json(
       { message: "운영자 권한이 없습니다." },
-      { status: 403 },
+      { status: 403, headers: noStoreHeaders() },
     );
   }
 
@@ -40,8 +44,11 @@ export async function GET(request: Request) {
     return internalError("account_deletion_requests.list_failed", { error });
   }
 
-  return NextResponse.json({
-    adminEmail,
-    requests: data ?? [],
-  });
+  return NextResponse.json(
+    {
+      adminEmail,
+      requests: data ?? [],
+    },
+    { headers: noStoreHeaders() },
+  );
 }

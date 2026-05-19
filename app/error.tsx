@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export default function GlobalError({
   error,
   reset,
@@ -21,7 +23,13 @@ export default function GlobalError({
             <p className="mt-2 text-sm leading-6 text-gray-500">
               잠시 후 다시 시도해 주세요. 같은 문제가 반복되면 문의하기 메뉴로 알려주시면 빠르게 확인하겠습니다.
             </p>
-            <p className="mt-3 text-xs text-gray-400">{error.message}</p>
+            <p className="mt-3 text-xs text-gray-400">
+              {isProduction
+                ? error.digest
+                  ? `오류 코드: ${error.digest}`
+                  : "오류 세부 정보는 안전을 위해 숨겼습니다."
+                : error.message}
+            </p>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <button

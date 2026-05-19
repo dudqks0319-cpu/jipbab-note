@@ -5,6 +5,7 @@ import {
   getServerSupabaseAdminClient,
   hasConfiguredAdminEmails,
 } from "@/lib/supabase-server";
+import { isUuidLike, noStoreHeaders, readJsonObject } from "@/lib/request-security";
 import { logTelemetry } from "@/lib/telemetry";
 
 const ALLOWED_STATUS = new Set(["requested", "reviewing", "completed", "rejected"]);
@@ -26,7 +27,10 @@ type CurrentDeletionRequest = {
 
 function internalError(event: string, metadata: unknown) {
   logTelemetry("error", event, metadata);
-  return NextResponse.json({ message: INTERNAL_ERROR_MESSAGE }, { status: 500 });
+  return NextResponse.json(
+    { message: INTERNAL_ERROR_MESSAGE },
+    { status: 500, headers: noStoreHeaders() },
+  );
 }
 
 async function deleteRowsForUser(
@@ -56,8 +60,8 @@ export async function PATCH(
 ) {
   if (!hasConfiguredAdminEmails()) {
     return NextResponse.json(
-      { message: "ADMIN_EMAILS 환경변수가 설정되지 않았습니다." },
-      { status: 500 },
+      { message: INTERNAL_ERROR_MESSAGE },
+      { status: 500, headers: noStoreHeaders() },
     );
   }
 
@@ -65,18 +69,32 @@ export async function PATCH(
   if (!adminEmail) {
     return NextResponse.json(
       { message: "운영자 권한이 없습니다." },
-      { status: 403 },
+      { status: 403, headers: noStoreHeaders() },
     );
   }
 
   const { id } = await context.params;
-  const body = (await request.json()) as PatchBody;
+  if (!isUuidLike(id)) {
+    return NextResponse.json(
+      { message: "요청 ID가 올바르지 않습니다." },
+      { status: 400, headers: noStoreHeaders() },
+    );
+  }
+
+  const body = (await readJsonObject(request)) as PatchBody | null;
+  if (!body) {
+    return NextResponse.json(
+      { message: "요청 본문이 올바르지 않습니다." },
+      { status: 400, headers: noStoreHeaders() },
+    );
+  }
+
   const nextStatus = typeof body.status === "string" ? body.status.trim().toLowerCase() : "";
 
   if (!ALLOWED_STATUS.has(nextStatus)) {
     return NextResponse.json(
       { message: "허용되지 않은 상태값입니다." },
-      { status: 400 },
+      { status: 400, headers: noStoreHeaders() },
     );
   }
 
@@ -92,7 +110,10 @@ export async function PATCH(
   }
 
   if (!currentRequest) {
-    return NextResponse.json({ message: "요청을 찾지 못했습니다." }, { status: 404 });
+    return NextResponse.json(
+      { message: "요청을 찾지 못했습니다." },
+      { status: 404, headers: noStoreHeaders() },
+    );
   }
 
   const isAccountDeletion = nextStatus === "completed";
@@ -103,14 +124,14 @@ export async function PATCH(
     if (action !== ACCOUNT_DELETE_ACTION || confirmUserId !== currentRequest.user_id) {
       return NextResponse.json(
         { message: "계정 삭제 실행에는 대상 사용자 ID 확인이 필요합니다." },
-        { status: 400 },
+        { status: 400, headers: noStoreHeaders() },
       );
     }
 
     if (!currentRequest.user_id) {
       return NextResponse.json(
         { message: "이미 삭제되었거나 대상 사용자 ID가 없는 요청입니다." },
-        { status: 409 },
+        { status: 409, headers: noStoreHeaders() },
       );
     }
 
@@ -149,7 +170,10 @@ export async function PATCH(
   }
 
   if (!data) {
-    return NextResponse.json({ message: "요청을 찾지 못했습니다." }, { status: 404 });
+    return NextResponse.json(
+      { message: "요청을 찾지 못했습니다." },
+      { status: 404, headers: noStoreHeaders() },
+    );
   }
 
   const { error: eventError } = await client
@@ -166,8 +190,11 @@ export async function PATCH(
     return internalError("account_deletion_request.event_insert_failed", { error: eventError, requestId: id });
   }
 
-  return NextResponse.json({
-    adminEmail,
-    request: data,
-  });
+  return NextResponse.json(
+    {
+      adminEmail,
+      request: data,
+    },
+    { headers: noStoreHeaders() },
+  );
 }

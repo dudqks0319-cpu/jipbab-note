@@ -1,18 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-19 21:44 KST
+Updated: 2026-05-19 22:56 KST
 
 ## Local code state
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
 - Branch: `codex/jipbab-store-readiness`
-- Latest pushed release commit: `0a62340 feat(release): finalize store readiness gates`
+- Latest local security hardening commit: this commit, `fix: harden recipe release security`
 - Remote tracking branch: `origin/codex/jipbab-store-readiness`
-- Working tree before this ledger-only update: clean
-- `origin/main` comparison before this ledger-only update: 20 commits ahead, 0 commits behind
+- Working tree after this security hardening commit: clean before production deployment steps.
+- `origin/main` comparison after this security hardening commit: 22 commits ahead, 0 commits behind
 - Main branch state: latest store readiness work is not merged into `origin/main` yet.
-- PR readiness: PR creation is allowed after this ledger refresh and the local verification rerun.
-- Release verdict: local release candidate branch, not a production release. External Supabase, OAuth, real-device QA, and store console confirmations remain blocked.
+- PR readiness: PR creation remains allowed after the security hardening commit and push.
+- Release verdict: local release candidate branch, not a production release. Supabase live checks now pass, but OAuth, real-device QA coverage, store console confirmations, and the stale Vercel production deployment remain blockers.
 
 ## Build identity
 
@@ -26,14 +26,21 @@ Updated: 2026-05-19 21:44 KST
 - `pnpm test`: pass on 2026-05-19 20:51 KST, including lint, `tsc --noEmit`, and 65 unit tests.
 - `pnpm build`: pass on 2026-05-19 20:52 KST with sandbox escalation because Turbopack needed local process/port permissions. Latest rerun compiled 31 routes successfully.
 - `pnpm release:check`: pass on 2026-05-19. It runs 6 local gates (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`) and reports `Passed: 6`, `Failed: 0`. Environment source is `.env.local + .env.android-signing.local + process.env`.
+- `pnpm test`: pass again on 2026-05-19 23:00 KST after security hardening, including lint, `tsc --noEmit`, and 70 unit tests.
+- `pnpm build`: pass again on 2026-05-19 23:00 KST after security hardening. The first sandboxed run failed with Turbopack `Operation not permitted` while binding a local port; the escalated rerun compiled successfully.
+- `pnpm release:check`: pass again on 2026-05-19 23:00 KST. 6 local gates passed, failures 0.
+- `git diff --check`: pass on 2026-05-19 22:52 KST.
+- Recipe detail local production check: pass on 2026-05-19 23:00 KST. `http://127.0.0.1:3012/recipe/a36e34ec-5f17-4e4a-8e07-246b8082447e` returned `200 OK`, rendered normal recipe HTML, and did not contain `__next_error__`, `An error occurred`, or `문제가 발생했습니다` markers.
+- Recipe detail production check: blocked on 2026-05-19 22:56 KST. `https://jipbab-note-app-youngbeens-projects.vercel.app/recipe/a36e34ec-5f17-4e4a-8e07-246b8082447e` returned `500` with `__next_error__`. `vercel inspect` showed the production alias still points to deployment `dpl_CvSXzj8mTKayKhXdr694RXqE6uLk`, created 2026-04-25 04:33:33 KST.
+- Security hardening checks: request rate-limit keys now prefer network identity over user-controlled device identity, external recipe/product URLs are normalized to app-local or HTTPS URLs only, the global production error page no longer renders raw `error.message`, privileged account-deletion API responses are marked `Cache-Control: no-store`, and invalid privileged JSON/route identifiers are rejected before Supabase admin queries.
 - `pnpm store-assets:prepare`: pass on 2026-05-19. Generated App Store 6.9형 screenshots, Play Store phone screenshots, and Play Store feature graphic.
 - `pnpm check:store-assets`: pass on 2026-05-19. 13 store asset checks passed, failures 0.
   - App Store screenshots: `docs/app-store-screenshots/2026-05-19-iphone69/*.png`, 1290x2796
   - Play Store phone screenshots: `docs/play-store-assets/phone/*.jpg`, 1080x1920
   - Play Store feature graphic: `docs/play-store-assets/feature-graphic.png`, 1024x500 RGB
-- `pnpm release:goal-check`: fail as expected on 2026-05-19. It reports `Passed: 4`, `Blocked: 5`, `Missing: 0`; blocked items are production Supabase live/write RLS, OAuth/provider callback confirmation, real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
-- `pnpm release:full-check`: blocked on 2026-05-19 only at the external Supabase live check. The local gate stage passed first, then `pnpm release:external-check` failed with `ENOTFOUND` for `xqelabiwtjntwrjqcteo.supabase.co`. An escalated network rerun of `pnpm release:external-check` failed the same way.
-- `pnpm release:external-check`: blocked again on 2026-05-19 20:53 KST with `ENOTFOUND` for `xqelabiwtjntwrjqcteo.supabase.co`; escalated network rerun failed the same way.
+- `pnpm release:goal-check`: still not complete as of 2026-05-19 because OAuth/provider callback, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing are not verified.
+- `pnpm release:external-check`: pass on 2026-05-19 after restoring the `JipbabNote` Supabase project. Read-only live checks passed with 6 passes, 0 failures, 1 warning because write testing was intentionally skipped.
+- `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-19 after fixing the local recipe source schema check. 12 checks passed, including insert/readback, cross-device isolation, and cleanup.
 - `git diff --check`: pass on 2026-05-19 20:53 KST.
 - Secret scan: pass on 2026-05-19 20:53 KST. No matches found outside ignored env, secret, build, output, and dependency paths.
 - Git push: pass on 2026-05-19. Commit `0a62340 feat(release): finalize store readiness gates` was pushed to `origin/codex/jipbab-store-readiness`.
@@ -47,7 +54,7 @@ Updated: 2026-05-19 21:44 KST
   - Warning: archive has no successful App Store upload event yet.
 - `pnpm check:android-release`: pass on 2026-05-19 after generating a local upload-key candidate and rebuilding the release AAB. `jarsigner` verification passed.
 - `pnpm release:check` now also verifies privacy/terms/support/account-deletion policy content, App Store/Play metadata content, App Store/Play Store image asset dimensions, Android release identity, manifest permissions/features, Android Capacitor HTTPS WebView config, iOS Capacitor HTTPS WebView config, iOS Info.plist store-facing values, iOS SPM native plugin pinning, public runtime remote URL consistency, and chains Supabase/partner/store-assets/iOS/Android artifact checks after the primary environment gate.
-- `pnpm check:supabase-live` / `pnpm release:external-check`: blocked on 2026-05-19 20:12 KST with `ENOTFOUND` for `xqelabiwtjntwrjqcteo.supabase.co`, including escalated network reruns before and after local release gates passed.
+- `scripts/check-supabase-live.mjs`: updated on 2026-05-19 to check `recipe_sources` using the live schema fields `provider,title` instead of the stale `source_name` field.
 - `pnpm mobile:sync:ios`: pass on 2026-05-19 using the configured remote server URL.
 - iOS release archive: pass on 2026-05-19 with `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination generic/platform=iOS -archivePath ios/build/JipbabNote-2026050802.xcarchive archive`.
 - iOS release export: pass on 2026-05-19 with `xcodebuild -exportArchive -archivePath ios/build/JipbabNote-2026050802.xcarchive -exportPath ios/build/export-2026050802-rerun -exportOptionsPlist ios/build/export-2026050802/ExportOptions.plist`.
@@ -77,13 +84,16 @@ Updated: 2026-05-19 21:44 KST
 
 ## External state
 
-- App Store Connect/TestFlight: upload attempt indicates build `2026050802` is already present in App Store Connect, but processing/TestFlight availability was not dashboard-confirmed in this pass.
-- Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` was visible earlier through the Supabase connector, but project status was `INACTIVE`.
+- Vercel production: current alias still points to the 2026-04-25 production deployment. That stale deployment reproduces the attached recipe-detail server component error; local current production build does not.
+- App Store Connect/TestFlight: not verified for JipbabNote in the latest browser pass. The browser showed an InviteHub App Store Connect page first and then an App Store Connect login failure, so no JipbabNote TestFlight state should be inferred from that session.
+- Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
-- Production Supabase migration application: local SQL contract verified; live project application is blocked because the project host does not resolve locally and connector migration listing required reauthentication.
-- Real-device QA: not done in this pass.
-- OAuth provider dashboard callbacks: not verified in this pass.
+- Production Supabase migration application: live project connection, read checks, write checks, and RLS isolation checks passed from the app harness.
+- OAuth provider dashboard callbacks: Google OAuth real browser flow failed with `401 invalid_client`, so the Google OAuth client/provider configuration must be fixed in Google Cloud/Supabase before release. Apple and Kakao providers are disabled in Supabase/app config.
+- iPhone real-device QA: partial pass. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set.
+- Android real-device QA: not done. No Android device was connected in `adb devices -l`.
+- Play Console internal testing: not verified in this pass.
 
 ## Current release decisions
 
@@ -95,10 +105,10 @@ Updated: 2026-05-19 21:44 KST
 
 Before external release submission:
 
-1. Reactivate/restore the `JipbabNote` Supabase project, then run `pnpm check:supabase-live` and `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`.
-2. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-3. Upload or submit the new iOS build `2026050802` archive/IPA, then confirm App Store Connect/TestFlight processing.
-4. Upload the signed Android AAB to Play Console internal testing and confirm processing.
-5. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
-6. Verify Google/Kakao/Apple OAuth callback URLs on a real iPhone and Android device.
+1. Deploy the current branch to Vercel production, then re-check the recipe detail URL returns `200 OK` instead of `__next_error__`.
+2. Fix Google OAuth client/provider configuration, then verify the callback on web and iPhone. Keep Apple/Kakao disabled until provider dashboards are configured.
+3. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
+4. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing.
+5. Upload the signed Android AAB to Play Console internal testing and confirm processing.
+6. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
 7. Complete App Store Connect/Play Console privacy, support contact, and review notes.

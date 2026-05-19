@@ -136,7 +136,7 @@ async function run() {
   await expectOk(results, "recipe_sources anon read", {
     supabaseUrl,
     anonKey,
-    pathName: "recipe_sources?select=id,source_name&limit=1",
+    pathName: "recipe_sources?select=id,provider,title&limit=1",
   });
   await expectOk(results, "partner_links active anon read", {
     supabaseUrl,

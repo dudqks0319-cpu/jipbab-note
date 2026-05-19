@@ -12,6 +12,7 @@ import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { findCuratedRecipe } from "@/lib/curated-recipes";
+import { normalizeHttpUrl } from "@/lib/request-security";
 import type { RecipeDetailRecord, RecipeDetailStep, RecipeIngredientDetail } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
@@ -87,20 +88,7 @@ type SupabaseRecipeRow = {
 };
 
 const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
-  if (!value) {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  if (trimmed.startsWith("http://")) {
-    return `https://${trimmed.slice("http://".length)}`;
-  }
-
-  return trimmed;
+  return normalizeHttpUrl(value);
 };
 
 const cleanIngredientDisplayText = (value: string): string => {
@@ -465,7 +453,7 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
       servings: row.servings,
       sourceProvider: sourceRecord?.provider ?? fallbackProvider,
       sourceExternalId: sourceRecord?.external_id ?? fallbackExternalId,
-      sourceUrl: sourceRecord?.source_url ?? null,
+      sourceUrl: normalizeHttpUrl(sourceRecord?.source_url),
       sourceAttribution: sourceRecord?.attribution ?? fallbackAttribution,
       sourceLicense: sourceRecord?.license ?? fallbackLicense,
       contentOrigin: row.content_origin ?? (row.source?.startsWith("mfds:") ? "public_api" : "licensed"),

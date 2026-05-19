@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { getRateLimitKey, normalizeHttpUrl } from '@/lib/request-security'
+
 const SERVICE_ID = 'COOKRCP01'
 const BASE_URL = 'https://openapi.foodsafetykorea.go.kr/api'
 const DEFAULT_PAGE = 1
@@ -101,23 +103,6 @@ const normalizeCategory = (value: string | null): string | null => {
   return CATEGORY_ALLOWLIST.has(normalized) ? normalized : null
 }
 
-const getClientKey = (request: Request): string => {
-  const deviceId = request.headers.get('x-device-id')?.trim()
-  if (deviceId) return `device:${deviceId}`
-
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    const ip = forwardedFor.split(',')[0]?.trim()
-    if (ip) return `ip:${ip}`
-  }
-
-  const realIp = request.headers.get('x-real-ip')?.trim()
-  if (realIp) return `ip:${realIp}`
-
-  const userAgent = request.headers.get('user-agent')?.trim() ?? 'unknown-ua'
-  return `ua:${userAgent.slice(0, 120)}`
-}
-
 const isRateLimited = (key: string): boolean => {
   if (!IS_PRODUCTION) {
     return false
@@ -162,16 +147,7 @@ const buildFilterSegment = (query: string | null, category: string | null) => {
 }
 
 const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
-  if (!value) return null
-
-  const trimmed = value.trim()
-  if (!trimmed) return null
-
-  if (trimmed.startsWith('http://')) {
-    return `https://${trimmed.slice('http://'.length)}`
-  }
-
-  return trimmed
+  return normalizeHttpUrl(value)
 }
 
 const cleanIngredientDisplayText = (value: string): string => {
@@ -358,7 +334,7 @@ const fetchRecipesFromSupabase = async (
 }
 
 export async function GET(request: Request) {
-  const clientKey = getClientKey(request)
+  const clientKey = getRateLimitKey(request)
   if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
