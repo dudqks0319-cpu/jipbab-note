@@ -1,14 +1,16 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-19 22:56 KST
+Updated: 2026-05-19 23:16 KST
 
 ## Local code state
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
 - Branch: `codex/jipbab-store-readiness`
-- Latest local security hardening commit: this commit, `fix: harden recipe release security`
+- Latest pushed commits:
+  - `1855dd5 fix: harden recipe release security`
+  - `bfbe932 chore: trim vercel deploy input`
 - Remote tracking branch: `origin/codex/jipbab-store-readiness`
-- Working tree after this security hardening commit: clean before production deployment steps.
+- Working tree after production deployment verification: release ledger update pending.
 - `origin/main` comparison after this security hardening commit: 22 commits ahead, 0 commits behind
 - Main branch state: latest store readiness work is not merged into `origin/main` yet.
 - PR readiness: PR creation remains allowed after the security hardening commit and push.
@@ -31,7 +33,10 @@ Updated: 2026-05-19 22:56 KST
 - `pnpm release:check`: pass again on 2026-05-19 23:00 KST. 6 local gates passed, failures 0.
 - `git diff --check`: pass on 2026-05-19 22:52 KST.
 - Recipe detail local production check: pass on 2026-05-19 23:00 KST. `http://127.0.0.1:3012/recipe/a36e34ec-5f17-4e4a-8e07-246b8082447e` returned `200 OK`, rendered normal recipe HTML, and did not contain `__next_error__`, `An error occurred`, or `문제가 발생했습니다` markers.
-- Recipe detail production check: blocked on 2026-05-19 22:56 KST. `https://jipbab-note-app-youngbeens-projects.vercel.app/recipe/a36e34ec-5f17-4e4a-8e07-246b8082447e` returned `500` with `__next_error__`. `vercel inspect` showed the production alias still points to deployment `dpl_CvSXzj8mTKayKhXdr694RXqE6uLk`, created 2026-04-25 04:33:33 KST.
+- Recipe detail production check: pass after redeploy on 2026-05-19 23:16 KST. `https://jipbab-note-app-youngbeens-projects.vercel.app/recipe/a36e34ec-5f17-4e4a-8e07-246b8082447e` changed from `500` to `200 OK`, and the HTML no longer contains `__next_error__`, `An error occurred`, or `문제가 발생했습니다` markers.
+- Vercel production deployment: pass on 2026-05-19 23:15 KST. New deployment `dpl_Erb3iipEj5RscDbeAG4hSFvaKJWb` is Ready, created 2026-05-19 23:13:54 KST, and aliases now include `https://jipbab-note-app.vercel.app`, `https://jipbab-note-app-youngbeens-projects.vercel.app`, and `https://jipbab-note-app-dudqks0319-cpu-youngbeens-projects.vercel.app`.
+- Vercel upload fix: pass on 2026-05-19. First deploy attempted to upload 1.9GB and failed with a Vercel API upload error; `.vercelignore` reduced the deploy input to 66.3MB by excluding local/native build artifacts, env files, and release secrets.
+- Production recipes API check: pass on 2026-05-19 23:16 KST. `/api/recipes?size=3` returned stored recipe data from Supabase.
 - Security hardening checks: request rate-limit keys now prefer network identity over user-controlled device identity, external recipe/product URLs are normalized to app-local or HTTPS URLs only, the global production error page no longer renders raw `error.message`, privileged account-deletion API responses are marked `Cache-Control: no-store`, and invalid privileged JSON/route identifiers are rejected before Supabase admin queries.
 - `pnpm store-assets:prepare`: pass on 2026-05-19. Generated App Store 6.9형 screenshots, Play Store phone screenshots, and Play Store feature graphic.
 - `pnpm check:store-assets`: pass on 2026-05-19. 13 store asset checks passed, failures 0.
@@ -84,7 +89,7 @@ Updated: 2026-05-19 22:56 KST
 
 ## External state
 
-- Vercel production: current alias still points to the 2026-04-25 production deployment. That stale deployment reproduces the attached recipe-detail server component error; local current production build does not.
+- Vercel production: current aliases point to the 2026-05-19 production deployment. The attached recipe-detail server component error is no longer reproducible on the production alias.
 - App Store Connect/TestFlight: not verified for JipbabNote in the latest browser pass. The browser showed an InviteHub App Store Connect page first and then an App Store Connect login failure, so no JipbabNote TestFlight state should be inferred from that session.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
@@ -105,10 +110,9 @@ Updated: 2026-05-19 22:56 KST
 
 Before external release submission:
 
-1. Deploy the current branch to Vercel production, then re-check the recipe detail URL returns `200 OK` instead of `__next_error__`.
-2. Fix Google OAuth client/provider configuration, then verify the callback on web and iPhone. Keep Apple/Kakao disabled until provider dashboards are configured.
-3. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-4. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing.
-5. Upload the signed Android AAB to Play Console internal testing and confirm processing.
-6. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
-7. Complete App Store Connect/Play Console privacy, support contact, and review notes.
+1. Fix Google OAuth client/provider configuration, then verify the callback on web and iPhone. Keep Apple/Kakao disabled until provider dashboards are configured.
+2. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
+3. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing.
+4. Upload the signed Android AAB to Play Console internal testing and confirm processing.
+5. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
+6. Complete App Store Connect/Play Console privacy, support contact, and review notes.
