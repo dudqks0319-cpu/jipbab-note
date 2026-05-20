@@ -64,7 +64,7 @@ export default function AuthProviderButton({
         className="flex w-full items-center justify-center gap-3 rounded-[12px] bg-black px-4 py-3 text-sm font-bold text-white shadow-soft transition-colors hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <AppleIcon />
-        <span>Apple로 계속하기</span>
+        <span>Apple로 로그인</span>
       </button>
     );
   }
@@ -77,7 +77,7 @@ export default function AuthProviderButton({
       className="flex w-full items-center justify-center gap-3 rounded-[12px] bg-[#FEE500] px-4 py-3 text-sm font-bold text-[#191919] shadow-soft transition-colors hover:bg-[#f7dc00] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <KakaoIcon />
-      <span>카카오로 시작하기</span>
+      <span>카카오 로그인</span>
     </button>
   );
 }

@@ -12,7 +12,7 @@
 
 ## 2. OAuth 제공자
 
-현재 앱은 `구글`, `애플` 로그인을 기본 간편 로그인으로 노출하고, `카카오`는 환경변수로 켤 수 있습니다.
+현재 앱은 환경변수로 명시적으로 켠 OAuth 제공자만 로그인 화면에 노출합니다. 외부 콘솔과 Supabase provider 설정이 끝나기 전에는 공개 플래그를 `false`로 둡니다.
 
 - 카카오: Supabase Kakao provider + Kakao Developers REST API key / client secret 필요
 - 구글: Supabase Google provider + Google Cloud OAuth client 필요
@@ -40,9 +40,10 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 - Supabase Redirect URL: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
 - Google Cloud Authorized redirect URI: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
 - Apple Services ID Return URL: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
+- Kakao Developers Redirect URI: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
 - 앱 내부 콜백 URL: `https://<your-domain>/auth/callback`
 
-배포 도메인이 바뀌면 Supabase URL Configuration과 Google/Apple 콘솔의 등록값을 함께 갱신합니다.
+배포 도메인이 바뀌면 Supabase URL Configuration과 Google/Apple/Kakao 콘솔의 등록값을 함께 갱신합니다.
 
 ## 4. 운영 환경변수
 
@@ -65,6 +66,7 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 - `NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED=true`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED=true`
 - `NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED=true` (Kakao Developers와 Supabase Kakao provider 설정 완료 후 운영)
+- `KAKAO_ACCOUNT_EMAIL_PERMISSION_CONFIRMED=true` (Kakao 비즈 앱 전환과 `account_email` 동의항목 설정 확인 후 운영 게이트용)
 - `NEXT_PUBLIC_COUPANG_PARTNERS_POTATO_URL` (선택, DB 장애 시 fallback)
 - `NEXT_PUBLIC_COUPANG_PARTNERS_VEGETABLE_URL` (선택, DB 장애 시 fallback)
 - `NEXT_PUBLIC_COUPANG_PARTNERS_EGG_URL` (선택, DB 장애 시 fallback)
@@ -142,7 +144,9 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 
 - 앱스토어 심사 기준에 맞추려면 Google, Kakao 같은 서드파티 로그인을 쓸 경우 Apple 로그인도 동등한 옵션으로 제공합니다.
 - Google 로그인은 최신 Google Identity Services 기준에서 WebView 지원이 제한되므로, 장기적으로는 네이티브 또는 외부 브라우저 기반 흐름을 검토해야 합니다.
-- Kakao 로그인은 Kakao Developers의 리디렉트 URI 등록과 사용 설정이 완료되어야 합니다.
+- Kakao 로그인은 Kakao Developers의 리디렉트 URI, client secret, 동의항목 설정이 완료되어야 합니다.
+- Supabase Kakao provider는 기본 authorize 흐름에서 `account_email`을 요청하므로, Kakao 앱을 비즈 앱으로 전환하고 `account_email` 동의항목을 실제 서비스 목적에 맞게 설정한 뒤 공개합니다.
+- Apple private key와 Kakao client secret은 저장소, 문서, 로그, 브라우저 비밀번호 저장소에 남기지 않습니다.
 
 ## 9. OAuth 출시 전 점검표
 
@@ -154,6 +158,7 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`가 운영 배포 환경에 설정되어 있는지 확인
 - OAuth 공개 플래그가 `true`/`false` 중 하나인지 확인. 잘못된 값은 앱에서 provider를 비활성화하고 설정 오류로 표시합니다.
 - 배포 화면에서 Google/Apple 버튼이 먼저 보이고, 비활성 provider는 누락된 환경변수나 `false` 플래그명을 표시하는지 확인
+- `pnpm check:oauth-live` 실행: Supabase provider 302, Kakao provider page, Apple parity 실패 여부 확인
 
 ### Google
 
@@ -170,4 +175,15 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 - Services ID Return URLs에 `https://<supabase-project-ref>.supabase.co/auth/v1/callback` 등록
 - Supabase Apple provider에 Team ID, Services ID, Key ID, private key를 등록 후 Enabled 상태 확인
 - Apple private key는 저장소, 문서, 로그에 남기지 않고 Supabase provider 설정에만 입력
+- Apple client secret 생성은 `APPLE_CLIENT_SECRET_OUT=.release-secrets/apple-client-secret.txt pnpm apple:client-secret`처럼 ignored 파일 출력으로 수행합니다. 터미널 출력은 `APPLE_CLIENT_SECRET_PRINT=1`을 명시한 경우에만 허용합니다.
 - 운영 도메인에서 Apple 로그인 후 `/auth/callback`을 거쳐 `/mypage`로 이동하는지 확인
+
+### Kakao
+
+- Kakao Developers 앱의 제품 설정 > 카카오 로그인에서 활성화 상태 확인
+- Kakao Developers Redirect URI에 `https://<supabase-project-ref>.supabase.co/auth/v1/callback` 등록
+- Kakao Developers 보안 메뉴에서 client secret 활성화 후 Supabase Kakao provider에 REST API key와 client secret 등록
+- Kakao 앱이 비즈 앱이며 대표 도메인과 앱 아이콘이 실제 서비스와 일치하는지 확인
+- Kakao 동의항목에서 `account_email`은 필수 동의, `profile_nickname`/`profile_image`는 선택 동의로 설정 확인
+- `KAKAO_ACCOUNT_EMAIL_PERMISSION_CONFIRMED=true` 설정 후 `pnpm check:oauth-live`에서 Kakao provider page가 `KOE205` 없이 통과하는지 확인
+- 운영 도메인에서 Kakao 로그인 후 `/auth/callback`을 거쳐 `/mypage`로 이동하는지 확인

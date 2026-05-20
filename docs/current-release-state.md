@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-19 23:16 KST
+Updated: 2026-05-20 22:20 KST
 
 ## Local code state
 
@@ -10,21 +10,40 @@ Updated: 2026-05-19 23:16 KST
   - `1855dd5 fix: harden recipe release security`
   - `bfbe932 chore: trim vercel deploy input`
 - Remote tracking branch: `origin/codex/jipbab-store-readiness`
-- Working tree after production deployment verification: release ledger update pending.
+- Working tree after OAuth provider setup pass: pending local OAuth/code/doc/native sync edits, not pushed.
 - `origin/main` comparison after this security hardening commit: 22 commits ahead, 0 commits behind
 - Main branch state: latest store readiness work is not merged into `origin/main` yet.
 - PR readiness: PR creation remains allowed after the security hardening commit and push.
-- Release verdict: local release candidate branch, not a production release. Supabase live checks now pass, but OAuth, real-device QA coverage, store console confirmations, and the stale Vercel production deployment remain blockers.
+- Release verdict: local release candidate branch, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows now pass, but full real-device QA, App Store Connect/TestFlight for the actual JipbabNote app, and Play Console internal testing are still release blockers.
 
 ## Build identity
 
 - Bundle ID: `com.jipbab.note`
 - Marketing version: `1.0`
 - Current project version observed from Xcode settings: `2026050802`
-- Capacitor remote URL mode: `CAPACITOR_SERVER_URL` points to `https://jipbab-note-app-youngbeens-projects.vercel.app`
+- Capacitor remote URL mode: `CAPACITOR_SERVER_URL` now points to `https://jipbab-note-app.vercel.app` in local release env.
 
 ## Verification evidence
 
+- `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
+- `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
+- `git diff --check`: pass on 2026-05-20 19:54 KST.
+- `pnpm mobile:sync:ios`: pass on 2026-05-20 22:16 KST. `CAPACITOR_SERVER_URL=https://jipbab-note-app.vercel.app` was verified against the production app marker, `ios/App/App/capacitor.config.json` was regenerated, and the App Store-safe iOS package targets were re-applied.
+- `pnpm mobile:sync:android`: pass on 2026-05-20 22:16 KST. `CAPACITOR_SERVER_URL=https://jipbab-note-app.vercel.app` was verified against the production app marker and `android/app/src/main/assets/capacitor.config.json` was regenerated.
+- `pnpm release:check`: pass on 2026-05-20 22:17 KST. All 6 local gates passed after the Capacitor/runtime URL sync; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
+- `pnpm release:external-check`: pass on 2026-05-20 22:18 KST. Supabase live REST read checks passed with 6 passes, 0 failures, and Google/Apple/Kakao OAuth provider start checks passed with 7 passes, 0 failures.
+- `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-20 22:18 KST. 12 checks passed, including temporary guest insert, same-device readback, cross-device negative read, and delete cleanup.
+- `pnpm check:supabase-release`: pass on 2026-05-20 22:20 KST. 68 Supabase contract checks passed, failures 0.
+- `node scripts/check-oauth-live.mjs`: pass on 2026-05-20 22:18 KST. Enabled providers are `google`, `apple`, and `kakao`; redirects reach `accounts.google.com`, `appleid.apple.com`, and `kauth.kakao.com`; Kakao provider page no longer returns `KOE205`.
+- `pnpm test`: pass on 2026-05-20 22:31 KST. Lint, `tsc --noEmit`, and 75 unit tests passed.
+- `pnpm build`: pass on 2026-05-20 22:26 KST with sandbox escalation because Turbopack needed local process/port permissions. The sandboxed run failed with `Operation not permitted` while binding a local port; the escalated rerun compiled 31 routes successfully.
+- Login UI browser check: pass on 2026-05-20. Production `/login` renders Google, Apple, and Kakao buttons with provider-appropriate labels and visual treatment (`Google로 계속하기`, `Apple로 로그인`, `카카오 로그인`).
+- Apple Developer/Supabase provider setup: pass on 2026-05-20. Apple App ID has Sign in with Apple, Services ID `com.jipbab.note.web` uses the Supabase callback URL, Supabase Apple provider is enabled, and the private key is stored only under ignored `.release-secrets/`.
+- Apple production browser check: pass up to provider boundary on 2026-05-20. `Apple로 로그인` redirects to `appleid.apple.com` with Services ID `com.jipbab.note.web`; final Apple account authorization still requires the account holder.
+- Kakao Developers console: pass on 2026-05-20. App `1462923` is a personal developer Biz App, representative domain is `https://jipbab-note-app.vercel.app`, app icon is configured, Kakao Login/client secret/redirect URI are configured, `account_email` is required consent, and profile nickname/image are optional consent.
+- Kakao real browser login check: pass on 2026-05-20. Production `카카오 로그인` no longer returns `KOE205`; Kakao consent completes and the app returns to the JipbabNote home flow.
+- Supabase Auth URL configuration: pass on 2026-05-20. Site URL was changed from the Vercel project default domain to `https://jipbab-note-app.vercel.app`; canonical redirect allow-list update was attempted from the dashboard and should be rechecked once the dashboard state refreshes.
+- `node scripts/check-oauth-live.mjs`: pass on 2026-05-20. The script now requires `KAKAO_ACCOUNT_EMAIL_PERMISSION_CONFIRMED=true` because Supabase Kakao requests `account_email` by default, and the configured Kakao Biz App consent satisfies that gate.
 - `pnpm test`: pass on 2026-05-19 20:51 KST, including lint, `tsc --noEmit`, and 65 unit tests.
 - `pnpm build`: pass on 2026-05-19 20:52 KST with sandbox escalation because Turbopack needed local process/port permissions. Latest rerun compiled 31 routes successfully.
 - `pnpm release:check`: pass on 2026-05-19. It runs 6 local gates (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`) and reports `Passed: 6`, `Failed: 0`. Environment source is `.env.local + .env.android-signing.local + process.env`.
@@ -43,7 +62,7 @@ Updated: 2026-05-19 23:16 KST
   - App Store screenshots: `docs/app-store-screenshots/2026-05-19-iphone69/*.png`, 1290x2796
   - Play Store phone screenshots: `docs/play-store-assets/phone/*.jpg`, 1080x1920
   - Play Store feature graphic: `docs/play-store-assets/feature-graphic.png`, 1024x500 RGB
-- `pnpm release:goal-check`: still not complete as of 2026-05-19 because OAuth/provider callback, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing are not verified.
+- `pnpm release:goal-check`: still not complete as of 2026-05-20 because full real-device QA, App Store Connect/TestFlight dashboard confirmation for JipbabNote, and Play Console internal testing are not verified. Supabase and OAuth blockers are no longer missing after the 2026-05-20 checks.
 - `pnpm release:external-check`: pass on 2026-05-19 after restoring the `JipbabNote` Supabase project. Read-only live checks passed with 6 passes, 0 failures, 1 warning because write testing was intentionally skipped.
 - `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-19 after fixing the local recipe source schema check. 12 checks passed, including insert/readback, cross-device isolation, and cleanup.
 - `git diff --check`: pass on 2026-05-19 20:53 KST.
@@ -90,15 +109,17 @@ Updated: 2026-05-19 23:16 KST
 ## External state
 
 - Vercel production: current aliases point to the 2026-05-19 production deployment. The attached recipe-detail server component error is no longer reproducible on the production alias.
-- App Store Connect/TestFlight: not verified for JipbabNote in the latest browser pass. The browser showed an InviteHub App Store Connect page first and then an App Store Connect login failure, so no JipbabNote TestFlight state should be inferred from that session.
+- App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote in the latest browser pass. The browser showed an InviteHub App Store Connect page first and then an App Store Connect login failure, so no JipbabNote TestFlight state should be inferred from that session.
+- App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
-- Production Supabase migration application: live project connection, read checks, write checks, and RLS isolation checks passed from the app harness.
-- OAuth provider dashboard callbacks: Google OAuth real browser flow failed with `401 invalid_client`, so the Google OAuth client/provider configuration must be fixed in Google Cloud/Supabase before release. Apple and Kakao providers are disabled in Supabase/app config.
+- Production Supabase migration application: local SQL contract verified and live project connection, read checks, write checks, and RLS isolation checks passed from the app harness.
+- OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
 - iPhone real-device QA: partial pass. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set.
 - Android real-device QA: not done. No Android device was connected in `adb devices -l`.
-- Play Console internal testing: not verified in this pass.
+- Real-device QA: not done for the complete release checklist. Current iPhone is visible to CoreDevice but `unavailable`, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet.
+- Play Console internal testing: not verified in this pass. Chrome redirects to Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
 ## Current release decisions
 
@@ -110,9 +131,11 @@ Updated: 2026-05-19 23:16 KST
 
 Before external release submission:
 
-1. Fix Google OAuth client/provider configuration, then verify the callback on web and iPhone. Keep Apple/Kakao disabled until provider dashboards are configured.
-2. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-3. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing.
-4. Upload the signed Android AAB to Play Console internal testing and confirm processing.
-5. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
-6. Complete App Store Connect/Play Console privacy, support contact, and review notes.
+1. Recheck Supabase URL Configuration dashboard to confirm `https://jipbab-note-app.vercel.app/**` is present in Redirect URLs, not only as Site URL.
+2. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks.
+3. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
+4. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
+5. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing for the JipbabNote app, not a different app record.
+6. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
+7. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
+8. Complete App Store Connect/Play Console privacy, support contact, and review notes.

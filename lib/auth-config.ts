@@ -85,8 +85,8 @@ export function resolveAuthProviderOptions(config: AuthProviderConfig): Resolved
   const options = PROVIDER_PRIORITY.map((provider) => {
     const flagRawValue = getProviderFlag(config, provider);
     const flagValue = parseBooleanFlag(flagRawValue);
-    let enabled = provider === "google" || provider === "apple";
-    let disabledReason: string | null = enabled ? null : `${PROVIDER_ENV_KEYS[provider]}=true로 설정되지 않았습니다.`;
+    let enabled = false;
+    let disabledReason: string | null = `${PROVIDER_ENV_KEYS[provider]}=true로 설정되지 않았습니다.`;
 
     if (hasExplicitList) {
       enabled = explicitList.has(provider);
