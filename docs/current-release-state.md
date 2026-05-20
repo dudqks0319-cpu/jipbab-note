@@ -6,13 +6,10 @@ Updated: 2026-05-20 22:36 KST
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
 - Branch: `codex/jipbab-store-readiness`
-- Latest pushed commits:
-  - `666bbcf feat(auth): verify Apple Kakao OAuth readiness`
-  - `1855dd5 fix: harden recipe release security`
-  - `bfbe932 chore: trim vercel deploy input`
+- Latest pushed commits: use `git log -2 --oneline` for the exact current head; this branch contains the OAuth readiness commit and release ledger update.
 - Remote tracking branch: `origin/codex/jipbab-store-readiness`
 - Working tree after OAuth provider setup pass: clean and pushed.
-- `origin/main` comparison after this OAuth readiness commit: 25 commits ahead, 0 commits behind
+- `origin/main` comparison after the OAuth readiness pass: branch is ahead of `origin/main` and 0 commits behind.
 - Main branch state: latest store readiness work is not merged into `origin/main` yet.
 - PR readiness: PR creation remains allowed after the security hardening commit and push.
 - Release verdict: local release candidate branch, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows now pass, but full real-device QA, App Store Connect/TestFlight for the actual JipbabNote app, and Play Console internal testing are still release blockers.
