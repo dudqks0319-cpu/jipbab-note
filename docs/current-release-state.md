@@ -1,17 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-20 22:20 KST
+Updated: 2026-05-20 22:36 KST
 
 ## Local code state
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
 - Branch: `codex/jipbab-store-readiness`
 - Latest pushed commits:
+  - `666bbcf feat(auth): verify Apple Kakao OAuth readiness`
   - `1855dd5 fix: harden recipe release security`
   - `bfbe932 chore: trim vercel deploy input`
 - Remote tracking branch: `origin/codex/jipbab-store-readiness`
-- Working tree after OAuth provider setup pass: pending local OAuth/code/doc/native sync edits, not pushed.
-- `origin/main` comparison after this security hardening commit: 22 commits ahead, 0 commits behind
+- Working tree after OAuth provider setup pass: clean and pushed.
+- `origin/main` comparison after this OAuth readiness commit: 25 commits ahead, 0 commits behind
 - Main branch state: latest store readiness work is not merged into `origin/main` yet.
 - PR readiness: PR creation remains allowed after the security hardening commit and push.
 - Release verdict: local release candidate branch, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows now pass, but full real-device QA, App Store Connect/TestFlight for the actual JipbabNote app, and Play Console internal testing are still release blockers.
