@@ -128,7 +128,7 @@ addResult(
       : "missing",
   "App Store Connect/TestFlight",
   "ASC/TestFlight build processing and availability evidence",
-  "App Store Connect에서 build 2026050802 처리/내부 테스트 가능 여부 확인",
+  "App Store Connect에서 최신 업로드 빌드의 처리/내부 테스트 가능 여부 확인",
 );
 
 addResult(

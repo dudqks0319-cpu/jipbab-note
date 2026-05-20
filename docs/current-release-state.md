@@ -1,24 +1,24 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-20 22:36 KST
+Updated: 2026-05-20 23:24 KST
 
 ## Local code state
 
 - Repo: `/Users/jyb-m3max/Desktop/codex/jipbab-note`
-- Branch: `codex/jipbab-store-readiness`
-- Latest pushed commits: use `git log -2 --oneline` for the exact current head; this branch contains the OAuth readiness commit and release ledger update.
-- Remote tracking branch: `origin/codex/jipbab-store-readiness`
-- Working tree after OAuth provider setup pass: clean and pushed.
-- `origin/main` comparison after the OAuth readiness pass: branch is ahead of `origin/main` and 0 commits behind.
-- Main branch state: latest store readiness work is not merged into `origin/main` yet.
-- PR readiness: PR creation remains allowed after the security hardening commit and push.
-- Release verdict: local release candidate branch, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows now pass, but full real-device QA, App Store Connect/TestFlight for the actual JipbabNote app, and Play Console internal testing are still release blockers.
+- Branch: `main`
+- Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
+- Latest pushed commits: use `git log -2 --oneline` for the exact current head.
+- Remote tracking branch: `origin/main`
+- Working tree after this ledger update: expected clean after the iOS build-number commit is pushed.
+- Main branch state: latest store readiness work is merged into `origin/main`.
+- PR readiness: completed; follow-up release work now happens on `main`.
+- Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
 
 ## Build identity
 
 - Bundle ID: `com.jipbab.note`
 - Marketing version: `1.0`
-- Current project version observed from Xcode settings: `2026050802`
+- Current project version observed from Xcode settings: `2026052001`
 - Capacitor remote URL mode: `CAPACITOR_SERVER_URL` now points to `https://jipbab-note-app.vercel.app` in local release env.
 
 ## Verification evidence
@@ -28,6 +28,14 @@ Updated: 2026-05-20 22:36 KST
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
 - `pnpm mobile:sync:ios`: pass on 2026-05-20 22:16 KST. `CAPACITOR_SERVER_URL=https://jipbab-note-app.vercel.app` was verified against the production app marker, `ios/App/App/capacitor.config.json` was regenerated, and the App Store-safe iOS package targets were re-applied.
 - `pnpm mobile:sync:android`: pass on 2026-05-20 22:16 KST. `CAPACITOR_SERVER_URL=https://jipbab-note-app.vercel.app` was verified against the production app marker and `android/app/src/main/assets/capacitor.config.json` was regenerated.
+- iOS build number bump: pass on 2026-05-20 23:12 KST. `CURRENT_PROJECT_VERSION` was increased from `2026050802` to `2026052001`.
+- `pnpm mobile:sync:ios`: pass again on 2026-05-20 23:12 KST after the build-number bump. `public/runtime-app-config.json` was regenerated with `https://jipbab-note-app.vercel.app`.
+- iOS release archive: pass on 2026-05-20 23:14 KST with `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination generic/platform=iOS -archivePath ios/build/JipbabNote-2026052001.xcarchive archive`.
+- iOS App Store upload: pass on 2026-05-20 23:17 KST with `xcodebuild -exportArchive -archivePath ios/build/JipbabNote-2026052001.xcarchive -exportPath ios/build/export-2026052001 -exportOptionsPlist ios/exportOptions-app-store-connect.plist`. Xcode reported `Uploaded package is processing`, `Upload succeeded`, and `Uploaded App`.
+- iOS local IPA export: pass on 2026-05-20 23:19 KST with `xcodebuild -exportArchive -archivePath ios/build/JipbabNote-2026052001.xcarchive -exportPath ios/build/export-2026052001 -exportOptionsPlist ios/build/export-2026050802-rerun/ExportOptions.plist`.
+- `pnpm check:ios-release`: pass on 2026-05-20 23:20 KST. 18 checks passed, failures 0; project and archive build number are `2026052001`, App Store upload history shows uploaded build `2026052001`, and local IPA SHA-256 is `e949d876d08b3f5b7c71e82e79991307f2b9b6c666e91214a617f9e008070c91`.
+- `pnpm release:check`: pass on 2026-05-20 23:20 KST after build `2026052001`. All 6 local gates passed; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
+- `pnpm build`: pass on 2026-05-20 23:24 KST after sandbox escalation. The sandboxed run failed with Turbopack `Operation not permitted` while binding a local port; the escalated rerun compiled 31 routes successfully.
 - `pnpm release:check`: pass on 2026-05-20 22:17 KST. All 6 local gates passed after the Capacitor/runtime URL sync; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
 - `pnpm release:external-check`: pass on 2026-05-20 22:18 KST. Supabase live REST read checks passed with 6 passes, 0 failures, and Google/Apple/Kakao OAuth provider start checks passed with 7 passes, 0 failures.
 - `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-20 22:18 KST. 12 checks passed, including temporary guest insert, same-device readback, cross-device negative read, and delete cleanup.
@@ -80,7 +88,7 @@ Updated: 2026-05-20 22:36 KST
 - `pnpm mobile:sync:ios`: pass on 2026-05-19 using the configured remote server URL.
 - iOS release archive: pass on 2026-05-19 with `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination generic/platform=iOS -archivePath ios/build/JipbabNote-2026050802.xcarchive archive`.
 - iOS release export: pass on 2026-05-19 with `xcodebuild -exportArchive -archivePath ios/build/JipbabNote-2026050802.xcarchive -exportPath ios/build/export-2026050802-rerun -exportOptionsPlist ios/build/export-2026050802/ExportOptions.plist`.
-- iOS App Store upload attempt: blocked by App Store Connect because build `2026050802` already exists there (`The bundle version must be higher than the previously uploaded version: '2026050802'.`). Treat App Store Connect/TestFlight processing as an external follow-up to confirm in the dashboard, or bump `CURRENT_PROJECT_VERSION` before another upload.
+- Previous iOS App Store upload attempt: blocked by App Store Connect because build `2026050802` already exists there (`The bundle version must be higher than the previously uploaded version: '2026050802'.`). This was resolved by uploading build `2026052001`; TestFlight processing and internal tester availability still need dashboard confirmation.
 - iOS simulator: iPhone 17, iOS 26.2, `xcodebuild` Debug build succeeded, app installed/launched, Home and Shopping tabs opened.
 - `pnpm mobile:sync:android`: pass on 2026-05-19 using the configured remote server URL.
 - Android debug build: pass on 2026-05-19 with JDK 21 and Android SDK path set for the command.
@@ -107,7 +115,7 @@ Updated: 2026-05-20 22:36 KST
 ## External state
 
 - Vercel production: current aliases point to the 2026-05-19 production deployment. The attached recipe-detail server component error is no longer reproducible on the production alias.
-- App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote in the latest browser pass. The browser showed an InviteHub App Store Connect page first and then an App Store Connect login failure, so no JipbabNote TestFlight state should be inferred from that session.
+- App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser.
 - App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
@@ -133,7 +141,7 @@ Before external release submission:
 2. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks.
 3. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
 4. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-5. Upload or submit a new iOS build with a higher build number than `2026050802`, then confirm App Store Connect/TestFlight processing for the JipbabNote app, not a different app record.
+5. Confirm App Store Connect/TestFlight processing and internal tester availability for uploaded build `2026052001` in the JipbabNote app record, not a different app record.
 6. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
 7. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
 8. Complete App Store Connect/Play Console privacy, support contact, and review notes.
