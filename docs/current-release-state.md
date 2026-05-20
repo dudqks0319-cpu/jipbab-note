@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-20 23:24 KST
+Updated: 2026-05-20 23:27 KST
 
 ## Local code state
 
@@ -36,6 +36,8 @@ Updated: 2026-05-20 23:24 KST
 - `pnpm check:ios-release`: pass on 2026-05-20 23:20 KST. 18 checks passed, failures 0; project and archive build number are `2026052001`, App Store upload history shows uploaded build `2026052001`, and local IPA SHA-256 is `e949d876d08b3f5b7c71e82e79991307f2b9b6c666e91214a617f9e008070c91`.
 - `pnpm release:check`: pass on 2026-05-20 23:20 KST after build `2026052001`. All 6 local gates passed; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
 - `pnpm build`: pass on 2026-05-20 23:24 KST after sandbox escalation. The sandboxed run failed with Turbopack `Operation not permitted` while binding a local port; the escalated rerun compiled 31 routes successfully.
+- `xcrun xctrace list devices`: blocked for real-device QA on 2026-05-20 23:27 KST. The iPhone is visible but listed under `Devices Offline`.
+- `adb devices -l`: blocked for real-device QA on 2026-05-20 23:26 KST. The command runs successfully after sandbox escalation, but no Android device is attached.
 - `pnpm release:check`: pass on 2026-05-20 22:17 KST. All 6 local gates passed after the Capacitor/runtime URL sync; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
 - `pnpm release:external-check`: pass on 2026-05-20 22:18 KST. Supabase live REST read checks passed with 6 passes, 0 failures, and Google/Apple/Kakao OAuth provider start checks passed with 7 passes, 0 failures.
 - `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-20 22:18 KST. 12 checks passed, including temporary guest insert, same-device readback, cross-device negative read, and delete cleanup.
@@ -122,9 +124,9 @@ Updated: 2026-05-20 23:24 KST
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
 - Production Supabase migration application: local SQL contract verified and live project connection, read checks, write checks, and RLS isolation checks passed from the app harness.
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
-- iPhone real-device QA: partial pass. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set.
-- Android real-device QA: not done. No Android device was connected in `adb devices -l`.
-- Real-device QA: not done for the complete release checklist. Current iPhone is visible to CoreDevice but `unavailable`, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet.
+- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-20 23:27 KST recheck shows the iPhone under `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
+- Android real-device QA: not done. Latest 2026-05-20 23:26 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
+- Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet.
 - Play Console internal testing: not verified in this pass. Chrome redirects to Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
 ## Current release decisions
