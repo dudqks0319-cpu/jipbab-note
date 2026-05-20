@@ -2,12 +2,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
+import { getSupabaseClient } from "@/lib/supabase";
+import { resolveAuthProviderOptions, type ResolvedAuthProviderOption } from "@/lib/auth-config";
 import type {
-  AuthProviderOption,
   AuthQueryError,
   DeviceDataMigrationResult,
   OAuthProvider,
@@ -20,73 +21,26 @@ const PUBLIC_GOOGLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GOOGL
 const PUBLIC_KAKAO_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED;
 const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED;
 
-const PROVIDER_PRIORITY: OAuthProvider[] = ["google", "kakao", "apple"];
-
-const PROVIDER_LABELS: Record<OAuthProvider, string> = {
-  google: "구글",
-  kakao: "카카오",
-  apple: "애플",
-};
-
-const authClientCache = new Map<string, SupabaseClient>();
+const AUTH_UNAVAILABLE_MESSAGE = "지금은 로그인 기능을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
 
 function toAuthError(message: string, source: AuthQueryError["source"]): AuthQueryError {
   return { message, source };
 }
 
-function parseBooleanFlag(value: string | undefined): boolean | null {
-  if (!value || !value.trim()) {
-    return null;
-  }
-
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "true" || normalized === "1") {
-    return true;
-  }
-  if (normalized === "false" || normalized === "0") {
-    return false;
-  }
-  return null;
+function isIgnorableMissingSessionError(error: { message?: string } | null | undefined): boolean {
+  const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+  return message.includes("auth session missing");
 }
 
-function resolveProviderEnabled(provider: OAuthProvider): boolean {
-  const explicitList = new Set(
-    (PUBLIC_OAUTH_PROVIDER_LIST ?? "")
-      .split(",")
-      .map((item) => item.trim().toLowerCase())
-      .filter(Boolean),
-  );
-
-  const explicitFlags: Record<OAuthProvider, boolean | null> = {
-    google: parseBooleanFlag(PUBLIC_GOOGLE_OAUTH_ENABLED),
-    kakao: parseBooleanFlag(PUBLIC_KAKAO_OAUTH_ENABLED),
-    apple: parseBooleanFlag(PUBLIC_APPLE_OAUTH_ENABLED),
-  };
-
-  const flagValue = explicitFlags[provider];
-  if (flagValue !== null) {
-    return flagValue;
-  }
-
-  if (explicitList.size > 0) {
-    return explicitList.has(provider);
-  }
-
-  // 별도 설정이 없으면 우선순위 3개를 모두 노출합니다.
-  return true;
-}
-
-function buildProviderOptions(): AuthProviderOption[] {
-  const options = PROVIDER_PRIORITY.map((provider) => ({
-    provider,
-    label: PROVIDER_LABELS[provider],
-    enabled: resolveProviderEnabled(provider),
-  }));
-
-  const enabled = options.filter((item) => item.enabled);
-  const disabled = options.filter((item) => !item.enabled);
-
-  return [...enabled, ...disabled];
+function buildProviderOptions(): ResolvedAuthProviderOption[] {
+  return resolveAuthProviderOptions({
+    supabaseUrl: PUBLIC_SUPABASE_URL,
+    supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
+    providerList: PUBLIC_OAUTH_PROVIDER_LIST,
+    googleEnabled: PUBLIC_GOOGLE_OAUTH_ENABLED,
+    kakaoEnabled: PUBLIC_KAKAO_OAUTH_ENABLED,
+    appleEnabled: PUBLIC_APPLE_OAUTH_ENABLED,
+  });
 }
 
 function createAuthClient(deviceId: string): SupabaseClient | null {
@@ -94,34 +48,8 @@ function createAuthClient(deviceId: string): SupabaseClient | null {
     return null;
   }
 
-  const normalizedDeviceId = deviceId.trim();
-  const cacheKey = normalizedDeviceId || "default";
-  const cached = authClientCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  const headers: Record<string, string> = {
-    "x-client-info": "jipbab-note-web-auth",
-  };
-
-  if (normalizedDeviceId) {
-    headers["x-device-id"] = normalizedDeviceId;
-  }
-
-  const client = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-    global: {
-      headers,
-    },
-  });
-
-  authClientCache.set(cacheKey, client);
-  return client;
+  // Auth도 lib/supabase.ts의 캐시된 client를 사용해서 GoTrueClient 중복 생성을 줄입니다.
+  return getSupabaseClient({ deviceId });
 }
 
 function resolveUserDisplayName(user: User | null): string {
@@ -176,13 +104,23 @@ function resolveCurrentProvider(user: User | null): string | null {
   return provider && provider.trim() ? provider : null;
 }
 
+function buildAuthRedirectUrl(nextPath = "/mypage"): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const callbackUrl = new URL("/auth/callback", window.location.origin);
+  callbackUrl.searchParams.set("next", nextPath);
+  return callbackUrl.toString();
+}
+
 export interface UseAuthResult {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   signingIn: boolean;
   migrating: boolean;
-  providers: AuthProviderOption[];
+  providers: ResolvedAuthProviderOption[];
   error: AuthQueryError | null;
   migrationResult: DeviceDataMigrationResult | null;
   userDisplayName: string;
@@ -190,6 +128,8 @@ export interface UseAuthResult {
   userAvatarUrl: string | null;
   currentProvider: string | null;
   signInWithProvider: (provider: OAuthProvider) => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string, nickname?: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -246,12 +186,12 @@ export function useAuth(): UseAuthResult {
   const refreshUser = useCallback(async () => {
     const client = createAuthClient(deviceId);
     if (!client) {
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
     const { data, error: authError } = await client.auth.getUser();
-    if (authError) {
+    if (authError && !isIgnorableMissingSessionError(authError)) {
       setError(toAuthError(authError.message, "supabase"));
       return;
     }
@@ -266,13 +206,15 @@ export function useAuth(): UseAuthResult {
     async (provider: OAuthProvider) => {
       const client = createAuthClient(deviceId);
       if (!client) {
-        setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
         return;
       }
 
       const providerOption = providers.find((item) => item.provider === provider);
       if (!providerOption?.enabled) {
-        setError(toAuthError("해당 로그인 제공자가 비활성화되어 있습니다. Supabase 설정을 확인해주세요.", "config"));
+        setError(
+          toAuthError(providerOption?.userDisabledReason ?? "해당 로그인 제공자가 비활성화되어 있습니다.", "config"),
+        );
         return;
       }
 
@@ -280,7 +222,7 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
-        const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/mypage` : undefined;
+        const redirectTo = buildAuthRedirectUrl("/mypage");
         const { error: signInError } = await client.auth.signInWithOAuth({
           provider,
           options: {
@@ -301,10 +243,96 @@ export function useAuth(): UseAuthResult {
     [deviceId, providers],
   );
 
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      const client = createAuthClient(deviceId);
+      if (!client) {
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
+        return false;
+      }
+
+      setSigningIn(true);
+      setError(null);
+
+      try {
+        const { data, error: signInError } = await client.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (signInError) {
+          throw signInError;
+        }
+
+        const sessionUser = data.session?.user ?? null;
+        setUser(sessionUser);
+        if (sessionUser) {
+          await runMigration(sessionUser);
+        }
+        return true;
+      } catch (caught) {
+        const message = caught instanceof Error ? caught.message : "이메일 로그인 중 오류가 발생했습니다.";
+        setError(toAuthError(message, "supabase"));
+        return false;
+      } finally {
+        setSigningIn(false);
+      }
+    },
+    [deviceId, runMigration],
+  );
+
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, nickname?: string) => {
+      const client = createAuthClient(deviceId);
+      if (!client) {
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
+        return false;
+      }
+
+      setSigningIn(true);
+      setError(null);
+
+      try {
+        const displayName = nickname?.trim();
+        const { data, error: signUpError } = await client.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: displayName
+              ? {
+                  name: displayName,
+                  full_name: displayName,
+                }
+              : undefined,
+            emailRedirectTo: buildAuthRedirectUrl("/mypage"),
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        const sessionUser = data.session?.user ?? null;
+        setUser(sessionUser);
+        if (sessionUser) {
+          await runMigration(sessionUser);
+        }
+        return true;
+      } catch (caught) {
+        const message = caught instanceof Error ? caught.message : "이메일 회원가입 중 오류가 발생했습니다.";
+        setError(toAuthError(message, "supabase"));
+        return false;
+      } finally {
+        setSigningIn(false);
+      }
+    },
+    [deviceId, runMigration],
+  );
+
   const signOut = useCallback(async () => {
     const client = createAuthClient(deviceId);
     if (!client) {
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그아웃 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
@@ -325,7 +353,7 @@ export function useAuth(): UseAuthResult {
     const client = createAuthClient(deviceId);
     if (!client) {
       setLoading(false);
-      setError(toAuthError("Supabase 환경변수가 설정되지 않아 로그인 기능을 사용할 수 없습니다.", "config"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
     }
 
@@ -340,7 +368,7 @@ export function useAuth(): UseAuthResult {
         return;
       }
 
-      if (authError) {
+      if (authError && !isIgnorableMissingSessionError(authError)) {
         setError(toAuthError(authError.message, "supabase"));
       }
 
@@ -386,6 +414,8 @@ export function useAuth(): UseAuthResult {
     userAvatarUrl: resolveUserAvatar(user),
     currentProvider: resolveCurrentProvider(user),
     signInWithProvider,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
     refreshUser,
   };

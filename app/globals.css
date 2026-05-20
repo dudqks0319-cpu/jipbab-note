@@ -11,17 +11,20 @@
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #f3efe7;
-  color: #2b2f36;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  background: #f4eee5;
+  color: #2b2118;
 }
 
-/* 모바일 앱 프레임 바깥쪽 배경 텍스처 */
-.bg-app-shell {
-  background:
-    radial-gradient(circle at 14% 10%, rgba(167, 234, 214, 0.55) 0%, rgba(167, 234, 214, 0) 40%),
-    radial-gradient(circle at 88% 6%, rgba(253, 186, 116, 0.35) 0%, rgba(253, 186, 116, 0) 38%),
-    radial-gradient(circle at 8% 88%, rgba(216, 180, 254, 0.33) 0%, rgba(216, 180, 254, 0) 34%),
-    linear-gradient(180deg, #f8f3ec 0%, #f1ece3 100%);
+/* iOS WebView/Safari가 작은 입력 글꼴을 자동 확대해 레이아웃을 깨지 않도록 합니다. */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* 가로 스크롤 시 스크롤바 숨기기 */
@@ -67,4 +70,27 @@ body {
 /* 민트 그라데이션 헤더 */
 .bg-mint-gradient {
   background: linear-gradient(135deg, #a7ead6 0%, #6dd5b8 100%);
+}
+
+/* 참고 이미지처럼 얇은 모바일 상태바 여백을 화면별로 재사용합니다. */
+.mobile-safe-top {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
+.jipbab-panel {
+  border: 1px solid #eadcc9;
+  background: rgba(255, 252, 246, 0.9);
+  box-shadow: 0 10px 28px rgba(76, 51, 28, 0.08);
+}
+
+.jipbab-pressable {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.jipbab-pressable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(76, 51, 28, 0.12);
 }

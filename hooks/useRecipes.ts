@@ -4,8 +4,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIngredients } from "@/hooks/useIngredients";
+import { CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
 import { getDeviceId } from "@/lib/device-id";
-import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import {
+  buildRecipeRecommendationReason,
+  findExpiringMatchedIngredients,
+  rankRecipeRecommendations,
+  type RecipeRecommendationScore,
+} from "@/lib/matching";
 import type { RecipeCategory, RecipeListResponse, RecipeRecord, RecipeWithMatch } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -43,8 +49,30 @@ const buildQueryParams = (
   return params;
 };
 
-export interface UseRecipesResult {
-  recipes: RecipeWithMatch[];
+const getCuratedFallbackPage = (
+  page: number,
+  size: number,
+  searchQuery: string,
+  selectedCategory: RecipeCategory,
+): { recipes: RecipeRecord[]; totalCount: number } => {
+  const query = searchQuery.trim().toLowerCase();
+  const filtered = CURATED_RECIPE_RECORDS.filter((recipe) => {
+    const matchesCategory = selectedCategory === "전체" || recipe.category === selectedCategory;
+    const matchesQuery =
+      query.length === 0 ||
+      recipe.name.toLowerCase().includes(query) ||
+      recipe.ingredients.toLowerCase().includes(query);
+    return matchesCategory && matchesQuery;
+  });
+  const start = (page - 1) * size;
+  return {
+    recipes: filtered.slice(start, start + size),
+    totalCount: filtered.length,
+  };
+};
+
+export interface UseRecipeCatalogResult {
+  recipes: RecipeRecord[];
   loading: boolean;
   error: string | null;
   page: number;
@@ -52,7 +80,6 @@ export interface UseRecipesResult {
   totalPages: number;
   searchQuery: string;
   selectedCategory: RecipeCategory;
-  ingredientsLoading: boolean;
   setSearchQuery: (value: string) => void;
   setSelectedCategory: (category: RecipeCategory) => void;
   goToPage: (nextPage: number) => void;
@@ -61,8 +88,17 @@ export interface UseRecipesResult {
   refresh: () => void;
 }
 
-export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
-  const { ingredients, loading: ingredientsLoading } = useIngredients();
+export type RecommendedRecipe = RecipeWithMatch & {
+  recommendationScore: RecipeRecommendationScore;
+  recommendationReason: string;
+};
+
+export interface UseRecipesResult extends UseRecipeCatalogResult {
+  recipes: RecommendedRecipe[];
+  ingredientsLoading: boolean;
+}
+
+export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalogResult {
   const [rawRecipes, setRawRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,18 +110,6 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   const [selectedCategory, setSelectedCategoryState] = useState<RecipeCategory>("전체");
   const requestIdRef = useRef(0);
   const requestAbortRef = useRef<AbortController | null>(null);
-
-  const ingredientNames = useMemo(() => ingredients.map((item) => item.name), [ingredients]);
-
-  const recipes = useMemo<RecipeWithMatch[]>(() => {
-    return rawRecipes.map((recipe) => {
-      const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients);
-      return {
-        ...recipe,
-        ...match,
-      };
-    });
-  }, [ingredientNames, rawRecipes]);
 
   const totalPages = useMemo(() => {
     if (totalCount <= 0) {
@@ -126,15 +150,23 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
         }
 
         const recipesFromApi = Array.isArray(payload.recipes) ? payload.recipes : [];
-        setRawRecipes(recipesFromApi);
-        setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : 0);
+        if (recipesFromApi.length > 0) {
+          setRawRecipes(recipesFromApi);
+          setTotalCount(Number.isFinite(payload.totalCount) ? payload.totalCount : recipesFromApi.length);
+          return;
+        }
+
+        const fallback = getCuratedFallbackPage(targetPage, pageSize, targetQuery, targetCategory);
+        setRawRecipes(fallback.recipes);
+        setTotalCount(fallback.totalCount);
       } catch (caught) {
         if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return;
         }
-        setRawRecipes([]);
-        setTotalCount(0);
-        setError(caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
+        const fallback = getCuratedFallbackPage(targetPage, pageSize, targetQuery, targetCategory);
+        setRawRecipes(fallback.recipes);
+        setTotalCount(fallback.totalCount);
+        setError(fallback.totalCount > 0 ? null : caught instanceof Error ? caught.message : "레시피 조회 중 오류가 발생했습니다.");
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);
@@ -200,7 +232,7 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
   }, []);
 
   return {
-    recipes,
+    recipes: rawRecipes,
     loading,
     error,
     page,
@@ -208,12 +240,58 @@ export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
     totalPages,
     searchQuery,
     selectedCategory,
-    ingredientsLoading,
     setSearchQuery,
     setSelectedCategory,
     goToPage,
     nextPage,
     prevPage,
     refresh,
+  };
+}
+
+export function useRecipes(pageSize = DEFAULT_PAGE_SIZE): UseRecipesResult {
+  const { ingredients, loading: ingredientsLoading } = useIngredients();
+  const catalog = useRecipeCatalog(pageSize);
+
+  const mergedCatalogRecipes = useMemo(() => {
+    const query = catalog.searchQuery.trim().toLowerCase();
+    const category = catalog.selectedCategory;
+    const curatedMatches = CURATED_RECIPE_RECORDS.filter((recipe) => {
+      const matchesCategory = category === "전체" || recipe.category === category;
+      const matchesQuery =
+        query.length === 0 ||
+        recipe.name.toLowerCase().includes(query) ||
+        recipe.ingredients.toLowerCase().includes(query);
+      return matchesCategory && matchesQuery;
+    });
+    const existingIds = new Set(catalog.recipes.map((recipe) => recipe.id));
+    return [
+      ...curatedMatches.filter((recipe) => !existingIds.has(recipe.id)),
+      ...catalog.recipes,
+    ];
+  }, [catalog.recipes, catalog.searchQuery, catalog.selectedCategory]);
+
+  const recipes = useMemo<RecommendedRecipe[]>(() => {
+    return rankRecipeRecommendations(mergedCatalogRecipes, ingredients).map(({ recipe, match, score }) => {
+      const expiringIngredients = findExpiringMatchedIngredients(match.matchedIngredients, ingredients);
+
+      return {
+        ...recipe,
+        ...match,
+        recommendationScore: score,
+        recommendationReason: buildRecipeRecommendationReason({
+          recipeName: recipe.name,
+          matchedIngredients: match.matchedIngredients,
+          missingIngredients: match.missingIngredients,
+          expiringIngredients,
+        }),
+      };
+    });
+  }, [ingredients, mergedCatalogRecipes]);
+
+  return {
+    ...catalog,
+    recipes,
+    ingredientsLoading,
   };
 }

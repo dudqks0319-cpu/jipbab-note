@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 
 import { extractRecipeIngredients } from "@/lib/matching";
+import { getRateLimitKey } from "@/lib/request-security";
 import type { IngredientCategory } from "@/types";
 
 const SERVICE_ID = "COOKRCP01";
@@ -64,16 +65,41 @@ let catalogCache: IngredientCatalog | null = null;
 let catalogBuildPromise: Promise<IngredientCatalog> | null = null;
 const requestStore = new Map<string, { count: number; startedAt: number }>();
 
-const CATEGORIES: IngredientCategory[] = ["채소", "과일", "육류", "수산물", "유제품", "양념", "기타"];
-const CATEGORY_PRIORITY: IngredientCategory[] = ["양념", "육류", "수산물", "유제품", "채소", "과일", "기타"];
+const CATEGORIES: IngredientCategory[] = [
+  "채소",
+  "과일",
+  "육류",
+  "수산물",
+  "유제품",
+  "냉동식품",
+  "조미료",
+  "곡물/면/빵",
+  "통조림/가공식품",
+  "음료/기타",
+];
+const CATEGORY_PRIORITY: IngredientCategory[] = [
+  "조미료",
+  "육류",
+  "수산물",
+  "유제품",
+  "채소",
+  "과일",
+  "냉동식품",
+  "곡물/면/빵",
+  "통조림/가공식품",
+  "음료/기타",
+];
 const LOCAL_FALLBACK_BY_CATEGORY: Record<IngredientCategory, string[]> = {
   채소: ["양파", "대파", "마늘", "감자", "당근", "애호박", "버섯", "오이", "시금치", "브로콜리"],
   과일: ["사과", "배", "바나나", "딸기", "레몬", "오렌지", "키위", "블루베리"],
   육류: ["소고기", "돼지고기", "닭고기", "목살", "삼겹살", "닭가슴살", "소시지"],
   수산물: ["고등어", "연어", "새우", "오징어", "멸치", "미역", "다시마", "바지락"],
   유제품: ["우유", "치즈", "버터", "요거트", "생크림", "계란", "두부"],
-  양념: ["간장", "고추장", "된장", "소금", "설탕", "식초", "참기름", "고춧가루"],
-  기타: ["쌀", "밀가루", "당면", "김치", "통조림", "견과류"],
+  냉동식품: ["냉동만두", "냉동새우", "냉동볶음밥", "냉동우동면", "냉동블루베리"],
+  조미료: ["간장", "고추장", "된장", "소금", "설탕", "식초", "참기름", "고춧가루"],
+  "곡물/면/빵": ["쌀", "밀가루", "당면", "파스타면", "식빵", "라면"],
+  "통조림/가공식품": ["참치캔", "옥수수캔", "김치", "스팸", "토마토소스"],
+  "음료/기타": ["견과류", "생수", "탄산수", "오렌지주스", "티백"],
 };
 const SEARCH_PATTERN = /^[0-9A-Za-z가-힣\s\-_/().,&]+$/;
 const BRACKET_PATTERN = /\([^)]*\)|\[[^\]]*]|\{[^}]*}/g;
@@ -185,7 +211,8 @@ const CATEGORY_RULES: Record<IngredientCategory, CategoryRule[]> = {
     { keyword: "모짜렐라", weight: 5 },
     { keyword: "파마산", weight: 5 },
   ],
-  양념: [
+  냉동식품: [],
+  조미료: [
     { keyword: "간장", weight: 6 },
     { keyword: "고추장", weight: 6 },
     { keyword: "된장", weight: 6 },
@@ -209,7 +236,26 @@ const CATEGORY_RULES: Record<IngredientCategory, CategoryRule[]> = {
     { keyword: "카레가루", weight: 6 },
     { keyword: "소스", weight: 4 },
   ],
-  기타: [],
+  "곡물/면/빵": [
+    { keyword: "쌀", weight: 5 },
+    { keyword: "밀가루", weight: 5 },
+    { keyword: "국수", weight: 4 },
+    { keyword: "라면", weight: 4 },
+    { keyword: "파스타", weight: 4 },
+    { keyword: "식빵", weight: 4 },
+    { keyword: "떡", weight: 4 },
+    { keyword: "당면", weight: 4 },
+  ],
+  "통조림/가공식품": [
+    { keyword: "통조림", weight: 5 },
+    { keyword: "참치캔", weight: 5 },
+    { keyword: "옥수수캔", weight: 5 },
+    { keyword: "스팸", weight: 5 },
+    { keyword: "김치", weight: 4 },
+    { keyword: "잼", weight: 4 },
+    { keyword: "토마토소스", weight: 4 },
+  ],
+  "음료/기타": [],
 };
 
 const CATEGORY_ALIASES: Array<[RegExp, string]> = [
@@ -228,28 +274,6 @@ const toPositiveInt = (value: string | null, fallback: number): number => {
     return fallback;
   }
   return Math.floor(parsed);
-};
-
-const getClientKey = (request: Request): string => {
-  const deviceId = request.headers.get("x-device-id")?.trim();
-  if (deviceId) {
-    return `device:${deviceId}`;
-  }
-
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const ip = forwardedFor.split(",")[0]?.trim();
-    if (ip) return `ip:${ip}`;
-  }
-
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) {
-    return `ip:${realIp}`;
-  }
-
-  // 로컬 개발 환경에서는 IP 헤더가 비어있는 경우가 많아 UA를 보조 키로 사용합니다.
-  const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
-  return `ua:${userAgent.slice(0, 120)}`;
 };
 
 const isRateLimited = (key: string): boolean => {
@@ -341,19 +365,19 @@ const getRuleScore = (normalizedIngredient: string, rule: CategoryRule): number 
 const classifyIngredientCategory = (ingredientName: string): IngredientCategory => {
   const normalized = normalizeIngredientForCategory(ingredientName);
   if (!normalized) {
-    return "기타";
+    return "음료/기타";
   }
 
   // 소스/액젓/오일류는 단백질 키워드가 있어도 양념으로 우선 분류합니다.
   if (/(액젓|소스|드레싱|시럽|오일|식용유)/.test(normalized)) {
-    return "양념";
+    return "조미료";
   }
 
-  let bestCategory: IngredientCategory = "기타";
+  let bestCategory: IngredientCategory = "음료/기타";
   let bestScore = 0;
 
   for (const category of CATEGORIES) {
-    if (category === "기타") {
+    if (category === "음료/기타") {
       continue;
     }
 
@@ -463,8 +487,11 @@ const buildCatalog = async (apiKey: string): Promise<IngredientCatalog> => {
     육류: new Set<string>(),
     수산물: new Set<string>(),
     유제품: new Set<string>(),
-    양념: new Set<string>(),
-    기타: new Set<string>(),
+    냉동식품: new Set<string>(),
+    조미료: new Set<string>(),
+    "곡물/면/빵": new Set<string>(),
+    "통조림/가공식품": new Set<string>(),
+    "음료/기타": new Set<string>(),
   };
 
   const maxPages = Math.ceil(MAX_SCAN_RECIPES / RECIPES_PER_REQUEST);
@@ -510,8 +537,11 @@ const buildCatalog = async (apiKey: string): Promise<IngredientCatalog> => {
     육류: sortIngredients(Array.from(setByCategory.육류)),
     수산물: sortIngredients(Array.from(setByCategory.수산물)),
     유제품: sortIngredients(Array.from(setByCategory.유제품)),
-    양념: sortIngredients(Array.from(setByCategory.양념)),
-    기타: sortIngredients(Array.from(setByCategory.기타)),
+    냉동식품: sortIngredients(Array.from(setByCategory.냉동식품)),
+    조미료: sortIngredients(Array.from(setByCategory.조미료)),
+    "곡물/면/빵": sortIngredients(Array.from(setByCategory["곡물/면/빵"])),
+    "통조림/가공식품": sortIngredients(Array.from(setByCategory["통조림/가공식품"])),
+    "음료/기타": sortIngredients(Array.from(setByCategory["음료/기타"])),
   } satisfies Record<IngredientCategory, string[]>;
 
   return {
@@ -575,7 +605,7 @@ const getFallbackCatalog = (): IngredientCatalog => {
 };
 
 export async function GET(request: Request) {
-  const clientKey = getClientKey(request);
+  const clientKey = getRateLimitKey(request);
   if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요." },

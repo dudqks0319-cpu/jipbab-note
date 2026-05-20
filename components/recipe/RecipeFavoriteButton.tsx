@@ -1,0 +1,41 @@
+// 이 파일은 레시피 상세 화면의 찜 버튼을 담당합니다.
+'use client'
+
+import { Heart } from 'lucide-react'
+
+import { useFavorites } from '@/hooks/useFavorites'
+
+type RecipeFavoriteButtonProps = {
+  id: string
+  name: string
+  category: string
+  thumbnailUrl: string | null
+}
+
+export default function RecipeFavoriteButton({
+  id,
+  name,
+  category,
+  thumbnailUrl,
+}: RecipeFavoriteButtonProps) {
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const favorite = isFavorite(id)
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        toggleFavorite({
+          id,
+          name,
+          category,
+          thumbnailUrl,
+        })
+      }
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
+      aria-label={favorite ? `${name} 찜 해제` : `${name} 찜하기`}
+    >
+      <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
+    </button>
+  )
+}

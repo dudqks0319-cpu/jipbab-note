@@ -2,10 +2,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { getSupabaseClient } from "@/lib/supabase";
 import type {
   CommunityCommentPayload,
   CommunityCommentRecord,
@@ -16,9 +17,6 @@ import type {
   CommunityQueryError,
 } from "@/types";
 
-const PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
 const POSTS_TABLE = "community_posts";
 const COMMENTS_TABLE = "community_comments";
 const LIKES_TABLE = "community_likes";
@@ -26,8 +24,6 @@ const LIKES_TABLE = "community_likes";
 const LOCAL_POSTS_KEY = "jipbab-note-community-posts";
 const LOCAL_COMMENTS_KEY = "jipbab-note-community-comments";
 const LOCAL_LIKES_KEY = "jipbab-note-community-likes";
-
-const communityClientCache = new Map<string, SupabaseClient>();
 
 interface CommunityViewer {
   userId: string | null;
@@ -111,38 +107,11 @@ function isMissingColumnError(value: unknown): boolean {
 }
 
 function createCommunityClient(deviceId: string): SupabaseClient | null {
-  if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
+  try {
+    return getSupabaseClient({ deviceId });
+  } catch {
     return null;
   }
-
-  const normalizedDeviceId = deviceId.trim();
-  const cacheKey = normalizedDeviceId || "default";
-  const cached = communityClientCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  const headers: Record<string, string> = {
-    "x-client-info": "jipbab-note-web-community",
-  };
-
-  if (normalizedDeviceId) {
-    headers["x-device-id"] = normalizedDeviceId;
-  }
-
-  const client = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-    global: {
-      headers,
-    },
-  });
-
-  communityClientCache.set(cacheKey, client);
-  return client;
 }
 
 function resolveAuthorNameFromMetadata(user: {

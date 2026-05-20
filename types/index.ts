@@ -5,15 +5,51 @@ export const INGREDIENT_CATEGORIES = [
   "육류",
   "수산물",
   "유제품",
-  "양념",
-  "기타",
+  "냉동식품",
+  "조미료",
+  "곡물/면/빵",
+  "통조림/가공식품",
+  "음료/기타",
 ] as const;
 
 export const INGREDIENT_STORAGE_TYPES = ["냉장", "냉동", "실온"] as const;
 
+export const INGREDIENT_UNIT_SYSTEMS = ["metric", "spoon", "count"] as const;
+
+export const INGREDIENT_UNITS = [
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "tbsp",
+  "tsp",
+  "cup",
+  "piece",
+  "pack",
+  "bag",
+  "can",
+  "bottle",
+  "block",
+  "sheet",
+  "slice",
+] as const;
+
 export type IngredientCategory = (typeof INGREDIENT_CATEGORIES)[number];
 
 export type IngredientStorageType = (typeof INGREDIENT_STORAGE_TYPES)[number];
+
+export type IngredientUnitSystem = (typeof INGREDIENT_UNIT_SYSTEMS)[number];
+
+export type IngredientUnit = (typeof INGREDIENT_UNITS)[number];
+
+export interface IngredientCatalogItem {
+  id: string;
+  category: IngredientCategory;
+  name: string;
+  aliases?: string[];
+  defaultStorageType?: IngredientStorageType;
+  defaultUnit?: IngredientUnit;
+}
 
 export interface IngredientRecord {
   id: string;
@@ -24,6 +60,14 @@ export interface IngredientRecord {
   storageType: IngredientStorageType;
   quantity: string | null;
   expiryDate: string | null;
+  purchaseDate?: string | null;
+  openedAt?: string | null;
+  storageLocation?: string | null;
+  unitPrice?: number | null;
+  purchasePlace?: string | null;
+  consumedAt?: string | null;
+  discardedAt?: string | null;
+  repeatPurchase?: boolean;
   barcode: string | null;
   imageUrl: string | null;
   memo: string | null;
@@ -37,6 +81,14 @@ export interface IngredientFormPayload {
   storageType?: IngredientStorageType;
   quantity?: string | null;
   expiryDate?: string | null;
+  purchaseDate?: string | null;
+  openedAt?: string | null;
+  storageLocation?: string | null;
+  unitPrice?: number | null;
+  purchasePlace?: string | null;
+  consumedAt?: string | null;
+  discardedAt?: string | null;
+  repeatPurchase?: boolean;
   barcode?: string | null;
   imageUrl?: string | null;
   memo?: string | null;
@@ -50,6 +102,14 @@ export interface IngredientInsertPayload {
   storage_type?: IngredientStorageType;
   quantity?: string | null;
   expiry_date?: string | null;
+  purchase_date?: string | null;
+  opened_at?: string | null;
+  storage_location?: string | null;
+  unit_price?: number | null;
+  purchase_place?: string | null;
+  consumed_at?: string | null;
+  discarded_at?: string | null;
+  repeat_purchase?: boolean;
   barcode?: string | null;
   image_url?: string | null;
   memo?: string | null;
@@ -61,6 +121,14 @@ export interface IngredientUpdatePayload {
   storage_type?: IngredientStorageType;
   quantity?: string | null;
   expiry_date?: string | null;
+  purchase_date?: string | null;
+  opened_at?: string | null;
+  storage_location?: string | null;
+  unit_price?: number | null;
+  purchase_place?: string | null;
+  consumed_at?: string | null;
+  discarded_at?: string | null;
+  repeat_purchase?: boolean;
   barcode?: string | null;
   image_url?: string | null;
   memo?: string | null;
@@ -69,6 +137,29 @@ export interface IngredientUpdatePayload {
 export interface IngredientQueryError {
   message: string;
   source: "supabase" | "local";
+}
+
+// 장보기 플로우에서 사용하는 타입입니다.
+export interface ShoppingItem {
+  id: string;
+  deviceId: string;
+  userId: string | null;
+  name: string;
+  quantity: string | null;
+  category: IngredientCategory | null;
+  checked: boolean;
+  sourceRecipeId: string | null;
+  sourceRecipeName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShoppingItemDraft {
+  name: string;
+  quantity?: string | null;
+  category?: IngredientCategory | null;
+  sourceRecipeId?: string | null;
+  sourceRecipeName?: string | null;
 }
 
 // Phase 5: 로그인 + 커뮤니티에서 사용하는 공통 타입입니다.
@@ -133,6 +224,23 @@ export interface CommunityLikeRecord {
   createdAt: string;
 }
 
+export interface FamilyMemberRecord {
+  id: string;
+  name: string;
+  role: "owner" | "member";
+  joinedAt: string;
+}
+
+export interface FamilyGroupRecord {
+  id: string;
+  name: string;
+  inviteCode: string;
+  ownerName: string;
+  members: FamilyMemberRecord[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CommunityPostPayload {
   title: string;
   content: string;
@@ -150,14 +258,16 @@ export interface CommunityQueryError {
 // 레시피 페이지에서 공통으로 사용하는 카테고리/응답/매칭 타입 정의입니다.
 export const RECIPE_CATEGORIES = [
   "전체",
+  "반찬",
+  "국·찌개",
+  "밥",
+  "일품",
   "한식",
   "중식",
   "양식",
   "일식",
   "분식",
   "디저트",
-  "국·찌개",
-  "반찬",
   "기타",
 ] as const;
 
@@ -200,11 +310,39 @@ export interface RecipeDetailStep {
   index: number;
   description: string;
   imageUrl: string | null;
+  beginnerTip?: string | null;
+  visualCue?: string | null;
+  imageAlt?: string | null;
+  imageCaption?: string | null;
+}
+
+export interface RecipeIngredientDetail {
+  name: string;
+  display: string;
+  amount?: string | null;
+  unit?: string | null;
+  beginnerNote?: string | null;
+  prepNote?: string | null;
 }
 
 export interface RecipeDetailRecord extends RecipeRecord {
   ingredientList: string[];
+  ingredientDetails?: RecipeIngredientDetail[];
   steps: RecipeDetailStep[];
+  difficulty?: number | string | null;
+  cookingTime?: number | null;
+  servings?: number | null;
+  beginnerSummary?: string | null;
+  measurementTips?: string[];
+  imageAlt?: string | null;
+  imageCaption?: string | null;
+  sourceProvider?: string | null;
+  sourceExternalId?: string | null;
+  sourceUrl?: string | null;
+  sourceAttribution?: string | null;
+  sourceLicense?: string | null;
+  contentOrigin?: "original" | "public_api" | "licensed" | "user_bookmark" | null;
+  reviewedForBeginner?: boolean;
 }
 
 export interface FavoriteRecipeSummary {
@@ -213,4 +351,10 @@ export interface FavoriteRecipeSummary {
   category: string;
   thumbnailUrl: string | null;
   savedAt: string;
+}
+
+export interface QuantityValueParts {
+  amountValue: number | null;
+  amountUnit: IngredientUnit | null;
+  quantityDisplay: string | null;
 }

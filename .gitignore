@@ -32,9 +32,13 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
+
+# Supabase local CLI state
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo
@@ -44,7 +48,14 @@ next-env.d.ts
 android/.gradle/
 android/build/
 android/app/build/
+ios/build/
 
 # local debug captures
+output/
 android-*.png
 uidump*.xml
+.tmp/
+.release-secrets/
+
+# local agent/orchestration state
+.omx/

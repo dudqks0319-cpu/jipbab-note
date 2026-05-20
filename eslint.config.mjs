@@ -16,6 +16,13 @@ const eslintConfig = defineConfig([
     "android/.gradle/**",
     "android/build/**",
     "android/**/build/**",
+    "ios/DerivedData/**",
+    "ios/**/DerivedData/**",
+    "ios/build/**",
+    "ios/**/SourcePackages/**",
+    "ios/App/App/public/**",
+    ".tmp/**",
+    ".vercel/**",
   ]),
 ]);
 

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { INGREDIENT_SYNC_TIMEOUT_MS, mergeIngredientRecords, withTimeout } from "@/lib/ingredient-sync";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toDateOnlyString } from "@/lib/utils";
 import type {
@@ -18,6 +19,7 @@ import type {
 
 const STORAGE_KEY = "jipbab-note-ingredients";
 const DEFAULT_STORAGE_TYPE: IngredientStorageType = "냉장";
+type IngredientDataSource = "supabase" | "local";
 
 type RawIngredientRow = {
   id: string;
@@ -28,6 +30,14 @@ type RawIngredientRow = {
   storage_type: IngredientStorageType;
   quantity: string | null;
   expiry_date: string | null;
+  purchase_date: string | null;
+  opened_at: string | null;
+  storage_location: string | null;
+  unit_price: number | null;
+  purchase_place: string | null;
+  consumed_at: string | null;
+  discarded_at: string | null;
+  repeat_purchase: boolean | null;
   barcode: string | null;
   image_url: string | null;
   memo: string | null;
@@ -42,6 +52,16 @@ function normalizeFormPayload(payload: IngredientFormPayload): IngredientFormPay
     storageType: payload.storageType ?? DEFAULT_STORAGE_TYPE,
     quantity: payload.quantity?.trim() || null,
     expiryDate: toDateOnlyString(payload.expiryDate) ?? null,
+    purchaseDate: toDateOnlyString(payload.purchaseDate) ?? null,
+    openedAt: payload.openedAt?.trim() || null,
+    storageLocation: payload.storageLocation?.trim() || null,
+    unitPrice: typeof payload.unitPrice === "number" && Number.isFinite(payload.unitPrice) && payload.unitPrice >= 0
+      ? payload.unitPrice
+      : null,
+    purchasePlace: payload.purchasePlace?.trim() || null,
+    consumedAt: payload.consumedAt?.trim() || null,
+    discardedAt: payload.discardedAt?.trim() || null,
+    repeatPurchase: payload.repeatPurchase ?? false,
     barcode: payload.barcode?.trim() || null,
     imageUrl: payload.imageUrl?.trim() || null,
     memo: payload.memo?.trim() || null,
@@ -58,6 +78,14 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
     storageType: row.storage_type,
     quantity: row.quantity,
     expiryDate: row.expiry_date,
+    purchaseDate: row.purchase_date,
+    openedAt: row.opened_at,
+    storageLocation: row.storage_location,
+    unitPrice: row.unit_price,
+    purchasePlace: row.purchase_place,
+    consumedAt: row.consumed_at,
+    discardedAt: row.discarded_at,
+    repeatPurchase: row.repeat_purchase ?? false,
     barcode: row.barcode,
     imageUrl: row.image_url,
     memo: row.memo,
@@ -145,6 +173,14 @@ function toInsertPayload(
     storage_type: normalized.storageType,
     quantity: normalized.quantity,
     expiry_date: normalized.expiryDate,
+    purchase_date: normalized.purchaseDate,
+    opened_at: normalized.openedAt,
+    storage_location: normalized.storageLocation,
+    unit_price: normalized.unitPrice,
+    purchase_place: normalized.purchasePlace,
+    consumed_at: normalized.consumedAt,
+    discarded_at: normalized.discardedAt,
+    repeat_purchase: normalized.repeatPurchase,
     barcode: normalized.barcode,
     image_url: normalized.imageUrl,
     memo: normalized.memo,
@@ -160,6 +196,14 @@ function toUpdatePayload(payload: IngredientFormPayload): IngredientUpdatePayloa
     storage_type: normalized.storageType,
     quantity: normalized.quantity,
     expiry_date: normalized.expiryDate,
+    purchase_date: normalized.purchaseDate,
+    opened_at: normalized.openedAt,
+    storage_location: normalized.storageLocation,
+    unit_price: normalized.unitPrice,
+    purchase_place: normalized.purchasePlace,
+    consumed_at: normalized.consumedAt,
+    discarded_at: normalized.discardedAt,
+    repeat_purchase: normalized.repeatPurchase,
     barcode: normalized.barcode,
     image_url: normalized.imageUrl,
     memo: normalized.memo,
@@ -183,6 +227,14 @@ function makeLocalRecord(
     storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
     quantity: normalized.quantity ?? null,
     expiryDate: normalized.expiryDate ?? null,
+    purchaseDate: normalized.purchaseDate ?? null,
+    openedAt: normalized.openedAt ?? null,
+    storageLocation: normalized.storageLocation ?? null,
+    unitPrice: normalized.unitPrice ?? null,
+    purchasePlace: normalized.purchasePlace ?? null,
+    consumedAt: normalized.consumedAt ?? null,
+    discardedAt: normalized.discardedAt ?? null,
+    repeatPurchase: normalized.repeatPurchase ?? false,
     barcode: normalized.barcode ?? null,
     imageUrl: normalized.imageUrl ?? null,
     memo: normalized.memo ?? null,
@@ -199,6 +251,7 @@ export interface UseIngredientsResult {
   ingredients: IngredientRecord[];
   loading: boolean;
   error: IngredientQueryError | null;
+  source: IngredientDataSource;
   listIngredients: () => Promise<IngredientRecord[]>;
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
@@ -206,35 +259,53 @@ export interface UseIngredientsResult {
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
 }
 
+function normalizeIngredientKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, "");
+}
+
 export function useIngredients(): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<IngredientQueryError | null>(null);
+  const [source, setSource] = useState<IngredientDataSource>("local");
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
-    setLoading(true);
+    const localFallback = safeReadLocalIngredients(deviceId);
+    if (localFallback.length > 0) {
+      setIngredients(localFallback);
+    }
+    setLoading(localFallback.length === 0);
     setError(null);
 
     try {
       const client = getSupabaseClient({ deviceId });
-      const { data, error: queryError } = await client
-        .from("ingredients")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error: queryError } = await withTimeout(
+        Promise.resolve(client.from("ingredients").select("*").order("created_at", { ascending: false })),
+        INGREDIENT_SYNC_TIMEOUT_MS,
+        "재료 목록 동기화 시간이 초과되었습니다.",
+      );
 
       if (queryError) {
         throw queryError;
       }
 
       const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
-      setIngredients(mapped);
-      safeWriteLocalIngredients(mapped);
-      return mapped;
+      const merged = mergeIngredientRecords(localFallback, mapped);
+      setIngredients(merged);
+      setSource("supabase");
+      safeWriteLocalIngredients(merged);
+      return merged;
     } catch (caught) {
       const fallback = safeReadLocalIngredients(deviceId);
       setIngredients(fallback);
-      setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+      setSource("local");
+      if (fallback.length > 0) {
+        console.warn("재료 목록 로컬 표시로 전환", caught);
+        setError(null);
+      } else {
+        setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+      }
       return fallback;
     } finally {
       setLoading(false);
@@ -294,13 +365,17 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => [nextRecord, ...prev]);
+        setSource("supabase");
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
         const nextLocal = makeLocalRecord(deviceId, payload, userId);
         const nextItems = upsertLocalIngredient(nextLocal);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 추가 실패", "supabase"));
+        setSource("local");
+        // Supabase가 지연되어도 로컬 저장이 성공하면 사용자는 성공 플로우를 유지합니다.
+        console.warn("재료 로컬 저장으로 전환", caught);
+        setError(null);
         return nextLocal;
       } finally {
         setLoading(false);
@@ -335,6 +410,7 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => prev.map((item) => (item.id === ingredientId ? nextRecord : item)));
+        setSource("supabase");
         upsertLocalIngredient(nextRecord);
         return nextRecord;
       } catch (caught) {
@@ -353,6 +429,14 @@ export function useIngredients(): UseIngredientsResult {
           storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
           quantity: normalized.quantity ?? null,
           expiryDate: normalized.expiryDate ?? null,
+          purchaseDate: normalized.purchaseDate ?? null,
+          openedAt: normalized.openedAt ?? null,
+          storageLocation: normalized.storageLocation ?? null,
+          unitPrice: normalized.unitPrice ?? null,
+          purchasePlace: normalized.purchasePlace ?? null,
+          consumedAt: normalized.consumedAt ?? null,
+          discardedAt: normalized.discardedAt ?? null,
+          repeatPurchase: normalized.repeatPurchase ?? false,
           barcode: normalized.barcode ?? null,
           imageUrl: normalized.imageUrl ?? null,
           memo: normalized.memo ?? null,
@@ -361,7 +445,9 @@ export function useIngredients(): UseIngredientsResult {
 
         const nextItems = upsertLocalIngredient(nextRecord);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
+        setSource("local");
+        console.warn("재료 수정 로컬 저장으로 전환", caught);
+        setError(null);
         return nextRecord;
       } finally {
         setLoading(false);
@@ -384,12 +470,15 @@ export function useIngredients(): UseIngredientsResult {
         }
 
         setIngredients((prev) => prev.filter((item) => item.id !== ingredientId));
+        setSource("supabase");
         removeLocalIngredient(deviceId, ingredientId);
         return true;
       } catch (caught) {
         const nextItems = removeLocalIngredient(deviceId, ingredientId);
         setIngredients(nextItems);
-        setError(makeError(caught instanceof Error ? caught.message : "재료 삭제 실패", "supabase"));
+        setSource("local");
+        console.warn("재료 삭제 로컬 저장으로 전환", caught);
+        setError(null);
         return true;
       } finally {
         setLoading(false);
@@ -403,9 +492,13 @@ export function useIngredients(): UseIngredientsResult {
   }, [listIngredients]);
 
   return {
-    ingredients,
+    ingredients: ingredients.filter(
+      (item, index, list) =>
+        list.findIndex((target) => normalizeIngredientKey(target.name) === normalizeIngredientKey(item.name)) === index,
+    ),
     loading,
     error,
+    source,
     listIngredients,
     fetchIngredient,
     addIngredient,

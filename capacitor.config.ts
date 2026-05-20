@@ -1,15 +1,23 @@
-const liveReloadUrl = process.env.CAPACITOR_SERVER_URL?.trim()
+const runtimeAppUrl = process.env.CAPACITOR_SERVER_URL?.trim()
+const useRemoteServer = Boolean(
+  runtimeAppUrl?.startsWith('https://') || runtimeAppUrl?.startsWith('http://localhost'),
+)
+const cleartext = runtimeAppUrl?.startsWith('http://') ?? false
 
 const config = {
   appId: 'com.jipbab.note',
-  appName: 'jipbab-note',
+  appName: '집밥노트',
   webDir: 'public',
   bundledWebRuntime: false,
-  ...(liveReloadUrl
+  packageClassList: [
+    'JipbabGemmaPlugin',
+    'CapApp_SPM.JipbabGemmaPlugin',
+  ],
+  ...(useRemoteServer
     ? {
         server: {
-          url: liveReloadUrl,
-          cleartext: true,
+          url: runtimeAppUrl,
+          cleartext,
         },
       }
     : {}),

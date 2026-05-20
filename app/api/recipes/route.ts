@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { getRateLimitKey, normalizeHttpUrl } from '@/lib/request-security'
+
 const SERVICE_ID = 'COOKRCP01'
 const BASE_URL = 'https://openapi.foodsafetykorea.go.kr/api'
 const DEFAULT_PAGE = 1
@@ -12,8 +14,17 @@ const REQUEST_WINDOW_MS = 60_000
 const MAX_REQUESTS_PER_WINDOW = 45
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const RATE_LIMIT_MAX_REQUESTS = IS_PRODUCTION ? MAX_REQUESTS_PER_WINDOW : 5000
+const INGREDIENT_SPLIT_PLACEHOLDER = '__JIPBAB_FRACTION_SLASH__'
+const INGREDIENT_SECTION_LABEL_PATTERN =
+  /^(?:주재료|부재료|양념|양념장|소스|고명|육수|반죽|반죽재료|속재료|초코필링|토핑)$/
+const INGREDIENT_QUANTITY_FRAGMENT_PATTERN =
+  /^[0-9]+(?:\.[0-9]+)?\s*(?:kg|g|mg|ml|l|cm|mm|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)$/i
+const INGREDIENT_FRACTION_DENOMINATOR_PATTERN =
+  /^([2-9][0-9]*)\s*(개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|컵|큰술|작은술|술|스푼|통|단|포기)$/i
+const INGREDIENT_MEASUREMENT_PATTERN =
+  /\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)/i
 
-const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '국·찌개', '국&찌개', '반찬', '기타'])
+const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '후식', '국·찌개', '국&찌개', '반찬', '밥', '일품', '기타'])
 const QUERY_PATTERN = /^[0-9A-Za-z가-힣\s\-_/(),.&]+$/
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
@@ -88,25 +99,8 @@ const sanitizeQuery = (value: string | null): string | null => {
 
 const normalizeCategory = (value: string | null): string | null => {
   if (!value || value === '전체') return null
-  const normalized = value === '국·찌개' ? '국&찌개' : value.trim()
+  const normalized = value === '국·찌개' ? '국&찌개' : value === '디저트' ? '후식' : value.trim()
   return CATEGORY_ALLOWLIST.has(normalized) ? normalized : null
-}
-
-const getClientKey = (request: Request): string => {
-  const deviceId = request.headers.get('x-device-id')?.trim()
-  if (deviceId) return `device:${deviceId}`
-
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    const ip = forwardedFor.split(',')[0]?.trim()
-    if (ip) return `ip:${ip}`
-  }
-
-  const realIp = request.headers.get('x-real-ip')?.trim()
-  if (realIp) return `ip:${realIp}`
-
-  const userAgent = request.headers.get('user-agent')?.trim() ?? 'unknown-ua'
-  return `ua:${userAgent.slice(0, 120)}`
 }
 
 const isRateLimited = (key: string): boolean => {
@@ -153,16 +147,81 @@ const buildFilterSegment = (query: string | null, category: string | null) => {
 }
 
 const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
-  if (!value) return null
+  return normalizeHttpUrl(value)
+}
 
-  const trimmed = value.trim()
-  if (!trimmed) return null
+const cleanIngredientDisplayText = (value: string): string => {
+  const colonIndex = value.lastIndexOf(':')
+  const withoutLabel = colonIndex === -1 ? value : value.slice(colonIndex + 1)
 
-  if (trimmed.startsWith('http://')) {
-    return `https://${trimmed.slice('http://'.length)}`
+  return withoutLabel
+    .replace(/^[-•·*]\s*/, '')
+    .replace(/[，、]/g, ',')
+    .replace(/\s+/g, ' ')
+    .replace(/\b([0-2])\s+([0-9])(?=\s*(?:g|kg|mg|ml|l)\b)/gi, '$1.$2')
+    .trim()
+}
+
+const dedupeIngredientDisplayList = (items: string[]): string[] => {
+  const seen = new Set<string>()
+  const deduped: string[] = []
+
+  for (const item of items) {
+    const key = item.toLowerCase().replace(/\s+/g, ' ')
+    if (seen.has(key)) {
+      continue
+    }
+    seen.add(key)
+    deduped.push(item)
   }
 
-  return trimmed
+  return deduped
+}
+
+const normalizeIngredientDisplayItems = (items: string[]): string[] => {
+  const cleaned = items
+    .map(cleanIngredientDisplayText)
+    .filter((item) => item.length > 0)
+    .filter((item) => !INGREDIENT_SECTION_LABEL_PATTERN.test(item))
+  const normalized: string[] = []
+
+  for (let index = 0; index < cleaned.length; index += 1) {
+    const current = cleaned[index]
+    const next = cleaned[index + 1]
+    const fractionNumerator = current.match(/^(.*\S)\s+([1-9])$/)
+    const fractionDenominator = next?.match(INGREDIENT_FRACTION_DENOMINATOR_PATTERN)
+
+    if (fractionNumerator && fractionDenominator) {
+      normalized.push(`${fractionNumerator[1]} ${fractionNumerator[2]}/${fractionDenominator[1]}${fractionDenominator[2]}`)
+      index += 1
+      continue
+    }
+
+    if (INGREDIENT_QUANTITY_FRAGMENT_PATTERN.test(current)) {
+      continue
+    }
+
+    normalized.push(
+      INGREDIENT_MEASUREMENT_PATTERN.test(current) ? current.replace(/\s+[1-9]$/, '') : current,
+    )
+  }
+
+  return dedupeIngredientDisplayList(normalized)
+}
+
+const splitIngredientDisplayText = (rawIngredients: string): string[] => {
+  return rawIngredients
+    .replace(/(\d)\s*\/\s*(\d)/g, `$1${INGREDIENT_SPLIT_PLACEHOLDER}$2`)
+    .split(/[\n,;|/]+/g)
+    .map((item) => item.replaceAll(INGREDIENT_SPLIT_PLACEHOLDER, '/'))
+}
+
+const formatIngredientDisplayText = (rawIngredients: string): string => {
+  if (!rawIngredients) {
+    return ''
+  }
+
+  return normalizeIngredientDisplayItems(splitIngredientDisplayText(rawIngredients)).join(', ')
 }
 
 const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
@@ -173,7 +232,7 @@ const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
     method: row.RCP_WAY2?.trim() ?? '정보 없음',
     calories: row.INFO_ENG?.trim() ?? '-',
     thumbnailUrl: normalizeRecipeImageUrl(row.ATT_FILE_NO_MK || row.ATT_FILE_NO_MAIN || null),
-    ingredients: row.RCP_PARTS_DTLS?.trim() ?? '',
+    ingredients: formatIngredientDisplayText(row.RCP_PARTS_DTLS?.trim() ?? ''),
     hashTag: row.HASH_TAG?.trim() ?? '',
   }
 }
@@ -194,13 +253,21 @@ const parseMethodAndCalories = (description: string | null): Pick<RecipeDto, 'me
 
 const stringifyIngredients = (value: unknown): string => {
   if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === 'string' ? item.trim() : ''))
-      .filter((item) => item.length > 0)
-      .join(', ')
+    const names = value
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item
+        }
+        if (typeof item === 'object' && item !== null) {
+          const record = item as Record<string, unknown>
+          return typeof record.name === 'string' ? record.name : ''
+        }
+        return ''
+      })
+    return normalizeIngredientDisplayItems(names).join(', ')
   }
   if (typeof value === 'string') {
-    return value.trim()
+    return formatIngredientDisplayText(value.trim())
   }
   return ''
 }
@@ -267,7 +334,7 @@ const fetchRecipesFromSupabase = async (
 }
 
 export async function GET(request: Request) {
-  const clientKey = getClientKey(request)
+  const clientKey = getRateLimitKey(request)
   if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },

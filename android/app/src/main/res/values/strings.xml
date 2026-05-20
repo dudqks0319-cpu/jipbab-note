@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">jipbab-note</string>
-    <string name="title_activity_main">jipbab-note</string>
+    <string name="app_name">집밥노트</string>
+    <string name="title_activity_main">집밥노트</string>
     <string name="package_name">com.jipbab.note</string>
     <string name="custom_url_scheme">com.jipbab.note</string>
 </resources>

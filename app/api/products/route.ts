@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isValidFoodBarcode, normalizeBarcode } from '@/lib/barcode'
+import { getRateLimitKey, normalizeHttpUrl } from '@/lib/request-security'
 
 const OPEN_FOOD_FACTS_URL = 'https://world.openfoodfacts.org/api/v2/product'
 const OPEN_FOOD_FACTS_FIELDS = [
@@ -43,23 +44,6 @@ type OpenFoodFactsPayload = {
 const toTrimmedOrNull = (value: string | undefined): string | null => {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
-}
-
-const getClientKey = (request: Request): string => {
-  const deviceId = request.headers.get('x-device-id')?.trim()
-  if (deviceId) return `device:${deviceId}`
-
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    const ip = forwardedFor.split(',')[0]?.trim()
-    if (ip) return `ip:${ip}`
-  }
-
-  const realIp = request.headers.get('x-real-ip')?.trim()
-  if (realIp) return `ip:${realIp}`
-
-  const userAgent = request.headers.get('user-agent')?.trim() ?? 'unknown-ua'
-  return `ua:${userAgent.slice(0, 120)}`
 }
 
 const isRateLimited = (key: string): boolean => {
@@ -109,7 +93,7 @@ const parseOpenFoodFactsProduct = (
     brand: toTrimmedOrNull(payload.product.brands),
     quantity: toTrimmedOrNull(payload.product.quantity),
     category: toTrimmedOrNull(payload.product.categories),
-    imageUrl: toTrimmedOrNull(payload.product.image_url),
+    imageUrl: normalizeHttpUrl(payload.product.image_url),
     source: 'openfoodfacts',
   }
 }
@@ -131,7 +115,7 @@ async function fetchFromOpenFoodFacts(
 }
 
 export async function GET(request: Request) {
-  const clientKey = getClientKey(request)
+  const clientKey = getRateLimitKey(request)
   if (isRateLimited(clientKey)) {
     return NextResponse.json(
       { message: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },

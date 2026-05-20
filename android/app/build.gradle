@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def uploadKeystorePath = System.getenv("ANDROID_UPLOAD_KEYSTORE_PATH")
+def uploadKeystorePassword = System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")
+def uploadKeyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
+def uploadKeyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
+def hasUploadSigning = uploadKeystorePath && uploadKeystorePassword && uploadKeyAlias && uploadKeyPassword
+
 android {
     namespace = "com.jipbab.note"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +22,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasUploadSigning) {
+            release {
+                storeFile file(uploadKeystorePath)
+                storePassword uploadKeystorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasUploadSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

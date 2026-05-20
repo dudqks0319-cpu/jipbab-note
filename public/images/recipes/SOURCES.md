@@ -1,0 +1,55 @@
+# Recipe Image Sources
+
+This folder contains release-safe recipe images used by 집밥노트.
+
+## Generated in-house food photos
+
+These images were generated in-house for Korean home-cooking recipe cards. They are not copied from competitor apps, blogs, marketplace listings, or restaurant photos.
+
+- `kimchi-fried-rice.png`: generated Korean home-cooking style finished dish photo
+- `soy-garlic-chicken.png`: generated Korean home-cooking style finished dish photo
+- `doenjang-jjigae.png`: generated Korean home-cooking style finished dish photo
+- `gyeran-mari.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/doenjang-jjigae-basic.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/gamja-jorim-basic.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/tuna-kimchi-fried-rice.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/dubu-jorim-basic.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/pork-kimchi-jjigae-basic.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/gyeran-mari-basic.png`: generated Korean home-cooking style finished dish photo
+- `jipbab-curated/soy-egg-rice.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/steamed-egg.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/bean-sprout-soup.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/cucumber-muchim.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/jeyuk-bokkeum.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/beef-seaweed-soup.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/curry-rice.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/tteok-mandu-guk.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/bibim-guksu.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/tuna-mayo-rice-bowl.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/cabbage-egg-stirfry.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/fishcake-bokkeum.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/spinach-namul.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/kimchi-jeon.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `jipbab-curated/tomato-egg-stirfry.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+
+Contact-sheet source for the 2026-05-06 batch:
+`/Users/jyb-m3max/.codex/generated_images/019df2bf-9026-7b63-a35b-0c6f3014de26/ig_0f255b6fbfd4f4910169fb0dd6e19c8191a307ed8c93f8db98.png`.
+The contact sheet was generated in-house and cropped into local app assets; it does not use competitor app, blog, shopping-mall, or social-media imagery.
+
+## Generated recipe guide assets
+
+These poster/detail assets were generated locally from project scripts and in-house recipe copy. They combine local generated food images with code-native SVG layout.
+
+- `*-recipe-poster.svg`
+- `*-recipe-poster.png`
+- `*-photo-recipe-poster.png`
+- `*-recipe-detail.svg`
+- `*-recipe-detail.png`
+- `kimchi-fried-rice-method.svg`
+- `kimchi-fried-rice-method.png`
+
+## Asset rules
+
+- Do not use competitor app screenshots or recipe photos.
+- Do not use blog, marketplace, social media, or restaurant images unless a license is documented here.
+- New recipe images must include source type, generation method or license URL, author if required, and the date added.
