@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 19:38 KST
+Updated: 2026-05-21 19:46 KST
 
 ## Local code state
 
@@ -126,6 +126,8 @@ Updated: 2026-05-21 19:38 KST
 - `pnpm release:external-status`: blocked on 2026-05-21 19:31 KST with `Passed: 5`, `Blocked: 3` after adding store-console API automation. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke still pass; real-device availability, real-device QA evidence, and store console confirmation still block release completion because store API credentials and manual console evidence are absent.
 - Real-device QA packet capture: added on 2026-05-21 19:38 KST. `pnpm release:capture-real-device-qa` now writes device state, installed Android package state, iOS/Android native artifact inventory, and a manual QA confirmation template under ignored `output/release-evidence/<timestamp>-real-device-qa/` without marking QA confirmed.
 - `pnpm release:capture-real-device-qa`: run on 2026-05-21 19:38 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-38-01-050Z-real-device-qa`; captured iOS archive/app/IPA and Android AAB/debug APK inventory, but real-device availability and Android installed-package checks remain blocked because iPhone `영빈` is still unavailable and no Android device is attached.
+- GitHub Actions release gate: added on 2026-05-21 19:46 KST. `.github/workflows/release-gate.yml` now runs `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm build`, `pnpm release:ci-static-check`, and informational `pnpm release:goal-check || true` on push/PR to `main`; CI intentionally excludes machine-local native artifacts, live Supabase/OAuth/Vercel checks, physical-device QA, and store-console confirmation.
+- `pnpm release:ci-static-check`: pass on 2026-05-21 19:46 KST. CI-safe static gates passed for Supabase release SQL/RLS contract, partner links, and store assets.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
@@ -248,6 +250,7 @@ Before external release submission:
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
 0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
 0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.
+0.3. Confirm the GitHub `Release Gate` workflow is green after each push; it proves code/static release gates only and does not replace local native artifact checks or external store/device evidence.
 1. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
 2. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
 3. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.

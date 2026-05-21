@@ -1,0 +1,64 @@
+name: Release Gate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-gate:
+    name: Code and Static Release Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_SUPPORT_EMAIL: support@example.com
+      NEXT_PUBLIC_SITE_URL: https://jipbab-note-app.vercel.app
+      NEXT_PUBLIC_API_BASE_URL: https://jipbab-note-app.vercel.app
+      CAPACITOR_SERVER_URL: https://jipbab-note-app.vercel.app
+      NEXT_PUBLIC_COMMUNITY_ENABLED: "false"
+      NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS: google,apple,kakao
+      NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED: "true"
+      NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED: "true"
+      NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED: "true"
+      KAKAO_ACCOUNT_EMAIL_PERMISSION_CONFIRMED: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.30.2 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: CI static release gates
+        run: pnpm release:ci-static-check
+
+      - name: Goal completion status
+        run: pnpm release:goal-check || true
