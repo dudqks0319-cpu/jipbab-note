@@ -13,6 +13,12 @@ test("external status command is available as a non short-circuiting release hel
   assert.match(source, /External release is not complete/);
 });
 
+test("external release checks require live Supabase write isolation", () => {
+  assert.match(packageJson.scripts["release:external-check"], /SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live/);
+  assert.match(source, /Supabase live read\/write\/RLS/);
+  assert.match(source, /SUPABASE_LIVE_WRITE_TEST: "1"/);
+});
+
 test("external status command includes every external release blocker surface", () => {
   assert.match(source, /scripts\/check-supabase-live\.mjs/);
   assert.match(source, /scripts\/check-oauth-live\.mjs/);

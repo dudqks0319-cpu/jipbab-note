@@ -2,8 +2,11 @@ import { spawnSync } from "node:child_process";
 
 const checks = [
   {
-    label: "Supabase live read/RLS",
+    label: "Supabase live read/write/RLS",
     args: ["scripts/check-supabase-live.mjs"],
+    env: {
+      SUPABASE_LIVE_WRITE_TEST: "1",
+    },
   },
   {
     label: "OAuth provider start/callback boundary",
@@ -47,7 +50,10 @@ function runCheck(check) {
   const result = spawnSync(process.execPath, check.args, {
     cwd: process.cwd(),
     encoding: "utf8",
-    env: process.env,
+    env: {
+      ...process.env,
+      ...(check.env ?? {}),
+    },
   });
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
   const status = result.status === 0 ? "pass" : "blocked";

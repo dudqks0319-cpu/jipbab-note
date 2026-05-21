@@ -1,6 +1,6 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 18:45 KST
+Updated: 2026-05-21 18:56 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
@@ -70,3 +70,5 @@ Updated: 2026-05-21 18:45 KST
 - 2026-05-21 18:24 KST: `xcrun devicectl list devices` reports iPhone `영빈` as `unavailable` (`iPhone 16 Pro`, `iPhone17,1`), `xcrun xctrace list devices` still lists it under `Devices Offline`, and `adb devices -l` still shows no attached Android device.
 - 2026-05-21 18:30 KST: `pnpm check:real-device-availability` now reports the iOS blocker as `iOS CoreDevice unavailable: 영빈 ... unavailable iPhone 16 Pro (iPhone17,1)` and Android as `Android physical device: none attached`.
 - 2026-05-21 18:45 KST: `pnpm release:external-status` reran the real-device gates. iOS remains blocked at CoreDevice `unavailable` for iPhone `영빈`; Android remains blocked with no attached physical device.
+- 2026-05-21 18:54 KST: Stronger `pnpm release:external-status` rerun still blocks real-device availability with iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
+- 2026-05-21 18:56 KST: Stronger `pnpm release:external-check` passed Supabase write/RLS, OAuth, Vercel Production env, production family route, and production account-deletion route, then stopped at the same real-device availability blocker.
