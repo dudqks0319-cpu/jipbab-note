@@ -38,7 +38,22 @@ test("store console confirmation reports missing optional store API credentials 
   assert.match(checkSource, /GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/);
   assert.match(checkSource, /GOOGLE_APPLICATION_CREDENTIALS/);
   assert.match(checkSource, /Browser confirmation is still required/);
+  assert.match(checkSource, /value\.trim\(\)\.length > 0/);
   assert.doesNotMatch(checkSource, /process\.env\[[^\]]+\]\s*\)/);
+});
+
+test("store console confirmation can verify store dashboards through official APIs", () => {
+  assert.match(checkSource, /https:\/\/api\.appstoreconnect\.apple\.com/);
+  assert.match(checkSource, /appstoreconnect-v1/);
+  assert.match(checkSource, /\/v1\/apps/);
+  assert.match(checkSource, /\/builds/);
+  assert.match(checkSource, /\/betaGroups/);
+  assert.match(checkSource, /https:\/\/oauth2\.googleapis\.com\/token/);
+  assert.match(checkSource, /https:\/\/www\.googleapis\.com\/auth\/androidpublisher/);
+  assert.match(checkSource, /\/edits/);
+  assert.match(checkSource, /\/tracks/);
+  assert.match(checkSource, /GOOGLE_PLAY_VERSION_CODE/);
+  assert.match(checkSource, /GOOGLE_PLAY_TRACK/);
 });
 
 test("store console confirmation evidence stays blocked until manually confirmed", () => {

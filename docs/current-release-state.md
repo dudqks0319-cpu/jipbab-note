@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 19:22 KST
+Updated: 2026-05-21 19:31 KST
 
 ## Local code state
 
@@ -122,6 +122,8 @@ Updated: 2026-05-21 19:22 KST
 - Evidence artifact validation hardening: added after the 2026-05-21 19:10 KST capture. Real-device and store-console evidence gates now accept HTTP(S) artifact URLs or local artifact paths only when the path actually exists.
 - `pnpm release:external-status`: blocked on 2026-05-21 19:22 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass; real-device availability, real-device QA evidence, and store console confirmation remain blocked.
 - `pnpm release:capture-external-evidence`: run on 2026-05-21 19:22 KST. Generated local artifact directory `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`; command capture status was 3 passed, 4 blocked, 0 skipped. This captures the current iPhone CoreDevice `unavailable`, Android not-attached, and store-console not-confirmed blockers.
+- Store console API automation: added after the 2026-05-21 19:22 KST capture. `pnpm check:store-console-confirmation` can now use App Store Connect API credentials to verify build `2026052001` and an internal TestFlight beta group, and Google Play service-account credentials to verify the `internal` track includes Android version code `1`. Missing credentials still keep the gate blocked and no credential values are printed.
+- `pnpm release:external-status`: blocked on 2026-05-21 19:31 KST with `Passed: 5`, `Blocked: 3` after adding store-console API automation. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke still pass; real-device availability, real-device QA evidence, and store console confirmation still block release completion because store API credentials and manual console evidence are absent.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.

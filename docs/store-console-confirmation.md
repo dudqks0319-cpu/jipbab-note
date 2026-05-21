@@ -16,7 +16,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - App Store Connect evidence date: pending
 - App Store Connect evidence artifacts: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 19:22 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 19:31 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
 
 ## Google Play Console / Internal Testing
 
@@ -28,7 +28,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - Play Console evidence date: pending
 - Play Console evidence artifacts: pending
-- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 19:22 KST external-status run found no Google Play service-account env name, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
+- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 19:31 KST external-status run found no Google Play service-account env name, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
 
 ## Unblock Checklist
 
@@ -40,6 +40,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Add or confirm an internal tester group can install the build.
 - Change the three App Store Connect confirmation lines above to `confirmed` only after observing the actual app record.
 - Optional API automation requires `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH`.
+- When those values are configured, `pnpm check:store-console-confirmation` queries the App Store Connect API for bundle `com.jipbab.note`, build `2026052001`, processed build state, and an internal TestFlight beta group without printing credential values.
 
 ### Google Play Console
 
@@ -49,3 +50,4 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Confirm the internal testing track is created and processing/available.
 - Change the three Google Play confirmation lines above to `confirmed` only after observing the actual app record.
 - Optional API automation requires either `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_APPLICATION_CREDENTIALS`.
+- When a Google Play service-account credential is configured, `pnpm check:store-console-confirmation` creates a temporary Android Publisher edit, reads the `internal` track for package `com.jipbab.note`, checks version code `1`, and deletes the temporary edit without printing credential values.
