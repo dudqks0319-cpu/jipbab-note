@@ -4,6 +4,50 @@ import path from "node:path";
 
 const cwd = process.cwd();
 const ledgerPath = path.join(cwd, "docs/current-release-state.md");
+const realDeviceQaPath = path.join(cwd, "docs/real-device-qa.md");
+const storeConsolePath = path.join(cwd, "docs/store-console-confirmation.md");
+
+const requiredRealDeviceQaTerms = [
+  "iOS real-device QA: confirmed",
+  "Device: iPhone",
+  "iOS build: 2026052001",
+  "Bundle ID: com.jipbab.note",
+  "iOS core loop: confirmed",
+  "iOS Google login: confirmed",
+  "iOS Apple login: confirmed",
+  "iOS Kakao login: confirmed",
+  "iOS local notification permission and scheduling: confirmed",
+  "iOS shopping external link: confirmed",
+  "iOS account deletion request: confirmed",
+  "iOS raw error disclosure: not observed",
+  "Android real-device QA: confirmed",
+  "Device: Android",
+  "Android package: com.jipbab.note",
+  "Android core loop: confirmed",
+  "Android Google login: confirmed",
+  "Android Kakao login: confirmed",
+  "Android Apple login/provider behavior: confirmed",
+  "Android local notification permission and scheduling: confirmed",
+  "Android shopping external link: confirmed",
+  "Android account deletion request: confirmed",
+  "Android back navigation: confirmed",
+  "Android raw error disclosure: not observed",
+];
+
+const requiredAppStoreTerms = [
+  "App Store Connect/TestFlight: confirmed",
+  "Bundle ID: com.jipbab.note",
+  "iOS build: 2026052001",
+  "TestFlight processing: confirmed",
+  "Internal tester availability: confirmed",
+];
+
+const requiredPlayConsoleTerms = [
+  "Play Console internal testing: confirmed",
+  "Android package: com.jipbab.note",
+  "AAB upload: confirmed",
+  "Internal testing track: confirmed",
+];
 
 function addResult(results, status, label, evidence, nextAction = "") {
   results.push({ status, label, evidence, nextAction });
@@ -13,12 +57,31 @@ function includesAll(source, terms) {
   return terms.every((term) => source.includes(term));
 }
 
+function readOptional(filePath) {
+  return existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+}
+
+function evidenceStatus(source, requiredTerms, blockedMarkers) {
+  if (!source) {
+    return "missing";
+  }
+  if (includesAll(source, requiredTerms)) {
+    return "pass";
+  }
+  if (blockedMarkers.some((marker) => source.includes(marker))) {
+    return "blocked";
+  }
+  return "missing";
+}
+
 if (!existsSync(ledgerPath)) {
   console.error("Goal completion check failed: docs/current-release-state.md is missing");
   process.exit(1);
 }
 
 const ledger = readFileSync(ledgerPath, "utf8");
+const realDeviceQa = readOptional(realDeviceQaPath);
+const storeConsole = readOptional(storeConsolePath);
 const results = [];
 
 addResult(
@@ -66,14 +129,17 @@ addResult(
 addResult(
   results,
   ledger.includes("Production family route smoke: blocked") ||
+    ledger.includes("Production account-deletion smoke: blocked safely") ||
+    ledger.includes("`pnpm check:production-account-deletion-route`: blocked safely") ||
     ledger.includes("Vercel Production is missing")
     ? "blocked"
-    : ledger.includes("Production family route smoke: pass")
+    : ledger.includes("Production family route smoke: pass") &&
+        ledger.includes("`pnpm check:production-account-deletion-route`: pass")
       ? "pass"
       : "missing",
   "Vercel Production server env",
-  "production server-only env and service-role API smoke evidence",
-  "Vercel Production에 SUPABASE_SERVICE_ROLE_KEY/ADMIN_EMAILS 추가 후 재배포 및 production smoke 재실행",
+  "production server-only env plus family/account-deletion service-role API smoke evidence",
+  "Vercel Production에 SUPABASE_SERVICE_ROLE_KEY/ADMIN_EMAILS 추가 후 재배포 및 production family/account-deletion smoke 재실행",
 );
 
 addResult(
@@ -108,14 +174,15 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("Real-device QA: not done")
-    ? "blocked"
-    : ledger.includes("Real-device QA: pass")
-      ? "pass"
-      : "missing",
+  evidenceStatus(realDeviceQa, requiredRealDeviceQaTerms, [
+    "iOS real-device QA: not confirmed",
+    "Android real-device QA: not confirmed",
+    "not confirmed",
+    "not checked",
+  ]),
   "실기기 QA",
-  "real iPhone/Android OAuth, local notification, and link-flow evidence",
-  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 요청 확인",
+  "docs/real-device-qa.md evidence for real iPhone/Android OAuth, local notification, link-flow, account deletion, and raw-error checks",
+  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 요청 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
 );
 
 addResult(
@@ -133,26 +200,26 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("App Store Connect/TestFlight") && ledger.includes("not dashboard-confirmed")
-    ? "blocked"
-    : ledger.includes("App Store Connect/TestFlight: confirmed")
-      ? "pass"
-      : "missing",
+  evidenceStatus(storeConsole, requiredAppStoreTerms, [
+    "App Store Connect/TestFlight: not confirmed",
+    "TestFlight processing: not confirmed",
+    "Internal tester availability: not confirmed",
+  ]),
   "App Store Connect/TestFlight",
-  "ASC/TestFlight build processing and availability evidence",
-  "App Store Connect에서 최신 업로드 빌드의 처리/내부 테스트 가능 여부 확인",
+  "docs/store-console-confirmation.md evidence for ASC/TestFlight build processing and internal tester availability",
+  "App Store Connect에서 최신 업로드 빌드 처리/내부 테스트 가능 여부 확인 후 docs/store-console-confirmation.md confirmed evidence 갱신",
 );
 
 addResult(
   results,
-  ledger.includes("Upload the signed Android AAB to Play Console internal testing")
-    ? "blocked"
-    : ledger.includes("Play Console internal testing: confirmed")
-      ? "pass"
-      : "missing",
+  evidenceStatus(storeConsole, requiredPlayConsoleTerms, [
+    "Play Console internal testing: not confirmed",
+    "AAB upload: not confirmed",
+    "Internal testing track: not confirmed",
+  ]),
   "Play Console 내부 테스트",
-  "signed AAB upload and internal testing processing evidence",
-  "Play Console 내부 테스트 트랙에 AAB 업로드 후 처리 상태 확인",
+  "docs/store-console-confirmation.md evidence for signed AAB upload and internal testing processing",
+  "Play Console 내부 테스트 트랙에 AAB 업로드 후 docs/store-console-confirmation.md confirmed evidence 갱신",
 );
 
 const passed = results.filter((item) => item.status === "pass");

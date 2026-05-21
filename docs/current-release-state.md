@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:53 KST
+Updated: 2026-05-21 18:00 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 17:53 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the real-device QA evidence gate commit is pushed.
+- Working tree after this ledger update: expected clean after the goal-completion direct-evidence gate commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Vercel Production is missing server-only env required by service-role API routes, and full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -78,6 +78,12 @@ Updated: 2026-05-21 17:53 KST
 - `pnpm release:check`: pass on 2026-05-21 17:53 KST. All 6 local release gates passed.
 - `pnpm release:external-check`: blocked on 2026-05-21 17:53 KST for the intended reason. Supabase live read checks passed with 6 passes, OAuth live checks passed with 7 passes, then `pnpm check:vercel-production-env` failed because Production is still missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; real-device availability and real-device QA evidence gates are chained after the production route gates.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 17:53 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`.
+- Goal completion direct-evidence gate: pass on 2026-05-21 18:00 KST. `scripts/verify-goal-completion.mjs` now reads `docs/real-device-qa.md` and `docs/store-console-confirmation.md` directly, so real-device QA, App Store Connect/TestFlight, and Play Console internal testing cannot pass from release-ledger wording alone.
+- `pnpm test`: pass on 2026-05-21 18:00 KST after strengthening `release:goal-check`. Lint, `tsc --noEmit`, and 100 unit tests passed.
+- `pnpm build`: pass on 2026-05-21 18:00 KST after sandbox escalation. The sandboxed run failed with the known Turbopack local port restriction; the escalated rerun compiled 32 routes successfully.
+- `pnpm release:check`: pass on 2026-05-21 18:00 KST. All 6 local release gates passed.
+- `pnpm release:external-check`: blocked on 2026-05-21 18:00 KST for the intended reason. Supabase live read checks passed with 6 passes, OAuth live checks passed with 7 passes, then `pnpm check:vercel-production-env` failed because Production is still missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 18:00 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. The blocked evidence now points to direct files for real-device QA and store console confirmation.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
