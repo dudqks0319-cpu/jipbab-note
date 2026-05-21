@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 19:02 KST
+Updated: 2026-05-21 19:10 KST
 
 ## Local code state
 
@@ -116,6 +116,8 @@ Updated: 2026-05-21 19:02 KST
 - `pnpm release:external-check`: blocked on 2026-05-21 18:56 KST at the expected real-device gate. Supabase live read/write/RLS passed with 19 checks and 0 warnings, OAuth live passed, Vercel Production env passed, production family route smoke passed, and production account-deletion route smoke passed before `check:real-device-availability` failed on iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
 - Real-device/store evidence gate hardening: pass on 2026-05-21 19:00 KST. Real-device and store-console confirmation files now require non-pending evidence dates and artifact paths/URLs in addition to the `confirmed` state strings, so release completion cannot be claimed from confirmation text alone.
 - `pnpm release:external-status`: blocked on 2026-05-21 19:02 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke still pass; real-device availability, real-device QA evidence, and store console confirmation still block release completion.
+- External evidence capture harness: added on 2026-05-21. `pnpm release:capture-external-evidence` writes external status, real-device availability, real-device QA evidence, store-console confirmation, `xcrun devicectl`, `xcrun xctrace`, and `adb devices -l` output to ignored `output/release-evidence/<timestamp>/` files with basic secret redaction.
+- `pnpm release:capture-external-evidence`: run on 2026-05-21 19:10 KST. Generated local artifact directory `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-09-51-343Z`; command capture status was 3 passed, 4 blocked, 0 skipped. This is a local evidence artifact and remains ignored by git.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
@@ -236,6 +238,7 @@ Updated: 2026-05-21 19:02 KST
 Before external release submission:
 
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
+0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
 1. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
 2. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
 3. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.

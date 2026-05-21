@@ -3,6 +3,7 @@
 This file is the manual evidence ledger for external store dashboards.
 Do not change a line to `confirmed` until the matching console state has been observed in the actual app record.
 The checker also requires evidence dates and artifact paths/URLs, not only `confirmed` strings.
+Use `pnpm release:capture-external-evidence` before and after console work to capture local gate output under `output/release-evidence/<timestamp>/`.
 
 ## App Store Connect / TestFlight
 
