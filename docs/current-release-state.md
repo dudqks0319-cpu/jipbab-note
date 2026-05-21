@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 21:59 KST
+Updated: 2026-05-21 22:03 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 21:59 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the real-device QA operator checklist commit is pushed.
+- Working tree after this ledger update: expected clean after the goal evidence artifact gate commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -167,6 +167,9 @@ Updated: 2026-05-21 21:59 KST
 - Real-device QA packet hardening: pass on 2026-05-21 21:59 KST. `pnpm release:capture-real-device-qa` now includes `operator-checklist.md` alongside `manual-qa-template.md` and `native-artifacts.md`, so operators can run the physical-device checklist before copying confirmed lines into `docs/real-device-qa.md`.
 - `pnpm release:capture-real-device-qa`: run on 2026-05-21 21:59 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T12-58-42-141Z-real-device-qa`; captured 3 passing command/artifact checks and 2 expected blockers (`real-device-availability`, `android-installed-package`) because the iPhone is still unavailable and no Android physical device is attached.
 - `pnpm test:unit`: pass on 2026-05-21 21:59 KST after adding `operator-checklist.md` to the real-device QA packet. 122 unit tests passed.
+- Goal completion evidence hardening: pass on 2026-05-21 22:03 KST. `pnpm release:goal-check` now requires real-device, App Store Connect, and Play Console evidence dates plus existing local artifact paths or HTTP(S) artifact URLs, matching the direct evidence gates instead of accepting confirmation strings alone.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:03 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `pnpm test:unit`: pass on 2026-05-21 22:03 KST after strengthening goal completion evidence checks. 122 unit tests passed.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.

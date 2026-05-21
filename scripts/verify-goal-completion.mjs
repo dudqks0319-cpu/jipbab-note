@@ -34,6 +34,20 @@ const requiredRealDeviceQaTerms = [
   "Android raw error disclosure: not observed",
 ];
 
+const realDeviceQaExtraEvidence = {
+  patterns: [
+    {
+      label: "iOS evidence date: YYYY-MM-DD",
+      pattern: /iOS evidence date: 20\d{2}-\d{2}-\d{2}/,
+    },
+    {
+      label: "Android evidence date: YYYY-MM-DD",
+      pattern: /Android evidence date: 20\d{2}-\d{2}-\d{2}/,
+    },
+  ],
+  artifactLabels: ["iOS evidence artifacts", "Android evidence artifacts"],
+};
+
 const requiredAppStoreTerms = [
   "App Store Connect/TestFlight: confirmed",
   "Bundle ID: com.jipbab.note",
@@ -42,12 +56,32 @@ const requiredAppStoreTerms = [
   "Internal tester availability: confirmed",
 ];
 
+const appStoreExtraEvidence = {
+  patterns: [
+    {
+      label: "App Store Connect evidence date: YYYY-MM-DD",
+      pattern: /App Store Connect evidence date: 20\d{2}-\d{2}-\d{2}/,
+    },
+  ],
+  artifactLabels: ["App Store Connect evidence artifacts"],
+};
+
 const requiredPlayConsoleTerms = [
   "Play Console internal testing: confirmed",
   "Android package: com.jipbab.note",
   "AAB upload: confirmed",
   "Internal testing track: confirmed",
 ];
+
+const playConsoleExtraEvidence = {
+  patterns: [
+    {
+      label: "Play Console evidence date: YYYY-MM-DD",
+      pattern: /Play Console evidence date: 20\d{2}-\d{2}-\d{2}/,
+    },
+  ],
+  artifactLabels: ["Play Console evidence artifacts"],
+};
 
 function addResult(results, status, label, evidence, nextAction = "") {
   results.push({ status, label, evidence, nextAction });
@@ -61,12 +95,40 @@ function readOptional(filePath) {
   return existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
 }
 
-function evidenceStatus(source, requiredTerms, blockedMarkers) {
+function lineValue(source, label) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(new RegExp(`^\\s*-\\s*${escapedLabel}:\\s*(.+)$`, "m"));
+  return match?.[1]?.trim() ?? "";
+}
+
+function artifactExists(value) {
+  const normalized = value.replace(/^`|`$/g, "").trim();
+  if (!normalized || normalized === "pending") {
+    return false;
+  }
+  if (/^https?:\/\//.test(normalized)) {
+    return true;
+  }
+  const artifactPath = path.isAbsolute(normalized) ? normalized : path.join(cwd, normalized);
+  return existsSync(artifactPath);
+}
+
+function missingExtraEvidence(source, extraEvidence) {
+  const missingPatterns = (extraEvidence.patterns ?? [])
+    .filter((requirement) => !requirement.pattern.test(source))
+    .map((requirement) => requirement.label);
+  const missingArtifacts = (extraEvidence.artifactLabels ?? [])
+    .filter((label) => !artifactExists(lineValue(source, label)))
+    .map((label) => `${label}: existing local path or URL`);
+  return [...missingPatterns, ...missingArtifacts];
+}
+
+function evidenceStatus(source, requiredTerms, blockedMarkers, extraEvidence = {}) {
   if (!source) {
     return "missing";
   }
   if (includesAll(source, requiredTerms)) {
-    return "pass";
+    return missingExtraEvidence(source, extraEvidence).length === 0 ? "pass" : "missing";
   }
   if (blockedMarkers.some((marker) => source.includes(marker))) {
     return "blocked";
@@ -183,7 +245,7 @@ addResult(
     "Android real-device QA: not confirmed",
     "not confirmed",
     "not checked",
-  ]),
+  ], realDeviceQaExtraEvidence),
   "실기기 QA",
   "docs/real-device-qa.md evidence for real iPhone/Android OAuth, local notification, link-flow, account deletion, and raw-error checks",
   "실기기에서 OAuth/알림/장보기 링크/계정 삭제 요청 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
@@ -208,7 +270,7 @@ addResult(
     "App Store Connect/TestFlight: not confirmed",
     "TestFlight processing: not confirmed",
     "Internal tester availability: not confirmed",
-  ]),
+  ], appStoreExtraEvidence),
   "App Store Connect/TestFlight",
   "docs/store-console-confirmation.md evidence for ASC/TestFlight build processing and internal tester availability",
   "App Store Connect에서 최신 업로드 빌드 처리/내부 테스트 가능 여부 확인 후 docs/store-console-confirmation.md confirmed evidence 갱신",
@@ -220,7 +282,7 @@ addResult(
     "Play Console internal testing: not confirmed",
     "AAB upload: not confirmed",
     "Internal testing track: not confirmed",
-  ]),
+  ], playConsoleExtraEvidence),
   "Play Console 내부 테스트",
   "docs/store-console-confirmation.md evidence for signed AAB upload and internal testing processing",
   "Play Console 내부 테스트 트랙에 AAB 업로드 후 docs/store-console-confirmation.md confirmed evidence 갱신",
