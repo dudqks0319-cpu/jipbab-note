@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:10 KST
+Updated: 2026-05-21 22:18 KST
 
 ## Local code state
 
@@ -177,6 +177,13 @@ Updated: 2026-05-21 22:10 KST
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 22:10 KST. Production has all 9 required env names present.
 - `pnpm check:production-family-route`: pass on 2026-05-21 22:10 KST. Production created a temporary family group, joined a second member, returned both members, and deleted the temporary group.
 - `pnpm check:production-account-deletion-route`: pass on 2026-05-21 22:10 KST. The privileged account-deletion list route returns unauthenticated `403`, includes `Cache-Control: no-store`, and does not expose server env names or internal traces.
+- `pnpm release:external-status`: blocked on 2026-05-21 22:16 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
+- Computer Use browser recheck: blocked on 2026-05-21 22:16 KST. Chrome shows Play Console developer account `정영빈`, personal account ID `6643795859283116682`, with identity verification, Android device access verification, and contact phone verification still blocking app creation. Chrome also shows App Store Connect at `authResult=FAILED` login, so TestFlight processing/internal tester state cannot be verified until Apple reauthentication or API credentials are provided.
+- `pnpm release:capture-store-console`: run on 2026-05-21 22:16 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-15-43-525Z-store-console`; status remains `blocked` because App Store Connect/TestFlight and Play Console internal testing are not confirmed and store API credentials are not configured.
+- `pnpm release:capture-external-evidence`: run on 2026-05-21 22:16 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-15-49-074Z`; capture status was 3 passed, 4 blocked because the aggregate `external-status`, real-device availability/evidence, and store-console confirmation commands are still blocked.
+- `pnpm test`: pass on 2026-05-21 22:18 KST after updating current external-blocker evidence. Lint, `tsc --noEmit`, and 123 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:17 KST after updating current external-blocker evidence. All 6 local release gates passed.
+- `git diff --check`: pass on 2026-05-21 22:17 KST.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
