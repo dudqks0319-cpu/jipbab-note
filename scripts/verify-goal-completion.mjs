@@ -65,6 +65,19 @@ addResult(
 
 addResult(
   results,
+  ledger.includes("Production family route smoke: blocked") ||
+    ledger.includes("Vercel Production is missing")
+    ? "blocked"
+    : ledger.includes("Production family route smoke: pass")
+      ? "pass"
+      : "missing",
+  "Vercel Production server env",
+  "production server-only env and service-role API smoke evidence",
+  "Vercel Production에 SUPABASE_SERVICE_ROLE_KEY/ADMIN_EMAILS 추가 후 재배포 및 production smoke 재실행",
+);
+
+addResult(
+  results,
   includesAll(ledger, [
     "Auth migration visibility: pass",
     "OAuth provider dashboard callbacks: not verified",
