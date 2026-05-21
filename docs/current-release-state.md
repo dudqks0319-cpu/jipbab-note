@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 16:43 KST
+Updated: 2026-05-21 16:51 KST
 
 ## Local code state
 
@@ -33,6 +33,8 @@ Updated: 2026-05-21 16:43 KST
 - `pnpm release:check`: pass on 2026-05-21 16:43 KST. All 6 local release gates passed; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
 - `pnpm build`: pass on 2026-05-21 16:43 KST after sandbox escalation. The sandboxed run failed with the known Turbopack local port restriction; the escalated rerun compiled 32 routes successfully, including new dynamic route `/api/family-groups`.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:41 KST with `Passed: 6`, `Blocked: 3`, `Missing: 0`. Remaining blockers are full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
+- Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
+- Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -126,7 +128,7 @@ Updated: 2026-05-21 16:43 KST
 
 ## External state
 
-- Vercel production: current aliases point to the 2026-05-19 production deployment. The attached recipe-detail server component error is no longer reproducible on the production alias.
+- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `3864e07`. The attached recipe-detail server component error is no longer reproducible on the production alias, but newly added service-role API routes are blocked until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser.
 - App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
@@ -149,11 +151,12 @@ Updated: 2026-05-21 16:43 KST
 
 Before external release submission:
 
-1. Recheck Supabase URL Configuration dashboard to confirm `https://jipbab-note-app.vercel.app/**` is present in Redirect URLs, not only as Site URL.
-2. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks.
-3. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
-4. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-5. Confirm App Store Connect/TestFlight processing and internal tester availability for uploaded build `2026052001` in the JipbabNote app record, not a different app record.
-6. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
-7. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
-8. Complete App Store Connect/Play Console privacy, support contact, and review notes.
+1. Add `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` to Vercel Production as encrypted environment variables, redeploy, and rerun the production `/api/family-groups` create/join/cleanup smoke. This transfers a local service-role secret to Vercel and requires explicit owner approval.
+2. Recheck Supabase URL Configuration dashboard to confirm `https://jipbab-note-app.vercel.app/**` is present in Redirect URLs, not only as Site URL.
+3. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks.
+4. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
+5. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
+6. Confirm App Store Connect/TestFlight processing and internal tester availability for uploaded build `2026052001` in the JipbabNote app record, not a different app record.
+7. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
+8. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
+9. Complete App Store Connect/Play Console privacy, support contact, and review notes.
