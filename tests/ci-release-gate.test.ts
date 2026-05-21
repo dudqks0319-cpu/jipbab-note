@@ -30,6 +30,8 @@ test("CI static release gate runs only repository-local deterministic release ch
 
 test("GitHub release workflow runs code gates and keeps goal status informational", () => {
   assert.match(workflowSource, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"/);
+  assert.match(workflowSource, /actions\/checkout@v6\.0\.2/);
+  assert.match(workflowSource, /actions\/setup-node@v6\.4\.0/);
   assert.match(workflowSource, /pnpm install --frozen-lockfile/);
   assert.match(workflowSource, /pnpm test/);
   assert.match(workflowSource, /pnpm build/);

@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:36 KST
+Updated: 2026-05-21 22:40 KST
 
 ## Local code state
 
@@ -204,6 +204,10 @@ Updated: 2026-05-21 22:36 KST
 - `pnpm test`: pass on 2026-05-21 22:36 KST after the GitHub Actions Node 24 opt-in. Lint, `tsc --noEmit`, and 130 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-21 22:36 KST after the GitHub Actions Node 24 opt-in. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 22:36 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- GitHub Actions JavaScript action version update: added on 2026-05-21 22:39 KST. Official GitHub release checks reported latest `actions/checkout` as `v6.0.2` and latest `actions/setup-node` as `v6.4.0`, so `.github/workflows/release-gate.yml` now uses those explicit tags instead of the Node 20-targeting v4 tags.
+- `pnpm test`: pass on 2026-05-21 22:40 KST after updating GitHub Actions to `actions/checkout@v6.0.2` and `actions/setup-node@v6.4.0`. Lint, `tsc --noEmit`, and 130 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:40 KST after updating GitHub Actions to v6 actions. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:40 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
