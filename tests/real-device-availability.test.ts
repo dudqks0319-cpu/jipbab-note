@@ -58,11 +58,17 @@ test("real-device QA evidence gate requires end-to-end manual release checks", (
   assert.match(evidenceSource, /Android account deletion request: confirmed/);
   assert.match(evidenceSource, /iOS raw error disclosure: not observed/);
   assert.match(evidenceSource, /Android raw error disclosure: not observed/);
+  assert.match(evidenceSource, /iOS evidence date: YYYY-MM-DD/);
+  assert.match(evidenceSource, /iOS evidence artifacts: non-pending path or URL/);
+  assert.match(evidenceSource, /Android evidence date: YYYY-MM-DD/);
+  assert.match(evidenceSource, /Android evidence artifacts: non-pending path or URL/);
 });
 
 test("real-device QA evidence starts blocked until actual device evidence is recorded", () => {
   assert.match(evidenceDoc, /iOS real-device QA: not confirmed/);
   assert.match(evidenceDoc, /Android real-device QA: not confirmed/);
+  assert.match(evidenceDoc, /iOS evidence artifacts: pending/);
+  assert.match(evidenceDoc, /Android evidence artifacts: pending/);
   assert.doesNotMatch(evidenceDoc, /iOS real-device QA: confirmed/);
   assert.doesNotMatch(evidenceDoc, /Android real-device QA: confirmed/);
 });

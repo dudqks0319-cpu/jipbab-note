@@ -20,6 +20,16 @@ const requiredEvidence = [
       "iOS account deletion request: confirmed",
       "iOS raw error disclosure: not observed",
     ],
+    patterns: [
+      {
+        label: "iOS evidence date: YYYY-MM-DD",
+        pattern: /iOS evidence date: 20\d{2}-\d{2}-\d{2}/,
+      },
+      {
+        label: "iOS evidence artifacts: non-pending path or URL",
+        pattern: /iOS evidence artifacts: (?!pending\b).+/,
+      },
+    ],
   },
   {
     label: "Android real-device QA",
@@ -36,6 +46,16 @@ const requiredEvidence = [
       "Android account deletion request: confirmed",
       "Android back navigation: confirmed",
       "Android raw error disclosure: not observed",
+    ],
+    patterns: [
+      {
+        label: "Android evidence date: YYYY-MM-DD",
+        pattern: /Android evidence date: 20\d{2}-\d{2}-\d{2}/,
+      },
+      {
+        label: "Android evidence artifacts: non-pending path or URL",
+        pattern: /Android evidence artifacts: (?!pending\b).+/,
+      },
     ],
   },
 ];
@@ -56,7 +76,14 @@ function run() {
 
   for (const item of requiredEvidence) {
     if (includesAll(evidence, item.terms)) {
-      passes.push(item.label);
+      const missingPatterns = (item.patterns ?? [])
+        .filter((requirement) => !requirement.pattern.test(evidence))
+        .map((requirement) => requirement.label);
+      if (missingPatterns.length === 0) {
+        passes.push(item.label);
+      } else {
+        failures.push({ label: item.label, missing: missingPatterns });
+      }
     } else {
       const missing = item.terms.filter((term) => !evidence.includes(term));
       failures.push({ label: item.label, missing });

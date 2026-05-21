@@ -30,6 +30,16 @@ const requiredEvidence = [
       "TestFlight processing: confirmed",
       "Internal tester availability: confirmed",
     ],
+    patterns: [
+      {
+        label: "App Store Connect evidence date: YYYY-MM-DD",
+        pattern: /App Store Connect evidence date: 20\d{2}-\d{2}-\d{2}/,
+      },
+      {
+        label: "App Store Connect evidence artifacts: non-pending path or URL",
+        pattern: /App Store Connect evidence artifacts: (?!pending\b).+/,
+      },
+    ],
   },
   {
     label: "Google Play Console internal testing",
@@ -38,6 +48,16 @@ const requiredEvidence = [
       "Android package: com.jipbab.note",
       "AAB upload: confirmed",
       "Internal testing track: confirmed",
+    ],
+    patterns: [
+      {
+        label: "Play Console evidence date: YYYY-MM-DD",
+        pattern: /Play Console evidence date: 20\d{2}-\d{2}-\d{2}/,
+      },
+      {
+        label: "Play Console evidence artifacts: non-pending path or URL",
+        pattern: /Play Console evidence artifacts: (?!pending\b).+/,
+      },
     ],
   },
 ];
@@ -95,7 +115,14 @@ function run() {
 
   for (const item of requiredEvidence) {
     if (includesAll(evidence, item.terms)) {
-      passes.push(item.label);
+      const missingPatterns = (item.patterns ?? [])
+        .filter((requirement) => !requirement.pattern.test(evidence))
+        .map((requirement) => requirement.label);
+      if (missingPatterns.length === 0) {
+        passes.push(item.label);
+      } else {
+        failures.push({ label: item.label, missing: missingPatterns });
+      }
     } else {
       const missing = item.terms.filter((term) => !evidence.includes(term));
       failures.push({ label: item.label, missing });

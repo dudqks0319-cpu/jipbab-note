@@ -23,6 +23,10 @@ test("store console confirmation requires both app store and play console eviden
   assert.match(checkSource, /Play Console internal testing: confirmed/);
   assert.match(checkSource, /AAB upload: confirmed/);
   assert.match(checkSource, /Internal testing track: confirmed/);
+  assert.match(checkSource, /App Store Connect evidence date: YYYY-MM-DD/);
+  assert.match(checkSource, /App Store Connect evidence artifacts: non-pending path or URL/);
+  assert.match(checkSource, /Play Console evidence date: YYYY-MM-DD/);
+  assert.match(checkSource, /Play Console evidence artifacts: non-pending path or URL/);
 });
 
 test("store console confirmation reports missing optional store API credentials without values", () => {
@@ -40,4 +44,6 @@ test("store console confirmation evidence stays blocked until manually confirmed
   assert.match(evidence, /TestFlight processing: not confirmed/);
   assert.match(evidence, /Play Console internal testing: not confirmed/);
   assert.match(evidence, /AAB upload: not confirmed/);
+  assert.match(evidence, /App Store Connect evidence artifacts: pending/);
+  assert.match(evidence, /Play Console evidence artifacts: pending/);
 });

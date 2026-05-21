@@ -1,9 +1,10 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 18:56 KST
+Updated: 2026-05-21 19:02 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
+각 플랫폼별 evidence date와 evidence artifacts도 실제 날짜와 스크린샷/로그/녹화 경로 또는 URL로 채워야 통과합니다.
 
 ## Current Status
 
@@ -47,6 +48,8 @@ Updated: 2026-05-21 18:56 KST
 - iOS shopping external link: not confirmed
 - iOS account deletion request: not confirmed
 - iOS raw error disclosure: not checked
+- iOS evidence date: pending
+- iOS evidence artifacts: pending
 
 ### Android
 
@@ -62,6 +65,8 @@ Updated: 2026-05-21 18:56 KST
 - Android account deletion request: not confirmed
 - Android back navigation: not confirmed
 - Android raw error disclosure: not checked
+- Android evidence date: pending
+- Android evidence artifacts: pending
 
 ## Evidence Log
 
@@ -72,3 +77,5 @@ Updated: 2026-05-21 18:56 KST
 - 2026-05-21 18:45 KST: `pnpm release:external-status` reran the real-device gates. iOS remains blocked at CoreDevice `unavailable` for iPhone `영빈`; Android remains blocked with no attached physical device.
 - 2026-05-21 18:54 KST: Stronger `pnpm release:external-status` rerun still blocks real-device availability with iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
 - 2026-05-21 18:56 KST: Stronger `pnpm release:external-check` passed Supabase write/RLS, OAuth, Vercel Production env, production family route, and production account-deletion route, then stopped at the same real-device availability blocker.
+- 2026-05-21 19:00 KST: Evidence gate now also requires non-pending `iOS evidence date`, `iOS evidence artifacts`, `Android evidence date`, and `Android evidence artifacts`.
+- 2026-05-21 19:02 KST: `pnpm release:external-status` still reports iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
