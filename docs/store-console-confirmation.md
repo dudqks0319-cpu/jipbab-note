@@ -16,7 +16,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - App Store Connect evidence date: pending
 - App Store Connect evidence artifacts: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 19:31 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 20:29 KST browser check found a logged App Store Connect session and a `jipbab-note` app menu item, but TestFlight build processing/internal tester state for that app was not confirmed before the active tab returned to the App Store Connect login screen. Evidence artifacts: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/app-store-connect-login-after-jipbab-note-switch.png`. Latest 2026-05-21 19:31 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available.
 
 ## Google Play Console / Internal Testing
 
@@ -28,7 +28,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - Play Console evidence date: pending
 - Play Console evidence artifacts: pending
-- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 19:31 KST external-status run found no Google Play service-account env name, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
+- Notes: Latest 2026-05-21 20:29 KST browser check shows the Play Console developer account `정영빈`, personal account ID `6643795859283116682`, but Google Play still says developer account setup must be completed before publishing. Open blockers shown in the console: identity verification, Android device access verification through the Play Console mobile app, and contact phone verification after other verification tasks. The app creation button is disabled until account verification is complete, so `com.jipbab.note` AAB upload/internal testing cannot proceed yet. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/play-console-account-setup.png`. Latest 2026-05-21 19:31 KST external-status run found no Google Play service-account env name, so API automation is not currently available.
 
 ## Unblock Checklist
 

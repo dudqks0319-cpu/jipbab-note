@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 19:56 KST
+Updated: 2026-05-21 20:29 KST
 
 ## Local code state
 
@@ -134,6 +134,10 @@ Updated: 2026-05-21 19:56 KST
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 19:55 KST. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`.
 - Production family route smoke: pass on 2026-05-21 19:55 KST. `pnpm check:production-family-route` created a temporary family group, joined a second member, verified both members were returned, and deleted the temporary group.
 - `pnpm check:production-account-deletion-route`: pass on 2026-05-21 19:55 KST. The production account-deletion admin list route returned `403` for unauthenticated access, kept `Cache-Control: no-store`, and did not expose server env names or internal traces.
+- `pnpm release:external-status`: blocked on 2026-05-21 20:29 KST with `Passed: 5`, `Blocked: 3` after sandbox escalation. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Remaining blockers are real-device availability, real-device QA evidence, and store console confirmation.
+- Play Console browser check: blocked on 2026-05-21 20:29 KST. The console shows developer account `정영빈`, personal account ID `6643795859283116682`, but account setup is incomplete; identity verification, Android device access verification, and contact phone verification block app creation and internal testing upload. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/play-console-account-setup.png`.
+- App Store Connect browser check: blocked on 2026-05-21 20:29 KST. A logged App Store Connect session showed the existing app menu and a `jipbab-note` app entry, but TestFlight processing/internal tester state for the JipbabNote app was not confirmed before the active tab returned to the App Store Connect login screen. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/app-store-connect-login-after-jipbab-note-switch.png`.
+- Real-device availability: blocked on 2026-05-21 20:29 KST. iPhone `영빈` remains CoreDevice `unavailable`; no Android physical device is attached.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
