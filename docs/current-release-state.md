@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 20:29 KST
+Updated: 2026-05-21 20:40 KST
 
 ## Local code state
 
@@ -138,6 +138,7 @@ Updated: 2026-05-21 20:29 KST
 - Play Console browser check: blocked on 2026-05-21 20:29 KST. The console shows developer account `정영빈`, personal account ID `6643795859283116682`, but account setup is incomplete; identity verification, Android device access verification, and contact phone verification block app creation and internal testing upload. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/play-console-account-setup.png`.
 - App Store Connect browser check: blocked on 2026-05-21 20:29 KST. A logged App Store Connect session showed the existing app menu and a `jipbab-note` app entry, but TestFlight processing/internal tester state for the JipbabNote app was not confirmed before the active tab returned to the App Store Connect login screen. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/app-store-connect-login-after-jipbab-note-switch.png`.
 - Real-device availability: blocked on 2026-05-21 20:29 KST. iPhone `영빈` remains CoreDevice `unavailable`; no Android physical device is attached.
+- iPhone Mirroring real-device QA path: blocked on 2026-05-21 20:40 KST. iPhone Mirroring first reported the iPhone was in use and then required the Mac login password for `정영빈`, so unattended screen-based iOS QA cannot proceed. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-40-real-device-blockers/iphone-mirroring-mac-password-required.png`.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
