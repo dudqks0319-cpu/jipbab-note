@@ -34,6 +34,8 @@ test("goal completion check requires store console confirmation evidence", () =>
 });
 
 test("goal completion check requires both production family and account-deletion smokes", () => {
+  assert.match(source, /vercelProductionPass/);
+  assert.match(source, /check:vercel-production-env`: pass/);
   assert.match(source, /Production family route smoke: pass/);
   assert.match(source, /check:production-account-deletion-route`: pass/);
   assert.match(source, /Production account-deletion smoke: blocked safely/);

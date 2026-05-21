@@ -83,6 +83,11 @@ const ledger = readFileSync(ledgerPath, "utf8");
 const realDeviceQa = readOptional(realDeviceQaPath);
 const storeConsole = readOptional(storeConsolePath);
 const results = [];
+const vercelProductionPass = includesAll(ledger, [
+  "`pnpm check:vercel-production-env`: pass",
+  "Production family route smoke: pass",
+  "`pnpm check:production-account-deletion-route`: pass",
+]);
 
 addResult(
   results,
@@ -128,14 +133,13 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("Production family route smoke: blocked") ||
-    ledger.includes("Production account-deletion smoke: blocked safely") ||
-    ledger.includes("`pnpm check:production-account-deletion-route`: blocked safely") ||
-    ledger.includes("Vercel Production is missing")
-    ? "blocked"
-    : ledger.includes("Production family route smoke: pass") &&
-        ledger.includes("`pnpm check:production-account-deletion-route`: pass")
-      ? "pass"
+  vercelProductionPass
+    ? "pass"
+    : ledger.includes("Production family route smoke: blocked") ||
+        ledger.includes("Production account-deletion smoke: blocked safely") ||
+        ledger.includes("`pnpm check:production-account-deletion-route`: blocked safely") ||
+        ledger.includes("Vercel Production is missing")
+      ? "blocked"
       : "missing",
   "Vercel Production server env",
   "production server-only env plus family/account-deletion service-role API smoke evidence",

@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 18:00 KST
+Updated: 2026-05-21 18:08 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 18:00 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the goal-completion direct-evidence gate commit is pushed.
+- Working tree after this ledger update: expected clean after the Vercel Production env/app smoke commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Vercel Production is missing server-only env required by service-role API routes, and full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -84,6 +84,13 @@ Updated: 2026-05-21 18:00 KST
 - `pnpm release:check`: pass on 2026-05-21 18:00 KST. All 6 local release gates passed.
 - `pnpm release:external-check`: blocked on 2026-05-21 18:00 KST for the intended reason. Supabase live read checks passed with 6 passes, OAuth live checks passed with 7 passes, then `pnpm check:vercel-production-env` failed because Production is still missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 18:00 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. The blocked evidence now points to direct files for real-device QA and store console confirmation.
+- Vercel Production server env: pass on 2026-05-21 18:03 KST. `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` were added to Vercel Production as sensitive environment variables after explicit owner approval; values were not printed.
+- `pnpm check:vercel-production-env`: pass on 2026-05-21 18:03 KST. Production now has all 9 required env names present, including server-only env names.
+- Vercel production deployment: pass on 2026-05-21 18:05 KST. Deployment `https://jipbab-note-l9td64y2r-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`, `/api/account-deletion-requests`, and `/api/account-deletion-requests/[id]`.
+- Production family route smoke: pass on 2026-05-21 18:06 KST. `pnpm check:production-family-route` created a temporary family group, joined a second member, verified both members were returned, and deleted the temporary group.
+- `pnpm check:production-account-deletion-route`: pass on 2026-05-21 18:06 KST. The production account-deletion admin list route returned `403` for unauthenticated access, kept `Cache-Control: no-store`, and did not expose server env names or internal traces.
+- `pnpm release:external-check`: blocked on 2026-05-21 18:07 KST for the intended next blocker. Supabase live read checks passed, OAuth live checks passed, Vercel env passed, production family route smoke passed, production account-deletion route smoke passed, then `pnpm check:real-device-availability` failed because iPhone `영빈` is offline and no Android physical device is attached.
+- Goal completion Vercel precedence fix: pass on 2026-05-21 18:08 KST. `scripts/verify-goal-completion.mjs` now lets current Vercel pass evidence override older historical blocked entries in this append-only release ledger.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -180,7 +187,7 @@ Updated: 2026-05-21 18:00 KST
 
 ## External state
 
-- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `cd953f7`. The attached recipe-detail server component error is no longer reproducible on the production alias, and service-role API routes now fail closed with controlled generic `503` responses until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
+- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `e22bffa`. The attached recipe-detail server component error is no longer reproducible on the production alias. Server-only env is now present in Vercel Production, production family sharing create/join/cleanup smoke passes, and the account-deletion admin list route fails closed with unauthenticated `403`, `Cache-Control: no-store`, and no raw server details.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser.
 - Store console confirmation evidence: not confirmed. `docs/store-console-confirmation.md` exists and `pnpm check:store-console-confirmation` now blocks external release checks until actual App Store Connect/TestFlight and Play Console internal testing evidence is recorded.
 - App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
@@ -204,12 +211,11 @@ Updated: 2026-05-21 18:00 KST
 
 Before external release submission:
 
-1. Add `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` to Vercel Production as encrypted environment variables, redeploy, and rerun the production `/api/family-groups` create/join/cleanup smoke plus `pnpm check:production-account-deletion-route`. This transfers a local service-role secret to Vercel and requires explicit owner approval.
-2. Recheck Supabase URL Configuration dashboard to confirm `https://jipbab-note-app.vercel.app/**` is present in Redirect URLs, not only as Site URL.
-3. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
-4. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
-5. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
-6. Confirm App Store Connect/TestFlight processing and internal tester availability for uploaded build `2026052001` in the JipbabNote app record, not a different app record.
-7. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
-8. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
-9. Complete App Store Connect/Play Console privacy, support contact, and review notes.
+1. Recheck Supabase URL Configuration dashboard to confirm `https://jipbab-note-app.vercel.app/**` is present in Redirect URLs, not only as Site URL.
+2. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
+3. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
+4. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.
+5. Confirm App Store Connect/TestFlight processing and internal tester availability for uploaded build `2026052001` in the JipbabNote app record, not a different app record.
+6. Upload the signed Android AAB to Play Console internal testing after Google Play developer account creation is complete, then confirm processing.
+7. Upload `docs/app-store-screenshots/2026-05-19-iphone69` screenshots to App Store Connect and `docs/play-store-assets` images to Play Console.
+8. Complete App Store Connect/Play Console privacy, support contact, and review notes.
