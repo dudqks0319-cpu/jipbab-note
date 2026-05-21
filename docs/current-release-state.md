@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 18:24 KST
+Updated: 2026-05-21 18:30 KST
 
 ## Local code state
 
@@ -103,6 +103,9 @@ Updated: 2026-05-21 18:24 KST
 - `adb devices -l`: blocked again on 2026-05-21 18:24 KST. No Android physical device is attached.
 - App Store Connect browser check: blocked again on 2026-05-21 18:24 KST. Chrome remains at the App Store Connect login form.
 - Play Console browser check: blocked again on 2026-05-21 18:24 KST. Chrome remains at the Play Console developer account creation screen for `dudqks0319@gmail.com`.
+- Real-device availability gate hardening: pass on 2026-05-21 18:30 KST. `scripts/check-real-device-availability.mjs` now reads both `xcrun xctrace list devices` and `xcrun devicectl list devices`, so the iOS blocker reports CoreDevice `unavailable` instead of only a generic offline state.
+- `pnpm test:unit`: pass on 2026-05-21 18:30 KST after the CoreDevice-aware availability gate change. All 100 unit tests passed.
+- `pnpm release:external-check`: blocked on 2026-05-21 18:30 KST at the expected real-device gate. Supabase live read checks passed, OAuth live provider checks passed, Vercel Production env passed, production family route smoke passed, and production account-deletion route smoke passed; `pnpm check:real-device-availability` then failed with iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -208,7 +211,7 @@ Updated: 2026-05-21 18:24 KST
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
 - Production Supabase migration/application: local SQL contract verified and live project connection, read checks, write checks, RLS isolation, and family service-role table flow passed from the app harness. `get_family_group_members(uuid)` was applied through SQL Editor; family create/join in the app now uses the server API route to avoid depending on the previously failing public create RPC path.
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
-- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 18:24 KST recheck shows CoreDevice state `unavailable` and xctrace `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
+- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 18:30 KST release gate shows CoreDevice state `unavailable` and xctrace `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
 - Android real-device QA: not done. Latest 2026-05-21 18:24 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
 - Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet. `pnpm check:real-device-availability` and `pnpm check:real-device-qa-evidence` now make both device availability and actual QA evidence machine-checkable.
 - Play Console internal testing: not verified in this pass. Latest 2026-05-21 18:24 KST browser check shows Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.

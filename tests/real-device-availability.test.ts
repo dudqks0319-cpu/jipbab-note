@@ -24,6 +24,8 @@ test("external release check includes real physical device availability", () => 
 
 test("real device availability check inspects iOS physical devices and excludes simulators", () => {
   assert.match(source, /"xcrun", \["xctrace", "list", "devices"\]/);
+  assert.match(source, /"xcrun", \["devicectl", "list", "devices"\]/);
+  assert.match(source, /iOS CoreDevice unavailable/);
   assert.match(source, /sectionLines\(output, "Devices"\)\.filter\(looksLikeIosPhysicalDevice\)/);
   assert.match(source, /sectionLines\(output, "Devices Offline"\)\.filter\(looksLikeIosPhysicalDevice\)/);
   assert.doesNotMatch(source, /sectionLines\(output, "Simulators"\)/);

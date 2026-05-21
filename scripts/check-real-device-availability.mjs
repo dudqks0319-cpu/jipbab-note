@@ -26,6 +26,53 @@ function looksLikeIosPhysicalDevice(line) {
   return /\(\d+(?:\.\d+){0,2}\)\s+\([0-9A-Fa-f-]{8,}\)$/.test(line);
 }
 
+function parseCoreDeviceRows(output) {
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("Name ") && !line.startsWith("----"))
+    .map((line) => {
+      const parts = line.split(/\s{2,}/);
+      return {
+        raw: line,
+        state: parts[3] ?? "",
+        model: parts.slice(4).join(" "),
+      };
+    })
+    .filter((device) => /\b(iPhone|iPad)\b/.test(device.model));
+}
+
+function listIosCoreDevices() {
+  const result = spawnSync("xcrun", ["devicectl", "list", "devices"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+
+  if (result.error) {
+    return {
+      available: [],
+      unavailable: [],
+      error: result.error.message,
+    };
+  }
+
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+  if (result.status !== 0) {
+    return {
+      available: [],
+      unavailable: [],
+      error: "xcrun devicectl list devices failed",
+    };
+  }
+
+  const devices = parseCoreDeviceRows(output);
+  return {
+    available: devices.filter((device) => device.state === "available").map((device) => device.raw),
+    unavailable: devices.filter((device) => device.state && device.state !== "available").map((device) => device.raw),
+    error: "",
+  };
+}
+
 function listIosDevices() {
   const result = spawnSync("xcrun", ["xctrace", "list", "devices"], {
     cwd: process.cwd(),
@@ -105,17 +152,25 @@ function summarizeDevice(line) {
 
 function run() {
   const ios = listIosDevices();
+  const coreIos = listIosCoreDevices();
   const android = listAndroidDevices();
   const failures = [];
   const passes = [];
   const warnings = [];
 
-  if (ios.error) {
-    failures.push(`iOS device list: ${ios.error}`);
-  } else if (ios.available.length > 0) {
-    passes.push(`iOS physical device available: ${summarizeDevice(ios.available[0])}`);
+  if (ios.error && coreIos.error) {
+    failures.push(`iOS device list: ${ios.error}; ${coreIos.error}`);
+  } else if (ios.available.length > 0 || coreIos.available.length > 0) {
+    const availableDevice = ios.available[0] ?? coreIos.available[0];
+    passes.push(`iOS physical device available: ${summarizeDevice(availableDevice)}`);
+  } else if (coreIos.unavailable.length > 0) {
+    failures.push(`iOS CoreDevice unavailable: ${summarizeDevice(coreIos.unavailable[0])}`);
   } else if (ios.offline.length > 0) {
     failures.push(`iOS physical device offline: ${summarizeDevice(ios.offline[0])}`);
+  } else if (ios.error) {
+    failures.push(`iOS device list: ${ios.error}`);
+  } else if (coreIos.error) {
+    failures.push(`iOS CoreDevice list: ${coreIos.error}`);
   } else {
     failures.push("iOS physical device: none available");
   }
