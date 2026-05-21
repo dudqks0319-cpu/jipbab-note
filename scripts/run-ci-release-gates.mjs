@@ -17,6 +17,16 @@ const checks = [
     command: "node",
     args: ["scripts/check-store-assets.mjs"],
   },
+  {
+    name: "external-unblock-runbook",
+    command: "node",
+    args: ["scripts/print-release-unblock-runbook.mjs"],
+  },
+  {
+    name: "store-api-credentials-runbook",
+    command: "node",
+    args: ["scripts/print-store-api-credentials-runbook.mjs"],
+  },
 ];
 
 const intentionallyExternal = [

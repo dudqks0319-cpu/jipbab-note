@@ -19,6 +19,8 @@ test("CI static release gate runs only repository-local deterministic release ch
   assert.match(ciGateSource, /scripts\/check-supabase-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-partner-links\.mjs/);
   assert.match(ciGateSource, /scripts\/check-store-assets\.mjs/);
+  assert.match(ciGateSource, /scripts\/print-release-unblock-runbook\.mjs/);
+  assert.match(ciGateSource, /scripts\/print-store-api-credentials-runbook\.mjs/);
   assert.match(ciGateSource, /CI intentionally excludes machine-local or account-bound release gates/);
   assert.doesNotMatch(ciGateSource, /check-supabase-live\.mjs/);
   assert.doesNotMatch(ciGateSource, /check-oauth-live\.mjs/);

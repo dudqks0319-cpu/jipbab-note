@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 21:48 KST
+Updated: 2026-05-21 21:53 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 21:48 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the store API credential runbook commit is pushed.
+- Working tree after this ledger update: expected clean after the CI runbook gate commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -158,6 +158,12 @@ Updated: 2026-05-21 21:48 KST
 - `pnpm check:store-console-confirmation`: still blocked on 2026-05-21 21:48 KST for the intended reason. Manual console evidence is not confirmed, and App Store Connect API / Google Play Developer API credentials are not configured yet.
 - `pnpm release:external-status`: blocked on 2026-05-21 21:48 KST with `Passed: 5`, `Blocked: 3`. The five passing surfaces remain Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 21:48 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- CI static release gate hardening: pass on 2026-05-21 21:53 KST. `pnpm release:ci-static-check` now verifies five deterministic repo-local surfaces: Supabase release contract, partner links, store assets, external unblock runbook, and store API credential runbook.
+- `pnpm release:ci-static-check`: pass on 2026-05-21 21:53 KST with `Passed: 5`, `Failed: 0`.
+- `pnpm test:unit`: pass on 2026-05-21 21:53 KST after wiring the runbooks into the CI static release gate. 122 unit tests passed.
+- `pnpm test`: pass on 2026-05-21 21:53 KST after wiring runbooks into the CI static release gate. Lint, `tsc --noEmit`, and 122 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 21:53 KST. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 21:53 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
