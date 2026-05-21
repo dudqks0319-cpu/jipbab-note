@@ -16,7 +16,7 @@ test("builds rate limit keys from network identity before device identity", () =
     },
   });
 
-  assert.equal(getRateLimitKey(request), "ip-device:203.0.113.10:attacker-controlled-device");
+  assert.equal(getRateLimitKey(request), "ip:203.0.113.10");
 });
 
 test("ignores malformed device identifiers in rate limit keys", () => {

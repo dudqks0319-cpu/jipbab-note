@@ -5,14 +5,24 @@ import { useCallback, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
-import { getSupabaseClient } from "@/lib/supabase";
 import type { FamilyGroupRecord, FamilyMemberRecord } from "@/types";
 
 const STORAGE_KEY = "jipbab-note-family-group";
 const MAX_MEMBERS = 4;
+const INVITE_CODE_LENGTH = 8;
+const INVITE_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function makeInviteCode(): string {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.getRandomValues) {
+    const values = new Uint8Array(INVITE_CODE_LENGTH);
+    cryptoApi.getRandomValues(values);
+    return Array.from(values, (value) => INVITE_CODE_ALPHABET[value % INVITE_CODE_ALPHABET.length]).join("");
+  }
+
+  return Array.from({ length: INVITE_CODE_LENGTH }, () => {
+    return INVITE_CODE_ALPHABET[Math.floor(Math.random() * INVITE_CODE_ALPHABET.length)];
+  }).join("");
 }
 
 function normalizeMemberName(value: string): string {
@@ -83,61 +93,72 @@ export function useFamilyShare() {
     setError("");
 
     try {
-      const client = getSupabaseClient({ deviceId });
-      const { data: authData } = await client.auth.getUser();
-      const userId = authData.user?.id ?? null;
-      if (!userId) return;
-      await client.from("family_groups").upsert({
-        id: nextGroup.id,
-        owner_user_id: userId,
-        owner_device_id: deviceId,
-        name: nextGroup.name,
-        invite_code: nextGroup.inviteCode,
+      const response = await fetch("/api/family-groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-device-id": deviceId,
+        },
+        body: JSON.stringify({
+          action: "create",
+          groupId: nextGroup.id,
+          groupName: nextGroup.name,
+          inviteCode: nextGroup.inviteCode,
+          displayName: owner,
+        }),
       });
-      await client.from("family_members").upsert({
-        family_group_id: nextGroup.id,
-        user_id: userId,
-        device_id: deviceId,
-        display_name: owner,
-        role: "owner",
-      });
+
+      if (!response.ok) throw new Error("family_create_failed");
+
+      const payload = await response.json() as { group?: FamilyGroupRecord };
+      if (payload.group) {
+        saveGroup(payload.group);
+      }
     } catch {
       setStatusMessage("로컬 가족 냉장고로 먼저 저장했어요. 로그인/DB 적용 후 클라우드 공유됩니다.");
     }
   }, [deviceId, saveGroup]);
 
-  const joinGroup = useCallback((inviteCode: string, memberName: string) => {
+  const joinGroup = useCallback(async (inviteCode: string, memberName: string) => {
     const normalizedCode = inviteCode.trim().toUpperCase();
-    const now = new Date().toISOString();
     const name = normalizeMemberName(memberName) || "가족";
-    const current = group ?? {
-      id: uuidv4(),
-      name: "참여한 가족 냉장고",
-      inviteCode: normalizedCode,
-      ownerName: "가족",
-      members: [],
-      createdAt: now,
-      updatedAt: now,
-    };
 
-    if (current.members.length >= MAX_MEMBERS) {
-      setError("가족 공유는 최대 4명까지 가능합니다.");
+    if (!normalizedCode) {
+      setStatusMessage("");
+      setError("초대코드를 입력해 주세요.");
       return;
     }
 
-    const nextGroup = {
-      ...current,
-      inviteCode: normalizedCode || current.inviteCode,
-      members: [
-        ...current.members.filter((member) => member.id !== deviceId),
-        { id: deviceId, name, role: "member" as const, joinedAt: now },
-      ].slice(0, MAX_MEMBERS),
-      updatedAt: now,
-    };
-    saveGroup(nextGroup);
-    setStatusMessage("초대코드로 가족 냉장고에 참여했어요.");
+    setStatusMessage("초대코드를 확인하고 있어요.");
     setError("");
-  }, [deviceId, group, saveGroup]);
+
+    try {
+      const response = await fetch("/api/family-groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-device-id": deviceId,
+        },
+        body: JSON.stringify({
+          action: "join",
+          inviteCode: normalizedCode,
+          displayName: name,
+        }),
+      });
+
+      if (!response.ok) throw new Error("family_join_failed");
+
+      const payload = await response.json() as { group?: FamilyGroupRecord };
+      if (!payload.group) throw new Error("family_join_empty_response");
+
+      saveGroup(payload.group);
+      setStatusMessage("초대코드로 가족 냉장고에 참여했어요.");
+      setError("");
+    } catch {
+      setStatusMessage("");
+      setError("초대코드를 확인하지 못했어요. 코드, 로그인, 네트워크 상태를 확인해 주세요.");
+    }
+  }, [deviceId, saveGroup]);
 
   const addLocalMember = useCallback((memberName: string) => {
     if (!group) return;

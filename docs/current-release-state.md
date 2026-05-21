@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-20 23:27 KST
+Updated: 2026-05-21 16:43 KST
 
 ## Local code state
 
@@ -12,7 +12,7 @@ Updated: 2026-05-20 23:27 KST
 - Working tree after this ledger update: expected clean after the iOS build-number commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
-- Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
+- Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
 
 ## Build identity
 
@@ -23,6 +23,16 @@ Updated: 2026-05-20 23:27 KST
 
 ## Verification evidence
 
+- Family sharing PR review follow-up: pass on 2026-05-21. Family group create/join no longer depends on unchecked client table writes or the broken public `create_family_group` RPC path; the client now calls `/api/family-groups`, which validates device ID, invite code, member count, and uses the server service-role client only inside the API route.
+- Abuse-control hardening: pass on 2026-05-21. Shared API rate-limit keys now use the trusted forwarded/real IP when available instead of combining IP with the user-controlled `x-device-id`, reducing device-header rotation bypass risk.
+- Supabase SQL Editor: pass on 2026-05-21 for `public.get_family_group_members(uuid)`. The query returned `Success. No rows returned`. A later `create_family_group` RPC correction attempt hit SQL Editor input instability, so the app path was moved to the server API route and the live release check now verifies the service-role family table flow directly.
+- `pnpm test`: pass on 2026-05-21 16:43 KST. Lint, `tsc --noEmit`, and 79 unit tests passed.
+- `pnpm check:supabase-release`: pass on 2026-05-21 16:41 KST. 81 Supabase contract checks passed, failures 0.
+- `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live`: pass on 2026-05-21 16:41 KST. 19 checks passed, including temporary guest ingredient isolation and service-role family group insert, owner/joiner member insert, member readback, and cleanup.
+- `pnpm release:external-check`: pass on 2026-05-21 16:41 KST. Supabase read-only live checks passed with 6 passes and OAuth live checks passed with 7 passes for Google, Apple, and Kakao provider starts.
+- `pnpm release:check`: pass on 2026-05-21 16:43 KST. All 6 local release gates passed; `release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, and `android-release` reported 0 failures.
+- `pnpm build`: pass on 2026-05-21 16:43 KST after sandbox escalation. The sandboxed run failed with the known Turbopack local port restriction; the escalated rerun compiled 32 routes successfully, including new dynamic route `/api/family-groups`.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 16:41 KST with `Passed: 6`, `Blocked: 3`, `Missing: 0`. Remaining blockers are full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -122,7 +132,7 @@ Updated: 2026-05-20 23:27 KST
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
-- Production Supabase migration application: local SQL contract verified and live project connection, read checks, write checks, and RLS isolation checks passed from the app harness.
+- Production Supabase migration/application: local SQL contract verified and live project connection, read checks, write checks, RLS isolation, and family service-role table flow passed from the app harness. `get_family_group_members(uuid)` was applied through SQL Editor; family create/join in the app now uses the server API route to avoid depending on the previously failing public create RPC path.
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
 - iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-20 23:27 KST recheck shows the iPhone under `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
 - Android real-device QA: not done. Latest 2026-05-20 23:26 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.

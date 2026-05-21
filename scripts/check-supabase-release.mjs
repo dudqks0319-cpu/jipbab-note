@@ -13,6 +13,8 @@ const requiredTables = [
   "favorites",
   "shopping_items",
   "partner_links",
+  "family_groups",
+  "family_members",
   "account_deletion_requests",
   "account_deletion_request_events",
 ];
@@ -49,6 +51,16 @@ const requiredPolicies = {
     "shopping_items_delete_own",
   ],
   partner_links: ["partner_links_select_active"],
+  family_groups: [
+    "family_groups_select_member",
+    "family_groups_insert_owner",
+    "family_groups_update_owner",
+  ],
+  family_members: [
+    "family_members_select_same_group",
+    "family_members_insert_self_or_owner",
+    "family_members_delete_self_or_owner",
+  ],
   account_deletion_requests: [
     "account_deletion_requests_select_own",
     "account_deletion_requests_insert_own",
@@ -78,9 +90,11 @@ const requiredMigrationFiles = [
   "20260421000000_release_hardening_guest_device_rls.sql",
   "20260421010000_add_account_deletion_requests.sql",
   "20260421020000_add_account_deletion_request_events.sql",
+  "20260425010000_add_family_share_and_community_images.sql",
   "20260508133157_add_recipe_sources_and_release_metadata.sql",
   "20260508133307_add_partner_links.sql",
   "20260508143719_optimize_rls_initplan.sql",
+  "20260521160347_add_family_group_rpc.sql",
 ];
 
 function readSqlBundle() {
@@ -219,6 +233,25 @@ if (
   addResult(results, "fail", "partner_links privileges", "must revoke anon/authenticated writes and grant read-only access");
 }
 
+if (
+  sql.includes("create or replace function public.create_family_group") &&
+  sql.includes("create or replace function public.join_family_group_by_invite_code") &&
+  sql.includes("create or replace function public.get_family_group_members") &&
+  sql.includes("family_group_access_denied") &&
+  sql.includes("security definer") &&
+  sql.includes("grant execute on function public.join_family_group_by_invite_code(text, text) to anon, authenticated") &&
+  sql.includes("grant execute on function public.get_family_group_members(uuid) to anon, authenticated")
+) {
+  addResult(results, "pass", "family invite RPC", "invite-code join and member reads use constrained security-definer functions");
+} else {
+  addResult(
+    results,
+    "fail",
+    "family invite RPC",
+    "must expose constrained create/join/member RPCs so invite-code joins do not require pre-existing membership or recursive RLS reads",
+  );
+}
+
 const failures = results.filter((item) => item.level === "fail");
 const passes = results.filter((item) => item.level === "pass");
 
@@ -239,3 +272,4 @@ console.log("- required release migrations exist");
 console.log("- required tables have RLS enabled in SQL");
 console.log("- required ownership and service-role policies are present");
 console.log("- partner_links is read-only for anon/authenticated users");
+console.log("- family invite-code RPC contract is present");

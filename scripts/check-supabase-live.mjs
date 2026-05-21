@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
@@ -7,6 +8,9 @@ const READ_ONLY_DEVICE_ID = "release-check-readonly-device";
 const WRITE_TEST_DEVICE_ID = `release-check-write-${Date.now()}`;
 const OTHER_DEVICE_ID = `${WRITE_TEST_DEVICE_ID}-other`;
 const WRITE_TEST_NAME = `release-check-${Date.now()}`;
+const FAMILY_OWNER_DEVICE_ID = `${WRITE_TEST_DEVICE_ID}-family-owner`;
+const FAMILY_JOINER_DEVICE_ID = `${WRITE_TEST_DEVICE_ID}-family-joiner`;
+const FAMILY_INVITE_CODE = `RC${Date.now().toString(36).slice(-6).toUpperCase()}`.slice(0, 8);
 
 function readEnvFile(filePath) {
   if (!existsSync(filePath)) {
@@ -78,16 +82,27 @@ function formatError(error) {
   return error.message;
 }
 
-async function restRequest({ supabaseUrl, anonKey, pathName, method = "GET", deviceId, body }) {
+async function restRequest({
+  supabaseUrl,
+  anonKey,
+  apiKey = anonKey,
+  authorizationKey = apiKey,
+  pathName,
+  method = "GET",
+  deviceId,
+  body,
+  prefer,
+}) {
   const url = new URL(`/rest/v1/${pathName}`, supabaseUrl);
   const response = await fetch(url, {
     method,
     headers: {
-      apikey: anonKey,
-      Authorization: `Bearer ${anonKey}`,
+      apikey: apiKey,
+      Authorization: `Bearer ${authorizationKey}`,
       "Content-Type": "application/json",
       ...(deviceId ? { "x-device-id": deviceId } : {}),
-      ...(method === "POST" ? { Prefer: "return=representation" } : {}),
+      ...(prefer ? { Prefer: prefer } : {}),
+      ...(!prefer && method === "POST" ? { Prefer: "return=representation" } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -112,8 +127,28 @@ async function expectOk(results, label, requestOptions) {
     return json;
   }
 
-  addResult(results, "fail", label, `HTTP ${response.status}`);
+  addResult(results, "fail", label, `HTTP ${response.status}${summarizeRestError(json)}`);
   return null;
+}
+
+function firstRow(value) {
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+function summarizeRestError(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return "";
+  }
+
+  const parts = [];
+  for (const key of ["code", "message", "details", "hint"]) {
+    const item = value[key];
+    if (typeof item === "string" && item.trim()) {
+      parts.push(`${key}=${item.trim().replace(/\s+/g, " ").slice(0, 180)}`);
+    }
+  }
+
+  return parts.length > 0 ? ` (${parts.join("; ")})` : "";
 }
 
 async function run() {
@@ -123,6 +158,7 @@ async function run() {
   };
   const supabaseUrl = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_URL");
   const anonKey = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   const writeTestEnabled = env.SUPABASE_LIVE_WRITE_TEST === "1";
   const results = [];
 
@@ -216,6 +252,104 @@ async function run() {
       });
     } else {
       addResult(results, "fail", "ingredients guest insert id", "temporary insert did not return an id");
+    }
+
+    if (!serviceRoleKey) {
+      addResult(
+        results,
+        "warn",
+        "family service-role live write",
+        "skipped; SUPABASE_SERVICE_ROLE_KEY is required for cleanup",
+      );
+    } else {
+      const familyGroupId = randomUUID();
+      let shouldCleanupFamilyGroup = false;
+
+      try {
+        const createdFamilyRows = await expectOk(results, "family group service insert", {
+          supabaseUrl,
+          anonKey,
+          apiKey: serviceRoleKey,
+          authorizationKey: serviceRoleKey,
+          method: "POST",
+          pathName: "family_groups",
+          deviceId: FAMILY_OWNER_DEVICE_ID,
+          body: {
+            id: familyGroupId,
+            owner_user_id: null,
+            owner_device_id: FAMILY_OWNER_DEVICE_ID,
+            name: "release check family fridge",
+            invite_code: FAMILY_INVITE_CODE,
+          },
+        });
+        const createdFamily = firstRow(createdFamilyRows);
+
+        if (createdFamily?.id === familyGroupId && createdFamily?.invite_code === FAMILY_INVITE_CODE) {
+          shouldCleanupFamilyGroup = true;
+          addResult(results, "pass", "family group service insert payload", "created group id and invite code match");
+        } else {
+          addResult(results, "fail", "family group service insert payload", "created group did not return the expected id/code");
+        }
+
+        await expectOk(results, "family owner member service insert", {
+          supabaseUrl,
+          anonKey,
+          apiKey: serviceRoleKey,
+          authorizationKey: serviceRoleKey,
+          method: "POST",
+          pathName: "family_members",
+          deviceId: FAMILY_OWNER_DEVICE_ID,
+          body: {
+            family_group_id: familyGroupId,
+            user_id: null,
+            device_id: FAMILY_OWNER_DEVICE_ID,
+            display_name: "release-owner",
+            role: "owner",
+          },
+        });
+
+        await expectOk(results, "family joiner member service insert", {
+          supabaseUrl,
+          anonKey,
+          apiKey: serviceRoleKey,
+          authorizationKey: serviceRoleKey,
+          method: "POST",
+          pathName: "family_members",
+          deviceId: FAMILY_JOINER_DEVICE_ID,
+          body: {
+            family_group_id: familyGroupId,
+            user_id: null,
+            device_id: FAMILY_JOINER_DEVICE_ID,
+            display_name: "release-joiner",
+            role: "member",
+          },
+        });
+
+        const members = await expectOk(results, "family members service readback", {
+          supabaseUrl,
+          anonKey,
+          apiKey: serviceRoleKey,
+          authorizationKey: serviceRoleKey,
+          pathName: `family_members?select=id,device_id,role&family_group_id=eq.${familyGroupId}`,
+        });
+
+        if (Array.isArray(members) && members.length === 2) {
+          addResult(results, "pass", "family members service readback count", "owner and joiner rows were stored");
+        } else {
+          addResult(results, "fail", "family members service readback count", "expected owner and joiner rows");
+        }
+      } finally {
+        if (shouldCleanupFamilyGroup) {
+          await expectOk(results, "family group cleanup", {
+            supabaseUrl,
+            anonKey,
+            apiKey: serviceRoleKey,
+            authorizationKey: serviceRoleKey,
+            method: "DELETE",
+            pathName: `family_groups?id=eq.${familyGroupId}`,
+          });
+        }
+      }
     }
   }
 

@@ -39,11 +39,10 @@ addResult(
 
 addResult(
   results,
-  includesAll(ledger, [
-    "`pnpm check:supabase-release`: pass",
-    "68 Supabase contract checks passed",
-    "Production Supabase migration application: local SQL contract verified",
-  ])
+  ledger.includes("`pnpm check:supabase-release`: pass") &&
+    /(?:68|81) Supabase contract checks passed/.test(ledger) &&
+    (ledger.includes("Production Supabase migration application: local SQL contract verified") ||
+      ledger.includes("Production Supabase migration/application: local SQL contract verified"))
     ? "pass"
     : "missing",
   "Supabase 로컬 RLS/스키마 계약",

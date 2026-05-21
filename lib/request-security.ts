@@ -22,9 +22,6 @@ export function getRateLimitKey(request: Request): string {
   const ip = forwardedFor ?? realIp;
   const deviceId = normalizeDeviceId(request.headers.get("x-device-id"));
 
-  if (ip && deviceId) {
-    return `ip-device:${ip}:${deviceId}`;
-  }
   if (ip) {
     return `ip:${ip}`;
   }

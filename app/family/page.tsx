@@ -111,7 +111,9 @@ export default function FamilyPage() {
             </div>
             <button
               type="button"
-              onClick={() => joinGroup(inviteCode, memberName)}
+              onClick={() => {
+                void joinGroup(inviteCode, memberName);
+              }}
               className="min-h-11 w-full rounded-[13px] border border-[#ea5a1f] bg-[#fffaf3] text-sm font-black text-[#d94d19]"
             >
               참여하기
