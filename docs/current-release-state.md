@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:24 KST
+Updated: 2026-05-21 22:30 KST
 
 ## Local code state
 
@@ -192,6 +192,14 @@ Updated: 2026-05-21 22:24 KST
 - `pnpm release:check`: pass on 2026-05-21 22:24 KST after adding store API credential status preflight. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 22:24 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `git diff --check`: pass on 2026-05-21 22:24 KST.
+- Store API credential status p8 classification: pass on 2026-05-21 22:29 KST. The preflight now classifies local `.p8` candidates and warns that `apple-auth-key-*.p8` looks like a Sign in with Apple OAuth key, not an App Store Connect API key.
+- `pnpm release:store-api-credential-status`: blocked but safe on 2026-05-21 22:29 KST with `Ready: 0`, `Blocked: 2`, `Security failures: 0`. The existing local `.p8` is reported only as a Sign in with Apple OAuth key candidate, and Google Play Developer API credentials are still missing.
+- `pnpm release:capture-store-console`: run again on 2026-05-21 22:29 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-29-33-660Z-store-console`; status remains blocked for missing App Store Connect/TestFlight and Play Console internal testing confirmation.
+- `pnpm test:unit`: pass on 2026-05-21 22:29 KST after adding `.p8` candidate classification. 130 unit tests passed.
+- `pnpm test`: pass on 2026-05-21 22:30 KST after adding `.p8` candidate classification. Lint, `tsc --noEmit`, and 130 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:30 KST after adding `.p8` candidate classification. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:30 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `git diff --check`: pass on 2026-05-21 22:30 KST.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.

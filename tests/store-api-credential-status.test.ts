@@ -41,8 +41,19 @@ test("store API credential status verifies ignored secret files and restricted p
 
 test("store API credential status warns when local p8 files are not wired for ASC API", () => {
   assert.ok(statusSource.includes("local .p8 file"));
+  assert.match(statusSource, /describeP8Candidate/);
+  assert.match(statusSource, /Sign in with Apple OAuth key/);
+  assert.match(statusSource, /AuthKey_<KEY_ID>\.p8/);
   assert.match(statusSource, /not wired as App Store Connect API credentials/);
   assert.match(statusSource, /Users and Access/);
+});
+
+test("store API credential status warns about App Store key id filename mismatch", () => {
+  assert.match(statusSource, /appStoreKeyFilenameMatchesKeyId/);
+  assert.match(statusSource, /private key filename includes the configured App Store Connect key id/);
+  assert.match(statusSource, /private key filename does not include the configured App Store Connect key id/);
+  assert.match(runbook, /apple-auth-key-\*\.p8/);
+  assert.match(runbook, /Apple 로그인용/);
 });
 
 test("store console packet includes store API credential status output", () => {

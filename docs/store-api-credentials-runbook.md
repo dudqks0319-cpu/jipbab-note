@@ -20,6 +20,9 @@ App Store Connect에서 운영자가 해야 할 일:
 3. JipbabNote 앱 레코드와 TestFlight build를 읽을 수 있는 역할로 API key를 생성합니다.
 4. Key ID, Issuer ID를 확인합니다.
 5. `.p8` private key를 한 번만 다운로드합니다.
+   - 주의: Sign in with Apple provider용 `.p8`와 App Store Connect API용 `.p8`는 용도가 다릅니다.
+   - 이미 있는 `apple-auth-key-*.p8` 파일은 Apple 로그인용일 수 있으므로 TestFlight 확인 API 키로 재사용하지 않습니다.
+   - App Store Connect API 키는 보통 `AuthKey_<KEY_ID>.p8` 형태로 내려받습니다.
 6. 다운로드한 파일을 repo 밖에서 받은 뒤, 아래 경로로 옮깁니다.
 
 ```bash
@@ -103,6 +106,7 @@ pnpm release:goal-check
 - `private key file is missing`: `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH` 또는 `GOOGLE_APPLICATION_CREDENTIALS` 경로가 잘못됐습니다.
 - `private key path is not ignored by git`: secret 파일 경로가 `.gitignore` 보호 밖에 있습니다.
 - `private key file mode is readable by group/other`: `chmod 600`으로 파일 권한을 좁혀야 합니다.
+- `private key filename does not include the configured App Store Connect key id`: 파일 이름과 Key ID가 맞는지 확인하고 Apple OAuth 키와 혼동하지 않았는지 봐야 합니다.
 - `service account path is not ignored by git`: Google service-account JSON 경로가 `.gitignore` 보호 밖에 있습니다.
 - `target build not found`: App Store Connect에 build `2026052001`이 없거나 다른 앱 레코드를 보고 있습니다.
 - `target build is not processed`: TestFlight processing이 아직 끝나지 않았습니다.

@@ -91,6 +91,22 @@ function listLocalSecretFiles(extension) {
     .map((name) => path.join(releaseSecretsDir, name));
 }
 
+function describeP8Candidate(filePath) {
+  const basename = path.basename(filePath);
+  if (/apple-auth-key/i.test(basename)) {
+    return "looks like a Sign in with Apple OAuth key, not an App Store Connect API key";
+  }
+  if (/^AuthKey_[A-Z0-9]+\.p8$/i.test(basename)) {
+    return "uses the standard App Store Connect API key filename shape";
+  }
+  return "filename does not use the standard AuthKey_<KEY_ID>.p8 App Store Connect API shape";
+}
+
+function appStoreKeyFilenameMatchesKeyId(filePath, keyId) {
+  const basename = path.basename(filePath).toLowerCase();
+  return basename.includes(keyId.toLowerCase());
+}
+
 function checkPrivateKeyFile(rawPath) {
   const filePath = resolveLocalPath(rawPath);
   const details = [];
@@ -102,6 +118,7 @@ function checkPrivateKeyFile(rawPath) {
   }
 
   details.push(`private key path exists at ${maskedLocalPath(filePath)}`);
+  details.push(`private key filename check: ${describeP8Candidate(filePath)}`);
   if (gitIgnored(filePath)) {
     details.push("private key path is ignored by git");
   } else {
@@ -208,6 +225,9 @@ function checkAppStoreConnectCredentials(env) {
       details.push(
         `${localP8Count} local .p8 file(s) exist under .release-secrets, but they are not wired as App Store Connect API credentials`,
       );
+      for (const candidatePath of listLocalSecretFiles(".p8")) {
+        details.push(`local .p8 candidate: ${describeP8Candidate(candidatePath)}`);
+      }
       details.push("verify the file was created in App Store Connect Users and Access before wiring it");
     }
     return { status: "blocked", details, failures };
@@ -215,6 +235,11 @@ function checkAppStoreConnectCredentials(env) {
 
   const keyCheck = checkPrivateKeyFile(envValue(env, "APP_STORE_CONNECT_API_PRIVATE_KEY_PATH"));
   details.push(`${present.length} required App Store Connect API env names are configured`);
+  if (appStoreKeyFilenameMatchesKeyId(envValue(env, "APP_STORE_CONNECT_API_PRIVATE_KEY_PATH"), envValue(env, "APP_STORE_CONNECT_API_KEY_ID"))) {
+    details.push("private key filename includes the configured App Store Connect key id");
+  } else {
+    details.push("private key filename does not include the configured App Store Connect key id; verify it was not confused with an Apple OAuth key");
+  }
   details.push(...keyCheck.details);
   failures.push(...keyCheck.failures);
 
