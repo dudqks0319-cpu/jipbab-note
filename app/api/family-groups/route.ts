@@ -33,6 +33,10 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ message }, { status, headers: noStoreHeaders() });
 }
 
+function isServerConfigError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("환경변수가 설정되어 있지 않습니다");
+}
+
 function normalizeDeviceId(value: string | null): string | null {
   const trimmed = value?.trim();
   return trimmed && DEVICE_ID_PATTERN.test(trimmed) ? trimmed : null;
@@ -248,7 +252,10 @@ export async function POST(request: Request) {
     return action === "create"
       ? await createFamilyGroup(body, deviceId)
       : await joinFamilyGroup(body, deviceId);
-  } catch {
+  } catch (error) {
+    if (isServerConfigError(error)) {
+      return jsonError("가족 공유 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.", 503);
+    }
     return jsonError("요청 처리 중 오류가 발생했습니다.", 500);
   }
 }

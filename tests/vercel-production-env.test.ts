@@ -6,13 +6,19 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
 };
 const vercelEnvCheckSource = readFileSync("scripts/check-vercel-production-env.mjs", "utf8");
+const familyRouteSmokeSource = readFileSync("scripts/check-production-family-route.mjs", "utf8");
 
 test("external release check includes Vercel production env verification", () => {
   assert.equal(
     packageJson.scripts["check:vercel-production-env"],
     "node scripts/check-vercel-production-env.mjs",
   );
+  assert.equal(
+    packageJson.scripts["check:production-family-route"],
+    "node scripts/check-production-family-route.mjs",
+  );
   assert.match(packageJson.scripts["release:external-check"], /check:vercel-production-env/);
+  assert.match(packageJson.scripts["release:external-check"], /check:production-family-route/);
 });
 
 test("Vercel production env check requires server-only release secrets without printing values", () => {
@@ -21,4 +27,13 @@ test("Vercel production env check requires server-only release secrets without p
   assert.match(vercelEnvCheckSource, /vercel", \["env", "ls"\]/);
   assert.doesNotMatch(vercelEnvCheckSource, /process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(vercelEnvCheckSource, /console\.log\(.*value/);
+});
+
+test("production family route smoke creates, joins, and cleans up without printing secrets", () => {
+  assert.match(familyRouteSmokeSource, /\/api\/family-groups/);
+  assert.match(familyRouteSmokeSource, /action: "create"/);
+  assert.match(familyRouteSmokeSource, /action: "join"/);
+  assert.match(familyRouteSmokeSource, /family_groups\?id=eq\.\$\{groupId\}/);
+  assert.match(familyRouteSmokeSource, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(familyRouteSmokeSource, /console\.(?:log|error)\([^)]*serviceRoleKey/);
 });

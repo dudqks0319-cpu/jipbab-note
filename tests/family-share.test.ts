@@ -21,6 +21,13 @@ test("family group creation uses a server route instead of unchecked client writ
   assert.doesNotMatch(hookSource, /\.from\("family_members"\)\.upsert/);
 });
 
+test("family API returns a generic service-unavailable response for missing server config", () => {
+  assert.match(apiSource, /isServerConfigError/);
+  assert.match(apiSource, /환경변수가 설정되어 있지 않습니다/);
+  assert.match(apiSource, /가족 공유 설정을 확인 중입니다\. 잠시 후 다시 시도해 주세요\.", 503/);
+  assert.doesNotMatch(apiSource, /SUPABASE_SERVICE_ROLE_KEY/);
+});
+
 test("family invite join does not create a fake local group before cloud lookup", () => {
   assert.match(hookSource, /fetch\("\/api\/family-groups"/);
   assert.match(hookSource, /action: "join"/);
