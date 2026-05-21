@@ -26,6 +26,7 @@ pnpm release:check
 - [ ] `pnpm release:goal-check` 실행: 목표 전체 완료 여부 확인. 차단 항목이 있으면 목표 완료로 표시하지 않음
 - [ ] `pnpm check:real-device-availability` 실행: iOS/Android 실제 기기 연결 확인
 - [ ] `pnpm check:real-device-qa-evidence` 실행: `docs/real-device-qa.md`의 iOS/Android 실기기 QA 증거가 모두 confirmed인지 확인
+- [ ] `pnpm release:capture-real-device-qa` 실행: 연결된 실기기 상태, 설치 여부, native artifact inventory, 수동 QA 템플릿 캡처
 
 ## 2. 실기기 QA
 

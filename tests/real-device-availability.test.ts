@@ -7,6 +7,7 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
 };
 const source = readFileSync("scripts/check-real-device-availability.mjs", "utf8");
 const evidenceSource = readFileSync("scripts/check-real-device-qa-evidence.mjs", "utf8");
+const packetSource = readFileSync("scripts/capture-real-device-qa-packet.mjs", "utf8");
 const evidenceDoc = readFileSync("docs/real-device-qa.md", "utf8");
 
 test("external release check includes real physical device availability", () => {
@@ -20,6 +21,10 @@ test("external release check includes real physical device availability", () => 
   );
   assert.match(packageJson.scripts["release:external-check"], /check:real-device-availability/);
   assert.match(packageJson.scripts["release:external-check"], /check:real-device-qa-evidence/);
+  assert.equal(
+    packageJson.scripts["release:capture-real-device-qa"],
+    "node scripts/capture-real-device-qa-packet.mjs",
+  );
 });
 
 test("real device availability check inspects iOS physical devices and excludes simulators", () => {
@@ -73,4 +78,18 @@ test("real-device QA evidence starts blocked until actual device evidence is rec
   assert.match(evidenceDoc, /Android evidence artifacts: pending/);
   assert.doesNotMatch(evidenceDoc, /iOS real-device QA: confirmed/);
   assert.doesNotMatch(evidenceDoc, /Android real-device QA: confirmed/);
+});
+
+test("real-device QA packet captures native artifacts and manual evidence template", () => {
+  assert.match(packetSource, /"output", "release-evidence"/);
+  assert.match(packetSource, /Real-device QA Packet/);
+  assert.match(packetSource, /manual-qa-template\.md/);
+  assert.match(packetSource, /native-artifacts\.md/);
+  assert.match(packetSource, /JipbabNote-\$\{iosBuildNumber\}\.xcarchive/);
+  assert.match(packetSource, /app-release\.aab/);
+  assert.match(packetSource, /app-debug\.apk/);
+  assert.match(packetSource, /REAL_DEVICE_QA_LAUNCH_ANDROID/);
+  assert.match(packetSource, /screencap/);
+  assert.match(packetSource, /iOS evidence artifacts/);
+  assert.match(packetSource, /Android evidence artifacts/);
 });
