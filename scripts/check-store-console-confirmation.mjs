@@ -35,11 +35,8 @@ const requiredEvidence = [
         label: "App Store Connect evidence date: YYYY-MM-DD",
         pattern: /App Store Connect evidence date: 20\d{2}-\d{2}-\d{2}/,
       },
-      {
-        label: "App Store Connect evidence artifacts: non-pending path or URL",
-        pattern: /App Store Connect evidence artifacts: (?!pending\b).+/,
-      },
     ],
+    artifactLabels: ["App Store Connect evidence artifacts"],
   },
   {
     label: "Google Play Console internal testing",
@@ -54,16 +51,41 @@ const requiredEvidence = [
         label: "Play Console evidence date: YYYY-MM-DD",
         pattern: /Play Console evidence date: 20\d{2}-\d{2}-\d{2}/,
       },
-      {
-        label: "Play Console evidence artifacts: non-pending path or URL",
-        pattern: /Play Console evidence artifacts: (?!pending\b).+/,
-      },
     ],
+    artifactLabels: ["Play Console evidence artifacts"],
   },
 ];
 
 function includesAll(source, terms) {
   return terms.every((term) => source.includes(term));
+}
+
+function lineValue(source, label) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(new RegExp(`^\\s*-\\s*${escapedLabel}:\\s*(.+)$`, "m"));
+  return match?.[1]?.trim() ?? "";
+}
+
+function artifactExists(value) {
+  const normalized = value.replace(/^`|`$/g, "").trim();
+  if (!normalized || normalized === "pending") {
+    return false;
+  }
+  if (/^https?:\/\//.test(normalized)) {
+    return true;
+  }
+  const artifactPath = path.isAbsolute(normalized) ? normalized : path.join(process.cwd(), normalized);
+  return existsSync(artifactPath);
+}
+
+function missingExtraEvidence(source, item) {
+  const missingPatterns = (item.patterns ?? [])
+    .filter((requirement) => !requirement.pattern.test(source))
+    .map((requirement) => requirement.label);
+  const missingArtifacts = (item.artifactLabels ?? [])
+    .filter((label) => !artifactExists(lineValue(source, label)))
+    .map((label) => `${label}: existing local path or URL`);
+  return [...missingPatterns, ...missingArtifacts];
 }
 
 function readConfiguredEnvNames() {
@@ -115,13 +137,11 @@ function run() {
 
   for (const item of requiredEvidence) {
     if (includesAll(evidence, item.terms)) {
-      const missingPatterns = (item.patterns ?? [])
-        .filter((requirement) => !requirement.pattern.test(evidence))
-        .map((requirement) => requirement.label);
-      if (missingPatterns.length === 0) {
+      const missingExtra = missingExtraEvidence(evidence, item);
+      if (missingExtra.length === 0) {
         passes.push(item.label);
       } else {
-        failures.push({ label: item.label, missing: missingPatterns });
+        failures.push({ label: item.label, missing: missingExtra });
       }
     } else {
       const missing = item.terms.filter((term) => !evidence.includes(term));
