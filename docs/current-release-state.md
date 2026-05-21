@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:27 KST
+Updated: 2026-05-21 17:39 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 17:27 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the iOS build-number commit is pushed.
+- Working tree after this ledger update: expected clean after the account-deletion production-smoke ledger commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, and Google/Apple/Kakao OAuth start flows pass, and iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Vercel Production is missing server-only env required by service-role API routes, and full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -55,6 +55,12 @@ Updated: 2026-05-21 17:27 KST
 - `pnpm release:check`: pass on 2026-05-21 17:27 KST. All 6 local release gates passed.
 - `pnpm check:store-console-confirmation`: blocked on 2026-05-21 17:27 KST. `docs/store-console-confirmation.md` still marks App Store Connect/TestFlight processing, TestFlight internal tester availability, Play Console internal testing, AAB upload, and Play internal testing track as not confirmed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 17:27 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`.
+- Account deletion server-config hardening: pass on 2026-05-21 17:34 KST. Missing server-only Supabase/admin configuration now returns a generic `503` for account-deletion admin routes instead of a raw server-config error.
+- `pnpm test`: pass on 2026-05-21 17:34 KST after account-deletion server-config hardening. Lint, `tsc --noEmit`, and 92 unit tests passed.
+- `pnpm build`: pass on 2026-05-21 17:34 KST after account-deletion server-config hardening. The build compiled 32 routes successfully.
+- `pnpm release:check`: pass on 2026-05-21 17:34 KST. All 6 local release gates passed.
+- Vercel production deployment: pass on 2026-05-21 17:39 KST. Deployment `https://jipbab-note-hncsktq8z-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/account-deletion-requests` and `/api/account-deletion-requests/[id]`.
+- Production account-deletion smoke: blocked safely on 2026-05-21 17:39 KST. Both `https://jipbab-note-app.vercel.app/api/account-deletion-requests` and `https://jipbab-note-hncsktq8z-youngbeens-projects.vercel.app/api/account-deletion-requests` returned HTTP `503`, `Cache-Control: no-store`, and only the generic Korean message `계정 삭제 운영 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.`; no server env names, stack traces, or raw internal errors were exposed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -151,7 +157,7 @@ Updated: 2026-05-21 17:27 KST
 
 ## External state
 
-- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `676670e`. The attached recipe-detail server component error is no longer reproducible on the production alias, but newly added service-role API routes are blocked with a controlled `503` until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
+- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `cd953f7`. The attached recipe-detail server component error is no longer reproducible on the production alias, and service-role API routes now fail closed with controlled generic `503` responses until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser.
 - Store console confirmation evidence: not confirmed. `docs/store-console-confirmation.md` exists and `pnpm check:store-console-confirmation` now blocks external release checks until actual App Store Connect/TestFlight and Play Console internal testing evidence is recorded.
 - App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
