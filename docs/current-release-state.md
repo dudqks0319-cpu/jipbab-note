@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:14 KST
+Updated: 2026-05-21 17:20 KST
 
 ## Local code state
 
@@ -45,6 +45,11 @@ Updated: 2026-05-21 17:14 KST
 - `pnpm release:check`: pass on 2026-05-21 17:14 KST. All 6 local release gates passed.
 - `pnpm check:production-family-route`: blocked on 2026-05-21 17:14 KST before creating temporary production data. The smoke now checks Vercel Production env first and fails with `Vercel Production env missing: SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS`.
 - `pnpm release:external-check`: blocked on 2026-05-21 17:14 KST for the intended reason. Supabase live read checks and OAuth live checks passed, then `pnpm check:vercel-production-env` failed on the same two missing Production env vars.
+- `pnpm test`: pass on 2026-05-21 17:20 KST after adding `check:real-device-availability`. Lint, `tsc --noEmit`, and 86 unit tests passed.
+- `pnpm build`: pass on 2026-05-21 17:20 KST after adding the real-device availability gate. The build compiled 32 routes successfully.
+- `pnpm release:check`: pass on 2026-05-21 17:20 KST. All 6 local release gates passed.
+- `pnpm check:real-device-availability`: blocked on 2026-05-21 17:20 KST. The new gate failed with iPhone `영빈` offline and no Android physical device attached; this gate is chained behind production env and family route smoke in `pnpm release:external-check`.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 17:20 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -151,7 +156,7 @@ Updated: 2026-05-21 17:14 KST
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
 - iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 17:09 KST recheck still shows the iPhone under `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
 - Android real-device QA: not done. Latest 2026-05-21 17:09 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
-- Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet.
+- Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet. `pnpm check:real-device-availability` now makes this blocker machine-checkable.
 - Play Console internal testing: not verified in this pass. Chrome redirects to Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
 ## Current release decisions
