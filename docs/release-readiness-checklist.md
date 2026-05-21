@@ -109,7 +109,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] 콘텐츠 등급 설문 완료
 - [ ] 내부 테스트 트랙에 AAB 업로드
 - [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 삭제 요청 QA
-- [ ] Android emulator가 흰 화면이면 DNS 문제 여부 확인: `adb shell ping -c 1 jipbab-note-app-youngbeens-projects.vercel.app`
+- [ ] Android emulator가 흰 화면이면 DNS 문제 여부 확인: `adb shell ping -c 1 jipbab-note-app.vercel.app`
 - [ ] emulator DNS 실패 시 `-dns-server 8.8.8.8,1.1.1.1` 옵션으로 재부팅 후 Home/장보기 화면 캡처
 
 ## 6. 사진 / 레시피 품질

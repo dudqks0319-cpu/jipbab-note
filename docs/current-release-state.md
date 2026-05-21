@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:55 KST
+Updated: 2026-05-21 23:28 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 22:55 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the external blocker recheck ledger commit is pushed.
+- Working tree after this ledger update: expected clean after the mobile simulator QA and metadata URL commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -223,6 +223,13 @@ Updated: 2026-05-21 22:55 KST
 - `pnpm test`: pass on 2026-05-21 22:55 KST after updating current external blocker evidence. Lint, `tsc --noEmit`, and 130 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-21 22:55 KST after updating current external blocker evidence. All 6 local release gates passed.
 - `git diff --check`: pass on 2026-05-21 22:55 KST.
+- iOS simulator QA refresh: pass on 2026-05-21 23:04 KST through XcodeBuildMCP. Build, install, and launch succeeded on iPhone 17 simulator (`4DA36EEC-BC72-4A36-A304-D9516AB1CCAB`) with app bundle `/Users/jyb-m3max/Desktop/codex/jipbab-note/ios/build/sim-debug/Build/Products/Debug-iphonesimulator/App.app`; Home, Fridge, Recipe, and Shopping screens rendered. Screenshot evidence is under `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/mobile-sim-qa-20260521T2303/`.
+- Android emulator QA refresh: pass on 2026-05-21 23:24 KST after rebuilding the debug APK from the current Capacitor config. Initial stale APK attempted `https://jipbab-note-app-youngbeens-projects.vercel.app/` and failed DNS; after `pnpm mobile:sync:android`, `./gradlew assembleDebug`, reinstall, and restarting `Medium_Phone_API_36.1` with `-dns-server 8.8.8.8,1.1.1.1`, the app loaded `https://jipbab-note-app.vercel.app` and Home, Fridge, Recipe, and Shopping screens rendered. Screenshot evidence is under `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/mobile-sim-qa-20260521T2303/`.
+- Store metadata URL cleanup: pass on 2026-05-21 23:26 KST. App Store metadata, Play Store metadata, and the Android DNS troubleshooting checklist now use canonical `https://jipbab-note-app.vercel.app` URLs; no stale `jipbab-note-app-youngbeens-projects.vercel.app` references remain outside historical release-ledger entries.
+- `pnpm test`: pass on 2026-05-21 23:28 KST after mobile simulator QA and metadata URL cleanup. Lint, `tsc --noEmit`, and 130 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 23:28 KST after mobile simulator QA and metadata URL cleanup. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 23:28 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `git diff --check`: pass on 2026-05-21 23:28 KST.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.

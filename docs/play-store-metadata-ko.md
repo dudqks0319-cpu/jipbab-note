@@ -65,8 +65,8 @@
 
 - 데이터는 HTTPS로 전송합니다.
 - 계정 삭제 요청 흐름을 앱 안에서 제공합니다.
-- 개인정보 처리방침 URL: `https://jipbab-note-app-youngbeens-projects.vercel.app/privacy`
-- 지원 URL: `https://jipbab-note-app-youngbeens-projects.vercel.app/support`
+- 개인정보 처리방침 URL: `https://jipbab-note-app.vercel.app/privacy`
+- 지원 URL: `https://jipbab-note-app.vercel.app/support`
 - 광고 ID는 현재 앱 기능에 사용하지 않습니다.
 - 위치 정보, 연락처, 건강 정보, 금융 정보는 수집하지 않습니다.
 

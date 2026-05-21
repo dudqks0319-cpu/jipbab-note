@@ -40,9 +40,9 @@
 
 ## 지원 URL
 
-- 마케팅 URL: https://jipbab-note-app-youngbeens-projects.vercel.app/
-- 지원 URL: https://jipbab-note-app-youngbeens-projects.vercel.app/support
-- 개인정보 처리방침 URL: https://jipbab-note-app-youngbeens-projects.vercel.app/privacy
+- 마케팅 URL: https://jipbab-note-app.vercel.app/
+- 지원 URL: https://jipbab-note-app.vercel.app/support
+- 개인정보 처리방침 URL: https://jipbab-note-app.vercel.app/privacy
 
 ## App Review 메모
 
