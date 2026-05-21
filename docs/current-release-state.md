@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:39 KST
+Updated: 2026-05-21 17:41 KST
 
 ## Local code state
 
@@ -61,6 +61,7 @@ Updated: 2026-05-21 17:39 KST
 - `pnpm release:check`: pass on 2026-05-21 17:34 KST. All 6 local release gates passed.
 - Vercel production deployment: pass on 2026-05-21 17:39 KST. Deployment `https://jipbab-note-hncsktq8z-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/account-deletion-requests` and `/api/account-deletion-requests/[id]`.
 - Production account-deletion smoke: blocked safely on 2026-05-21 17:39 KST. Both `https://jipbab-note-app.vercel.app/api/account-deletion-requests` and `https://jipbab-note-hncsktq8z-youngbeens-projects.vercel.app/api/account-deletion-requests` returned HTTP `503`, `Cache-Control: no-store`, and only the generic Korean message `계정 삭제 운영 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.`; no server env names, stack traces, or raw internal errors were exposed.
+- `pnpm check:vercel-production-env`: blocked again on 2026-05-21 17:41 KST. Production still has 7 required env vars present and 2 missing: `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
