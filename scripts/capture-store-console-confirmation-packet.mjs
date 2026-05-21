@@ -42,6 +42,28 @@ function runStoreConsoleCheck() {
   };
 }
 
+function runStoreApiCredentialStatus() {
+  const result = spawnSync(process.execPath, ["scripts/check-store-api-credential-status.mjs"], {
+    cwd,
+    encoding: "utf8",
+  });
+  const output = [
+    `$ ${process.execPath} scripts/check-store-api-credential-status.mjs`,
+    "",
+    result.stdout ?? "",
+    result.stderr ?? "",
+    result.error ? `ERROR: ${result.error.message}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    status: result.status === 0 ? "pass" : "fail",
+    exitCode: result.status ?? 1,
+    output: redact(output),
+  };
+}
+
 function writeOperatorChecklist() {
   const checklist = [
     "# Store Console Operator Checklist",
@@ -72,6 +94,7 @@ function writeOperatorChecklist() {
     "- [ ] Replace `YYYY-MM-DD` with the real confirmation date.",
     "- [ ] Keep evidence artifact fields pointed at reviewed local paths or HTTPS URLs.",
     "- [ ] Rerun `pnpm check:store-console-confirmation`.",
+    "- [ ] Rerun `pnpm release:store-api-credential-status`.",
     "- [ ] Rerun `pnpm release:external-status`.",
     "- [ ] Rerun `pnpm release:goal-check`.",
     "",
@@ -117,7 +140,9 @@ function writeManualTemplate() {
 mkdirSync(outDir, { recursive: true });
 
 const check = runStoreConsoleCheck();
+const credentialStatus = runStoreApiCredentialStatus();
 writeFileSync(path.join(outDir, "store-console-confirmation.txt"), `${check.output.trim()}\n`);
+writeFileSync(path.join(outDir, "store-api-credential-status.txt"), `${credentialStatus.output.trim()}\n`);
 writeOperatorChecklist();
 writeManualTemplate();
 
@@ -128,6 +153,8 @@ const summary = [
   `- Output directory: ${outDir}`,
   `- Store console check status: ${check.status}`,
   `- Store console check exit code: ${check.exitCode}`,
+  `- Store API credential status command: ${credentialStatus.status}`,
+  `- Store API credential status exit code: ${credentialStatus.exitCode}`,
   `- Bundle ID: ${bundleId}`,
   `- iOS build: ${iosBuild}`,
   `- Android package: ${androidPackage}`,
@@ -137,6 +164,7 @@ const summary = [
   "## Files",
   "",
   "- result: store-console-confirmation.txt",
+  "- result: store-api-credential-status.txt",
   "- info: operator-checklist.md",
   "- info: manual-store-console-template.md",
   "",

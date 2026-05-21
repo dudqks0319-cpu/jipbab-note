@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:18 KST
+Updated: 2026-05-21 22:24 KST
 
 ## Local code state
 
@@ -184,6 +184,14 @@ Updated: 2026-05-21 22:18 KST
 - `pnpm test`: pass on 2026-05-21 22:18 KST after updating current external-blocker evidence. Lint, `tsc --noEmit`, and 123 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-21 22:17 KST after updating current external-blocker evidence. All 6 local release gates passed.
 - `git diff --check`: pass on 2026-05-21 22:17 KST.
+- Store API credential status preflight: added on 2026-05-21 22:24 KST. `pnpm release:store-api-credential-status` checks App Store Connect API and Google Play Developer API env names, ignored local secret paths, and restrictive file permissions without printing credential values.
+- `pnpm release:store-api-credential-status`: blocked but safe on 2026-05-21 22:24 KST with `Ready: 0`, `Blocked: 2`, `Security failures: 0`. App Store Connect API env names are missing, one local `.p8` file exists under `.release-secrets` but is not wired as an App Store Connect API key, and Google Play Developer API credentials are not configured.
+- `pnpm release:capture-store-console`: run again on 2026-05-21 22:24 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-23-26-869Z-store-console`; packet now includes `store-api-credential-status.txt` alongside the store-console checker output and operator templates.
+- `pnpm test:unit`: pass on 2026-05-21 22:24 KST after adding store API credential status preflight. 129 unit tests passed.
+- `pnpm test`: pass on 2026-05-21 22:24 KST after adding store API credential status preflight. Lint, `tsc --noEmit`, and 129 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:24 KST after adding store API credential status preflight. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:24 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `git diff --check`: pass on 2026-05-21 22:24 KST.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.

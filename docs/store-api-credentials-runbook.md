@@ -41,6 +41,7 @@ APP_STORE_CONNECT_BUILD_VERSION=2026052001
 확인 명령:
 
 ```bash
+pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 ```
 
@@ -76,6 +77,7 @@ GOOGLE_PLAY_TRACK=internal
 확인 명령:
 
 ```bash
+pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 ```
 
@@ -86,6 +88,7 @@ credential 값은 출력하지 않습니다.
 ## 3. API credential 설정 후 검증 순서
 
 ```bash
+pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 pnpm release:external-status
 pnpm release:goal-check
@@ -98,6 +101,9 @@ pnpm release:goal-check
 
 - `credentials missing`: env 이름 또는 파일 경로가 비어 있습니다.
 - `private key file is missing`: `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH` 또는 `GOOGLE_APPLICATION_CREDENTIALS` 경로가 잘못됐습니다.
+- `private key path is not ignored by git`: secret 파일 경로가 `.gitignore` 보호 밖에 있습니다.
+- `private key file mode is readable by group/other`: `chmod 600`으로 파일 권한을 좁혀야 합니다.
+- `service account path is not ignored by git`: Google service-account JSON 경로가 `.gitignore` 보호 밖에 있습니다.
 - `target build not found`: App Store Connect에 build `2026052001`이 없거나 다른 앱 레코드를 보고 있습니다.
 - `target build is not processed`: TestFlight processing이 아직 끝나지 않았습니다.
 - `no internal TestFlight beta group was found`: 내부 테스터 그룹 접근 설정이 필요합니다.
