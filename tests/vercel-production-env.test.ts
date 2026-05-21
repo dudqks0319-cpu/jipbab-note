@@ -31,6 +31,8 @@ test("Vercel production env check requires server-only release secrets without p
 
 test("production family route smoke creates, joins, and cleans up without printing secrets", () => {
   assert.match(familyRouteSmokeSource, /\/api\/family-groups/);
+  assert.match(familyRouteSmokeSource, /assertVercelProductionServerEnv/);
+  assert.match(familyRouteSmokeSource, /spawnSync\("vercel", \["env", "ls"\]/);
   assert.match(familyRouteSmokeSource, /action: "create"/);
   assert.match(familyRouteSmokeSource, /action: "join"/);
   assert.match(familyRouteSmokeSource, /family_groups\?id=eq\.\$\{groupId\}/);

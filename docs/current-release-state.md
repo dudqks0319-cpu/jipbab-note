@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:09 KST
+Updated: 2026-05-21 17:14 KST
 
 ## Local code state
 
@@ -40,6 +40,11 @@ Updated: 2026-05-21 17:09 KST
 - `pnpm check:vercel-production-env`: blocked again on 2026-05-21 17:09 KST. Production still has 7 required env vars present and 2 missing: `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`.
 - `xcrun xctrace list devices`: blocked again on 2026-05-21 17:09 KST. iPhone `영빈` is still visible only under `Devices Offline`.
 - `adb devices -l`: blocked again on 2026-05-21 17:09 KST. No Android physical device is attached.
+- `pnpm test`: pass on 2026-05-21 17:14 KST after hardening `check:production-family-route`. Lint, `tsc --noEmit`, and 83 unit tests passed.
+- `pnpm build`: pass on 2026-05-21 17:14 KST after hardening `check:production-family-route`. The build compiled 32 routes successfully.
+- `pnpm release:check`: pass on 2026-05-21 17:14 KST. All 6 local release gates passed.
+- `pnpm check:production-family-route`: blocked on 2026-05-21 17:14 KST before creating temporary production data. The smoke now checks Vercel Production env first and fails with `Vercel Production env missing: SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS`.
+- `pnpm release:external-check`: blocked on 2026-05-21 17:14 KST for the intended reason. Supabase live read checks and OAuth live checks passed, then `pnpm check:vercel-production-env` failed on the same two missing Production env vars.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.

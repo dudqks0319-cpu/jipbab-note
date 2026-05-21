@@ -1,10 +1,12 @@
 import { randomBytes, randomUUID } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
 const DEFAULT_PRODUCTION_URL = "https://jipbab-note-app.vercel.app";
+const requiredVercelEnv = ["SUPABASE_SERVICE_ROLE_KEY", "ADMIN_EMAILS"];
 
 function readEnvFile(filePath) {
   if (!existsSync(filePath)) {
@@ -66,6 +68,32 @@ function safeMessage(value) {
   return typeof message === "string" ? ` message=${message.replace(/\s+/g, " ").slice(0, 120)}` : "";
 }
 
+function hasProductionEnv(output, name) {
+  return output
+    .split(/\r?\n/)
+    .some((line) => line.trim().startsWith(name) && /\bProduction\b/.test(line));
+}
+
+function assertVercelProductionServerEnv() {
+  const result = spawnSync("vercel", ["env", "ls"], {
+    cwd,
+    encoding: "utf8",
+  });
+
+  if (result.error) {
+    throw new Error(`unable to list Vercel Production env: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error("unable to list Vercel Production env");
+  }
+
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+  const missing = requiredVercelEnv.filter((name) => !hasProductionEnv(output, name));
+  if (missing.length > 0) {
+    throw new Error(`Vercel Production env missing: ${missing.join(", ")}`);
+  }
+}
+
 async function postFamilyAction({ productionUrl, action, deviceId, body }) {
   const response = await fetch(`${productionUrl}/api/family-groups`, {
     method: "POST",
@@ -108,6 +136,8 @@ async function cleanupFamilyGroup({ supabaseUrl, serviceRoleKey, groupId }) {
 }
 
 async function run() {
+  assertVercelProductionServerEnv();
+
   const env = {
     ...readEnvFile(envFilePath),
     ...process.env,
