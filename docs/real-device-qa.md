@@ -1,6 +1,6 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 19:10 KST
+Updated: 2026-05-21 19:22 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
@@ -81,3 +81,4 @@ Updated: 2026-05-21 19:10 KST
 - 2026-05-21 19:00 KST: Evidence gate now also requires non-pending `iOS evidence date`, `iOS evidence artifacts`, `Android evidence date`, and `Android evidence artifacts`.
 - 2026-05-21 19:02 KST: `pnpm release:external-status` still reports iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
 - 2026-05-21 19:10 KST: `pnpm release:capture-external-evidence` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-09-51-343Z` with real-device availability, CoreDevice, xctrace, and adb diagnostics for the current blocker.
+- 2026-05-21 19:22 KST: Rechecked with `pnpm release:external-status`, `xcrun devicectl list devices`, `xcrun xctrace list devices`, and `adb devices -l`. iPhone `영빈` remains CoreDevice `unavailable` / `Devices Offline`, and Android still has no attached physical device. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.

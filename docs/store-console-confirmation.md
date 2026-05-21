@@ -16,7 +16,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - App Store Connect evidence date: pending
 - App Store Connect evidence artifacts: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 18:54 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 19:22 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
 
 ## Google Play Console / Internal Testing
 
@@ -28,7 +28,7 @@ Use `pnpm release:capture-external-evidence` before and after console work to ca
 - Evidence date: pending
 - Play Console evidence date: pending
 - Play Console evidence artifacts: pending
-- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 18:54 KST external-status run found no Google Play service-account env name, so API automation is not currently available.
+- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 19:22 KST external-status run found no Google Play service-account env name, so API automation is not currently available. Latest local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-22-25-522Z`.
 
 ## Unblock Checklist
 
