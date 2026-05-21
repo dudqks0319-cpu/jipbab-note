@@ -12,7 +12,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal tester availability: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:15 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:24 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in.
 
 ## Google Play Console / Internal Testing
 
@@ -22,4 +22,22 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal testing track: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Latest 2026-05-21 18:15 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload.
+- Notes: Latest 2026-05-21 18:24 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload.
+
+## Unblock Checklist
+
+### App Store Connect
+
+- Sign in to App Store Connect in Chrome.
+- Open the JipbabNote app record for bundle `com.jipbab.note`.
+- Confirm uploaded build `2026052001` has finished processing in TestFlight.
+- Add or confirm an internal tester group can install the build.
+- Change the three App Store Connect confirmation lines above to `confirmed` only after observing the actual app record.
+
+### Google Play Console
+
+- Finish developer account registration/payment/identity for `dudqks0319@gmail.com`.
+- Create or open the app record for package `com.jipbab.note`.
+- Upload the signed `app-release.aab` to an internal testing track.
+- Confirm the internal testing track is created and processing/available.
+- Change the three Google Play confirmation lines above to `confirmed` only after observing the actual app record.
