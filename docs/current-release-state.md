@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:06 KST
+Updated: 2026-05-21 17:09 KST
 
 ## Local code state
 
@@ -37,6 +37,9 @@ Updated: 2026-05-21 17:06 KST
 - `pnpm release:external-check`: blocked on 2026-05-21 17:02 KST for the intended reason. Supabase live read checks passed with 6 passes and OAuth live checks passed with 7 passes, then `pnpm check:vercel-production-env` failed because Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; `check:production-family-route` is chained after that gate and will run after the encrypted envs are present.
 - Vercel production deployment: pass on 2026-05-21 17:05 KST. Deployment `https://jipbab-note-hngb8kk9g-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - `pnpm check:production-family-route`: blocked on 2026-05-21 17:06 KST after the latest production deploy. Temporary cleanup succeeded, and create now returns the intended controlled `503` response with the generic Korean message `가족 공유 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.` because Vercel Production still lacks service-role env.
+- `pnpm check:vercel-production-env`: blocked again on 2026-05-21 17:09 KST. Production still has 7 required env vars present and 2 missing: `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`.
+- `xcrun xctrace list devices`: blocked again on 2026-05-21 17:09 KST. iPhone `영빈` is still visible only under `Devices Offline`.
+- `adb devices -l`: blocked again on 2026-05-21 17:09 KST. No Android physical device is attached.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -141,8 +144,8 @@ Updated: 2026-05-21 17:06 KST
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
 - Production Supabase migration/application: local SQL contract verified and live project connection, read checks, write checks, RLS isolation, and family service-role table flow passed from the app harness. `get_family_group_members(uuid)` was applied through SQL Editor; family create/join in the app now uses the server API route to avoid depending on the previously failing public create RPC path.
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
-- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-20 23:27 KST recheck shows the iPhone under `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
-- Android real-device QA: not done. Latest 2026-05-20 23:26 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
+- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 17:09 KST recheck still shows the iPhone under `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
+- Android real-device QA: not done. Latest 2026-05-21 17:09 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
 - Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet.
 - Play Console internal testing: not verified in this pass. Chrome redirects to Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
