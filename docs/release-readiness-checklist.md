@@ -24,10 +24,14 @@ pnpm release:check
 - [ ] `pnpm check:supabase-live` 실행: 운영 Supabase REST에서 `recipes`, `recipe_sources`, `partner_links`, `ingredients`, `shopping_items` 조회 가능 확인
 - [ ] `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live` 실행: 임시 재료 insert/read/isolation/delete로 guest `device_id` RLS 확인
 - [ ] `pnpm release:goal-check` 실행: 목표 전체 완료 여부 확인. 차단 항목이 있으면 목표 완료로 표시하지 않음
+- [ ] `pnpm check:real-device-availability` 실행: iOS/Android 실제 기기 연결 확인
+- [ ] `pnpm check:real-device-qa-evidence` 실행: `docs/real-device-qa.md`의 iOS/Android 실기기 QA 증거가 모두 confirmed인지 확인
 
 ## 2. 실기기 QA
 
 로컬 게이트는 앱스토어 심사 계정, OAuth 콘솔 설정, 로컬 알림 수신, 실제 구매 링크 이동을 대신 검증하지 않습니다. 아래 항목은 iOS/Android 실기기에서 계속 수동으로 확인합니다.
+
+완료 후 `docs/real-device-qa.md`에 기기명, 빌드 번호, 스크린샷/로그 경로, 확인 시각을 남기고 `pnpm check:real-device-qa-evidence`를 통과시킵니다.
 
 ### 로그인
 - [ ] Google 로그인 성공

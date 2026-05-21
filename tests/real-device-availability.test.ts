@@ -6,13 +6,20 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
 };
 const source = readFileSync("scripts/check-real-device-availability.mjs", "utf8");
+const evidenceSource = readFileSync("scripts/check-real-device-qa-evidence.mjs", "utf8");
+const evidenceDoc = readFileSync("docs/real-device-qa.md", "utf8");
 
 test("external release check includes real physical device availability", () => {
   assert.equal(
     packageJson.scripts["check:real-device-availability"],
     "node scripts/check-real-device-availability.mjs",
   );
+  assert.equal(
+    packageJson.scripts["check:real-device-qa-evidence"],
+    "node scripts/check-real-device-qa-evidence.mjs",
+  );
   assert.match(packageJson.scripts["release:external-check"], /check:real-device-availability/);
+  assert.match(packageJson.scripts["release:external-check"], /check:real-device-qa-evidence/);
 });
 
 test("real device availability check inspects iOS physical devices and excludes simulators", () => {
@@ -27,4 +34,33 @@ test("real device availability check requires an attached Android device", () =>
   assert.match(source, /\["devices", "-l"\]/);
   assert.ok(source.includes("available: deviceLines.filter((line) => /^\\S+\\s+device\\b/.test(line)),"));
   assert.match(source, /Android physical device: none attached/);
+});
+
+test("real-device QA evidence gate requires end-to-end manual release checks", () => {
+  assert.match(evidenceSource, /docs\/real-device-qa\.md/);
+  assert.match(evidenceSource, /iOS real-device QA: confirmed/);
+  assert.match(evidenceSource, /Android real-device QA: confirmed/);
+  assert.match(evidenceSource, /iOS core loop: confirmed/);
+  assert.match(evidenceSource, /Android core loop: confirmed/);
+  assert.match(evidenceSource, /iOS Google login: confirmed/);
+  assert.match(evidenceSource, /Android Google login: confirmed/);
+  assert.match(evidenceSource, /iOS Apple login: confirmed/);
+  assert.match(evidenceSource, /Android Apple login\/provider behavior: confirmed/);
+  assert.match(evidenceSource, /iOS Kakao login: confirmed/);
+  assert.match(evidenceSource, /Android Kakao login: confirmed/);
+  assert.match(evidenceSource, /iOS local notification permission and scheduling: confirmed/);
+  assert.match(evidenceSource, /Android local notification permission and scheduling: confirmed/);
+  assert.match(evidenceSource, /iOS shopping external link: confirmed/);
+  assert.match(evidenceSource, /Android shopping external link: confirmed/);
+  assert.match(evidenceSource, /iOS account deletion request: confirmed/);
+  assert.match(evidenceSource, /Android account deletion request: confirmed/);
+  assert.match(evidenceSource, /iOS raw error disclosure: not observed/);
+  assert.match(evidenceSource, /Android raw error disclosure: not observed/);
+});
+
+test("real-device QA evidence starts blocked until actual device evidence is recorded", () => {
+  assert.match(evidenceDoc, /iOS real-device QA: not confirmed/);
+  assert.match(evidenceDoc, /Android real-device QA: not confirmed/);
+  assert.doesNotMatch(evidenceDoc, /iOS real-device QA: confirmed/);
+  assert.doesNotMatch(evidenceDoc, /Android real-device QA: confirmed/);
 });
