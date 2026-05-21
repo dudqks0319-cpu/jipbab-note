@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 17:02 KST
+Updated: 2026-05-21 17:06 KST
 
 ## Local code state
 
@@ -35,7 +35,8 @@ Updated: 2026-05-21 17:02 KST
 - `pnpm build`: pass again on 2026-05-21 16:55 KST after adding the Vercel production env gate. The build compiled 32 routes successfully.
 - `pnpm build`: pass again on 2026-05-21 17:02 KST after adding production family route smoke and generic 503 handling for missing server config. The build compiled 32 routes successfully.
 - `pnpm release:external-check`: blocked on 2026-05-21 17:02 KST for the intended reason. Supabase live read checks passed with 6 passes and OAuth live checks passed with 7 passes, then `pnpm check:vercel-production-env` failed because Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; `check:production-family-route` is chained after that gate and will run after the encrypted envs are present.
-- `pnpm check:production-family-route`: blocked on 2026-05-21 17:02 KST against the currently deployed production alias. The temporary cleanup succeeded, but create still returned the previous generic `500` response because the latest route-level 503 handling has not been deployed yet and Vercel Production still lacks service-role env.
+- Vercel production deployment: pass on 2026-05-21 17:05 KST. Deployment `https://jipbab-note-hngb8kk9g-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
+- `pnpm check:production-family-route`: blocked on 2026-05-21 17:06 KST after the latest production deploy. Temporary cleanup succeeded, and create now returns the intended controlled `503` response with the generic Korean message `가족 공유 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.` because Vercel Production still lacks service-role env.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -132,7 +133,7 @@ Updated: 2026-05-21 17:02 KST
 
 ## External state
 
-- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `3864e07`. The attached recipe-detail server component error is no longer reproducible on the production alias, but newly added service-role API routes are blocked until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
+- Vercel production: current aliases point to the 2026-05-21 production deployment for commit `676670e`. The attached recipe-detail server component error is no longer reproducible on the production alias, but newly added service-role API routes are blocked with a controlled `503` until `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` are added to Vercel Production.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser.
 - App Store Connect latest browser pass: blocked on 2026-05-20. Chrome is authenticated enough to show the ASC shell but `/apps` stays blank, while Safari redirects to `/login?targetUrl=%2Fapps&authResult=FAILED`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
