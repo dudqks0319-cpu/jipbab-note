@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:30 KST
+Updated: 2026-05-21 22:36 KST
 
 ## Local code state
 
@@ -200,6 +200,10 @@ Updated: 2026-05-21 22:30 KST
 - `pnpm release:check`: pass on 2026-05-21 22:30 KST after adding `.p8` candidate classification. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 22:30 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `git diff --check`: pass on 2026-05-21 22:30 KST.
+- GitHub Actions Node 24 opt-in: added on 2026-05-21 22:35 KST. `.github/workflows/release-gate.yml` now sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` to avoid the upcoming Node 20 JavaScript-action runtime deprecation warning before release.
+- `pnpm test`: pass on 2026-05-21 22:36 KST after the GitHub Actions Node 24 opt-in. Lint, `tsc --noEmit`, and 130 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:36 KST after the GitHub Actions Node 24 opt-in. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:36 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
