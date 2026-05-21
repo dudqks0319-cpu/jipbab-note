@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 23:28 KST
+Updated: 2026-05-21 23:37 KST
 
 ## Local code state
 
@@ -23,6 +23,10 @@ Updated: 2026-05-21 23:28 KST
 
 ## Verification evidence
 
+- GitHub Actions Release Gate: pass on 2026-05-21 23:31 KST for pushed commit `86c39cd2ffee82af7c15dbd24a5abe79264f5b46` (`docs(release): refresh mobile QA and store URLs`). Run `26232509636` completed successfully: `https://github.com/dudqks0319-cpu/jipbab-note/actions/runs/26232509636`.
+- `pnpm check:vercel-production-env`: pass on 2026-05-21 23:37 KST with live Vercel API access. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; values were not printed.
+- `pnpm release:external-status`: still blocked on 2026-05-21 23:37 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 23:37 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - Family sharing PR review follow-up: pass on 2026-05-21. Family group create/join no longer depends on unchecked client table writes or the broken public `create_family_group` RPC path; the client now calls `/api/family-groups`, which validates device ID, invite code, member count, and uses the server service-role client only inside the API route.
 - Abuse-control hardening: pass on 2026-05-21. Shared API rate-limit keys now use the trusted forwarded/real IP when available instead of combining IP with the user-controlled `x-device-id`, reducing device-header rotation bypass risk.
 - Supabase SQL Editor: pass on 2026-05-21 for `public.get_family_group_members(uuid)`. The query returned `Success. No rows returned`. A later `create_family_group` RPC correction attempt hit SQL Editor input instability, so the app path was moved to the server API route and the live release check now verifies the service-role family table flow directly.
