@@ -6,7 +6,7 @@ Updated: 2026-05-21 19:38 KST
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
 각 플랫폼별 evidence date와 evidence artifacts도 실제 날짜와 스크린샷/로그/녹화 경로 또는 URL로 채워야 통과합니다.
 기기 연결 전후에는 `pnpm release:capture-external-evidence`로 `output/release-evidence/<timestamp>/summary.md`와 원시 진단 파일을 먼저 남깁니다.
-실기기 QA를 실행할 때는 `pnpm release:capture-real-device-qa`로 기기 상태, 설치 여부, native artifact inventory, `manual-qa-template.md`를 함께 캡처합니다. 이 패킷은 증거 수집용이며, 실제 체크를 보지 않은 상태에서 `confirmed`로 바꾸면 안 됩니다.
+실기기 QA를 실행할 때는 `pnpm release:capture-real-device-qa`로 기기 상태, 설치 여부, native artifact inventory, `operator-checklist.md`, `manual-qa-template.md`를 함께 캡처합니다. 이 패킷은 증거 수집용이며, 실제 체크를 보지 않은 상태에서 `confirmed`로 바꾸면 안 됩니다.
 
 ## Current Status
 

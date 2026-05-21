@@ -191,6 +191,65 @@ function writeManualQaTemplate() {
   writeFileSync(path.join(outDir, "manual-qa-template.md"), template);
 }
 
+function writeOperatorChecklist() {
+  const checklist = [
+    "# Real-device QA Operator Checklist",
+    "",
+    "Use this checklist while testing the physical devices. This file is not proof by itself; only mark `docs/real-device-qa.md` as confirmed after the matching app behavior has been observed and the artifact paths have been reviewed.",
+    "",
+    "## Preflight",
+    "",
+    "- [ ] iPhone is unlocked, trusted by this Mac, and CoreDevice shows available.",
+    "- [ ] Android physical device is connected, USB debugging is allowed, and `adb devices -l` shows `device`.",
+    "- [ ] Native build identity matches `com.jipbab.note`, iOS build `2026052001`, Android versionCode `1`.",
+    "- [ ] Production URL is `https://jipbab-note-app.vercel.app`.",
+    "",
+    "## iOS checks",
+    "",
+    "- [ ] Home, fridge, recipe, shopping, and my-page tabs render without a production error screen.",
+    "- [ ] Add, edit, and delete a fridge ingredient.",
+    "- [ ] Open a recommended recipe from current ingredients.",
+    "- [ ] Add missing recipe ingredients to shopping.",
+    "- [ ] Mark purchased shopping items and add them back to fridge inventory.",
+    "- [ ] Complete Google login and return to the app with a session.",
+    "- [ ] Complete Apple login and return to the app with a session.",
+    "- [ ] Complete Kakao login and return to the app with a session.",
+    "- [ ] Allow or deny local notification permission and verify the app remains usable.",
+    "- [ ] Open the external shopping link in the expected browser/app surface.",
+    "- [ ] Submit an account deletion request or reach the account deletion request screen.",
+    "- [ ] Confirm no raw stack trace, env name, token, or server error detail is visible.",
+    "",
+    "## Android checks",
+    "",
+    "- [ ] Home, fridge, recipe, shopping, and my-page tabs render without a production error screen.",
+    "- [ ] Add, edit, and delete a fridge ingredient.",
+    "- [ ] Open a recommended recipe from current ingredients.",
+    "- [ ] Add missing recipe ingredients to shopping.",
+    "- [ ] Mark purchased shopping items and add them back to fridge inventory.",
+    "- [ ] Complete Google login and return to the app with a session.",
+    "- [ ] Complete Kakao login and return to the app with a session.",
+    "- [ ] Verify Apple login/provider behavior on Android matches the release decision.",
+    "- [ ] Allow or deny local notification permission and verify the app remains usable.",
+    "- [ ] Open the external shopping link in the expected browser/app surface.",
+    "- [ ] Submit an account deletion request or reach the account deletion request screen.",
+    "- [ ] Android back navigation returns to the previous screen or exits only from the top-level screen.",
+    "- [ ] Confirm no raw stack trace, env name, token, or server error detail is visible.",
+    "",
+    "## After QA",
+    "",
+    "- [ ] Review this packet for account names, device identifiers, screenshots, and sensitive details before sharing.",
+    "- [ ] Copy `manual-qa-template.md` lines into `docs/real-device-qa.md` only for platforms that were actually tested.",
+    "- [ ] Replace `YYYY-MM-DD` with the real test date.",
+    "- [ ] Keep `iOS evidence artifacts` and `Android evidence artifacts` pointed at reviewed local paths or URLs.",
+    "- [ ] Rerun `pnpm check:real-device-qa-evidence`.",
+    "- [ ] Rerun `pnpm release:external-status`.",
+    "- [ ] Rerun `pnpm release:goal-check`.",
+    "",
+  ].join("\n");
+
+  writeFileSync(path.join(outDir, "operator-checklist.md"), checklist);
+}
+
 mkdirSync(outDir, { recursive: true });
 
 const captures = [...commandCaptures];
@@ -209,6 +268,7 @@ const artifactInventory = [
 ].join("\n");
 writeFileSync(path.join(outDir, "native-artifacts.md"), artifactInventory);
 writeManualQaTemplate();
+writeOperatorChecklist();
 
 const passed = results.filter((result) => result.status === "pass");
 const blocked = results.filter((result) => result.status === "blocked");
@@ -231,6 +291,7 @@ const summary = [
   ...results.map((result) => `- ${result.status}: ${result.fileName}`),
   "- info: native-artifacts.md",
   "- info: manual-qa-template.md",
+  "- info: operator-checklist.md",
   "",
   "## Use In Release Ledger",
   "",

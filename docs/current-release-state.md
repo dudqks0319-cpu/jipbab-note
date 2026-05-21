@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 21:53 KST
+Updated: 2026-05-21 21:59 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 21:53 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the CI runbook gate commit is pushed.
+- Working tree after this ledger update: expected clean after the real-device QA operator checklist commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -164,6 +164,9 @@ Updated: 2026-05-21 21:53 KST
 - `pnpm test`: pass on 2026-05-21 21:53 KST after wiring runbooks into the CI static release gate. Lint, `tsc --noEmit`, and 122 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-21 21:53 KST. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 21:53 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Real-device QA packet hardening: pass on 2026-05-21 21:59 KST. `pnpm release:capture-real-device-qa` now includes `operator-checklist.md` alongside `manual-qa-template.md` and `native-artifacts.md`, so operators can run the physical-device checklist before copying confirmed lines into `docs/real-device-qa.md`.
+- `pnpm release:capture-real-device-qa`: run on 2026-05-21 21:59 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T12-58-42-141Z-real-device-qa`; captured 3 passing command/artifact checks and 2 expected blockers (`real-device-availability`, `android-installed-package`) because the iPhone is still unavailable and no Android physical device is attached.
+- `pnpm test:unit`: pass on 2026-05-21 21:59 KST after adding `operator-checklist.md` to the real-device QA packet. 122 unit tests passed.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -285,6 +288,7 @@ Before external release submission:
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
 0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
 0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.
+0.2.1. Use the generated `operator-checklist.md` during physical-device QA, and copy `manual-qa-template.md` into `docs/real-device-qa.md` only for platforms that were actually observed.
 0.3. Confirm the GitHub `Release Gate` workflow is green after each push; it proves code/static release gates only and does not replace local native artifact checks or external store/device evidence.
 0.4. If App Store Connect browser auth or Play Console UI access keeps blocking verification, run `pnpm release:store-api-runbook`, create the API credentials outside git, then rerun `pnpm check:store-console-confirmation`.
 1. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
