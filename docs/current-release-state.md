@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:40 KST
+Updated: 2026-05-21 22:47 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 22:40 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the store console confirmation packet commit is pushed.
+- Working tree after this ledger update: expected clean after the GitHub Actions SHA pinning commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -208,6 +208,11 @@ Updated: 2026-05-21 22:40 KST
 - `pnpm test`: pass on 2026-05-21 22:40 KST after updating GitHub Actions to `actions/checkout@v6.0.2` and `actions/setup-node@v6.4.0`. Lint, `tsc --noEmit`, and 130 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-21 22:40 KST after updating GitHub Actions to v6 actions. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 22:40 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- GitHub Actions SHA pinning: added on 2026-05-21 22:45 KST. GitHub API verified `actions/checkout@v6.0.2` resolves to commit `de0fac2e4500dabe0009e67214ff5f5447ce83dd` and `actions/setup-node@v6.4.0` resolves to commit `48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e`; `.github/workflows/release-gate.yml` now uses those immutable SHA refs with release-tag comments.
+- `pnpm test`: pass on 2026-05-21 22:47 KST after GitHub Actions SHA pinning. Lint, `tsc --noEmit`, and 130 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 22:47 KST after GitHub Actions SHA pinning. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 22:47 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `git diff --check`: pass on 2026-05-21 22:47 KST.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
