@@ -1,6 +1,6 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 22:16 KST
+Updated: 2026-05-21 22:52 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
@@ -13,7 +13,7 @@ Updated: 2026-05-21 22:16 KST
 - iOS real-device QA: not confirmed
 - Android real-device QA: not confirmed
 - Latest iOS device check: iPhone `영빈` is listed as CoreDevice `unavailable`.
-- Latest Android device check: no physical Android device is attached after sandbox-escalated external-status recheck.
+- Latest Android device check: no physical Android device is attached after direct Android SDK `adb` recheck.
 
 ## Unblock Checklist
 
@@ -88,3 +88,4 @@ Updated: 2026-05-21 22:16 KST
 - 2026-05-21 20:40 KST: iPhone Mirroring can see the paired iPhone path but cannot proceed unattended. It first reported `iPhone 사용 중` and then required the Mac login password for `정영빈`; do not mark iOS QA confirmed until the operator unlocks this and the app flow is actually tested. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-40-real-device-blockers/iphone-mirroring-mac-password-required.png`.
 - 2026-05-21 20:56 KST: Rechecked again with `pnpm check:real-device-availability`, `xcrun devicectl list devices`, `adb devices -l`, and iPhone Mirroring. iPhone `영빈` remains CoreDevice `unavailable`, no Android device is attached, and iPhone Mirroring still requires the Mac login password before QA can proceed.
 - 2026-05-21 22:16 KST: `pnpm release:external-status` still reports iPhone `영빈` as CoreDevice `unavailable` and no attached Android physical device. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-15-49-074Z`.
+- 2026-05-21 22:52 KST: Rechecked with `pnpm release:external-status`, `xcrun devicectl list devices`, and `/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb devices -l`. iPhone `영빈` remains CoreDevice `unavailable`; Android still has no attached physical device. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-52-02-396Z`.
