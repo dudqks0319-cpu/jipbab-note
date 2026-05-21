@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 19:46 KST
+Updated: 2026-05-21 19:56 KST
 
 ## Local code state
 
@@ -128,6 +128,12 @@ Updated: 2026-05-21 19:46 KST
 - `pnpm release:capture-real-device-qa`: run on 2026-05-21 19:38 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T10-38-01-050Z-real-device-qa`; captured iOS archive/app/IPA and Android AAB/debug APK inventory, but real-device availability and Android installed-package checks remain blocked because iPhone `영빈` is still unavailable and no Android device is attached.
 - GitHub Actions release gate: added on 2026-05-21 19:46 KST. `.github/workflows/release-gate.yml` now runs `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm build`, `pnpm release:ci-static-check`, and informational `pnpm release:goal-check || true` on push/PR to `main`; CI intentionally excludes machine-local native artifacts, live Supabase/OAuth/Vercel checks, physical-device QA, and store-console confirmation.
 - `pnpm release:ci-static-check`: pass on 2026-05-21 19:46 KST. CI-safe static gates passed for Supabase release SQL/RLS contract, partner links, and store assets.
+- GitHub Actions Release Gate: pass on 2026-05-21 19:52 KST for pushed commit `47ffefd`. Workflow run `26221496976` completed successfully on `main`.
+- Vercel Production server env upsert: pass on 2026-05-21 19:53 KST. `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` were force-upserted from local `.env.local` into Vercel Production as sensitive values; values were not printed.
+- Vercel production deployment: pass on 2026-05-21 19:54 KST. Deployment `https://jipbab-note-b9z5lfchw-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`, `/api/account-deletion-requests`, and `/api/account-deletion-requests/[id]`.
+- `pnpm check:vercel-production-env`: pass on 2026-05-21 19:55 KST. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`.
+- Production family route smoke: pass on 2026-05-21 19:55 KST. `pnpm check:production-family-route` created a temporary family group, joined a second member, verified both members were returned, and deleted the temporary group.
+- `pnpm check:production-account-deletion-route`: pass on 2026-05-21 19:55 KST. The production account-deletion admin list route returned `403` for unauthenticated access, kept `Cache-Control: no-store`, and did not expose server env names or internal traces.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
