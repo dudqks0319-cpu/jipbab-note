@@ -75,7 +75,7 @@ pnpm release:check
 
 ## 4. 운영 환경변수
 
-Current Vercel Production confirmation: pass on 2026-05-21 19:55 KST. `pnpm check:vercel-production-env`, `pnpm check:production-family-route`, and `pnpm check:production-account-deletion-route` passed after redeploying `https://jipbab-note-app.vercel.app`.
+Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnpm check:vercel-production-env`, `pnpm check:production-family-route`, and `pnpm check:production-account-deletion-route` passed against `https://jipbab-note-app.vercel.app`.
 
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`

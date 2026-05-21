@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 21:25 KST
+Updated: 2026-05-21 21:42 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 21:25 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the Vercel Production env/app smoke commit is pushed.
+- Working tree after this ledger update: expected clean after the external-status evidence ledger commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -146,6 +146,10 @@ Updated: 2026-05-21 21:25 KST
 - `pnpm release:check`: pass on 2026-05-21 21:25 KST after adding the external unblock runbook. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 21:25 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
+- `pnpm check:vercel-production-env`: pass on 2026-05-21 21:42 KST. Vercel Production contains all 9 required env names, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`.
+- `pnpm check:production-family-route`: pass on 2026-05-21 21:42 KST. Production created a temporary family group, joined a second member, returned both members, and deleted the temporary group.
+- `pnpm check:production-account-deletion-route`: pass on 2026-05-21 21:42 KST. The privileged account-deletion list route returns unauthenticated `403`, includes `Cache-Control: no-store`, and does not expose server env names or internal traces.
+- `pnpm release:external-status`: blocked on 2026-05-21 21:42 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -242,7 +246,7 @@ Updated: 2026-05-21 21:25 KST
 - Vercel production: current aliases point to the 2026-05-21 production deployment for commit `e22bffa`. The attached recipe-detail server component error is no longer reproducible on the production alias. Server-only env is now present in Vercel Production, production family sharing create/join/cleanup smoke passes, and the account-deletion admin list route fails closed with unauthenticated `403`, `Cache-Control: no-store`, and no raw server details.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser. Latest 2026-05-21 18:45 KST browser check is blocked at the App Store Connect login form.
 - Store console confirmation evidence: not confirmed. `docs/store-console-confirmation.md` exists and `pnpm check:store-console-confirmation` now blocks external release checks until actual App Store Connect/TestFlight and Play Console internal testing evidence is recorded.
-- Store API automation credentials: not configured. Latest 2026-05-21 19:02 KST `pnpm release:external-status` still reports no App Store Connect API env names and no Google Play service-account env name, so browser/dashboard confirmation remains the current path.
+- Store API automation credentials: not configured. Latest 2026-05-21 21:42 KST `pnpm release:external-status` still reports no App Store Connect API env names and no Google Play service-account env name, so browser/dashboard confirmation remains the current path.
 - App Store Connect latest browser pass: blocked on 2026-05-21. Chrome shows the App Store Connect login form at `appstoreconnect.apple.com/login`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
