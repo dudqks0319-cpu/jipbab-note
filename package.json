@@ -31,6 +31,7 @@
     "release:ci-static-check": "node scripts/run-ci-release-gates.mjs",
     "release:external-status": "node scripts/check-external-release-status.mjs",
     "release:unblock-runbook": "node scripts/print-release-unblock-runbook.mjs",
+    "release:store-api-runbook": "node scripts/print-store-api-credentials-runbook.mjs",
     "release:external-check": "SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live && pnpm check:oauth-live && pnpm check:vercel-production-env && pnpm check:production-family-route && pnpm check:production-account-deletion-route && pnpm check:real-device-availability && pnpm check:real-device-qa-evidence && pnpm check:store-console-confirmation",
     "release:full-check": "pnpm release:check && pnpm release:external-check",
     "release:goal-check": "node scripts/verify-goal-completion.mjs",
