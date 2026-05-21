@@ -1,6 +1,6 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 17:53 KST
+Updated: 2026-05-21 18:15 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
@@ -9,8 +9,8 @@ Updated: 2026-05-21 17:53 KST
 
 - iOS real-device QA: not confirmed
 - Android real-device QA: not confirmed
-- Latest iOS device check: iPhone `영빈` is listed under Devices Offline.
-- Latest Android device check: no physical Android device is attached.
+- Latest iOS device check: iPhone `영빈` is listed under Devices Offline after sandbox-escalated `xcrun xctrace list devices`.
+- Latest Android device check: no physical Android device is attached after sandbox-escalated `adb devices -l`.
 
 ## Required Confirmation Strings
 
@@ -49,3 +49,4 @@ Updated: 2026-05-21 17:53 KST
 ## Evidence Log
 
 - 2026-05-21 17:53 KST: iOS and Android real-device QA remains blocked because the iPhone is offline and no Android device is attached.
+- 2026-05-21 18:15 KST: Rechecked outside the sandbox. iPhone `영빈` is still listed under `Devices Offline`, and `adb devices -l` still shows no attached Android device.
