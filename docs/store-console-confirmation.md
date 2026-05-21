@@ -12,7 +12,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal tester availability: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:24 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 18:37 KST checker run found no App Store Connect API credential env names, so API automation is not currently available.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:45 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 18:45 KST external-status run found no App Store Connect API credential env names, so API automation is not currently available.
 
 ## Google Play Console / Internal Testing
 
@@ -22,7 +22,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal testing track: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Latest 2026-05-21 18:24 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 18:37 KST checker run found no Google Play service-account env name, so API automation is not currently available.
+- Notes: Latest 2026-05-21 18:45 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 18:45 KST external-status run found no Google Play service-account env name, so API automation is not currently available.
 
 ## Unblock Checklist
 

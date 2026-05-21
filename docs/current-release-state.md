@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 18:37 KST
+Updated: 2026-05-21 18:45 KST
 
 ## Local code state
 
@@ -109,9 +109,9 @@ Updated: 2026-05-21 18:37 KST
 - Store console confirmation gate hardening: pass on 2026-05-21 18:37 KST. `scripts/check-store-console-confirmation.mjs` now reports missing optional store API credential names without printing values, so the App Store Connect and Google Play blockers clearly distinguish manual browser confirmation from unavailable API automation.
 - `pnpm check:store-console-confirmation`: blocked on 2026-05-21 18:37 KST. The gate still requires App Store Connect/TestFlight and Google Play internal-testing confirmation evidence; it now also hints that App Store Connect API credential names and Google Play service-account credential names are not configured.
 - `pnpm test:unit`: pass on 2026-05-21 18:37 KST after the store console confirmation hint change. All 101 unit tests passed.
-- `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
-- Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
-- Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
+- `pnpm release:external-status`: added and run on 2026-05-21 18:45 KST. Unlike `release:external-check`, it runs every external gate instead of stopping at the first failure. Current result is `Passed: 5`, `Blocked: 3`: Supabase live read/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass; real-device availability, real-device QA evidence, and store console confirmation remain blocked.
+- Chrome console recheck: blocked on 2026-05-21 18:45 KST. App Store Connect still shows the login form at `appstoreconnect.apple.com/login`, and Play Console still shows `play.google.com/console/u/0/signup` developer account creation for `dudqks0319@gmail.com`.
+- Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -206,19 +206,19 @@ Updated: 2026-05-21 18:37 KST
 ## External state
 
 - Vercel production: current aliases point to the 2026-05-21 production deployment for commit `e22bffa`. The attached recipe-detail server component error is no longer reproducible on the production alias. Server-only env is now present in Vercel Production, production family sharing create/join/cleanup smoke passes, and the account-deletion admin list route fails closed with unauthenticated `403`, `Cache-Control: no-store`, and no raw server details.
-- App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser. Latest 2026-05-21 18:24 KST browser check is blocked at the App Store Connect login form.
+- App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser. Latest 2026-05-21 18:45 KST browser check is blocked at the App Store Connect login form.
 - Store console confirmation evidence: not confirmed. `docs/store-console-confirmation.md` exists and `pnpm check:store-console-confirmation` now blocks external release checks until actual App Store Connect/TestFlight and Play Console internal testing evidence is recorded.
-- Store API automation credentials: not configured. Latest 2026-05-21 18:37 KST check found no App Store Connect API env names and no Google Play service-account env name, so browser/dashboard confirmation remains the current path.
+- Store API automation credentials: not configured. Latest 2026-05-21 18:45 KST `pnpm release:external-status` still reports no App Store Connect API env names and no Google Play service-account env name, so browser/dashboard confirmation remains the current path.
 - App Store Connect latest browser pass: blocked on 2026-05-21. Chrome shows the App Store Connect login form at `appstoreconnect.apple.com/login`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).
 - Supabase CLI evidence: `supabase projects list` failed with `Unauthorized`, so local CLI auth cannot currently restore or inspect the hosted project.
 - Production Supabase migration/application: local SQL contract verified and live project connection, read checks, write checks, RLS isolation, and family service-role table flow passed from the app harness. `get_family_group_members(uuid)` was applied through SQL Editor; family create/join in the app now uses the server API route to avoid depending on the previously failing public create RPC path.
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
-- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 18:30 KST release gate shows CoreDevice state `unavailable` and xctrace `Devices Offline`, so no additional OAuth/link/account-deletion checks can run yet.
-- Android real-device QA: not done. Latest 2026-05-21 18:24 KST `adb devices -l` recheck completed after sandbox escalation and still returned no attached Android device.
+- iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 18:45 KST release gate shows CoreDevice state `unavailable`, so no additional OAuth/link/account-deletion checks can run yet.
+- Android real-device QA: not done. Latest 2026-05-21 18:45 KST external-status recheck still returned no attached Android physical device.
 - Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet. `pnpm check:real-device-availability` and `pnpm check:real-device-qa-evidence` now make both device availability and actual QA evidence machine-checkable.
-- Play Console internal testing: not verified in this pass. Latest 2026-05-21 18:24 KST browser check shows Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
+- Play Console internal testing: not verified in this pass. Latest 2026-05-21 18:45 KST browser check shows Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
 ## Current release decisions
 
@@ -230,6 +230,7 @@ Updated: 2026-05-21 18:37 KST
 
 Before external release submission:
 
+0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
 1. Unlock/connect the iPhone until CoreDevice reports `available`, then run physical-device OAuth callback, local notification, shopping link, and account-deletion request checks. Record the results in `docs/real-device-qa.md` and rerun `pnpm check:real-device-qa-evidence`.
 2. Connect an Android physical device or complete Play Console account setup before Android real-device/internal-testing QA.
 3. Decide whether to use the generated Android upload-key candidate for Play Console. If yes, back up `.release-secrets/android-upload.jks` and `.env.android-signing.local`; if no, replace them with the real Play upload key and rerun `pnpm android:bundle-release && pnpm check:android-release`.

@@ -26,6 +26,7 @@
     "check:ios-release": "node scripts/check-ios-release-artifact.mjs",
     "check:store-assets": "node scripts/check-store-assets.mjs",
     "release:check": "node scripts/run-release-gates.mjs",
+    "release:external-status": "node scripts/check-external-release-status.mjs",
     "release:external-check": "pnpm check:supabase-live && pnpm check:oauth-live && pnpm check:vercel-production-env && pnpm check:production-family-route && pnpm check:production-account-deletion-route && pnpm check:real-device-availability && pnpm check:real-device-qa-evidence && pnpm check:store-console-confirmation",
     "release:full-check": "pnpm release:check && pnpm release:external-check",
     "release:goal-check": "node scripts/verify-goal-completion.mjs",
