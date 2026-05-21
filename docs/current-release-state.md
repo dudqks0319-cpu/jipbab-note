@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 18:30 KST
+Updated: 2026-05-21 18:37 KST
 
 ## Local code state
 
@@ -106,6 +106,9 @@ Updated: 2026-05-21 18:30 KST
 - Real-device availability gate hardening: pass on 2026-05-21 18:30 KST. `scripts/check-real-device-availability.mjs` now reads both `xcrun xctrace list devices` and `xcrun devicectl list devices`, so the iOS blocker reports CoreDevice `unavailable` instead of only a generic offline state.
 - `pnpm test:unit`: pass on 2026-05-21 18:30 KST after the CoreDevice-aware availability gate change. All 100 unit tests passed.
 - `pnpm release:external-check`: blocked on 2026-05-21 18:30 KST at the expected real-device gate. Supabase live read checks passed, OAuth live provider checks passed, Vercel Production env passed, production family route smoke passed, and production account-deletion route smoke passed; `pnpm check:real-device-availability` then failed with iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device.
+- Store console confirmation gate hardening: pass on 2026-05-21 18:37 KST. `scripts/check-store-console-confirmation.mjs` now reports missing optional store API credential names without printing values, so the App Store Connect and Google Play blockers clearly distinguish manual browser confirmation from unavailable API automation.
+- `pnpm check:store-console-confirmation`: blocked on 2026-05-21 18:37 KST. The gate still requires App Store Connect/TestFlight and Google Play internal-testing confirmation evidence; it now also hints that App Store Connect API credential names and Google Play service-account credential names are not configured.
+- `pnpm test:unit`: pass on 2026-05-21 18:37 KST after the store console confirmation hint change. All 101 unit tests passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 16:55 KST with `Passed: 6`, `Blocked: 4`, `Missing: 0`. Remaining blockers are Vercel Production server env, full real-device QA, App Store Connect/TestFlight dashboard confirmation, and Play Console internal testing.
 - Vercel production deployment: pass on 2026-05-21 16:49 KST. Deployment `https://jipbab-note-o4srtifoo-youngbeens-projects.vercel.app` completed and was aliased to `https://jipbab-note-app.vercel.app`; Vercel build compiled 32 routes including `/api/family-groups`.
 - Production family route smoke: blocked on 2026-05-21 16:50 KST. A temporary `/api/family-groups` create request returned a controlled `500`; `vercel env ls` showed Production is missing `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`, so service-role API routes and account-deletion admin flows cannot be considered production-ready until encrypted Vercel envs are added and redeployed.
@@ -205,6 +208,7 @@ Updated: 2026-05-21 18:30 KST
 - Vercel production: current aliases point to the 2026-05-21 production deployment for commit `e22bffa`. The attached recipe-detail server component error is no longer reproducible on the production alias. Server-only env is now present in Vercel Production, production family sharing create/join/cleanup smoke passes, and the account-deletion admin list route fails closed with unauthenticated `403`, `Cache-Control: no-store`, and no raw server details.
 - App Store Connect/TestFlight: not dashboard-confirmed for JipbabNote after upload. Xcode upload for build `2026052001` succeeded and reported that the package is processing, but TestFlight dashboard availability/internal tester distribution has not been verified in the browser. Latest 2026-05-21 18:24 KST browser check is blocked at the App Store Connect login form.
 - Store console confirmation evidence: not confirmed. `docs/store-console-confirmation.md` exists and `pnpm check:store-console-confirmation` now blocks external release checks until actual App Store Connect/TestFlight and Play Console internal testing evidence is recorded.
+- Store API automation credentials: not configured. Latest 2026-05-21 18:37 KST check found no App Store Connect API env names and no Google Play service-account env name, so browser/dashboard confirmation remains the current path.
 - App Store Connect latest browser pass: blocked on 2026-05-21. Chrome shows the App Store Connect login form at `appstoreconnect.apple.com/login`; no JipbabNote TestFlight processing state was verified.
 - Supabase project discovery: `JipbabNote` project ref `xqelabiwtjntwrjqcteo` is restored and live checks now pass.
 - Supabase account evidence: Gmail showed Supabase pause warning on 2026-05-14 and pause confirmation on 2026-05-15 for project `JipbabNote` (`xqelabiwtjntwrjqcteo`).

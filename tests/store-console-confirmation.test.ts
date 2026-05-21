@@ -25,6 +25,16 @@ test("store console confirmation requires both app store and play console eviden
   assert.match(checkSource, /Internal testing track: confirmed/);
 });
 
+test("store console confirmation reports missing optional store API credentials without values", () => {
+  assert.match(checkSource, /APP_STORE_CONNECT_API_KEY_ID/);
+  assert.match(checkSource, /APP_STORE_CONNECT_API_ISSUER_ID/);
+  assert.match(checkSource, /APP_STORE_CONNECT_API_PRIVATE_KEY_PATH/);
+  assert.match(checkSource, /GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/);
+  assert.match(checkSource, /GOOGLE_APPLICATION_CREDENTIALS/);
+  assert.match(checkSource, /Browser confirmation is still required/);
+  assert.doesNotMatch(checkSource, /process\.env\[[^\]]+\]\s*\)/);
+});
+
 test("store console confirmation evidence stays blocked until manually confirmed", () => {
   assert.match(evidence, /App Store Connect\/TestFlight: not confirmed/);
   assert.match(evidence, /TestFlight processing: not confirmed/);

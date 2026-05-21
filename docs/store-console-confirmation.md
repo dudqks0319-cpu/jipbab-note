@@ -12,7 +12,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal tester availability: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:24 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in.
+- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 18:24 KST browser check shows the App Store Connect login form, so dashboard confirmation is blocked until sign-in. Latest 2026-05-21 18:37 KST checker run found no App Store Connect API credential env names, so API automation is not currently available.
 
 ## Google Play Console / Internal Testing
 
@@ -22,7 +22,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Internal testing track: not confirmed
 - Evidence owner: app operator
 - Evidence date: pending
-- Notes: Latest 2026-05-21 18:24 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload.
+- Notes: Latest 2026-05-21 18:24 KST browser check shows the Play Console developer account signup flow for `dudqks0319@gmail.com`; developer account registration/payment/identity is still blocking internal testing upload. Latest 2026-05-21 18:37 KST checker run found no Google Play service-account env name, so API automation is not currently available.
 
 ## Unblock Checklist
 
@@ -33,6 +33,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Confirm uploaded build `2026052001` has finished processing in TestFlight.
 - Add or confirm an internal tester group can install the build.
 - Change the three App Store Connect confirmation lines above to `confirmed` only after observing the actual app record.
+- Optional API automation requires `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH`.
 
 ### Google Play Console
 
@@ -41,3 +42,4 @@ Do not change a line to `confirmed` until the matching console state has been ob
 - Upload the signed `app-release.aab` to an internal testing track.
 - Confirm the internal testing track is created and processing/available.
 - Change the three Google Play confirmation lines above to `confirmed` only after observing the actual app record.
+- Optional API automation requires either `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_APPLICATION_CREDENTIALS`.
