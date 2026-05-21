@@ -4,6 +4,7 @@ This file is the manual evidence ledger for external store dashboards.
 Do not change a line to `confirmed` until the matching console state has been observed in the actual app record.
 The checker also requires evidence dates and artifact paths/URLs, not only `confirmed` strings.
 Use `pnpm release:capture-external-evidence` before and after console work to capture local gate output under `output/release-evidence/<timestamp>/`.
+Use `pnpm release:capture-store-console` during App Store Connect / Play Console work to capture the store-console checker output plus `operator-checklist.md` and `manual-store-console-template.md`.
 If browser access keeps failing, use [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md) to configure official API credentials for the same checks without committing secrets.
 
 ## App Store Connect / TestFlight

@@ -6,6 +6,7 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
 };
 const checkSource = readFileSync("scripts/check-store-console-confirmation.mjs", "utf8");
+const captureSource = readFileSync("scripts/capture-store-console-confirmation-packet.mjs", "utf8");
 const evidence = readFileSync("docs/store-console-confirmation.md", "utf8");
 
 test("external release check includes store console confirmation", () => {
@@ -14,6 +15,10 @@ test("external release check includes store console confirmation", () => {
     "node scripts/check-store-console-confirmation.mjs",
   );
   assert.match(packageJson.scripts["release:external-check"], /check:store-console-confirmation/);
+  assert.equal(
+    packageJson.scripts["release:capture-store-console"],
+    "node scripts/capture-store-console-confirmation-packet.mjs",
+  );
 });
 
 test("store console confirmation requires both app store and play console evidence", () => {
@@ -63,4 +68,19 @@ test("store console confirmation evidence stays blocked until manually confirmed
   assert.match(evidence, /AAB upload: not confirmed/);
   assert.match(evidence, /App Store Connect evidence artifacts: pending/);
   assert.match(evidence, /Play Console evidence artifacts: pending/);
+});
+
+test("store console confirmation packet captures checker output and manual templates", () => {
+  assert.match(captureSource, /output", "release-evidence"/);
+  assert.match(captureSource, /Store Console Confirmation Packet/);
+  assert.match(captureSource, /scripts\/check-store-console-confirmation\.mjs/);
+  assert.match(captureSource, /store-console-confirmation\.txt/);
+  assert.match(captureSource, /operator-checklist\.md/);
+  assert.match(captureSource, /manual-store-console-template\.md/);
+  assert.match(captureSource, /App Store Connect\/TestFlight: confirmed/);
+  assert.match(captureSource, /Play Console internal testing: confirmed/);
+  assert.match(captureSource, /App Store Connect evidence artifacts/);
+  assert.match(captureSource, /Play Console evidence artifacts/);
+  assert.match(captureSource, /redacted-private-key/);
+  assert.match(evidence, /pnpm release:capture-store-console/);
 });

@@ -31,6 +31,7 @@ pnpm release:check
 - [ ] `pnpm check:real-device-availability` 실행: iOS/Android 실제 기기 연결 확인
 - [ ] `pnpm check:real-device-qa-evidence` 실행: `docs/real-device-qa.md`의 iOS/Android 실기기 QA 증거가 모두 confirmed인지 확인
 - [ ] `pnpm release:capture-real-device-qa` 실행: 연결된 실기기 상태, 설치 여부, native artifact inventory, 수동 QA 템플릿 캡처
+- [ ] `pnpm release:capture-store-console` 실행: App Store Connect/TestFlight 및 Play Console 내부 테스트 확인 결과, operator checklist, 문서 반영 템플릿 캡처
 
 ## 2. 실기기 QA
 

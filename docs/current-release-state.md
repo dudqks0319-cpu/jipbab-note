@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 22:03 KST
+Updated: 2026-05-21 22:10 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-21 22:03 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the goal evidence artifact gate commit is pushed.
+- Working tree after this ledger update: expected clean after the store console confirmation packet commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -170,6 +170,13 @@ Updated: 2026-05-21 22:03 KST
 - Goal completion evidence hardening: pass on 2026-05-21 22:03 KST. `pnpm release:goal-check` now requires real-device, App Store Connect, and Play Console evidence dates plus existing local artifact paths or HTTP(S) artifact URLs, matching the direct evidence gates instead of accepting confirmation strings alone.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 22:03 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `pnpm test:unit`: pass on 2026-05-21 22:03 KST after strengthening goal completion evidence checks. 122 unit tests passed.
+- Store console confirmation packet: added on 2026-05-21 22:08 KST. `pnpm release:capture-store-console` now captures `pnpm check:store-console-confirmation` output plus `operator-checklist.md` and `manual-store-console-template.md` under ignored `output/release-evidence/<timestamp>-store-console/`.
+- `pnpm release:capture-store-console`: run on 2026-05-21 22:08 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-08-04-205Z-store-console`; status is still `blocked` because App Store Connect/TestFlight and Play Console internal testing are not confirmed and store API credentials are not configured.
+- `pnpm test:unit`: pass on 2026-05-21 22:08 KST after adding the store console confirmation packet. 123 unit tests passed.
+- Vercel Production server env recheck: pass on 2026-05-21 22:10 KST. `vercel env ls production` shows `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` present in Production as encrypted values; values were not printed.
+- `pnpm check:vercel-production-env`: pass on 2026-05-21 22:10 KST. Production has all 9 required env names present.
+- `pnpm check:production-family-route`: pass on 2026-05-21 22:10 KST. Production created a temporary family group, joined a second member, returned both members, and deleted the temporary group.
+- `pnpm check:production-account-deletion-route`: pass on 2026-05-21 22:10 KST. The privileged account-deletion list route returns unauthenticated `403`, includes `Cache-Control: no-store`, and does not expose server env names or internal traces.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
 - `git diff --check`: pass on 2026-05-20 19:54 KST.
@@ -290,6 +297,7 @@ Before external release submission:
 
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
 0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
+0.1.1. Run `pnpm release:capture-store-console` during App Store Connect / Play Console confirmation attempts to generate `operator-checklist.md` and `manual-store-console-template.md` for `docs/store-console-confirmation.md`.
 0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.
 0.2.1. Use the generated `operator-checklist.md` during physical-device QA, and copy `manual-qa-template.md` into `docs/real-device-qa.md` only for platforms that were actually observed.
 0.3. Confirm the GitHub `Release Gate` workflow is green after each push; it proves code/static release gates only and does not replace local native artifact checks or external store/device evidence.
