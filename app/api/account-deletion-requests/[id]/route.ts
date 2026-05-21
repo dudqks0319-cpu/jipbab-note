@@ -4,6 +4,7 @@ import {
   getAuthorizedAdminEmail,
   getServerSupabaseAdminClient,
   hasConfiguredAdminEmails,
+  isMissingServerSupabaseConfigError,
 } from "@/lib/supabase-server";
 import { isUuidLike, noStoreHeaders, readJsonObject } from "@/lib/request-security";
 import { logTelemetry } from "@/lib/telemetry";
@@ -11,6 +12,7 @@ import { logTelemetry } from "@/lib/telemetry";
 const ALLOWED_STATUS = new Set(["requested", "reviewing", "completed", "rejected"]);
 const ACCOUNT_DELETE_ACTION = "delete-account";
 const INTERNAL_ERROR_MESSAGE = "요청 처리 중 오류가 발생했습니다.";
+const SERVICE_UNAVAILABLE_MESSAGE = "계정 삭제 운영 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.";
 
 type PatchBody = {
   action?: string;
@@ -30,6 +32,13 @@ function internalError(event: string, metadata: unknown) {
   return NextResponse.json(
     { message: INTERNAL_ERROR_MESSAGE },
     { status: 500, headers: noStoreHeaders() },
+  );
+}
+
+function serviceUnavailable() {
+  return NextResponse.json(
+    { message: SERVICE_UNAVAILABLE_MESSAGE },
+    { status: 503, headers: noStoreHeaders() },
   );
 }
 
@@ -59,13 +68,18 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   if (!hasConfiguredAdminEmails()) {
-    return NextResponse.json(
-      { message: INTERNAL_ERROR_MESSAGE },
-      { status: 500, headers: noStoreHeaders() },
-    );
+    return serviceUnavailable();
   }
 
-  const adminEmail = await getAuthorizedAdminEmail(request.headers.get("authorization"));
+  let adminEmail: string | null;
+  try {
+    adminEmail = await getAuthorizedAdminEmail(request.headers.get("authorization"));
+  } catch (error) {
+    if (isMissingServerSupabaseConfigError(error)) {
+      return serviceUnavailable();
+    }
+    return internalError("account_deletion_request.auth_config_failed", { error });
+  }
   if (!adminEmail) {
     return NextResponse.json(
       { message: "운영자 권한이 없습니다." },
@@ -98,7 +112,16 @@ export async function PATCH(
     );
   }
 
-  const client = getServerSupabaseAdminClient();
+  let client: ReturnType<typeof getServerSupabaseAdminClient>;
+  try {
+    client = getServerSupabaseAdminClient();
+  } catch (error) {
+    if (isMissingServerSupabaseConfigError(error)) {
+      return serviceUnavailable();
+    }
+    return internalError("account_deletion_request.admin_config_failed", { error });
+  }
+
   const { data: currentRequest, error: currentError } = await client
     .from("account_deletion_requests")
     .select("id,user_id,email,status")

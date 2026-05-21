@@ -16,6 +16,10 @@ function getRequiredValue(value: string | undefined, key: string): string {
   return value.trim();
 }
 
+export function isMissingServerSupabaseConfigError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("환경변수가 설정되어 있지 않습니다");
+}
+
 export function getServerSupabaseUserClient(): SupabaseClient {
   return createClient(
     getRequiredValue(PUBLIC_SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL"),

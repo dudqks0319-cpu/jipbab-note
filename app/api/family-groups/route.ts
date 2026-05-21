@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getRateLimitKey, isUuidLike, noStoreHeaders, readJsonObject } from "@/lib/request-security";
-import { getServerSupabaseAdminClient } from "@/lib/supabase-server";
+import { getServerSupabaseAdminClient, isMissingServerSupabaseConfigError } from "@/lib/supabase-server";
 import type { FamilyGroupRecord, FamilyMemberRecord } from "@/types";
 
 const MAX_MEMBERS = 4;
@@ -31,10 +31,6 @@ interface FamilyMemberRow {
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ message }, { status, headers: noStoreHeaders() });
-}
-
-function isServerConfigError(error: unknown): boolean {
-  return error instanceof Error && error.message.includes("환경변수가 설정되어 있지 않습니다");
 }
 
 function normalizeDeviceId(value: string | null): string | null {
@@ -253,7 +249,7 @@ export async function POST(request: Request) {
       ? await createFamilyGroup(body, deviceId)
       : await joinFamilyGroup(body, deviceId);
   } catch (error) {
-    if (isServerConfigError(error)) {
+    if (isMissingServerSupabaseConfigError(error)) {
       return jsonError("가족 공유 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.", 503);
     }
     return jsonError("요청 처리 중 오류가 발생했습니다.", 500);
