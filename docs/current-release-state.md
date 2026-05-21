@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 23:37 KST
+Updated: 2026-05-21 23:43 KST
 
 ## Local code state
 
@@ -27,6 +27,9 @@ Updated: 2026-05-21 23:37 KST
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 23:37 KST with live Vercel API access. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; values were not printed.
 - `pnpm release:external-status`: still blocked on 2026-05-21 23:37 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 23:37 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Computer Use store-console recheck: blocked on 2026-05-21 23:42 KST. Chrome shows Play Console at `play.google.com/console/u/0/signup` on the developer account creation page, before app creation/internal testing upload can proceed. Chrome also shows App Store Connect at `appstoreconnect.apple.com/login?...authResult=FAILED`, so TestFlight processing/internal tester state still cannot be verified without Apple reauthentication or App Store Connect API credentials.
+- `pnpm release:capture-external-evidence`: run on 2026-05-21 23:42 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T14-42-35-142Z`; capture status was 3 passed and 4 blocked because aggregate external status, real-device availability/evidence, and store-console confirmation remain blocked.
+- `pnpm release:capture-store-console`: run on 2026-05-21 23:42 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T14-42-37-798Z-store-console`; status remains blocked because App Store Connect/TestFlight and Play Console internal testing are not confirmed.
 - Family sharing PR review follow-up: pass on 2026-05-21. Family group create/join no longer depends on unchecked client table writes or the broken public `create_family_group` RPC path; the client now calls `/api/family-groups`, which validates device ID, invite code, member count, and uses the server service-role client only inside the API route.
 - Abuse-control hardening: pass on 2026-05-21. Shared API rate-limit keys now use the trusted forwarded/real IP when available instead of combining IP with the user-controlled `x-device-id`, reducing device-header rotation bypass risk.
 - Supabase SQL Editor: pass on 2026-05-21 for `public.get_family_group_members(uuid)`. The query returned `Success. No rows returned`. A later `create_family_group` RPC correction attempt hit SQL Editor input instability, so the app path was moved to the server API route and the live release check now verifies the service-role family table flow directly.
