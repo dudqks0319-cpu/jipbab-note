@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-21 20:56 KST
+Updated: 2026-05-21 21:25 KST
 
 ## Local code state
 
@@ -140,6 +140,11 @@ Updated: 2026-05-21 20:56 KST
 - Real-device availability: blocked on 2026-05-21 20:29 KST. iPhone `영빈` remains CoreDevice `unavailable`; no Android physical device is attached.
 - iPhone Mirroring real-device QA path: blocked on 2026-05-21 20:40 KST. iPhone Mirroring first reported the iPhone was in use and then required the Mac login password for `정영빈`, so unattended screen-based iOS QA cannot proceed. Evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-40-real-device-blockers/iphone-mirroring-mac-password-required.png`.
 - External blocker recheck: blocked on 2026-05-21 20:56 KST. `pnpm release:goal-check` remains `Passed: 7`, `Blocked: 3`, `Missing: 0`; `pnpm check:real-device-availability` still reports iPhone `영빈` CoreDevice `unavailable` and no attached Android physical device. iPhone Mirroring still requires the Mac login password. Direct JipbabNote TestFlight URL `apps/6762567054/testflight/ios` redirects to App Store Connect `authResult=FAILED`, so App Store Connect must be reauthenticated before TestFlight state can be confirmed. Play Console still shows developer account setup incomplete and app creation disabled. Evidence artifacts: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-56-external-recheck/app-store-connect-auth-failed.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-56-external-recheck/play-console-account-setup-still-blocked.png`.
+- External unblock runbook: added on 2026-05-21 21:08 KST. `pnpm release:unblock-runbook` now prints and validates [external-release-unblock-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/external-release-unblock-runbook.md), which gives the operator the exact real-device, App Store Connect, Play Console, and final verification sequence required after account/device blockers are cleared.
+- `pnpm release:unblock-runbook`: pass on 2026-05-21 21:25 KST. The command printed the operator runbook and validated 12 required terms covering real-device, App Store Connect, Play Console, and final goal-check requirements.
+- `pnpm test`: pass on 2026-05-21 21:25 KST after adding the external unblock runbook. Lint, `tsc --noEmit`, and 117 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-21 21:25 KST after adding the external unblock runbook. All 6 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-21 21:25 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - Historical Vercel env blocker from 2026-05-21 16:49-16:55 KST is superseded by the later 18:03-18:06 KST Vercel Production env, family route smoke, and account-deletion route smoke passes above. Current `release:goal-check` has 3 blockers, not the earlier 4.
 - `pnpm test`: pass on 2026-05-20 19:54 KST after OAuth hardening. Lint, `tsc --noEmit`, and 73 unit tests passed.
 - `pnpm build`: pass on 2026-05-20 19:50 KST after OAuth hardening. The sandboxed run still fails with Turbopack local port restrictions, but the same build passes with the required local build permissions.
