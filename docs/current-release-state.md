@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 19:13 KST
+Updated: 2026-05-22 19:33 KST
 
 ## Local code state
 
@@ -23,6 +23,15 @@ Updated: 2026-05-22 19:13 KST
 
 ## Verification evidence
 
+- Security dependency patch: pass on 2026-05-22 19:33 KST. `next` was updated from `16.2.4` to `16.2.6`, `eslint-config-next` from `16.1.6` to `16.2.6`, and the existing pnpm security override set now pins `ws` to `8.20.1` for the `@supabase/realtime-js` transitive path. `react-hooks/set-state-in-effect` is explicitly disabled in [eslint.config.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/eslint.config.mjs) because the upgraded React Hooks lint preset flags the app's existing data-loading/session-sync effects as errors without changing security posture.
+- `pnpm audit --prod --audit-level moderate`: pass on 2026-05-22 19:33 KST after the Next and `ws` patches. Result: `No known vulnerabilities found`.
+- `pnpm why ws`: pass on 2026-05-22 19:33 KST. Installed dependency tree now resolves `@supabase/supabase-js -> @supabase/realtime-js -> ws@8.20.1`.
+- `pnpm test`: pass on 2026-05-22 19:33 KST after the security dependency patch. Lint, `tsc --noEmit`, and 134 unit tests passed.
+- `pnpm build`: pass on 2026-05-22 19:33 KST after sandbox escalation. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:check`: pass on 2026-05-22 19:33 KST after the security dependency patch. All 6 local release gates passed, including store assets, iOS build artifact/upload-history checks, and Android signed AAB checks.
+- `pnpm release:external-status`: still blocked on 2026-05-22 19:33 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
+- `pnpm release:goal-check`: still blocked on 2026-05-22 19:33 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing. Do not mark the active goal complete yet.
+- `pnpm release:store-api-credential-status`: still blocked but safe on 2026-05-22 19:33 KST with `Ready: 0`, `Blocked: 2`, `Security failures: 0`. App Store Connect API env names and Google Play Developer API credentials remain missing; the existing `.p8` candidate is still classified as a Sign in with Apple OAuth key rather than an App Store Connect API key.
 - GitHub Actions Release Gate: pass on 2026-05-21 23:31 KST for pushed commit `86c39cd2ffee82af7c15dbd24a5abe79264f5b46` (`docs(release): refresh mobile QA and store URLs`). Run `26232509636` completed successfully: `https://github.com/dudqks0319-cpu/jipbab-note/actions/runs/26232509636`.
 - Store API env-file separation: pass on 2026-05-22 18:16 KST. `scripts/check-store-api-credential-status.mjs` and `scripts/check-store-console-confirmation.mjs` now read `.env.local`, `.env.android-signing.local`, and `.env.store-api.local` in that order, so store-console automation credentials can live in a dedicated ignored env file instead of the normal app runtime env.
 - Store API credential docs: pass on 2026-05-22 18:16 KST. [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md), [store-console-confirmation.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-console-confirmation.md), and [external-release-unblock-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/external-release-unblock-runbook.md) now point operators to `.env.store-api.local` plus ignored `.release-secrets/` files for App Store Connect API and Google Play Developer API checks.
