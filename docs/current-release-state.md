@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 20:45 KST
+Updated: 2026-05-22 21:01 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 20:45 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the Supabase goal-gate hardening commit is pushed.
+- Working tree after this ledger update: expected clean after the App Store-only submit gate commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,16 @@ Updated: 2026-05-22 20:45 KST
 
 ## Verification evidence
 
+- App Store-only submission gate: pass/blocking as designed on 2026-05-22 21:01 KST. `pnpm release:appstore-submit-gate` now checks iOS/App Store review readiness separately from Google Play Console readiness. Current result is `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, iOS release artifact, and release security passed. The single blocked group is `App Store external status`, which contains only iOS/App Store blockers.
+- App Store-only external status: pass/blocking as designed on 2026-05-22 21:01 KST. `pnpm release:appstore-external-status` returned `Passed: 5`, `Blocked: 3`; Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Remaining App Store-specific blockers are `iOS CoreDevice unavailable`, missing iOS real-device QA evidence, and missing App Store Connect/TestFlight confirmation. Play Console readiness is intentionally excluded from this App Store-only check.
+- Platform-filtered evidence gates: pass/blocking as designed on 2026-05-22 21:01 KST. `node scripts/check-real-device-qa-evidence.mjs --platform=ios` reports only one iOS QA evidence failure, and `node scripts/check-store-console-confirmation.mjs --platform=appstore` reports only one App Store Connect/TestFlight evidence failure plus App Store Connect API credential hints.
+- Targeted App Store submit-gate tests: pass on 2026-05-22 21:01 KST. `pnpm exec node --experimental-strip-types --test tests/appstore-submit-gate.test.ts tests/store-submit-gate.test.ts tests/real-device-availability.test.ts tests/store-console-confirmation.test.ts` passed 19 tests.
+- `pnpm test`: pass on 2026-05-22 21:01 KST after adding the App Store-only submit gate. Lint, `tsc --noEmit`, and 158 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 21:01 KST. All 8 local release gates passed.
+- `pnpm build`: pass on 2026-05-22 21:01 KST. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 21:01 KST. All 8 CI-safe release gates passed, including production dependency audit and store asset checks.
+- Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 21:01 KST. Full `pnpm release:submit-gate` still returned `Passed: 2`, `Blocked: 2`; it continues to block combined App Store/Play submission until real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing evidence are complete.
+- Secret pattern scan: pass on 2026-05-22 21:01 KST. `rg` over the changed App Store gate scripts, package scripts, tests, checklist, and release ledger returned no matches for common API keys, JWTs, private-key headers, or store/Supabase secret env assignments.
 - Supabase goal completion hardening: pass/blocking as designed on 2026-05-22 20:45 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now executes `node scripts/check-supabase-release.mjs` for `Supabase 로컬 RLS/스키마 계약` instead of trusting release-ledger text. `pnpm release:goal-check` returned `Passed: 9`, `Blocked: 3`, `Missing: 0`; remaining blockers are still only real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - Targeted Supabase goal-gate tests: pass on 2026-05-22 20:45 KST. `pnpm exec node --experimental-strip-types --test tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 11 tests.
 - `pnpm check:supabase-release`: pass on 2026-05-22 20:45 KST. The local Supabase release contract produced `Passes: 81`, `Failures: 0`, including RLS enabled checks, ownership/service-role policies, partner link read-only rules, and family invite-code RPC contract.

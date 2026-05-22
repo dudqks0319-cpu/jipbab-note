@@ -16,9 +16,32 @@ const defaultBundleId = "com.jipbab.note";
 const defaultIosBuild = "2026052001";
 const defaultAndroidVersionCode = "1";
 const defaultPlayTrack = "internal";
+const storePlatformAliases = {
+  all: "all",
+  appstore: "appstore",
+  "app-store": "appstore",
+  ios: "appstore",
+  play: "play",
+  playstore: "play",
+  "play-store": "play",
+  android: "play",
+};
+
+function targetStorePlatform() {
+  const arg = process.argv.find((item) => item.startsWith("--platform="));
+  const rawValue = (arg?.split("=")[1] || process.env.STORE_CONSOLE_PLATFORM || "all").toLowerCase();
+  const platform = storePlatformAliases[rawValue];
+  if (!platform) {
+    console.error(`Unknown store console platform: ${rawValue}`);
+    console.error("Use --platform=appstore, --platform=play, or --platform=all.");
+    process.exit(2);
+  }
+  return platform;
+}
 
 const apiCredentialGroups = [
   {
+    platform: "appstore",
     label: "App Store Connect API",
     envNames: [
       "APP_STORE_CONNECT_API_KEY_ID",
@@ -27,6 +50,7 @@ const apiCredentialGroups = [
     ],
   },
   {
+    platform: "play",
     label: "Google Play Developer API",
     envNames: ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_APPLICATION_CREDENTIALS"],
     anyOf: true,
@@ -35,6 +59,7 @@ const apiCredentialGroups = [
 
 const requiredEvidence = [
   {
+    platform: "appstore",
     label: "App Store Connect/TestFlight",
     terms: [
       "App Store Connect/TestFlight: confirmed",
@@ -52,6 +77,7 @@ const requiredEvidence = [
     artifactLabels: ["App Store Connect evidence artifacts"],
   },
   {
+    platform: "play",
     label: "Google Play Console internal testing",
     terms: [
       "Play Console internal testing: confirmed",
@@ -140,8 +166,8 @@ function readConfiguredEnv() {
   return { ...values, ...process.env };
 }
 
-function missingApiCredentialGroups(configuredEnvNames) {
-  return apiCredentialGroups.flatMap((group) => {
+function missingApiCredentialGroups(configuredEnvNames, groups) {
+  return groups.flatMap((group) => {
     const present = group.envNames.filter((name) => configuredEnvNames.has(name));
     const complete = group.anyOf ? present.length > 0 : present.length === group.envNames.length;
     if (complete) {
@@ -440,9 +466,14 @@ async function checkGooglePlayApi(env) {
   }
 }
 
-async function runApiChecks(env) {
+async function runApiChecks(env, platform) {
   const results = [];
-  for (const check of [checkAppStoreConnectApi, checkGooglePlayApi]) {
+  const apiChecks = [
+    { platform: "appstore", check: checkAppStoreConnectApi },
+    { platform: "play", check: checkGooglePlayApi },
+  ].filter((item) => platform === "all" || item.platform === platform);
+
+  for (const { check } of apiChecks) {
     try {
       results.push(await check(env));
     } catch (error) {
@@ -473,14 +504,17 @@ async function run() {
   }
 
   const evidence = readFileSync(evidencePath, "utf8");
+  const platform = targetStorePlatform();
   const env = readConfiguredEnv();
   const configuredEnvNames = readConfiguredEnvNames();
-  const missingApiCredentials = missingApiCredentialGroups(configuredEnvNames);
-  const apiResults = await runApiChecks(env);
+  const evidenceItems = requiredEvidence.filter((item) => platform === "all" || item.platform === platform);
+  const credentialGroups = apiCredentialGroups.filter((item) => platform === "all" || item.platform === platform);
+  const missingApiCredentials = missingApiCredentialGroups(configuredEnvNames, credentialGroups);
+  const apiResults = await runApiChecks(env, platform);
   const failures = [];
   const passes = [];
 
-  for (const item of requiredEvidence) {
+  for (const item of evidenceItems) {
     if (includesAll(evidence, item.terms)) {
       const missingExtra = missingExtraEvidence(evidence, item);
       if (missingExtra.length === 0) {

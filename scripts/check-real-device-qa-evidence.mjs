@@ -2,9 +2,22 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const evidencePath = path.join(process.cwd(), "docs/real-device-qa.md");
+const allowedPlatforms = new Set(["all", "ios", "android"]);
+
+function targetPlatform() {
+  const arg = process.argv.find((item) => item.startsWith("--platform="));
+  const rawValue = (arg?.split("=")[1] || process.env.REAL_DEVICE_PLATFORM || "all").toLowerCase();
+  if (!allowedPlatforms.has(rawValue)) {
+    console.error(`Unknown real-device QA platform: ${rawValue}`);
+    console.error("Use --platform=ios, --platform=android, or --platform=all.");
+    process.exit(2);
+  }
+  return rawValue;
+}
 
 const requiredEvidence = [
   {
+    platform: "ios",
     label: "iOS real-device QA",
     terms: [
       "iOS real-device QA: confirmed",
@@ -29,6 +42,7 @@ const requiredEvidence = [
     artifactLabels: ["iOS evidence artifacts"],
   },
   {
+    platform: "android",
     label: "Android real-device QA",
     terms: [
       "Android real-device QA: confirmed",
@@ -93,10 +107,12 @@ function run() {
   }
 
   const evidence = readFileSync(evidencePath, "utf8");
+  const platform = targetPlatform();
+  const evidenceItems = requiredEvidence.filter((item) => platform === "all" || item.platform === platform);
   const failures = [];
   const passes = [];
 
-  for (const item of requiredEvidence) {
+  for (const item of evidenceItems) {
     if (includesAll(evidence, item.terms)) {
       const missingExtra = missingExtraEvidence(evidence, item);
       if (missingExtra.length === 0) {

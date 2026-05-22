@@ -2,6 +2,22 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
 const adbPath = process.env.ADB_PATH || "/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb";
+const allowedPlatforms = new Set(["all", "ios", "android"]);
+
+function targetPlatform() {
+  const arg = process.argv.find((item) => item.startsWith("--platform="));
+  const rawValue = (arg?.split("=")[1] || process.env.REAL_DEVICE_PLATFORM || "all").toLowerCase();
+  if (!allowedPlatforms.has(rawValue)) {
+    console.error(`Unknown real-device platform: ${rawValue}`);
+    console.error("Use --platform=ios, --platform=android, or --platform=all.");
+    process.exit(2);
+  }
+  return rawValue;
+}
+
+function shouldCheck(target, platform) {
+  return target === "all" || target === platform;
+}
 
 function sectionLines(output, sectionName) {
   const lines = output.split(/\r?\n/);
@@ -151,42 +167,47 @@ function summarizeDevice(line) {
 }
 
 function run() {
-  const ios = listIosDevices();
-  const coreIos = listIosCoreDevices();
-  const android = listAndroidDevices();
+  const platform = targetPlatform();
+  const ios = shouldCheck(platform, "ios") ? listIosDevices() : null;
+  const coreIos = shouldCheck(platform, "ios") ? listIosCoreDevices() : null;
+  const android = shouldCheck(platform, "android") ? listAndroidDevices() : null;
   const failures = [];
   const passes = [];
   const warnings = [];
 
-  if (ios.error && coreIos.error) {
-    failures.push(`iOS device list: ${ios.error}; ${coreIos.error}`);
-  } else if (ios.available.length > 0 || coreIos.available.length > 0) {
-    const availableDevice = ios.available[0] ?? coreIos.available[0];
-    passes.push(`iOS physical device available: ${summarizeDevice(availableDevice)}`);
-  } else if (coreIos.unavailable.length > 0) {
-    failures.push(`iOS CoreDevice unavailable: ${summarizeDevice(coreIos.unavailable[0])}`);
-  } else if (ios.offline.length > 0) {
-    failures.push(`iOS physical device offline: ${summarizeDevice(ios.offline[0])}`);
-  } else if (ios.error) {
-    failures.push(`iOS device list: ${ios.error}`);
-  } else if (coreIos.error) {
-    failures.push(`iOS CoreDevice list: ${coreIos.error}`);
-  } else {
-    failures.push("iOS physical device: none available");
+  if (ios && coreIos) {
+    if (ios.error && coreIos.error) {
+      failures.push(`iOS device list: ${ios.error}; ${coreIos.error}`);
+    } else if (ios.available.length > 0 || coreIos.available.length > 0) {
+      const availableDevice = ios.available[0] ?? coreIos.available[0];
+      passes.push(`iOS physical device available: ${summarizeDevice(availableDevice)}`);
+    } else if (coreIos.unavailable.length > 0) {
+      failures.push(`iOS CoreDevice unavailable: ${summarizeDevice(coreIos.unavailable[0])}`);
+    } else if (ios.offline.length > 0) {
+      failures.push(`iOS physical device offline: ${summarizeDevice(ios.offline[0])}`);
+    } else if (ios.error) {
+      failures.push(`iOS device list: ${ios.error}`);
+    } else if (coreIos.error) {
+      failures.push(`iOS CoreDevice list: ${coreIos.error}`);
+    } else {
+      failures.push("iOS physical device: none available");
+    }
+
+    if (ios.offline.length > 0 && ios.available.length > 0) {
+      warnings.push(`additional iOS offline device: ${summarizeDevice(ios.offline[0])}`);
+    }
   }
 
-  if (ios.offline.length > 0 && ios.available.length > 0) {
-    warnings.push(`additional iOS offline device: ${summarizeDevice(ios.offline[0])}`);
-  }
-
-  if (android.error) {
-    failures.push(`Android device list: ${android.error}`);
-  } else if (android.available.length > 0) {
-    passes.push(`Android physical device available: ${summarizeDevice(android.available[0])}`);
-  } else if (android.unavailable.length > 0) {
-    failures.push(`Android physical device unavailable: ${summarizeDevice(android.unavailable[0])}`);
-  } else {
-    failures.push("Android physical device: none attached");
+  if (android) {
+    if (android.error) {
+      failures.push(`Android device list: ${android.error}`);
+    } else if (android.available.length > 0) {
+      passes.push(`Android physical device available: ${summarizeDevice(android.available[0])}`);
+    } else if (android.unavailable.length > 0) {
+      failures.push(`Android physical device unavailable: ${summarizeDevice(android.unavailable[0])}`);
+    } else {
+      failures.push("Android physical device: none attached");
+    }
   }
 
   console.log("Real device availability check");
