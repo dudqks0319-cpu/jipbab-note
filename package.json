@@ -33,6 +33,7 @@
     "release:security-check": "node scripts/check-release-security.mjs",
     "release:ci-static-check": "node scripts/run-ci-release-gates.mjs",
     "release:external-status": "node scripts/check-external-release-status.mjs",
+    "release:submit-gate": "node scripts/check-store-submit-readiness.mjs",
     "release:unblock-runbook": "node scripts/print-release-unblock-runbook.mjs",
     "release:store-api-runbook": "node scripts/print-store-api-credentials-runbook.mjs",
     "release:store-api-credential-status": "node scripts/check-store-api-credential-status.mjs",

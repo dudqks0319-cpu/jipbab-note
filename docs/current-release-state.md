@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 19:56 KST
+Updated: 2026-05-22 20:04 KST
 
 ## Local code state
 
@@ -23,6 +23,11 @@ Updated: 2026-05-22 19:56 KST
 
 ## Verification evidence
 
+- Store submission readiness gate: pass/blocking as designed on 2026-05-22 20:04 KST. `pnpm release:submit-gate` now runs local release gates, `release:security-check`, `release:external-status`, and `release:goal-check` in one pre-submit check. It does not submit to App Store Connect or Google Play. Current result is `Passed: 2`, `Blocked: 2`: local release gates and release security pass; external release status and goal completion remain blocked by the same real-device and store-console evidence requirements. Store submission remains prohibited until this gate passes.
+- Store submission gate tests: pass on 2026-05-22 20:04 KST. `pnpm exec node --experimental-strip-types --test tests/store-submit-gate.test.ts tests/release-unblock-runbook.test.ts tests/operator-handoff-capture.test.ts` passed 11 tests.
+- `pnpm test`: pass on 2026-05-22 20:04 KST after adding the store submission readiness gate. Lint, `tsc --noEmit`, and 141 unit tests passed.
+- `pnpm build`: pass on 2026-05-22 20:04 KST after adding the store submission readiness gate. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 20:04 KST. All 6 CI-safe release gates passed.
 - Goal completion security gate hardening: pass on 2026-05-22 19:56 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now treats `pnpm release:security-check` pass evidence as its own required completion item, so final goal completion cannot pass unless the dependency audit and secret-file tracking controls are recorded. Current `pnpm release:goal-check` is `Passed: 8`, `Blocked: 3`, `Missing: 0`.
 - Release operator handoff security capture: pass on 2026-05-22 19:56 KST. `pnpm release:capture-operator-handoff` now includes `Release security gate` output in the handoff packet. Latest packet: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T10-55-22-849Z-operator-handoff`; it captured 3 packets, passed 1 gate (`release-security`), and left `goal-check` blocked only by the same 3 external blockers.
 - `pnpm test`: pass on 2026-05-22 19:56 KST after goal completion security hardening. Lint, `tsc --noEmit`, and 138 unit tests passed.

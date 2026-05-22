@@ -119,6 +119,7 @@ const summary = [
   "pnpm check:store-console-confirmation",
   "pnpm release:external-status",
   "pnpm release:goal-check",
+  "pnpm release:submit-gate",
   "```",
   "",
   "Keep this directory local unless it has been reviewed for screenshots, account names, device identifiers, and other sensitive details.",

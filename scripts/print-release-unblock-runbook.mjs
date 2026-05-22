@@ -14,6 +14,7 @@ const requiredTerms = [
   "pnpm check:store-console-confirmation",
   "pnpm release:external-status",
   "pnpm release:goal-check",
+  "pnpm release:submit-gate",
   "iPhone `영빈`",
   "App Store Connect/TestFlight: confirmed",
   "Play Console internal testing: confirmed",

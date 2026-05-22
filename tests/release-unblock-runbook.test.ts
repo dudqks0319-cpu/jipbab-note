@@ -33,11 +33,13 @@ test("release unblock runbook includes the post-unblock verification commands", 
   assert.match(runbook, /pnpm check:store-console-confirmation/);
   assert.match(runbook, /pnpm release:external-status/);
   assert.match(runbook, /pnpm release:goal-check/);
+  assert.match(runbook, /pnpm release:submit-gate/);
 });
 
 test("release unblock runbook prevents premature completion claims", () => {
   assert.match(runbook, /확인 전에는 `confirmed`로 바꾸지 않습니다/);
   assert.match(runbook, /Blocked: 0/);
   assert.match(runbook, /Missing: 0/);
-  assert.match(runbook, /활성 goal을 완료 처리하지 않습니다/);
+  assert.match(runbook, /활성 goal을 완료 처리하거나/);
+  assert.match(runbook, /스토어 심사 제출을 진행하지 않습니다/);
 });

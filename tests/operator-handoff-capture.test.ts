@@ -29,6 +29,7 @@ test("operator handoff capture combines all external blocker packets", () => {
   assert.match(source, /Remaining External Actions/);
   assert.match(source, /Final Verification After Unblock/);
   assert.match(source, /pnpm release:security-check/);
+  assert.match(source, /pnpm release:submit-gate/);
 });
 
 test("operator handoff capture keeps secret-bearing values redacted", () => {
