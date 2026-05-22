@@ -6,7 +6,7 @@ const secretPathsThatMustStayIgnored = [
   ".env.local",
   ".env.android-signing.local",
   ".env.store-api.local",
-  ".release-secrets",
+  ".release-secrets/",
   ".release-secrets/AuthKey_<KEY_ID>.p8",
   ".release-secrets/android-upload.jks",
   ".release-secrets/google-play-service-account.json",
