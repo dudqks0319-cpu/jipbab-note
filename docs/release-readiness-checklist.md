@@ -33,6 +33,8 @@ pnpm release:check
 - [ ] `pnpm release:submit-gate` 실행: 로컬/보안/외부/목표 완료 게이트가 모두 PASS인지 확인. 하나라도 BLOCKED면 App Store 심사 제출 또는 Play production 제출 금지
 - [ ] `pnpm release:appstore-external-status` 실행: Play Console 상태와 분리해 iOS 실기기 QA 및 App Store Connect/TestFlight 차단만 확인
 - [ ] `pnpm release:appstore-submit-gate` 실행: App Store 심사 제출 직전 iOS 산출물, 보안, 운영 API, iOS 실기기 QA, App Store Connect 상태만 따로 확인. 하나라도 BLOCKED면 App Store 심사 제출 금지
+- [ ] `pnpm release:playstore-external-status` 실행: App Store Connect 상태와 분리해 Android 실기기 QA 및 Play Console 내부 테스트 차단만 확인
+- [ ] `pnpm release:playstore-submit-gate` 실행: Play production 제출 직전 Android 산출물, 보안, 운영 API, Android 실기기 QA, Play Console 상태만 따로 확인. 하나라도 BLOCKED면 Play production 제출 금지
 - [ ] `pnpm release:unblock-runbook` 실행: 실기기, App Store Connect, Play Console 차단 해제 후 실행 순서 확인
 - [ ] `pnpm release:store-api-runbook` 실행: App Store Connect API / Google Play Developer API credential 설정 절차와 secret 보관 원칙 확인
 - [ ] `pnpm release:capture-operator-handoff` 실행: 외부 상태, 실기기 packet, 스토어 console packet, store submission packet, goal 상태를 묶은 operator handoff 생성
