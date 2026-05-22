@@ -31,7 +31,9 @@ mv ~/Downloads/AuthKey_<KEY_ID>.p8 .release-secrets/AuthKey_<KEY_ID>.p8
 chmod 600 .release-secrets/AuthKey_<KEY_ID>.p8
 ```
 
-`.env.local`에는 값 자체가 아니라 아래처럼 경로와 식별자만 넣습니다.
+스토어 API 전용 값은 `.env.store-api.local`에 넣습니다. 이 파일은 `.env*` 패턴으로 git에서 무시되며, 일반 앱 실행용 `.env.local`과 분리되어 브라우저/스토어 확인 자동화만 담당합니다.
+
+`.env.store-api.local`에는 값 자체가 아니라 아래처럼 경로와 식별자만 넣습니다.
 
 ```bash
 APP_STORE_CONNECT_API_KEY_ID=<KEY_ID>
@@ -68,7 +70,7 @@ mv ~/Downloads/<service-account>.json .release-secrets/google-play-service-accou
 chmod 600 .release-secrets/google-play-service-account.json
 ```
 
-`.env.local` 또는 `.env.android-signing.local`에는 JSON 원문 대신 파일 경로를 넣습니다.
+`.env.store-api.local`에는 JSON 원문 대신 파일 경로를 넣습니다.
 
 ```bash
 GOOGLE_APPLICATION_CREDENTIALS=.release-secrets/google-play-service-account.json
@@ -97,6 +99,8 @@ pnpm release:external-status
 pnpm release:goal-check
 ```
 
+두 체크 스크립트는 `.env.local`, `.env.android-signing.local`, `.env.store-api.local`을 읽고, 같은 키가 여러 파일에 있으면 뒤쪽 파일 값이 우선합니다. 따라서 스토어 API credential은 `.env.store-api.local`에 두는 것을 기본값으로 삼습니다.
+
 `pnpm check:store-console-confirmation`이 API로 통과하면 `docs/store-console-confirmation.md`를 억지로 `confirmed`로 바꿀 필요가 없습니다.
 다만 App Store/Play Console 제출 증거를 사람이 보관하려면 `pnpm release:capture-external-evidence`로 화면/상태 캡처를 남긴 뒤 문서의 evidence artifacts에 경로를 추가합니다.
 
@@ -124,4 +128,4 @@ git check-ignore -v .release-secrets/AuthKey_<KEY_ID>.p8
 git check-ignore -v .release-secrets/google-play-service-account.json
 ```
 
-`git status --short`에 `.release-secrets/`, `.env.local`, `.env.android-signing.local`이 추적 파일로 나오면 안 됩니다.
+`git status --short`에 `.release-secrets/`, `.env.local`, `.env.android-signing.local`, `.env.store-api.local`이 추적 파일로 나오면 안 됩니다.

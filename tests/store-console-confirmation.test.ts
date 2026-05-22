@@ -42,6 +42,7 @@ test("store console confirmation reports missing optional store API credentials 
   assert.match(checkSource, /APP_STORE_CONNECT_API_PRIVATE_KEY_PATH/);
   assert.match(checkSource, /GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/);
   assert.match(checkSource, /GOOGLE_APPLICATION_CREDENTIALS/);
+  assert.match(checkSource, /\.env\.store-api\.local/);
   assert.match(checkSource, /Browser confirmation is still required/);
   assert.match(checkSource, /value\.trim\(\)\.length > 0/);
   assert.doesNotMatch(checkSource, /process\.env\[[^\]]+\]\s*\)/);
@@ -82,5 +83,6 @@ test("store console confirmation packet captures checker output and manual templ
   assert.match(captureSource, /App Store Connect evidence artifacts/);
   assert.match(captureSource, /Play Console evidence artifacts/);
   assert.match(captureSource, /redacted-private-key/);
+  assert.match(evidence, /\.env\.store-api\.local/);
   assert.match(evidence, /pnpm release:capture-store-console/);
 });

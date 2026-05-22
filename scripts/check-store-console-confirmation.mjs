@@ -3,7 +3,11 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const evidencePath = path.join(process.cwd(), "docs/store-console-confirmation.md");
-const envPaths = [path.join(process.cwd(), ".env.local"), path.join(process.cwd(), ".env.android-signing.local")];
+const envPaths = [
+  path.join(process.cwd(), ".env.local"),
+  path.join(process.cwd(), ".env.android-signing.local"),
+  path.join(process.cwd(), ".env.store-api.local"),
+];
 const appStoreConnectApiBaseUrl = "https://api.appstoreconnect.apple.com";
 const googleTokenUrl = "https://oauth2.googleapis.com/token";
 const googleAndroidPublisherBaseUrl = "https://androidpublisher.googleapis.com/androidpublisher/v3";

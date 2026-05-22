@@ -6,6 +6,7 @@ const cwd = process.cwd();
 const envPaths = [
   path.join(cwd, ".env.local"),
   path.join(cwd, ".env.android-signing.local"),
+  path.join(cwd, ".env.store-api.local"),
 ];
 const releaseSecretsDir = path.join(cwd, ".release-secrets");
 const appStoreConnectRequired = [

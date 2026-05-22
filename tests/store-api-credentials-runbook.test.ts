@@ -26,6 +26,7 @@ test("store API credentials runbook covers App Store Connect API env", () => {
   assert.match(runbook, /APP_STORE_CONNECT_BUNDLE_ID=com\.jipbab\.note/);
   assert.match(runbook, /APP_STORE_CONNECT_BUILD_VERSION=2026052001/);
   assert.match(runbook, /AuthKey_<KEY_ID>\.p8/);
+  assert.match(runbook, /\.env\.store-api\.local/);
 });
 
 test("store API credentials runbook covers Google Play API env", () => {
@@ -41,6 +42,7 @@ test("store API credentials runbook keeps credentials out of git", () => {
   assert.match(runbook, /chmod 600/);
   assert.match(runbook, /커밋하지 않습니다/);
   assert.match(runbook, /git check-ignore -v/);
+  assert.match(runbook, /\.env\.store-api\.local/);
   assert.match(runbook, /credential 값은 출력하지 않습니다/);
 });
 

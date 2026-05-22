@@ -15,6 +15,7 @@ const requiredTerms = [
   "GOOGLE_PLAY_PACKAGE_NAME=com.jipbab.note",
   "GOOGLE_PLAY_VERSION_CODE=1",
   "GOOGLE_PLAY_TRACK=internal",
+  ".env.store-api.local",
   ".release-secrets/",
   "chmod 600",
   "커밋하지 않습니다",

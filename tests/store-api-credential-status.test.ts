@@ -23,6 +23,7 @@ test("store API credential status checks env names without printing values", () 
   assert.match(statusSource, /APP_STORE_CONNECT_API_PRIVATE_KEY_PATH/);
   assert.match(statusSource, /GOOGLE_APPLICATION_CREDENTIALS/);
   assert.match(statusSource, /GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/);
+  assert.match(statusSource, /\.env\.store-api\.local/);
   assert.match(statusSource, /Ready:/);
   assert.match(statusSource, /Blocked:/);
   assert.match(statusSource, /Security failures:/);
@@ -67,5 +68,6 @@ test("store API runbook and store console docs mention credential status preflig
   assert.match(runbook, /pnpm release:store-api-credential-status/);
   assert.match(runbook, /private key path is not ignored by git/);
   assert.match(runbook, /service account path is not ignored by git/);
+  assert.match(runbook, /\.env\.store-api\.local/);
   assert.match(evidence, /pnpm release:store-api-credential-status/);
 });

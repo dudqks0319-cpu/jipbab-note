@@ -5,7 +5,7 @@ Do not change a line to `confirmed` until the matching console state has been ob
 The checker also requires evidence dates and artifact paths/URLs, not only `confirmed` strings.
 Use `pnpm release:capture-external-evidence` before and after console work to capture local gate output under `output/release-evidence/<timestamp>/`.
 Use `pnpm release:capture-store-console` during App Store Connect / Play Console work to capture the store-console checker output plus `operator-checklist.md` and `manual-store-console-template.md`.
-Use `pnpm release:store-api-credential-status` to check whether local store API credential env names, ignored secret files, and file permissions are ready without printing credential values.
+Use `pnpm release:store-api-credential-status` to check whether local store API credential env names, ignored secret files, and file permissions are ready without printing credential values. Prefer `.env.store-api.local` for store-only credential paths so App Store Connect / Google Play automation stays separate from normal app runtime env.
 If browser access keeps failing, use [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md) to configure official API credentials for the same checks without committing secrets.
 
 ## App Store Connect / TestFlight

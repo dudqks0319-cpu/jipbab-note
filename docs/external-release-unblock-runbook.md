@@ -9,7 +9,7 @@
 - App Store Connect/TestFlight: JipbabNote 앱 레코드는 보였지만, 직접 TestFlight URL이 `authResult=FAILED`로 돌아가므로 Apple 계정 재인증이 필요합니다.
 - Play Console 내부 테스트: 개발자 계정 설정이 미완료라 앱 생성, AAB 업로드, 내부 테스트 트랙 생성이 막혀 있습니다.
 
-브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md)를 먼저 설정해 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
+브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
 
 ## 1. 실기기 QA 해제
 
