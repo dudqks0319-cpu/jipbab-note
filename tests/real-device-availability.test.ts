@@ -85,12 +85,16 @@ test("real-device QA packet captures native artifacts and manual evidence templa
   assert.match(packetSource, /Real-device QA Packet/);
   assert.match(packetSource, /manual-qa-template\.md/);
   assert.match(packetSource, /operator-checklist\.md/);
+  assert.match(packetSource, /device-unblock-checklist\.md/);
   assert.match(packetSource, /native-artifacts\.md/);
   assert.match(packetSource, /JipbabNote-\$\{iosBuildNumber\}\.xcarchive/);
   assert.match(packetSource, /app-release\.aab/);
   assert.match(packetSource, /app-debug\.apk/);
   assert.match(packetSource, /REAL_DEVICE_QA_LAUNCH_ANDROID/);
   assert.match(packetSource, /screencap/);
+  assert.match(packetSource, /xcrun devicectl list devices/);
+  assert.match(packetSource, /xcrun xctrace list devices/);
+  assert.match(packetSource, /USB debugging/);
   assert.match(packetSource, /iOS evidence artifacts/);
   assert.match(packetSource, /Android evidence artifacts/);
   assert.match(packetSource, /Rerun `pnpm check:real-device-qa-evidence`/);

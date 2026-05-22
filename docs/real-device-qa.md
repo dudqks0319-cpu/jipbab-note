@@ -1,12 +1,12 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-21 22:52 KST
+Updated: 2026-05-22 18:34 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
 각 플랫폼별 evidence date와 evidence artifacts도 실제 날짜와 스크린샷/로그/녹화 경로 또는 URL로 채워야 통과합니다.
 기기 연결 전후에는 `pnpm release:capture-external-evidence`로 `output/release-evidence/<timestamp>/summary.md`와 원시 진단 파일을 먼저 남깁니다.
-실기기 QA를 실행할 때는 `pnpm release:capture-real-device-qa`로 기기 상태, 설치 여부, native artifact inventory, `operator-checklist.md`, `manual-qa-template.md`를 함께 캡처합니다. 이 패킷은 증거 수집용이며, 실제 체크를 보지 않은 상태에서 `confirmed`로 바꾸면 안 됩니다.
+실기기 QA를 실행할 때는 `pnpm release:capture-real-device-qa`로 기기 상태, 설치 여부, native artifact inventory, `device-unblock-checklist.md`, `operator-checklist.md`, `manual-qa-template.md`를 함께 캡처합니다. 이 패킷은 증거 수집용이며, 실제 체크를 보지 않은 상태에서 `confirmed`로 바꾸면 안 됩니다.
 
 ## Current Status
 
@@ -89,3 +89,4 @@ Updated: 2026-05-21 22:52 KST
 - 2026-05-21 20:56 KST: Rechecked again with `pnpm check:real-device-availability`, `xcrun devicectl list devices`, `adb devices -l`, and iPhone Mirroring. iPhone `영빈` remains CoreDevice `unavailable`, no Android device is attached, and iPhone Mirroring still requires the Mac login password before QA can proceed.
 - 2026-05-21 22:16 KST: `pnpm release:external-status` still reports iPhone `영빈` as CoreDevice `unavailable` and no attached Android physical device. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-15-49-074Z`.
 - 2026-05-21 22:52 KST: Rechecked with `pnpm release:external-status`, `xcrun devicectl list devices`, and `/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb devices -l`. iPhone `영빈` remains CoreDevice `unavailable`; Android still has no attached physical device. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-52-02-396Z`.
+- 2026-05-22 18:34 KST: Rechecked with `pnpm release:external-status` and `pnpm release:capture-real-device-qa`. iPhone `영빈` still reports CoreDevice `unavailable`, Android still has no attached physical device, and the latest packet includes `device-unblock-checklist.md` for the exact CoreDevice/xctrace/adb unblock sequence. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-33-46-193Z-real-device-qa`.

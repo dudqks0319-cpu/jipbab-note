@@ -250,6 +250,47 @@ function writeOperatorChecklist() {
   writeFileSync(path.join(outDir, "operator-checklist.md"), checklist);
 }
 
+function writeDeviceUnblockChecklist() {
+  const checklist = [
+    "# Real-device Unblock Checklist",
+    "",
+    "Use this file before running the manual QA checklist. It records the exact local commands and device-side actions needed to turn the current blocker into verifiable QA evidence.",
+    "",
+    "## iOS CoreDevice",
+    "",
+    "- [ ] Keep iPhone `영빈` unlocked and awake.",
+    "- [ ] Confirm the iPhone trusts this Mac if the trust prompt appears.",
+    "- [ ] Confirm Developer Mode is enabled on the iPhone.",
+    "- [ ] If iPhone Mirroring prompts for the Mac password, the operator must unlock it before QA continues.",
+    "- [ ] Use a data-capable cable or reconnect the cable if CoreDevice remains unavailable.",
+    "- [ ] Run `xcrun devicectl list devices` and continue only when the iPhone state is `available`.",
+    "- [ ] Run `xcrun xctrace list devices` and confirm the iPhone appears under `Devices`, not only `Devices Offline`.",
+    "",
+    "## Android Physical Device",
+    "",
+    "- [ ] Connect a physical Android phone over USB.",
+    "- [ ] Enable Developer options and USB debugging.",
+    "- [ ] Accept the RSA debugging prompt on the phone.",
+    `- [ ] Run \`${adbPath} devices -l\` and continue only when the device state is \`device\`, not \`unauthorized\` or empty.`,
+    "- [ ] If the package is expected to be installed, run the `android-installed-package.txt` capture and confirm `package:` output.",
+    "",
+    "## After Devices Are Available",
+    "",
+    "- [ ] Rerun `pnpm check:real-device-availability`.",
+    "- [ ] Rerun `pnpm release:capture-real-device-qa`.",
+    "- [ ] Run the flows in `operator-checklist.md` on each actual physical device.",
+    "- [ ] Copy only the actually observed platform lines from `manual-qa-template.md` into `docs/real-device-qa.md`.",
+    "- [ ] Rerun `pnpm check:real-device-qa-evidence`.",
+    "- [ ] Rerun `pnpm release:external-status`.",
+    "- [ ] Rerun `pnpm release:goal-check`.",
+    "",
+    "This file is not proof of QA by itself. It is only the unblock procedure for collecting real-device proof.",
+    "",
+  ].join("\n");
+
+  writeFileSync(path.join(outDir, "device-unblock-checklist.md"), checklist);
+}
+
 mkdirSync(outDir, { recursive: true });
 
 const captures = [...commandCaptures];
@@ -269,6 +310,7 @@ const artifactInventory = [
 writeFileSync(path.join(outDir, "native-artifacts.md"), artifactInventory);
 writeManualQaTemplate();
 writeOperatorChecklist();
+writeDeviceUnblockChecklist();
 
 const passed = results.filter((result) => result.status === "pass");
 const blocked = results.filter((result) => result.status === "blocked");
@@ -292,6 +334,7 @@ const summary = [
   "- info: native-artifacts.md",
   "- info: manual-qa-template.md",
   "- info: operator-checklist.md",
+  "- info: device-unblock-checklist.md",
   "",
   "## Use In Release Ledger",
   "",

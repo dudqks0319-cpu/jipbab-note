@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 18:25 KST
+Updated: 2026-05-22 18:34 KST
 
 ## Local code state
 
@@ -39,6 +39,9 @@ Updated: 2026-05-22 18:25 KST
 - `pnpm test`: pass on 2026-05-22 18:25 KST after adding `store-api-env-template.txt` to the store-console packet. Lint, `tsc --noEmit`, and 130 unit tests passed.
 - `pnpm release:check`: pass on 2026-05-22 18:25 KST after the store-console packet hardening. All 6 local release gates passed.
 - `pnpm release:goal-check`: still blocked on 2026-05-22 18:25 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Real-device QA packet unblock hardening: pass on 2026-05-22 18:34 KST. `pnpm release:capture-real-device-qa` now writes `device-unblock-checklist.md` next to the device captures, native artifact inventory, operator checklist, and manual QA template, so the operator has exact iOS CoreDevice and Android USB debugging steps before collecting real-device proof.
+- `pnpm release:capture-real-device-qa`: run on 2026-05-22 18:34 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-33-46-193Z-real-device-qa`; captured 3 passing command/artifact checks and 2 blockers. `real-device-availability.txt` still reports iPhone `영빈` as CoreDevice `unavailable` and Android as `none attached`.
+- `pnpm release:external-status`: blocked on 2026-05-22 18:33 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 23:37 KST with live Vercel API access. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; values were not printed.
 - `pnpm release:external-status`: still blocked on 2026-05-21 23:37 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 23:37 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
@@ -357,7 +360,7 @@ Updated: 2026-05-22 18:25 KST
 - OAuth provider dashboard callbacks: verified for Google/Apple/Kakao provider start and callback configuration. Google Supabase redirect reaches `accounts.google.com`; Apple Supabase redirect reaches `appleid.apple.com` using Services ID `com.jipbab.note.web`; Kakao browser login now reaches the consent screen and returns to the app without `KOE205` after Biz App `account_email` consent setup.
 - iPhone real-device QA: partial pass from the earlier run. Device `영빈` built, installed, and launched `com.jipbab.note`; screenshot capture was not available through the installed `devicectl` command set. Latest 2026-05-21 19:02 KST release gate shows CoreDevice state `unavailable`, so no additional OAuth/link/account-deletion checks can run yet.
 - Android real-device QA: not done. Latest 2026-05-21 19:02 KST external-status recheck still returned no attached Android physical device.
-- Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet. `pnpm check:real-device-availability` and `pnpm check:real-device-qa-evidence` now make both device availability and actual QA evidence machine-checkable.
+- Real-device QA: not done for the complete release checklist. Current iPhone is visible but offline, and no Android device is connected, so OAuth callback, local notification, shopping link, and account-deletion request checks cannot be completed on physical devices yet. `pnpm check:real-device-availability` and `pnpm check:real-device-qa-evidence` now make both device availability and actual QA evidence machine-checkable. Latest packet `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-33-46-193Z-real-device-qa` includes `device-unblock-checklist.md` with the concrete CoreDevice, xctrace, and adb unblock steps.
 - Play Console internal testing: not verified in this pass. Latest 2026-05-21 18:45 KST browser check shows Play Console developer account signup for the current Google account, so internal testing upload is blocked until the developer account registration/payment/identity steps are completed.
 
 ## Current release decisions
@@ -373,7 +376,7 @@ Before external release submission:
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
 0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
 0.1.1. Run `pnpm release:capture-store-console` during App Store Connect / Play Console confirmation attempts to generate `operator-checklist.md` and `manual-store-console-template.md` for `docs/store-console-confirmation.md`.
-0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.
+0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet, `device-unblock-checklist.md`, and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.
 0.2.1. Use the generated `operator-checklist.md` during physical-device QA, and copy `manual-qa-template.md` into `docs/real-device-qa.md` only for platforms that were actually observed.
 0.3. Confirm the GitHub `Release Gate` workflow is green after each push; it proves code/static release gates only and does not replace local native artifact checks or external store/device evidence.
 0.4. If App Store Connect browser auth or Play Console UI access keeps blocking verification, run `pnpm release:capture-store-console`, use the generated `store-api-env-template.txt` to fill `.env.store-api.local` with placeholder values replaced by real IDs and ignored local file paths, then rerun `pnpm release:store-api-credential-status` and `pnpm check:store-console-confirmation`.
