@@ -33,6 +33,7 @@ test("release unblock runbook includes the post-unblock verification commands", 
   assert.match(runbook, /pnpm release:store-api-credential-status/);
   assert.match(runbook, /pnpm check:store-console-confirmation/);
   assert.match(runbook, /pnpm release:capture-store-submission-packet/);
+  assert.match(runbook, /pnpm release:capture-appstore-review-packet/);
   assert.match(runbook, /pnpm release:appstore-submit-gate/);
   assert.match(runbook, /pnpm release:playstore-submit-gate/);
   assert.match(runbook, /pnpm release:external-status/);

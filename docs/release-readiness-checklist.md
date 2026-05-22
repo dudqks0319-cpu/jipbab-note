@@ -19,6 +19,7 @@ pnpm release:check
 - [ ] `pnpm store-assets:prepare` 실행: App Store 6.9형 스크린샷, Play Store 휴대전화 스크린샷, Play Store 기능 그래픽 생성 확인
 - [ ] `pnpm check:store-assets` 실행: App Store 1290x2796 PNG 5장, Play Store 1080x1920 JPG 5장, 1024x500 RGB 기능 그래픽, 512x512 RGB 아이콘 PASS 확인
 - [ ] `pnpm release:capture-store-submission-packet` 실행: App Store/Play Store 메타데이터와 업로드용 이미지 파일을 한 로컬 패킷으로 복사
+- [ ] `pnpm release:capture-appstore-review-packet` 실행: iOS가 먼저 준비됐을 때 App Store 전용 메타데이터, 스크린샷, iOS 산출물, App Store 제출 게이트 상태를 한 로컬 패킷으로 복사
 - [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live check까지 통과 확인
 - [ ] warning 항목을 검토하고 수동 QA 범위에 반영
 - [ ] `Curated beginner recipes`, `Beginner recipe guidance`, `Recipe image provenance`, `Ingredient catalog coverage` PASS 확인

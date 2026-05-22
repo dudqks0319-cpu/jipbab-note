@@ -31,6 +31,7 @@
     "release:capture-external-evidence": "node scripts/capture-external-release-evidence.mjs",
     "release:capture-operator-handoff": "node scripts/capture-release-operator-handoff.mjs",
     "release:capture-store-submission-packet": "node scripts/capture-store-submission-packet.mjs",
+    "release:capture-appstore-review-packet": "node scripts/capture-appstore-review-packet.mjs",
     "release:capture-real-device-qa": "node scripts/capture-real-device-qa-packet.mjs",
     "release:capture-store-console": "node scripts/capture-store-console-confirmation-packet.mjs",
     "release:security-check": "node scripts/check-release-security.mjs",

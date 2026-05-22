@@ -92,6 +92,7 @@ pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 pnpm release:capture-store-console
 pnpm release:capture-store-submission-packet
+pnpm release:capture-appstore-review-packet
 pnpm release:store-api-runbook
 pnpm release:appstore-submit-gate
 pnpm release:playstore-submit-gate

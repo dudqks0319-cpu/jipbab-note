@@ -14,6 +14,7 @@ const requiredTerms = [
   "pnpm release:store-api-credential-status",
   "pnpm check:store-console-confirmation",
   "pnpm release:capture-store-submission-packet",
+  "pnpm release:capture-appstore-review-packet",
   "pnpm release:appstore-submit-gate",
   "pnpm release:playstore-submit-gate",
   "pnpm release:external-status",

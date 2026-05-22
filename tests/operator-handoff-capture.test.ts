@@ -20,6 +20,7 @@ test("operator handoff capture combines all external blocker packets", () => {
   assert.match(source, /scripts\/capture-real-device-qa-packet\.mjs/);
   assert.match(source, /scripts\/capture-store-console-confirmation-packet\.mjs/);
   assert.match(source, /scripts\/check-store-api-credential-status\.mjs/);
+  assert.match(source, /scripts\/capture-appstore-review-packet\.mjs/);
   assert.match(source, /scripts\/check-release-security\.mjs/);
   assert.match(source, /scripts\/check-appstore-submit-readiness\.mjs/);
   assert.match(source, /scripts\/check-playstore-submit-readiness\.mjs/);
@@ -35,6 +36,7 @@ test("operator handoff capture combines all external blocker packets", () => {
   assert.match(source, /Final Verification After Unblock/);
   assert.match(source, /pnpm release:security-check/);
   assert.match(source, /pnpm release:store-api-credential-status/);
+  assert.match(source, /pnpm release:capture-appstore-review-packet/);
   assert.match(source, /pnpm release:appstore-submit-gate/);
   assert.match(source, /pnpm release:playstore-submit-gate/);
   assert.match(source, /pnpm release:submit-gate/);
