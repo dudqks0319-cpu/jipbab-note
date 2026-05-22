@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 22:38 KST
+Updated: 2026-05-22 23:29 KST
 
 ## Local code state
 
@@ -24,6 +24,7 @@ Updated: 2026-05-22 22:38 KST
 ## Verification evidence
 
 - iOS real-device partial QA: pass/partial on 2026-05-22 23:12 KST. iPhone `영빈` is now CoreDevice `available` and `pnpm check:real-device-availability -- --platform=ios` passed. iPhone Mirroring evidence confirms app launch, core loop, shopping-to-fridge refill, and updated support/account-delete email `dudqks2@gmail.com`; evidence screenshots are under `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-55-26-439Z-real-device-qa-ios/screenshots`. Email/password signup created a test account; immediate password login was blocked by Supabase email confirmation, and after operator confirmation the same credentials returned a valid Supabase Auth session. Full iOS real-device QA remains blocked until Google/Apple/Kakao OAuth, local notification permission/scheduling, and logged-in account deletion submission are observed on device.
+- OAuth callback fix and provider start verification: pass/partial on 2026-05-22 23:29 KST. The browser Supabase client now forces PKCE so the app callback receives an authorization `code`, and `/auth/callback` surfaces provider `error_description` before falling back to the missing-code message. `pnpm check:oauth-live` passed for Google, Apple, and Kakao after deployment; Playwright on the production login page confirmed all three buttons reach the expected provider login surfaces with `response_type=code` and the app return target `https://jipbab-note-app.vercel.app/auth/callback?next=/mypage`. Production was redeployed and aliased to `https://jipbab-note-app.vercel.app`. Full OAuth QA remains partial until a real account consent flow returns to `/mypage` on the physical iPhone for Google, Apple, and Kakao.
 - Production support email update: pass on 2026-05-22 23:05 KST. Vercel Production `NEXT_PUBLIC_SUPPORT_EMAIL` was updated to `dudqks2@gmail.com` and redeployed to `https://jipbab-note-app.vercel.app`; `/support`, `/privacy`, and `/account-delete` production responses now include `dudqks2@gmail.com` and no longer show `dudqks0319@gmail.com` for inquiry/contact.
 - App Store Connect API credential setup: pass on 2026-05-22 22:37 KST. A new App Store Connect API key `Jipbab Codex Check` with App Manager access was created in App Store Connect; its private key is stored only in ignored local `.release-secrets/`, and `.env.store-api.local` points the checker to the App Store Connect key metadata, bundle `com.jipbab.note`, and build `2026052001`. `pnpm release:store-api-credential-status` now reports App Store Connect API credentials `READY`; Google Play Developer API credentials remain blocked.
 - App Store Connect/TestFlight API confirmation: pass on 2026-05-22 22:37 KST. `pnpm check:store-console-confirmation -- --platform=appstore` returned `Passes: 1`, `Failures: 0` and confirmed build `2026052001` is `VALID` with an internal TestFlight group.

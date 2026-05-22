@@ -54,6 +54,7 @@ export function getSupabaseClient(options?: SupabaseClientOptions): SupabaseClie
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      flowType: "pkce",
     },
     global: {
       fetch: fetchWithDeviceHeader,

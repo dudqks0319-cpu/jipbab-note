@@ -22,7 +22,13 @@ function AuthCallbackContent() {
     hasStartedRef.current = true;
 
     const code = searchParams.get("code");
+    const providerError = searchParams.get("error_description") ?? searchParams.get("error");
     const next = normalizeAuthNextPath(searchParams.get("next"));
+
+    if (providerError) {
+      setErrorMessage(providerError);
+      return;
+    }
 
     if (!code) {
       setErrorMessage("로그인 승인 코드를 찾지 못했습니다. 다시 시도해 주세요.");

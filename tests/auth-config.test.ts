@@ -142,7 +142,16 @@ test("browser Supabase client is a singleton and injects device id per request",
   assert.match(source, /let clientCache: SupabaseClient \| null = null;/);
   assert.match(source, /let latestDeviceId: string \| null = null;/);
   assert.match(source, /headers\.set\("x-device-id", latestDeviceId\);/);
+  assert.match(source, /flowType:\s*"pkce"/);
   assert.doesNotMatch(source, /new Map<string, SupabaseClient>/);
+});
+
+test("OAuth callback surfaces provider error details before requiring an auth code", () => {
+  const source = readFileSync(new URL("../app/auth/callback/page.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /searchParams\.get\("error_description"\)/);
+  assert.match(source, /searchParams\.get\("error"\)/);
+  assert.match(source, /if \(!code\)/);
 });
 
 test("community hook uses the shared Supabase client factory", () => {
