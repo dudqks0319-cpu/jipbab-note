@@ -16,6 +16,7 @@ pnpm release:check
 - [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인
 - [ ] `pnpm store-assets:prepare` 실행: App Store 6.9형 스크린샷, Play Store 휴대전화 스크린샷, Play Store 기능 그래픽 생성 확인
 - [ ] `pnpm check:store-assets` 실행: App Store 1290x2796 PNG 5장, Play Store 1080x1920 JPG 5장, 1024x500 RGB 기능 그래픽, 512x512 RGB 아이콘 PASS 확인
+- [ ] `pnpm release:capture-store-submission-packet` 실행: App Store/Play Store 메타데이터와 업로드용 이미지 파일을 한 로컬 패킷으로 복사
 - [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live check까지 통과 확인
 - [ ] warning 항목을 검토하고 수동 QA 범위에 반영
 - [ ] `Curated beginner recipes`, `Beginner recipe guidance`, `Recipe image provenance`, `Ingredient catalog coverage` PASS 확인
@@ -30,7 +31,7 @@ pnpm release:check
 - [ ] `pnpm release:submit-gate` 실행: 로컬/보안/외부/목표 완료 게이트가 모두 PASS인지 확인. 하나라도 BLOCKED면 App Store 심사 제출 또는 Play production 제출 금지
 - [ ] `pnpm release:unblock-runbook` 실행: 실기기, App Store Connect, Play Console 차단 해제 후 실행 순서 확인
 - [ ] `pnpm release:store-api-runbook` 실행: App Store Connect API / Google Play Developer API credential 설정 절차와 secret 보관 원칙 확인
-- [ ] `pnpm release:capture-operator-handoff` 실행: 외부 상태, 실기기 packet, 스토어 packet, goal 상태를 묶은 operator handoff 생성
+- [ ] `pnpm release:capture-operator-handoff` 실행: 외부 상태, 실기기 packet, 스토어 console packet, store submission packet, goal 상태를 묶은 operator handoff 생성
 - [ ] `pnpm check:real-device-availability` 실행: iOS/Android 실제 기기 연결 확인
 - [ ] `pnpm check:real-device-qa-evidence` 실행: `docs/real-device-qa.md`의 iOS/Android 실기기 QA 증거가 모두 confirmed인지 확인
 - [ ] `pnpm release:capture-real-device-qa` 실행: 연결된 실기기 상태, 설치 여부, native artifact inventory, device unblock checklist, 수동 QA 템플릿 캡처

@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 20:04 KST
+Updated: 2026-05-22 20:16 KST
 
 ## Local code state
 
@@ -23,6 +23,13 @@ Updated: 2026-05-22 20:04 KST
 
 ## Verification evidence
 
+- Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 20:17 KST. `pnpm release:submit-gate` returned `Passed: 2`, `Blocked: 2`; local release gates, iOS IPA artifact check, Android signed AAB check, release security, Supabase live write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Submission is still blocked by real-device availability/evidence plus App Store Connect/TestFlight and Play Console internal testing evidence.
+- Store submission packet capture: pass on 2026-05-22 20:13 KST. `pnpm release:capture-store-submission-packet` created `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-13-21-971Z-store-submission-packet`, copied 14 upload files, and recorded App Store/Play metadata plus screenshot/icon SHA-256 hashes in `store-submission-packet.md`. The command validates `pnpm check:store-assets` first and explicitly does not upload to App Store Connect or Google Play.
+- Release operator handoff with store submission packet: pass/blocking as designed on 2026-05-22 20:16 KST. `pnpm release:capture-operator-handoff` created `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-16-06-119Z-operator-handoff`; it captured 4 packets, passed the release security gate, and left only `goal-check` blocked. The handoff now links the nested store submission packet at `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-16-31-790Z-store-submission-packet`.
+- Store submission packet tests: pass on 2026-05-22 20:15 KST. `pnpm exec node --experimental-strip-types --test tests/store-submission-packet.test.ts tests/operator-handoff-capture.test.ts tests/release-unblock-runbook.test.ts` passed 12 tests.
+- `pnpm test`: pass on 2026-05-22 20:14 KST after adding the store submission packet capture. Lint, `tsc --noEmit`, and 145 unit tests passed.
+- `pnpm build`: pass on 2026-05-22 20:15 KST after sandbox-escalated rerun. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 20:16 KST after sandbox-escalated rerun for npm audit network access. All 6 CI-safe release gates passed, including production dependency audit and store asset checks.
 - Store submission readiness gate: pass/blocking as designed on 2026-05-22 20:04 KST. `pnpm release:submit-gate` now runs local release gates, `release:security-check`, `release:external-status`, and `release:goal-check` in one pre-submit check. It does not submit to App Store Connect or Google Play. Current result is `Passed: 2`, `Blocked: 2`: local release gates and release security pass; external release status and goal completion remain blocked by the same real-device and store-console evidence requirements. Store submission remains prohibited until this gate passes.
 - Store submission gate tests: pass on 2026-05-22 20:04 KST. `pnpm exec node --experimental-strip-types --test tests/store-submit-gate.test.ts tests/release-unblock-runbook.test.ts tests/operator-handoff-capture.test.ts` passed 11 tests.
 - `pnpm test`: pass on 2026-05-22 20:04 KST after adding the store submission readiness gate. Lint, `tsc --noEmit`, and 141 unit tests passed.

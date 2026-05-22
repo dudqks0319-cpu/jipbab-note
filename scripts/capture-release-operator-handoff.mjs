@@ -26,6 +26,12 @@ const commands = [
     args: ["scripts/capture-store-console-confirmation-packet.mjs"],
   },
   {
+    name: "store-submission-packet",
+    label: "Store submission metadata and image packet",
+    successStatus: "captured",
+    args: ["scripts/capture-store-submission-packet.mjs"],
+  },
+  {
     name: "release-security",
     label: "Release security gate",
     successStatus: "pass",
@@ -109,6 +115,7 @@ const summary = [
   "- Real-device QA: use the latest real-device packet's `device-unblock-checklist.md`, then run the physical-device flows in `operator-checklist.md` before updating `docs/real-device-qa.md`.",
   "- App Store Connect/TestFlight: reauthenticate in App Store Connect or configure `.env.store-api.local` from `store-api-env-template.txt`, then verify build `2026052001` processing and internal tester availability.",
   "- Play Console internal testing: complete developer account verification, create/open package `com.jipbab.note`, upload the signed AAB to internal testing, or configure Google Play Developer API credentials after app setup.",
+  "- Store metadata and images: use the latest store submission packet for App Store screenshots, Play screenshots, feature graphic, icon, and Korean metadata.",
   "",
   "## Final Verification After Unblock",
   "",
@@ -117,6 +124,7 @@ const summary = [
   "pnpm check:real-device-availability",
   "pnpm check:real-device-qa-evidence",
   "pnpm check:store-console-confirmation",
+  "pnpm release:capture-store-submission-packet",
   "pnpm release:external-status",
   "pnpm release:goal-check",
   "pnpm release:submit-gate",

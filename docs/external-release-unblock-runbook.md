@@ -90,6 +90,7 @@ pnpm check:real-device-availability
 pnpm check:real-device-qa-evidence
 pnpm check:store-console-confirmation
 pnpm release:capture-store-console
+pnpm release:capture-store-submission-packet
 pnpm release:store-api-runbook
 pnpm release:external-status
 pnpm release:goal-check
