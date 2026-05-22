@@ -16,6 +16,7 @@ test("CI static release gate is wired into package scripts", () => {
 });
 
 test("CI static release gate runs only repository-local deterministic release checks", () => {
+  assert.match(ciGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-supabase-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-partner-links\.mjs/);
   assert.match(ciGateSource, /scripts\/check-store-assets\.mjs/);

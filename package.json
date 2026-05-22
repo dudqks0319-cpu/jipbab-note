@@ -18,6 +18,7 @@
     "check:vercel-production-env": "node scripts/check-vercel-production-env.mjs",
     "check:production-family-route": "node scripts/check-production-family-route.mjs",
     "check:production-account-deletion-route": "node scripts/check-production-account-deletion-route.mjs",
+    "check:core-loop-release": "node scripts/check-core-loop-release.mjs",
     "check:real-device-availability": "node scripts/check-real-device-availability.mjs",
     "check:real-device-qa-evidence": "node scripts/check-real-device-qa-evidence.mjs",
     "check:store-console-confirmation": "node scripts/check-store-console-confirmation.mjs",

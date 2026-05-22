@@ -1,4 +1,5 @@
 // 이 파일은 현재 릴리스 장부를 기준으로 목표 완료 여부를 보수적으로 판정합니다.
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -136,6 +137,30 @@ function evidenceStatus(source, requiredTerms, blockedMarkers, extraEvidence = {
   return "missing";
 }
 
+function runLocalCheck(label, args) {
+  const result = spawnSync(process.execPath, args, {
+    cwd,
+    encoding: "utf8",
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
+  const firstUsefulLine = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line && !line.startsWith("✔") && !line.startsWith("ℹ"));
+
+  if (result.status === 0) {
+    return {
+      status: "pass",
+      evidence: `${label} passed`,
+    };
+  }
+
+  return {
+    status: "missing",
+    evidence: `${label} failed${firstUsefulLine ? `: ${firstUsefulLine}` : ""}`,
+  };
+}
+
 if (!existsSync(ledgerPath)) {
   console.error("Goal completion check failed: docs/current-release-state.md is missing");
   process.exit(1);
@@ -145,6 +170,9 @@ const ledger = readFileSync(ledgerPath, "utf8");
 const realDeviceQa = readOptional(realDeviceQaPath);
 const storeConsole = readOptional(storeConsolePath);
 const results = [];
+const coreLoopReleaseCheck = runLocalCheck("node scripts/check-core-loop-release.mjs", [
+  "scripts/check-core-loop-release.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -153,18 +181,10 @@ const vercelProductionPass = includesAll(ledger, [
 
 addResult(
   results,
-  includesAll(ledger, [
-    "fridge inventory",
-    "recipe recommendation",
-    "shopping list",
-    "purchased-item-to-fridge conversion",
-    "Shopping sync fallback: pass",
-  ])
-    ? "pass"
-    : "missing",
+  coreLoopReleaseCheck.status,
   "핵심 루프",
-  "fridge -> recipe -> shopping -> purchased item to fridge evidence in release ledger",
-  "핵심 루프 증거를 docs/current-release-state.md에 갱신",
+  coreLoopReleaseCheck.evidence,
+  "pnpm check:core-loop-release 실패 원인 수정",
 );
 
 addResult(

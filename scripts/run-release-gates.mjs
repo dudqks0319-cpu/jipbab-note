@@ -3,6 +3,11 @@ import { spawnSync } from "node:child_process";
 
 const checks = [
   {
+    name: "core-loop-release",
+    command: "node",
+    args: ["scripts/check-core-loop-release.mjs"],
+  },
+  {
     name: "release-readiness",
     command: "node",
     args: ["scripts/release-readiness-check.mjs"],

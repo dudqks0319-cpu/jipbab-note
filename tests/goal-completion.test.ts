@@ -58,3 +58,11 @@ test("goal completion check requires release security gate evidence", () => {
   assert.match(source, /secret file ignore rules/);
   assert.match(source, /tracked secret files/);
 });
+
+test("goal completion check runs the executable core loop release check", () => {
+  assert.match(source, /scripts\/check-core-loop-release\.mjs/);
+  assert.match(source, /runLocalCheck\("node scripts\/check-core-loop-release\.mjs"/);
+  assert.match(source, /coreLoopReleaseCheck\.evidence/);
+  assert.doesNotMatch(source, /fridge inventory/);
+  assert.doesNotMatch(source, /purchased-item-to-fridge conversion/);
+});

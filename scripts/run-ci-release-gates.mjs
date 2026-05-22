@@ -3,6 +3,11 @@ import { spawnSync } from "node:child_process";
 
 const checks = [
   {
+    name: "core-loop-contract",
+    command: "node",
+    args: ["scripts/check-core-loop-release.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],

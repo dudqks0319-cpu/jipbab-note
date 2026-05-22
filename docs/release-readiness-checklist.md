@@ -11,6 +11,7 @@ pnpm release:check
 - [ ] `pnpm release:check` 실행
 - [ ] GitHub Actions `Release Gate` 워크플로가 push/PR에서 green인지 확인 (`pnpm test`, `pnpm build`, `pnpm release:ci-static-check`)
 - [ ] `pnpm release:security-check` 실행: production dependency audit와 secret 파일 git 추적 여부 확인
+- [ ] `pnpm check:core-loop-release` 실행: 냉장고 재료 → 추천 레시피 → 부족 재료 장보기 → 구매 후 냉장고 반영 루프 PASS 확인
 - [ ] `pnpm release:ci-static-check` 실행: CI-safe Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
 - [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
 - [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인

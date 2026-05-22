@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 20:16 KST
+Updated: 2026-05-22 20:27 KST
 
 ## Local code state
 
@@ -23,6 +23,14 @@ Updated: 2026-05-22 20:16 KST
 
 ## Verification evidence
 
+- Core loop executable release gate: pass on 2026-05-22 20:27 KST. `pnpm check:core-loop-release` now verifies the requested fridge -> recommended recipe -> missing ingredient shopping item -> purchased item fridge refill loop directly against app logic. The deterministic scenario starts with fridge ingredients for `된장찌개`, confirms `애호박` is the essential missing shopping item, converts the checked shopping item back into a fridge payload, and then confirms the recipe reaches a 100% ingredient match.
+- Goal completion core-loop hardening: pass/blocking as designed on 2026-05-22 20:27 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now executes `node scripts/check-core-loop-release.mjs` for the `핵심 루프` completion item instead of trusting only release-ledger text. Current `pnpm release:goal-check` is still `Passed: 8`, `Blocked: 3`, `Missing: 0`; only real-device QA, App Store Connect/TestFlight, and Play Console internal testing remain blocked.
+- Targeted core-loop gate tests: pass on 2026-05-22 20:27 KST. `pnpm exec node --experimental-strip-types --test tests/core-loop-release.test.ts tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 11 tests.
+- `pnpm test`: pass on 2026-05-22 20:27 KST after adding the executable core-loop release gate. Lint, `tsc --noEmit`, and 148 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 20:27 KST. All 7 local release gates passed, including the new `core-loop-release` gate, iOS IPA artifact check, and Android signed AAB check.
+- `pnpm build`: pass on 2026-05-22 20:27 KST after sandbox-escalated rerun. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 20:27 KST after sandbox-escalated rerun for npm audit network access. All 7 CI-safe release gates passed, including the new `core-loop-contract`, production dependency audit, and store asset checks.
+- Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 20:27 KST. `pnpm release:submit-gate` returned `Passed: 2`, `Blocked: 2`; local release gates, release security, Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Submission is still blocked by real-device availability/evidence plus App Store Connect/TestFlight and Play Console internal testing evidence.
 - Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 20:17 KST. `pnpm release:submit-gate` returned `Passed: 2`, `Blocked: 2`; local release gates, iOS IPA artifact check, Android signed AAB check, release security, Supabase live write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Submission is still blocked by real-device availability/evidence plus App Store Connect/TestFlight and Play Console internal testing evidence.
 - Store submission packet capture: pass on 2026-05-22 20:13 KST. `pnpm release:capture-store-submission-packet` created `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-13-21-971Z-store-submission-packet`, copied 14 upload files, and recorded App Store/Play metadata plus screenshot/icon SHA-256 hashes in `store-submission-packet.md`. The command validates `pnpm check:store-assets` first and explicitly does not upload to App Store Connect or Google Play.
 - Release operator handoff with store submission packet: pass/blocking as designed on 2026-05-22 20:16 KST. `pnpm release:capture-operator-handoff` created `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-16-06-119Z-operator-handoff`; it captured 4 packets, passed the release security gate, and left only `goal-check` blocked. The handoff now links the nested store submission packet at `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T11-16-31-790Z-store-submission-packet`.
