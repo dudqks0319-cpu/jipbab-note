@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 19:04 KST
+Updated: 2026-05-22 19:13 KST
 
 ## Local code state
 
@@ -55,6 +55,7 @@ Updated: 2026-05-22 19:04 KST
 - `pnpm check:real-device-availability`: still blocked on 2026-05-22 18:54 KST. iPhone `영빈` remains CoreDevice `unavailable`, and no Android physical device is attached.
 - GitHub Actions Release Gate: pass on 2026-05-22 18:59 KST for pushed commit `2b9752f3eef08a183b25f5539b70f4fb061d737b` (`chore(release): capture store upload artifacts`). Run `26281249219` completed successfully: `https://github.com/dudqks0319-cpu/jipbab-note/actions/runs/26281249219`.
 - External blocker browser/device recheck: blocked on 2026-05-22 19:04 KST. Chrome still shows App Store Connect at `appstoreconnect.apple.com/login?...authResult=FAILED`, and Play Console still shows `play.google.com/console/u/0/signup` at account type selection for `dudqks0319@gmail.com`. `pnpm check:real-device-availability` still reports iPhone `영빈` CoreDevice `unavailable` and no Android physical device attached; Mobile MCP lists only iOS simulators `iPhone 17` and `iPhone 16e`.
+- External blocker screenshot evidence: captured on 2026-05-22 19:13 KST under `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T19-12-external-browser-recheck`. App Store Connect remains on the direct TestFlight URL login failure screen (`app-store-connect-auth-failed.png`), and Play Console remains on the developer account type selection screen (`play-console-account-type.png`).
 - `pnpm release:store-api-credential-status`: still blocked but safe on 2026-05-22 19:04 KST with `Ready: 0`, `Blocked: 2`, `Security failures: 0`. App Store Connect API env names and Google Play Developer API credentials remain missing; no credential values were printed.
 - `pnpm check:store-console-confirmation`: still blocked on 2026-05-22 19:04 KST. App Store Connect/TestFlight and Google Play Console internal-testing confirmation evidence is still missing.
 - `pnpm release:goal-check`: still blocked on 2026-05-22 19:04 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
