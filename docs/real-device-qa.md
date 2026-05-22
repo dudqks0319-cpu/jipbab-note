@@ -1,6 +1,6 @@
 # 집밥노트 실기기 QA 증거
 
-Updated: 2026-05-22 22:07 KST
+Updated: 2026-05-22 22:26 KST
 
 이 문서는 App Store / Play Store 제출 전 실제 기기 QA 완료 여부를 기록합니다.
 `pnpm check:real-device-qa-evidence`는 아래 confirmation 문자열이 모두 채워지기 전까지 실패합니다.
@@ -92,3 +92,4 @@ Updated: 2026-05-22 22:07 KST
 - 2026-05-22 18:34 KST: Rechecked with `pnpm release:external-status` and `pnpm release:capture-real-device-qa`. iPhone `영빈` still reports CoreDevice `unavailable`, Android still has no attached physical device, and the latest packet includes `device-unblock-checklist.md` for the exact CoreDevice/xctrace/adb unblock sequence. New local evidence artifact: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-33-46-193Z-real-device-qa`.
 - 2026-05-22 19:04 KST: Rechecked with escalated `pnpm check:real-device-availability` and Mobile MCP. iPhone `영빈` still reports CoreDevice `unavailable`, Android still has no attached physical device, and Mobile MCP lists only iOS simulators `iPhone 17` and `iPhone 16e`. Do not mark real-device QA confirmed until a physical iPhone/Android device is available and the manual QA checklist has been executed.
 - 2026-05-22 22:05 KST: `pnpm release:capture-ios-real-device-qa` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-05-20-283Z-real-device-qa-ios`. The packet is scoped to iOS only, includes iOS archive/app/IPA inventory and iOS-only manual QA template, and still records 3 blocked iOS captures because iPhone `영빈` remains unavailable through `check-real-device-availability`, `devicectl`, and `xctrace`.
+- 2026-05-22 22:21 KST: Latest full `pnpm release:capture-real-device-qa` nested inside the operator handoff generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-21-23-903Z-real-device-qa`. `check-real-device-availability --platform=all` still fails with iPhone `영빈` CoreDevice `unavailable` and Android physical device `none attached`; `adb devices -l` is empty, and `android-installed-package` remains blocked. Do not mark either platform confirmed.

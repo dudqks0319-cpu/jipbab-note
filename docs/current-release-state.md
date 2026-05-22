@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 22:14 KST
+Updated: 2026-05-22 22:26 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 22:14 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the platform-scoped real-device QA packet commit is pushed.
+- Working tree after this ledger update: expected clean after the latest handoff evidence ledger commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,12 @@ Updated: 2026-05-22 22:14 KST
 
 ## Verification evidence
 
+- Latest App Store submit gate rerun: still blocked on 2026-05-22 22:20 KST. `pnpm release:appstore-submit-gate` returned `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, iOS release artifact, and release security passed. The remaining App Store external status group returned `Passed: 5`, `Blocked: 3`: iPhone `영빈` CoreDevice unavailable, missing iOS real-device QA evidence, and missing App Store Connect/TestFlight confirmation. App Store review submission remains prohibited.
+- Latest Play Store submit gate rerun: still blocked on 2026-05-22 22:20 KST. `pnpm release:playstore-submit-gate` returned `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, Android signed AAB artifact, and release security passed. The remaining Play Store external status group returned `Passed: 5`, `Blocked: 3`: no Android physical device, missing Android real-device QA evidence, and missing Google Play Console internal testing confirmation. Play production submission remains prohibited.
+- Latest operator handoff packet: pass/blocking as designed on 2026-05-22 22:22 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-20-53-675Z-operator-handoff`; it captured 5 packets, checked 1 Store API credential-status command, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`.
+- Latest real-device packet: pass/blocking as designed on 2026-05-22 22:21 KST. The nested packet `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-21-23-903Z-real-device-qa` records iPhone `영빈` as CoreDevice `unavailable`, `adb devices -l` with no Android physical device, and blocked Android installed-package capture.
+- Latest Store API credential status: still blocked but safe on 2026-05-22 22:22 KST. Store API credential status returned `Ready: 0`, `Blocked: 2`, `Security failures: 0`; App Store Connect API env names and Google Play Developer API credentials remain missing, and the local `.p8` candidate is still classified as a Sign in with Apple OAuth key rather than an App Store Connect API key.
+- Latest goal completion check: still blocked on 2026-05-22 22:22 KST with `Passed: 9`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - Platform-scoped real-device QA packet: pass/blocking as designed on 2026-05-22 22:05 KST. `pnpm release:capture-ios-real-device-qa` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-05-20-283Z-real-device-qa-ios`; the packet is scoped to iOS only, includes iOS archive/app/IPA inventory and an iOS-only manual QA template, and records 3 blocked iOS captures because iPhone `영빈` remains unavailable through `check-real-device-availability`, `devicectl`, and `xctrace`. Android/Play device blockers are not mixed into this iOS-only packet.
 - Targeted platform-scoped real-device tests: pass on 2026-05-22 22:06 KST. `pnpm exec node --experimental-strip-types --test tests/real-device-availability.test.ts tests/release-unblock-runbook.test.ts tests/appstore-submit-gate.test.ts` passed 14 tests.
 - Release unblock runbook iOS real-device sequence: pass on 2026-05-22 22:06 KST. `pnpm release:unblock-runbook` now validates 21 required terms and includes `pnpm release:capture-ios-real-device-qa` after the full real-device QA packet capture.
