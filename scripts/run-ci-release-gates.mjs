@@ -8,6 +8,11 @@ const checks = [
     args: ["scripts/check-core-loop-release.mjs"],
   },
   {
+    name: "local-mode-contract",
+    command: "node",
+    args: ["scripts/check-local-mode-release.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],

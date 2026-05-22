@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 20:27 KST
+Updated: 2026-05-22 20:34 KST
 
 ## Local code state
 
@@ -23,6 +23,14 @@ Updated: 2026-05-22 20:27 KST
 
 ## Verification evidence
 
+- Local mode executable release gate: pass on 2026-05-22 20:34 KST. `pnpm check:local-mode-release` now verifies that local fridge ingredients and shopping items survive empty Supabase responses, newer Supabase rows can replace stale local copies without deleting local-only rows, and auth migration status surfaces failed tables or skipped local tables instead of hiding sync risk.
+- Goal completion local-mode hardening: pass/blocking as designed on 2026-05-22 20:34 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now includes `로컬모드/동기화 안정성` as a separate completion item backed by `node scripts/check-local-mode-release.mjs`. Current `pnpm release:goal-check` is `Passed: 9`, `Blocked: 3`, `Missing: 0`; only real-device QA, App Store Connect/TestFlight, and Play Console internal testing remain blocked.
+- Targeted local-mode gate tests: pass on 2026-05-22 20:34 KST. `pnpm exec node --experimental-strip-types --test tests/local-mode-release.test.ts tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 14 tests.
+- `pnpm test`: pass on 2026-05-22 20:34 KST after adding the executable local-mode release gate. Lint, `tsc --noEmit`, and 153 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 20:34 KST. All 8 local release gates passed, including `core-loop-release`, `local-mode-release`, iOS IPA artifact check, and Android signed AAB check.
+- `pnpm build`: pass on 2026-05-22 20:34 KST after sandbox-escalated rerun. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 20:34 KST after sandbox-escalated rerun for npm audit network access. All 8 CI-safe release gates passed, including `core-loop-contract`, `local-mode-contract`, production dependency audit, and store asset checks.
+- Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 20:34 KST. `pnpm release:submit-gate` returned `Passed: 2`, `Blocked: 2`; local release gates, release security, Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Submission is still blocked by real-device availability/evidence plus App Store Connect/TestFlight and Play Console internal testing evidence.
 - Core loop executable release gate: pass on 2026-05-22 20:27 KST. `pnpm check:core-loop-release` now verifies the requested fridge -> recommended recipe -> missing ingredient shopping item -> purchased item fridge refill loop directly against app logic. The deterministic scenario starts with fridge ingredients for `된장찌개`, confirms `애호박` is the essential missing shopping item, converts the checked shopping item back into a fridge payload, and then confirms the recipe reaches a 100% ingredient match.
 - Goal completion core-loop hardening: pass/blocking as designed on 2026-05-22 20:27 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now executes `node scripts/check-core-loop-release.mjs` for the `핵심 루프` completion item instead of trusting only release-ledger text. Current `pnpm release:goal-check` is still `Passed: 8`, `Blocked: 3`, `Missing: 0`; only real-device QA, App Store Connect/TestFlight, and Play Console internal testing remain blocked.
 - Targeted core-loop gate tests: pass on 2026-05-22 20:27 KST. `pnpm exec node --experimental-strip-types --test tests/core-loop-release.test.ts tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 11 tests.

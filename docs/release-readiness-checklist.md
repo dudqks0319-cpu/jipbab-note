@@ -12,6 +12,7 @@ pnpm release:check
 - [ ] GitHub Actions `Release Gate` 워크플로가 push/PR에서 green인지 확인 (`pnpm test`, `pnpm build`, `pnpm release:ci-static-check`)
 - [ ] `pnpm release:security-check` 실행: production dependency audit와 secret 파일 git 추적 여부 확인
 - [ ] `pnpm check:core-loop-release` 실행: 냉장고 재료 → 추천 레시피 → 부족 재료 장보기 → 구매 후 냉장고 반영 루프 PASS 확인
+- [ ] `pnpm check:local-mode-release` 실행: Supabase 빈 응답/지연 상황에서도 로컬 재료·장보기 데이터와 로그인 동기화 상태가 보존되는지 확인
 - [ ] `pnpm release:ci-static-check` 실행: CI-safe Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
 - [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
 - [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인
@@ -160,6 +161,7 @@ pnpm release:goal-check
 
 - [ ] `핵심 루프` PASS
 - [ ] `Supabase 로컬 RLS/스키마 계약` PASS
+- [ ] `로컬모드/동기화 안정성` PASS
 - [ ] `운영 Supabase live/read/write/RLS` PASS
 - [ ] `OAuth/로그인/데이터 이전` PASS
 - [ ] `모바일 시뮬레이터/에뮬레이터 QA` PASS

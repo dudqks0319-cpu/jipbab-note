@@ -173,6 +173,9 @@ const results = [];
 const coreLoopReleaseCheck = runLocalCheck("node scripts/check-core-loop-release.mjs", [
   "scripts/check-core-loop-release.mjs",
 ]);
+const localModeReleaseCheck = runLocalCheck("node scripts/check-local-mode-release.mjs", [
+  "scripts/check-local-mode-release.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -185,6 +188,14 @@ addResult(
   "핵심 루프",
   coreLoopReleaseCheck.evidence,
   "pnpm check:core-loop-release 실패 원인 수정",
+);
+
+addResult(
+  results,
+  localModeReleaseCheck.status,
+  "로컬모드/동기화 안정성",
+  localModeReleaseCheck.evidence,
+  "pnpm check:local-mode-release 실패 원인 수정",
 );
 
 addResult(

@@ -8,6 +8,11 @@ const checks = [
     args: ["scripts/check-core-loop-release.mjs"],
   },
   {
+    name: "local-mode-release",
+    command: "node",
+    args: ["scripts/check-local-mode-release.mjs"],
+  },
+  {
     name: "release-readiness",
     command: "node",
     args: ["scripts/release-readiness-check.mjs"],

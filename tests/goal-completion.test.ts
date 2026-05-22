@@ -66,3 +66,10 @@ test("goal completion check runs the executable core loop release check", () => 
   assert.doesNotMatch(source, /fridge inventory/);
   assert.doesNotMatch(source, /purchased-item-to-fridge conversion/);
 });
+
+test("goal completion check runs the executable local mode release check", () => {
+  assert.match(source, /로컬모드\/동기화 안정성/);
+  assert.match(source, /scripts\/check-local-mode-release\.mjs/);
+  assert.match(source, /runLocalCheck\("node scripts\/check-local-mode-release\.mjs"/);
+  assert.match(source, /localModeReleaseCheck\.evidence/);
+});
