@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 20:34 KST
+Updated: 2026-05-22 20:45 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 20:34 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the mobile simulator QA and metadata URL commit is pushed.
+- Working tree after this ledger update: expected clean after the Supabase goal-gate hardening commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,15 @@ Updated: 2026-05-22 20:34 KST
 
 ## Verification evidence
 
+- Supabase goal completion hardening: pass/blocking as designed on 2026-05-22 20:45 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now executes `node scripts/check-supabase-release.mjs` for `Supabase 로컬 RLS/스키마 계약` instead of trusting release-ledger text. `pnpm release:goal-check` returned `Passed: 9`, `Blocked: 3`, `Missing: 0`; remaining blockers are still only real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Targeted Supabase goal-gate tests: pass on 2026-05-22 20:45 KST. `pnpm exec node --experimental-strip-types --test tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 11 tests.
+- `pnpm check:supabase-release`: pass on 2026-05-22 20:45 KST. The local Supabase release contract produced `Passes: 81`, `Failures: 0`, including RLS enabled checks, ownership/service-role policies, partner link read-only rules, and family invite-code RPC contract.
+- `pnpm test`: pass on 2026-05-22 20:45 KST after Supabase goal-gate hardening. Lint, `tsc --noEmit`, and 154 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 20:45 KST. All 8 local release gates passed, including `core-loop-release`, `local-mode-release`, `supabase-release`, store assets, iOS IPA artifact/upload-history checks, and Android signed AAB checks.
+- `pnpm build`: pass on 2026-05-22 20:45 KST after sandbox-escalated rerun. The first sandboxed attempt failed with Turbopack port-binding `Operation not permitted`; the unrestricted rerun compiled 32 routes successfully with Next.js `16.2.6`.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 20:45 KST after sandbox-escalated rerun for npm audit network access. All 8 CI-safe release gates passed, including production dependency audit and store asset checks.
+- Store submission readiness gate rerun: pass/blocking as designed on 2026-05-22 20:45 KST. `pnpm release:submit-gate` returned `Passed: 2`, `Blocked: 2`; local release gates and release security passed, and external checks passed for Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke. Submission remains blocked by real-device availability/evidence and store console confirmation.
+- Secret pattern scan: pass on 2026-05-22 20:45 KST. `rg` over the changed goal-gate files and release ledger returned no matches for common API keys, JWTs, private-key headers, or store/Supabase secret env assignments.
 - Local mode executable release gate: pass on 2026-05-22 20:34 KST. `pnpm check:local-mode-release` now verifies that local fridge ingredients and shopping items survive empty Supabase responses, newer Supabase rows can replace stale local copies without deleting local-only rows, and auth migration status surfaces failed tables or skipped local tables instead of hiding sync risk.
 - Goal completion local-mode hardening: pass/blocking as designed on 2026-05-22 20:34 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now includes `로컬모드/동기화 안정성` as a separate completion item backed by `node scripts/check-local-mode-release.mjs`. Current `pnpm release:goal-check` is `Passed: 9`, `Blocked: 3`, `Missing: 0`; only real-device QA, App Store Connect/TestFlight, and Play Console internal testing remain blocked.
 - Targeted local-mode gate tests: pass on 2026-05-22 20:34 KST. `pnpm exec node --experimental-strip-types --test tests/local-mode-release.test.ts tests/goal-completion.test.ts tests/ci-release-gate.test.ts` passed 14 tests.

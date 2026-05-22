@@ -73,3 +73,12 @@ test("goal completion check runs the executable local mode release check", () =>
   assert.match(source, /runLocalCheck\("node scripts\/check-local-mode-release\.mjs"/);
   assert.match(source, /localModeReleaseCheck\.evidence/);
 });
+
+test("goal completion check runs the executable Supabase release check", () => {
+  assert.match(source, /Supabase 로컬 RLS\/스키마 계약/);
+  assert.match(source, /scripts\/check-supabase-release\.mjs/);
+  assert.match(source, /runLocalCheck\("node scripts\/check-supabase-release\.mjs"/);
+  assert.match(source, /supabaseReleaseCheck\.evidence/);
+  assert.doesNotMatch(source, /Supabase contract checks passed/);
+  assert.doesNotMatch(source, /local Supabase schema\/RLS contract evidence in release ledger/);
+});

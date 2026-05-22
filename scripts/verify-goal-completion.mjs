@@ -176,6 +176,9 @@ const coreLoopReleaseCheck = runLocalCheck("node scripts/check-core-loop-release
 const localModeReleaseCheck = runLocalCheck("node scripts/check-local-mode-release.mjs", [
   "scripts/check-local-mode-release.mjs",
 ]);
+const supabaseReleaseCheck = runLocalCheck("node scripts/check-supabase-release.mjs", [
+  "scripts/check-supabase-release.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -200,14 +203,9 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("`pnpm check:supabase-release`: pass") &&
-    /(?:68|81) Supabase contract checks passed/.test(ledger) &&
-    (ledger.includes("Production Supabase migration application: local SQL contract verified") ||
-      ledger.includes("Production Supabase migration/application: local SQL contract verified"))
-    ? "pass"
-    : "missing",
+  supabaseReleaseCheck.status,
   "Supabase 로컬 RLS/스키마 계약",
-  "local Supabase schema/RLS contract evidence in release ledger",
+  supabaseReleaseCheck.evidence,
   "pnpm check:supabase-release 재실행",
 );
 
