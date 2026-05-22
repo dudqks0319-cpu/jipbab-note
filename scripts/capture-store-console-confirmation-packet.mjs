@@ -1,5 +1,6 @@
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const cwd = process.cwd();
@@ -9,6 +10,10 @@ const bundleId = "com.jipbab.note";
 const iosBuild = "2026052001";
 const androidPackage = "com.jipbab.note";
 const androidVersionCode = "1";
+const nativeArtifacts = [
+  ["iOS App Store IPA", `ios/build/export-${iosBuild}/App.ipa`],
+  ["Android signed AAB", "android/app/build/outputs/bundle/release/app-release.aab"],
+];
 
 function redact(value) {
   return value
@@ -64,6 +69,67 @@ function runStoreApiCredentialStatus() {
   };
 }
 
+function runAndroidReleaseArtifactCheck() {
+  const result = spawnSync(process.execPath, ["scripts/check-android-release-artifact.mjs"], {
+    cwd,
+    encoding: "utf8",
+  });
+  const output = [
+    `$ ${process.execPath} scripts/check-android-release-artifact.mjs`,
+    "",
+    result.stdout ?? "",
+    result.stderr ?? "",
+    result.error ? `ERROR: ${result.error.message}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    status: result.status === 0 ? "pass" : "blocked",
+    exitCode: result.status ?? 1,
+    output: redact(output),
+  };
+}
+
+function fileDigest(filePath) {
+  const hash = createHash("sha256");
+  hash.update(readFileSync(filePath));
+  return hash.digest("hex");
+}
+
+function nativeArtifactLine([label, relativePath]) {
+  const absolutePath = path.join(cwd, relativePath);
+  if (!existsSync(absolutePath)) {
+    return `- ${label}: missing (${relativePath})`;
+  }
+
+  const stats = statSync(absolutePath);
+  if (stats.isDirectory()) {
+    return `- ${label}: present (${relativePath})`;
+  }
+
+  return `- ${label}: present (${relativePath}), ${Math.round(stats.size / 1024 / 1024)}MB, sha256 ${fileDigest(absolutePath)}`;
+}
+
+function writeUploadArtifactInventory() {
+  const inventory = [
+    "# Store Upload Artifact Inventory",
+    "",
+    "Use these exact local artifacts for final store dashboard/API confirmation. This file is not proof of store processing; it only identifies the upload candidates and their digests.",
+    "",
+    ...nativeArtifacts.map(nativeArtifactLine),
+    "",
+    "## Required Store Follow-up",
+    "",
+    `- App Store Connect/TestFlight: confirm uploaded iOS build \`${iosBuild}\` for bundle \`${bundleId}\` is processed and available to internal testers.`,
+    `- Google Play Console: upload or confirm the signed AAB for package \`${androidPackage}\`, versionCode \`${androidVersionCode}\`, on the internal testing track.`,
+    "- After each dashboard/API state is confirmed, update `docs/store-console-confirmation.md` with the real evidence date and reviewed artifact path.",
+    "",
+  ].join("\n");
+
+  writeFileSync(path.join(outDir, "upload-artifacts.md"), inventory);
+}
+
 function writeOperatorChecklist() {
   const checklist = [
     "# Store Console Operator Checklist",
@@ -72,6 +138,7 @@ function writeOperatorChecklist() {
     "",
     "## App Store Connect / TestFlight",
     "",
+    "- [ ] Open `upload-artifacts.md` and confirm the expected iOS upload artifact/build identity before dashboard confirmation.",
     `- [ ] Open the JipbabNote app record for bundle \`${bundleId}\`.`,
     `- [ ] Confirm iOS build \`${iosBuild}\` is present in TestFlight.`,
     "- [ ] Confirm the build has finished processing and is usable for testing.",
@@ -82,6 +149,7 @@ function writeOperatorChecklist() {
     "",
     "## Google Play Console / Internal Testing",
     "",
+    "- [ ] Open `upload-artifacts.md` and use the listed signed AAB as the upload candidate.",
     `- [ ] Open or create the app record for package \`${androidPackage}\`.`,
     `- [ ] Confirm the signed AAB with versionCode \`${androidVersionCode}\` is uploaded.`,
     "- [ ] Confirm the `internal` testing track exists and includes the target release.",
@@ -173,8 +241,11 @@ mkdirSync(outDir, { recursive: true });
 
 const check = runStoreConsoleCheck();
 const credentialStatus = runStoreApiCredentialStatus();
+const androidArtifactCheck = runAndroidReleaseArtifactCheck();
 writeFileSync(path.join(outDir, "store-console-confirmation.txt"), `${check.output.trim()}\n`);
 writeFileSync(path.join(outDir, "store-api-credential-status.txt"), `${credentialStatus.output.trim()}\n`);
+writeFileSync(path.join(outDir, "android-release-artifact.txt"), `${androidArtifactCheck.output.trim()}\n`);
+writeUploadArtifactInventory();
 writeOperatorChecklist();
 writeManualTemplate();
 writeStoreApiEnvTemplate();
@@ -188,6 +259,8 @@ const summary = [
   `- Store console check exit code: ${check.exitCode}`,
   `- Store API credential status command: ${credentialStatus.status}`,
   `- Store API credential status exit code: ${credentialStatus.exitCode}`,
+  `- Android release artifact check status: ${androidArtifactCheck.status}`,
+  `- Android release artifact check exit code: ${androidArtifactCheck.exitCode}`,
   `- Bundle ID: ${bundleId}`,
   `- iOS build: ${iosBuild}`,
   `- Android package: ${androidPackage}`,
@@ -198,6 +271,8 @@ const summary = [
   "",
   "- result: store-console-confirmation.txt",
   "- result: store-api-credential-status.txt",
+  "- result: android-release-artifact.txt",
+  "- info: upload-artifacts.md",
   "- info: operator-checklist.md",
   "- info: manual-store-console-template.md",
   "- info: store-api-env-template.txt",

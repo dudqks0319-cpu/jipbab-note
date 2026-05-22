@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 18:45 KST
+Updated: 2026-05-22 18:54 KST
 
 ## Local code state
 
@@ -49,6 +49,10 @@ Updated: 2026-05-22 18:45 KST
 - `pnpm release:check`: pass on 2026-05-22 18:45 KST after adding the operator handoff packet. All 6 local release gates passed.
 - `pnpm release:ci-static-check`: pass on 2026-05-22 18:45 KST. All 5 CI-safe release gates passed, including the external unblock runbook and store API credentials runbook.
 - `pnpm release:goal-check`: still blocked on 2026-05-22 18:45 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Store console upload artifact inventory: pass on 2026-05-22 18:54 KST. `pnpm release:capture-store-console` now includes `upload-artifacts.md` and `android-release-artifact.txt`, so the store operator can use the exact local iOS IPA and Android signed AAB candidates during dashboard/API confirmation.
+- `pnpm release:capture-store-console`: run on 2026-05-22 18:54 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-54-30-933Z-store-console`; store confirmation remains blocked, but the packet records iOS IPA `ios/build/export-2026052001/App.ipa` sha256 `e949d876d08b3f5b7c71e82e79991307f2b9b6c666e91214a617f9e008070c91` and Android signed AAB `android/app/build/outputs/bundle/release/app-release.aab` sha256 `3983ea9d7746a9db812868cea13320543d77b8266c824d7632c621372c98bbbd` with jarsigner verification passed.
+- `pnpm release:external-status`: still blocked on 2026-05-22 18:54 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
+- `pnpm check:real-device-availability`: still blocked on 2026-05-22 18:54 KST. iPhone `영빈` remains CoreDevice `unavailable`, and no Android physical device is attached.
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 23:37 KST with live Vercel API access. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; values were not printed.
 - `pnpm release:external-status`: still blocked on 2026-05-21 23:37 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 23:37 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.

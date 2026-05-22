@@ -76,6 +76,12 @@ test("store console confirmation packet captures checker output and manual templ
   assert.match(captureSource, /Store Console Confirmation Packet/);
   assert.match(captureSource, /scripts\/check-store-console-confirmation\.mjs/);
   assert.match(captureSource, /store-console-confirmation\.txt/);
+  assert.match(captureSource, /android-release-artifact\.txt/);
+  assert.match(captureSource, /upload-artifacts\.md/);
+  assert.match(captureSource, /scripts\/check-android-release-artifact\.mjs/);
+  assert.match(captureSource, /Store Upload Artifact Inventory/);
+  assert.match(captureSource, /iOS App Store IPA/);
+  assert.match(captureSource, /Android signed AAB/);
   assert.match(captureSource, /operator-checklist\.md/);
   assert.match(captureSource, /manual-store-console-template\.md/);
   assert.match(captureSource, /store-api-env-template\.txt/);
@@ -89,4 +95,6 @@ test("store console confirmation packet captures checker output and manual templ
   assert.match(captureSource, /redacted-private-key/);
   assert.match(evidence, /\.env\.store-api\.local/);
   assert.match(evidence, /pnpm release:capture-store-console/);
+  assert.match(evidence, /upload-artifacts\.md/);
+  assert.match(evidence, /android-release-artifact\.txt/);
 });
