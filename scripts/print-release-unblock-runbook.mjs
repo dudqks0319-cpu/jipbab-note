@@ -13,6 +13,8 @@ const requiredTerms = [
   "pnpm check:real-device-qa-evidence",
   "pnpm check:store-console-confirmation",
   "pnpm release:capture-store-submission-packet",
+  "pnpm release:appstore-submit-gate",
+  "pnpm release:playstore-submit-gate",
   "pnpm release:external-status",
   "pnpm release:goal-check",
   "pnpm release:submit-gate",

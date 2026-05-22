@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 21:10 KST
+Updated: 2026-05-22 21:22 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 21:10 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the Play Store-only submit gate commit is pushed.
+- Working tree after this ledger update: expected clean after the operator handoff platform-gate commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,14 @@ Updated: 2026-05-22 21:10 KST
 
 ## Verification evidence
 
+- Operator handoff platform-gate capture: pass/blocking as designed on 2026-05-22 21:22 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-18-12-632Z-operator-handoff`; it captured 4 packets, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`. The handoff now includes platform-specific final verification commands before the combined `pnpm release:submit-gate`.
+- Release unblock runbook platform-gate sequence: pass on 2026-05-22 21:22 KST. `pnpm release:unblock-runbook` now validates 18 required terms and prints `pnpm release:appstore-submit-gate` plus `pnpm release:playstore-submit-gate` in the final post-unblock sequence.
+- Targeted handoff/runbook tests: pass on 2026-05-22 21:22 KST. `pnpm exec node --experimental-strip-types --test tests/operator-handoff-capture.test.ts tests/release-unblock-runbook.test.ts tests/appstore-submit-gate.test.ts tests/playstore-submit-gate.test.ts` passed 16 tests.
+- `pnpm test`: pass on 2026-05-22 21:22 KST after operator handoff platform-gate integration. Lint, `tsc --noEmit`, and 162 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 21:22 KST. All 8 local release gates passed.
+- `pnpm release:goal-check`: still blocked on 2026-05-22 21:22 KST with `Passed: 9`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- Local sandbox-escalated reruns for `pnpm build`, `pnpm release:ci-static-check`, and `pnpm release:submit-gate`: not completed on 2026-05-22 21:22 KST because the automatic permission approval review timed out twice before these commands started. Use the next GitHub Release Gate run as the authoritative post-push build/CI evidence for this docs/script/test-only change.
+- Secret pattern scan: pass on 2026-05-22 21:22 KST. `rg` over the changed handoff/runbook files, tests, and release ledger returned no matches for common API keys, JWTs, private-key headers, or store/Supabase secret env assignments.
 - Play Store-only submission gate: pass/blocking as designed on 2026-05-22 21:10 KST. `pnpm release:playstore-submit-gate` now checks Android/Play production readiness separately from App Store Connect readiness. Current result is `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, Android release artifact, and release security passed. The single blocked group is `Play Store external status`, which contains only Android/Play blockers.
 - Play Store-only external status: pass/blocking as designed on 2026-05-22 21:10 KST. `pnpm release:playstore-external-status` returned `Passed: 5`, `Blocked: 3`; Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke passed. Remaining Play Store-specific blockers are Android physical device not attached, missing Android real-device QA evidence, and missing Google Play Console internal testing confirmation. App Store readiness is intentionally excluded from this Play Store-only check.
 - Platform-filtered Android/Play evidence gates: pass/blocking as designed on 2026-05-22 21:10 KST. `node scripts/check-real-device-qa-evidence.mjs --platform=android` reports only one Android QA evidence failure, and `node scripts/check-store-console-confirmation.mjs --platform=play` reports only one Google Play Console internal testing evidence failure plus Google Play Developer API credential hints.

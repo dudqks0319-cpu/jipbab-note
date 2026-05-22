@@ -92,9 +92,11 @@ pnpm check:store-console-confirmation
 pnpm release:capture-store-console
 pnpm release:capture-store-submission-packet
 pnpm release:store-api-runbook
+pnpm release:appstore-submit-gate
+pnpm release:playstore-submit-gate
 pnpm release:external-status
 pnpm release:goal-check
 pnpm release:submit-gate
 ```
 
-`pnpm release:goal-check`에서 `Blocked: 0`, `Missing: 0`이 나오고 `pnpm release:submit-gate`가 PASS가 되기 전까지 활성 goal을 완료 처리하거나 스토어 심사 제출을 진행하지 않습니다.
+`pnpm release:appstore-submit-gate`, `pnpm release:playstore-submit-gate`, `pnpm release:goal-check`에서 `Blocked: 0`, `Missing: 0`이 나오고 `pnpm release:submit-gate`가 PASS가 되기 전까지 활성 goal을 완료 처리하거나 스토어 심사 제출을 진행하지 않습니다.
