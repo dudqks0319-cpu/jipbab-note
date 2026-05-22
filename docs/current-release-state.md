@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 22:26 KST
+Updated: 2026-05-22 22:38 KST
 
 ## Local code state
 
@@ -12,7 +12,7 @@ Updated: 2026-05-22 22:26 KST
 - Working tree after this ledger update: expected clean after the latest handoff evidence ledger commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
-- Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
+- Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, Supabase Auth URL Configuration, and App Store Connect/TestFlight API confirmation pass. Full real-device QA and Play Console internal testing are still release blockers.
 
 ## Build identity
 
@@ -23,6 +23,9 @@ Updated: 2026-05-22 22:26 KST
 
 ## Verification evidence
 
+- App Store Connect API credential setup: pass on 2026-05-22 22:37 KST. A new App Store Connect API key `Jipbab Codex Check` with App Manager access was created in App Store Connect; its private key is stored only in ignored local `.release-secrets/`, and `.env.store-api.local` points the checker to the App Store Connect key metadata, bundle `com.jipbab.note`, and build `2026052001`. `pnpm release:store-api-credential-status` now reports App Store Connect API credentials `READY`; Google Play Developer API credentials remain blocked.
+- App Store Connect/TestFlight API confirmation: pass on 2026-05-22 22:37 KST. `pnpm check:store-console-confirmation -- --platform=appstore` returned `Passes: 1`, `Failures: 0` and confirmed build `2026052001` is `VALID` with an internal TestFlight group.
+- Latest App Store submit gate rerun after API setup: still blocked on 2026-05-22 22:38 KST. `pnpm release:appstore-submit-gate` returned `Passed: 8`, `Blocked: 1`; App Store Connect/TestFlight confirmation now passes. The remaining App Store blockers are iPhone `영빈` CoreDevice unavailable and missing iOS real-device QA evidence. App Store review submission remains prohibited until real-device QA is complete.
 - Latest App Store submit gate rerun: still blocked on 2026-05-22 22:20 KST. `pnpm release:appstore-submit-gate` returned `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, iOS release artifact, and release security passed. The remaining App Store external status group returned `Passed: 5`, `Blocked: 3`: iPhone `영빈` CoreDevice unavailable, missing iOS real-device QA evidence, and missing App Store Connect/TestFlight confirmation. App Store review submission remains prohibited.
 - Latest Play Store submit gate rerun: still blocked on 2026-05-22 22:20 KST. `pnpm release:playstore-submit-gate` returned `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, Android signed AAB artifact, and release security passed. The remaining Play Store external status group returned `Passed: 5`, `Blocked: 3`: no Android physical device, missing Android real-device QA evidence, and missing Google Play Console internal testing confirmation. Play production submission remains prohibited.
 - Latest operator handoff packet: pass/blocking as designed on 2026-05-22 22:22 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-20-53-675Z-operator-handoff`; it captured 5 packets, checked 1 Store API credential-status command, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`.

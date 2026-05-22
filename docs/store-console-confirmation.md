@@ -10,16 +10,16 @@ If browser access keeps failing, use [store-api-credentials-runbook.md](/Users/j
 
 ## App Store Connect / TestFlight
 
-- App Store Connect/TestFlight: not confirmed
+- App Store Connect/TestFlight: confirmed
 - Bundle ID: com.jipbab.note
 - iOS build: 2026052001
-- TestFlight processing: not confirmed
-- Internal tester availability: not confirmed
+- TestFlight processing: confirmed
+- Internal tester availability: confirmed
 - Evidence owner: app operator
-- Evidence date: pending
-- App Store Connect evidence date: pending
-- App Store Connect evidence artifacts: pending
-- Notes: Xcode upload succeeded, but the JipbabNote TestFlight dashboard state has not been verified. Latest 2026-05-21 20:29 KST browser check found a logged App Store Connect session and a `jipbab-note` app menu item, but TestFlight build processing/internal tester state for that app was not confirmed before the active tab returned to the App Store Connect login screen. Latest 2026-05-22 19:13 KST Computer Use browser recheck still shows `authResult=FAILED` login at the direct JipbabNote TestFlight URL, so dashboard confirmation is blocked until Apple account reauthentication or official API credentials are configured. Evidence artifacts: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/app-store-connect-login-after-jipbab-note-switch.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-56-external-recheck/app-store-connect-auth-failed.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T19-12-external-browser-recheck/app-store-connect-auth-failed.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-15-43-525Z-store-console`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T13-52-06-408Z-store-console`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-20-53-675Z-operator-handoff`. Latest 2026-05-22 22:22 KST store API status still found no App Store Connect API credential env names, and the local `.p8` candidate is classified as a Sign in with Apple OAuth key rather than an App Store Connect API key. To avoid repeated browser-login blockers, configure `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH` using [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md).
+- Evidence date: 2026-05-22
+- App Store Connect evidence date: 2026-05-22
+- App Store Connect evidence artifacts: /Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-39-42-614Z-store-console
+- Notes: Xcode upload succeeded, and the App Store Connect API check confirmed build `2026052001` is `VALID` with an internal TestFlight group. API key `Jipbab Codex Check` was created with App Manager access, and the private key is stored only in ignored local `.release-secrets/`; credential values are not recorded here. Earlier browser evidence remains for history: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T11-00-store-console-browser/app-store-connect-login-after-jipbab-note-switch.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-21T20-56-external-recheck/app-store-connect-auth-failed.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T19-12-external-browser-recheck/app-store-connect-auth-failed.png`, `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-20-53-675Z-operator-handoff`.
 
 ## Google Play Console / Internal Testing
 
