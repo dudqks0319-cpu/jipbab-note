@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 18:34 KST
+Updated: 2026-05-22 18:45 KST
 
 ## Local code state
 
@@ -42,6 +42,13 @@ Updated: 2026-05-22 18:34 KST
 - Real-device QA packet unblock hardening: pass on 2026-05-22 18:34 KST. `pnpm release:capture-real-device-qa` now writes `device-unblock-checklist.md` next to the device captures, native artifact inventory, operator checklist, and manual QA template, so the operator has exact iOS CoreDevice and Android USB debugging steps before collecting real-device proof.
 - `pnpm release:capture-real-device-qa`: run on 2026-05-22 18:34 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-33-46-193Z-real-device-qa`; captured 3 passing command/artifact checks and 2 blockers. `real-device-availability.txt` still reports iPhone `영빈` as CoreDevice `unavailable` and Android as `none attached`.
 - `pnpm release:external-status`: blocked on 2026-05-22 18:33 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
+- Release operator handoff packet: pass on 2026-05-22 18:43 KST. `pnpm release:capture-operator-handoff` now captures external status evidence, the real-device QA packet, the store-console packet, and `release:goal-check` output into one ignored operator handoff directory.
+- `pnpm release:capture-operator-handoff`: run on 2026-05-22 18:43 KST. Generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T09-43-01-483Z-operator-handoff`; captured 3 packets and left 1 blocked command, `goal-check`, because the same 3 external blockers remain.
+- `pnpm release:unblock-runbook`: pass on 2026-05-22 18:45 KST after adding `pnpm release:capture-operator-handoff` to the final external unblock verification sequence. The command now validates 13 required terms.
+- `pnpm test`: pass on 2026-05-22 18:45 KST after adding the operator handoff packet. Lint, `tsc --noEmit`, and 134 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 18:45 KST after adding the operator handoff packet. All 6 local release gates passed.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 18:45 KST. All 5 CI-safe release gates passed, including the external unblock runbook and store API credentials runbook.
+- `pnpm release:goal-check`: still blocked on 2026-05-22 18:45 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
 - `pnpm check:vercel-production-env`: pass on 2026-05-21 23:37 KST with live Vercel API access. Production has all 9 required env names present, including `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS`; values were not printed.
 - `pnpm release:external-status`: still blocked on 2026-05-21 23:37 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are real-device availability/evidence and store console confirmation.
 - `pnpm release:goal-check`: still blocked on 2026-05-21 23:37 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
@@ -374,6 +381,7 @@ Updated: 2026-05-22 18:34 KST
 Before external release submission:
 
 0. Run `pnpm release:external-status` to see every current external blocker at once; use `pnpm release:external-check` only when all blockers are expected to pass.
+0.0.1. Run `pnpm release:capture-operator-handoff` when handing the remaining work to the device/store-console operator; it creates one `operator-handoff.md` linking the latest external, real-device, store-console, and goal-check outputs.
 0.1. Run `pnpm release:capture-external-evidence` before and after real-device or store-console attempts, then use the generated `output/release-evidence/<timestamp>/summary.md` path as the matching evidence artifact after reviewing it for sensitive details.
 0.1.1. Run `pnpm release:capture-store-console` during App Store Connect / Play Console confirmation attempts to generate `operator-checklist.md` and `manual-store-console-template.md` for `docs/store-console-confirmation.md`.
 0.2. Run `pnpm release:capture-real-device-qa` when physical devices are attached to create a device-state/artifact packet, `device-unblock-checklist.md`, and a `manual-qa-template.md` that can be copied into `docs/real-device-qa.md` only after the matching checks are actually observed.

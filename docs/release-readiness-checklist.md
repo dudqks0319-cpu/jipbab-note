@@ -28,6 +28,7 @@ pnpm release:check
 - [ ] `pnpm release:goal-check` 실행: 목표 전체 완료 여부 확인. 차단 항목이 있으면 목표 완료로 표시하지 않음
 - [ ] `pnpm release:unblock-runbook` 실행: 실기기, App Store Connect, Play Console 차단 해제 후 실행 순서 확인
 - [ ] `pnpm release:store-api-runbook` 실행: App Store Connect API / Google Play Developer API credential 설정 절차와 secret 보관 원칙 확인
+- [ ] `pnpm release:capture-operator-handoff` 실행: 외부 상태, 실기기 packet, 스토어 packet, goal 상태를 묶은 operator handoff 생성
 - [ ] `pnpm check:real-device-availability` 실행: iOS/Android 실제 기기 연결 확인
 - [ ] `pnpm check:real-device-qa-evidence` 실행: `docs/real-device-qa.md`의 iOS/Android 실기기 QA 증거가 모두 confirmed인지 확인
 - [ ] `pnpm release:capture-real-device-qa` 실행: 연결된 실기기 상태, 설치 여부, native artifact inventory, device unblock checklist, 수동 QA 템플릿 캡처

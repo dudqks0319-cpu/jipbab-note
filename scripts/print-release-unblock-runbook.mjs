@@ -8,6 +8,7 @@ const runbookPath = path.join(cwd, "docs/external-release-unblock-runbook.md");
 const requiredTerms = [
   "pnpm check:real-device-availability",
   "pnpm release:capture-real-device-qa",
+  "pnpm release:capture-operator-handoff",
   "pnpm check:real-device-qa-evidence",
   "pnpm check:store-console-confirmation",
   "pnpm release:external-status",
@@ -46,4 +47,3 @@ console.log("");
 console.log("Release unblock runbook check");
 console.log("Status: pass");
 console.log(`Required terms: ${requiredTerms.length}`);
-

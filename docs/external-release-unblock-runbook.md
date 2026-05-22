@@ -84,6 +84,7 @@ pnpm release:capture-real-device-qa
 외부 차단을 해제한 직후 아래 순서로 실행합니다.
 
 ```bash
+pnpm release:capture-operator-handoff
 pnpm check:real-device-availability
 pnpm check:real-device-qa-evidence
 pnpm check:store-console-confirmation

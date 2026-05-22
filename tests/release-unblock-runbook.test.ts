@@ -27,6 +27,7 @@ test("release unblock runbook covers all remaining external blocker surfaces", (
 test("release unblock runbook includes the post-unblock verification commands", () => {
   assert.match(runbook, /pnpm check:real-device-availability/);
   assert.match(runbook, /pnpm release:capture-real-device-qa/);
+  assert.match(runbook, /pnpm release:capture-operator-handoff/);
   assert.match(runbook, /pnpm check:real-device-qa-evidence/);
   assert.match(runbook, /pnpm check:store-console-confirmation/);
   assert.match(runbook, /pnpm release:external-status/);
@@ -39,4 +40,3 @@ test("release unblock runbook prevents premature completion claims", () => {
   assert.match(runbook, /Missing: 0/);
   assert.match(runbook, /활성 goal을 완료 처리하지 않습니다/);
 });
-
