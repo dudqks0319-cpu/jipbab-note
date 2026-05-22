@@ -88,6 +88,7 @@ pnpm release:capture-operator-handoff
 pnpm release:security-check
 pnpm check:real-device-availability
 pnpm check:real-device-qa-evidence
+pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 pnpm release:capture-store-console
 pnpm release:capture-store-submission-packet

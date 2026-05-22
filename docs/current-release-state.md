@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 21:22 KST
+Updated: 2026-05-22 21:45 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 21:22 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the operator handoff platform-gate commit is pushed.
+- Working tree after this ledger update: expected clean after the store API credential handoff capture commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,16 @@ Updated: 2026-05-22 21:22 KST
 
 ## Verification evidence
 
+- Operator handoff Store API credential capture: pass/blocking as designed on 2026-05-22 21:40 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-38-57-740Z-operator-handoff`; it captured 4 packets, checked 1 Store API credential-status command, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`. The handoff now writes a separate `store-api-credential-status.txt` so App Store Connect API / Google Play Developer API credential readiness is visible outside the nested store-console packet.
+- Store API credential status: still blocked but safe on 2026-05-22 21:45 KST. `pnpm release:store-api-credential-status` returned `Ready: 0`, `Blocked: 2`, `Security failures: 0`; App Store Connect API env names and Google Play Developer API credentials remain missing, and the existing local `.p8` candidate is still classified as a Sign in with Apple OAuth key rather than an App Store Connect API key.
+- Release unblock runbook Store API sequence: pass on 2026-05-22 21:45 KST. `pnpm release:unblock-runbook` now validates 19 required terms and includes `pnpm release:store-api-credential-status` before store-console confirmation in the final post-unblock sequence.
+- Targeted handoff/runbook tests: pass on 2026-05-22 21:45 KST. `pnpm exec node --experimental-strip-types --test tests/operator-handoff-capture.test.ts tests/release-unblock-runbook.test.ts tests/store-api-credential-status.test.ts` passed 15 tests.
+- `pnpm test`: pass on 2026-05-22 21:45 KST after adding the explicit Store API credential-status handoff output. Lint, `tsc --noEmit`, and 162 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 21:45 KST. All 8 local release gates passed, including iOS archive/IPA artifact and Android signed AAB checks.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 21:45 KST after sandbox-escalated rerun for npm audit network access. All 8 CI-safe release gates passed, including production dependency audit and store asset checks.
+- `pnpm release:appstore-submit-gate`: still blocked on 2026-05-22 21:45 KST with `Passed: 8`, `Blocked: 1`. Local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, iOS release artifact, and release security passed. The remaining App Store external status blockers are iOS CoreDevice unavailable for iPhone `영빈`, missing iOS real-device QA evidence, and missing App Store Connect/TestFlight confirmation. App Store review submission must not be started yet.
+- `pnpm release:goal-check`: still blocked on 2026-05-22 21:45 KST with `Passed: 9`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing.
+- `pnpm release:submit-gate`: still blocked on 2026-05-22 21:45 KST with `Passed: 2`, `Blocked: 2`; local release gates and release security passed, while external release status and goal completion evidence remain blocked.
 - Operator handoff platform-gate capture: pass/blocking as designed on 2026-05-22 21:22 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-18-12-632Z-operator-handoff`; it captured 4 packets, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`. The handoff now includes platform-specific final verification commands before the combined `pnpm release:submit-gate`.
 - Release unblock runbook platform-gate sequence: pass on 2026-05-22 21:22 KST. `pnpm release:unblock-runbook` now validates 18 required terms and prints `pnpm release:appstore-submit-gate` plus `pnpm release:playstore-submit-gate` in the final post-unblock sequence.
 - Targeted handoff/runbook tests: pass on 2026-05-22 21:22 KST. `pnpm exec node --experimental-strip-types --test tests/operator-handoff-capture.test.ts tests/release-unblock-runbook.test.ts tests/appstore-submit-gate.test.ts tests/playstore-submit-gate.test.ts` passed 16 tests.

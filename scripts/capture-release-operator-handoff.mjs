@@ -26,6 +26,12 @@ const commands = [
     args: ["scripts/capture-store-console-confirmation-packet.mjs"],
   },
   {
+    name: "store-api-credential-status",
+    label: "Store API credential status",
+    successStatus: "checked",
+    args: ["scripts/check-store-api-credential-status.mjs"],
+  },
+  {
     name: "store-submission-packet",
     label: "Store submission metadata and image packet",
     successStatus: "captured",
@@ -107,6 +113,7 @@ for (const result of results) {
 
 const passed = results.filter((result) => result.status === "pass");
 const captured = results.filter((result) => result.status === "captured");
+const checked = results.filter((result) => result.status === "checked");
 const blocked = results.filter((result) => result.status === "blocked");
 const summary = [
   "# Release Operator Handoff",
@@ -114,6 +121,7 @@ const summary = [
   `- Captured at: ${new Date().toISOString()}`,
   `- Output directory: ${outDir}`,
   `- Captured packets: ${captured.length}`,
+  `- Checked commands: ${checked.length}`,
   `- Passed gates: ${passed.length}`,
   `- Blocked commands: ${blocked.length}`,
   "- Note: this handoff does not approve store release by itself; it gathers current blocker evidence and the exact next operator actions.",
@@ -125,6 +133,7 @@ const summary = [
   "## Remaining External Actions",
   "",
   "- Real-device QA: use the latest real-device packet's `device-unblock-checklist.md`, then run the physical-device flows in `operator-checklist.md` before updating `docs/real-device-qa.md`.",
+  "- Store API credentials: review `store-api-credential-status.txt`; if it still reports `Ready: 0`, configure `.env.store-api.local` from `store-api-env-template.txt` before relying on official store API verification.",
   "- App Store Connect/TestFlight: reauthenticate in App Store Connect or configure `.env.store-api.local` from `store-api-env-template.txt`, then verify build `2026052001` processing and internal tester availability.",
   "- Play Console internal testing: complete developer account verification, create/open package `com.jipbab.note`, upload the signed AAB to internal testing, or configure Google Play Developer API credentials after app setup.",
   "- Platform submit gates: run `pnpm release:appstore-submit-gate` and `pnpm release:playstore-submit-gate` to confirm each store lane before running the combined `pnpm release:submit-gate`.",
@@ -136,6 +145,7 @@ const summary = [
   "pnpm release:security-check",
   "pnpm check:real-device-availability",
   "pnpm check:real-device-qa-evidence",
+  "pnpm release:store-api-credential-status",
   "pnpm check:store-console-confirmation",
   "pnpm release:capture-store-submission-packet",
   "pnpm release:appstore-submit-gate",
@@ -154,6 +164,7 @@ writeFileSync(path.join(outDir, "operator-handoff.md"), summary);
 console.log("Release operator handoff captured");
 console.log(`Output: ${outDir}`);
 console.log(`Captured packets: ${captured.length}`);
+console.log(`Checked commands: ${checked.length}`);
 console.log(`Passed gates: ${passed.length}`);
 console.log(`Blocked commands: ${blocked.length}`);
 if (blocked.length > 0) {
