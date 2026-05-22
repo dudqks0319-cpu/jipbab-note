@@ -86,6 +86,8 @@ pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 ```
 
+`pnpm release:capture-store-console`을 먼저 실행하면 `output/release-evidence/<timestamp>-store-console/store-api-env-template.txt`에 `.env.store-api.local`용 placeholder 템플릿도 함께 생성됩니다. 실제 Key ID, Issuer ID, service account 경로를 채울 때 이 템플릿을 사용하고, private key 또는 JSON 원문은 넣지 않습니다.
+
 이 명령은 Google Play Developer API에서 package `com.jipbab.note`, internal track, versionCode `1`이 포함된 non-draft release를 확인합니다.
 temporary edit는 확인 후 삭제합니다.
 credential 값은 출력하지 않습니다.

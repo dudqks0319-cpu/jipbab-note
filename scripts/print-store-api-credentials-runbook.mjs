@@ -16,6 +16,7 @@ const requiredTerms = [
   "GOOGLE_PLAY_VERSION_CODE=1",
   "GOOGLE_PLAY_TRACK=internal",
   ".env.store-api.local",
+  "store-api-env-template.txt",
   ".release-secrets/",
   "chmod 600",
   "커밋하지 않습니다",

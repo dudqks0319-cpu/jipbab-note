@@ -78,10 +78,14 @@ test("store console confirmation packet captures checker output and manual templ
   assert.match(captureSource, /store-console-confirmation\.txt/);
   assert.match(captureSource, /operator-checklist\.md/);
   assert.match(captureSource, /manual-store-console-template\.md/);
+  assert.match(captureSource, /store-api-env-template\.txt/);
   assert.match(captureSource, /App Store Connect\/TestFlight: confirmed/);
   assert.match(captureSource, /Play Console internal testing: confirmed/);
   assert.match(captureSource, /App Store Connect evidence artifacts/);
   assert.match(captureSource, /Play Console evidence artifacts/);
+  assert.match(captureSource, /APP_STORE_CONNECT_API_KEY_ID=<KEY_ID>/);
+  assert.match(captureSource, /GOOGLE_APPLICATION_CREDENTIALS=\.release-secrets\/google-play-service-account\.json/);
+  assert.match(captureSource, /Do not paste private keys/);
   assert.match(captureSource, /redacted-private-key/);
   assert.match(evidence, /\.env\.store-api\.local/);
   assert.match(evidence, /pnpm release:capture-store-console/);

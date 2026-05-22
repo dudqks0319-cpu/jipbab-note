@@ -43,6 +43,7 @@ test("store API credentials runbook keeps credentials out of git", () => {
   assert.match(runbook, /커밋하지 않습니다/);
   assert.match(runbook, /git check-ignore -v/);
   assert.match(runbook, /\.env\.store-api\.local/);
+  assert.match(runbook, /store-api-env-template\.txt/);
   assert.match(runbook, /credential 값은 출력하지 않습니다/);
 });
 

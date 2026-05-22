@@ -60,6 +60,9 @@ test("store API credential status warns about App Store key id filename mismatch
 test("store console packet includes store API credential status output", () => {
   assert.match(captureSource, /scripts\/check-store-api-credential-status\.mjs/);
   assert.match(captureSource, /store-api-credential-status\.txt/);
+  assert.match(captureSource, /store-api-env-template\.txt/);
+  assert.match(captureSource, /\.env\.store-api\.local/);
+  assert.match(captureSource, /status: result\.status === 0 \? "checked" : "failed"/);
   assert.match(captureSource, /Store API credential status command/);
   assert.match(captureSource, /release:store-api-credential-status/);
 });

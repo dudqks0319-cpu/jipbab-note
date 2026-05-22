@@ -58,7 +58,7 @@ function runStoreApiCredentialStatus() {
     .join("\n");
 
   return {
-    status: result.status === 0 ? "pass" : "fail",
+    status: result.status === 0 ? "checked" : "failed",
     exitCode: result.status ?? 1,
     output: redact(output),
   };
@@ -78,6 +78,7 @@ function writeOperatorChecklist() {
     "- [ ] Confirm an internal tester group exists and can receive/install the build.",
     "- [ ] Capture a reviewed screenshot, API output packet, or dashboard evidence path.",
     "- [ ] Confirm no account token, API key, private key, or personal document is included in the artifact.",
+    "- [ ] If browser access is blocked, use `store-api-env-template.txt` to fill `.env.store-api.local` with placeholders replaced by real IDs and ignored local file paths.",
     "",
     "## Google Play Console / Internal Testing",
     "",
@@ -87,6 +88,7 @@ function writeOperatorChecklist() {
     "- [ ] Confirm the internal testing release is not only a draft.",
     "- [ ] Capture a reviewed screenshot, API output packet, or dashboard evidence path.",
     "- [ ] Confirm no service-account JSON, OAuth token, or personal document is included in the artifact.",
+    "- [ ] If browser access is blocked, use `store-api-env-template.txt` to fill `.env.store-api.local` with placeholders replaced by real IDs and ignored local file paths.",
     "",
     "## After Confirmation",
     "",
@@ -137,6 +139,36 @@ function writeManualTemplate() {
   writeFileSync(path.join(outDir, "manual-store-console-template.md"), template);
 }
 
+function writeStoreApiEnvTemplate() {
+  const template = [
+    "# Copy the non-comment lines into .env.store-api.local only after creating the matching store API credentials.",
+    "# Keep credential files under .release-secrets/ and run chmod 600 on each file.",
+    "# This template intentionally contains placeholders only. Do not paste private keys, service-account JSON, JWTs, or access tokens into evidence files.",
+    "",
+    "# App Store Connect API",
+    "APP_STORE_CONNECT_API_KEY_ID=<KEY_ID>",
+    "APP_STORE_CONNECT_API_ISSUER_ID=<ISSUER_ID>",
+    "APP_STORE_CONNECT_API_PRIVATE_KEY_PATH=.release-secrets/AuthKey_<KEY_ID>.p8",
+    `APP_STORE_CONNECT_BUNDLE_ID=${bundleId}`,
+    `APP_STORE_CONNECT_BUILD_VERSION=${iosBuild}`,
+    "",
+    "# Google Play Developer API",
+    "GOOGLE_APPLICATION_CREDENTIALS=.release-secrets/google-play-service-account.json",
+    `GOOGLE_PLAY_PACKAGE_NAME=${androidPackage}`,
+    `GOOGLE_PLAY_VERSION_CODE=${androidVersionCode}`,
+    "GOOGLE_PLAY_TRACK=internal",
+    "",
+    "# Verification",
+    "pnpm release:store-api-credential-status",
+    "pnpm check:store-console-confirmation",
+    "pnpm release:external-status",
+    "pnpm release:goal-check",
+    "",
+  ].join("\n");
+
+  writeFileSync(path.join(outDir, "store-api-env-template.txt"), template);
+}
+
 mkdirSync(outDir, { recursive: true });
 
 const check = runStoreConsoleCheck();
@@ -145,6 +177,7 @@ writeFileSync(path.join(outDir, "store-console-confirmation.txt"), `${check.outp
 writeFileSync(path.join(outDir, "store-api-credential-status.txt"), `${credentialStatus.output.trim()}\n`);
 writeOperatorChecklist();
 writeManualTemplate();
+writeStoreApiEnvTemplate();
 
 const summary = [
   "# Store Console Confirmation Packet",
@@ -167,6 +200,7 @@ const summary = [
   "- result: store-api-credential-status.txt",
   "- info: operator-checklist.md",
   "- info: manual-store-console-template.md",
+  "- info: store-api-env-template.txt",
   "",
   "## Use In Store Ledger",
   "",
