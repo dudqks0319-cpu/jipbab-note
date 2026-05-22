@@ -50,3 +50,11 @@ test("goal completion check requires both production family and account-deletion
   assert.match(source, /check:production-account-deletion-route`: pass/);
   assert.match(source, /Production account-deletion smoke: blocked safely/);
 });
+
+test("goal completion check requires release security gate evidence", () => {
+  assert.match(source, /보안 릴리즈 게이트/);
+  assert.match(source, /`pnpm release:security-check`: pass/);
+  assert.match(source, /production dependency audit/);
+  assert.match(source, /secret file ignore rules/);
+  assert.match(source, /tracked secret files/);
+});

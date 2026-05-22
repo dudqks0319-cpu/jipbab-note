@@ -9,6 +9,7 @@ const requiredTerms = [
   "pnpm check:real-device-availability",
   "pnpm release:capture-real-device-qa",
   "pnpm release:capture-operator-handoff",
+  "pnpm release:security-check",
   "pnpm check:real-device-qa-evidence",
   "pnpm check:store-console-confirmation",
   "pnpm release:external-status",

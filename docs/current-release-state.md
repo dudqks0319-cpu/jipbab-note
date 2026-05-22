@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 19:46 KST
+Updated: 2026-05-22 19:56 KST
 
 ## Local code state
 
@@ -23,6 +23,14 @@ Updated: 2026-05-22 19:46 KST
 
 ## Verification evidence
 
+- Goal completion security gate hardening: pass on 2026-05-22 19:56 KST. [verify-goal-completion.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/verify-goal-completion.mjs) now treats `pnpm release:security-check` pass evidence as its own required completion item, so final goal completion cannot pass unless the dependency audit and secret-file tracking controls are recorded. Current `pnpm release:goal-check` is `Passed: 8`, `Blocked: 3`, `Missing: 0`.
+- Release operator handoff security capture: pass on 2026-05-22 19:56 KST. `pnpm release:capture-operator-handoff` now includes `Release security gate` output in the handoff packet. Latest packet: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T10-55-22-849Z-operator-handoff`; it captured 3 packets, passed 1 gate (`release-security`), and left `goal-check` blocked only by the same 3 external blockers.
+- `pnpm test`: pass on 2026-05-22 19:56 KST after goal completion security hardening. Lint, `tsc --noEmit`, and 138 unit tests passed.
+- `pnpm build`: pass on 2026-05-22 19:56 KST after goal completion security hardening. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:security-check`: pass on 2026-05-22 19:56 KST. Passes: production dependency audit, secret file ignore rules, tracked secret files.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 19:56 KST. All 6 CI-safe release gates passed.
+- `pnpm release:check`: pass on 2026-05-22 19:56 KST. All 6 local release gates passed.
+- `pnpm release:external-status`: still blocked on 2026-05-22 19:56 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
 - Release security gate CI portability fix: pass on 2026-05-22 19:46 KST. [check-release-security.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/check-release-security.mjs) now checks `.release-secrets/` with a trailing slash so `git check-ignore` behaves consistently on local macOS and GitHub Actions Linux runners. `pnpm release:security-check` and `pnpm release:ci-static-check` both pass locally after the fix.
 - GitHub Actions Release Gate: pass on 2026-05-22 19:48 KST for pushed commit `05f3840bc65a96daa8c5970c8a67aea130e834f2` (`fix(release): align secret ignore check with ci`). Run `26283388071` completed successfully: `https://github.com/dudqks0319-cpu/jipbab-note/actions/runs/26283388071`.
 - Release security gate automation: pass on 2026-05-22 19:41 KST. `pnpm release:security-check` now runs [check-release-security.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/check-release-security.mjs), which enforces `pnpm audit --prod --audit-level moderate`, confirms `.env*` and `.release-secrets` paths are ignored by git, and fails if env/release secret files are tracked. `pnpm release:full-check` and `pnpm release:ci-static-check` now include this security gate.

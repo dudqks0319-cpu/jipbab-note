@@ -26,6 +26,12 @@ const commands = [
     args: ["scripts/capture-store-console-confirmation-packet.mjs"],
   },
   {
+    name: "release-security",
+    label: "Release security gate",
+    successStatus: "pass",
+    args: ["scripts/check-release-security.mjs"],
+  },
+  {
     name: "goal-check",
     label: "Goal completion status",
     successStatus: "pass",
@@ -107,6 +113,7 @@ const summary = [
   "## Final Verification After Unblock",
   "",
   "```bash",
+  "pnpm release:security-check",
   "pnpm check:real-device-availability",
   "pnpm check:real-device-qa-evidence",
   "pnpm check:store-console-confirmation",

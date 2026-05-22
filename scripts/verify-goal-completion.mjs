@@ -266,6 +266,21 @@ addResult(
 
 addResult(
   results,
+  includesAll(ledger, [
+    "`pnpm release:security-check`: pass",
+    "production dependency audit",
+    "secret file ignore rules",
+    "tracked secret files",
+  ])
+    ? "pass"
+    : "missing",
+  "보안 릴리즈 게이트",
+  "release security check evidence for dependency audit and secret-file tracking controls",
+  "pnpm release:security-check 실행 후 docs/current-release-state.md에 pass evidence 갱신",
+);
+
+addResult(
+  results,
   evidenceStatus(storeConsole, requiredAppStoreTerms, [
     "App Store Connect/TestFlight: not confirmed",
     "TestFlight processing: not confirmed",

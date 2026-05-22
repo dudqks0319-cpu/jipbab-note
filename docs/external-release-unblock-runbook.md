@@ -85,6 +85,7 @@ pnpm release:capture-real-device-qa
 
 ```bash
 pnpm release:capture-operator-handoff
+pnpm release:security-check
 pnpm check:real-device-availability
 pnpm check:real-device-qa-evidence
 pnpm check:store-console-confirmation
