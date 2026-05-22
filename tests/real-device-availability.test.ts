@@ -25,6 +25,14 @@ test("external release check includes real physical device availability", () => 
     packageJson.scripts["release:capture-real-device-qa"],
     "node scripts/capture-real-device-qa-packet.mjs",
   );
+  assert.equal(
+    packageJson.scripts["release:capture-ios-real-device-qa"],
+    "node scripts/capture-real-device-qa-packet.mjs --platform=ios",
+  );
+  assert.equal(
+    packageJson.scripts["release:capture-android-real-device-qa"],
+    "node scripts/capture-real-device-qa-packet.mjs --platform=android",
+  );
 });
 
 test("real device availability check inspects iOS physical devices and excludes simulators", () => {
@@ -83,6 +91,9 @@ test("real-device QA evidence starts blocked until actual device evidence is rec
 test("real-device QA packet captures native artifacts and manual evidence template", () => {
   assert.match(packetSource, /"output", "release-evidence"/);
   assert.match(packetSource, /Real-device QA Packet/);
+  assert.match(packetSource, /parsePlatform/);
+  assert.match(packetSource, /--platform=ios, --platform=android, or --platform=all/);
+  assert.match(packetSource, /real-device-qa-\$\{platform\}/);
   assert.match(packetSource, /manual-qa-template\.md/);
   assert.match(packetSource, /operator-checklist\.md/);
   assert.match(packetSource, /device-unblock-checklist\.md/);
@@ -92,10 +103,12 @@ test("real-device QA packet captures native artifacts and manual evidence templa
   assert.match(packetSource, /app-debug\.apk/);
   assert.match(packetSource, /REAL_DEVICE_QA_LAUNCH_ANDROID/);
   assert.match(packetSource, /screencap/);
+  assert.match(packetSource, /Platform scope/);
+  assert.match(packetSource, /--platform=\$\{platform\}/);
   assert.match(packetSource, /xcrun devicectl list devices/);
   assert.match(packetSource, /xcrun xctrace list devices/);
   assert.match(packetSource, /USB debugging/);
   assert.match(packetSource, /iOS evidence artifacts/);
   assert.match(packetSource, /Android evidence artifacts/);
-  assert.match(packetSource, /Rerun `pnpm check:real-device-qa-evidence`/);
+  assert.match(packetSource, /check:real-device-qa-evidence -- --platform=\$\{platform\}/);
 });

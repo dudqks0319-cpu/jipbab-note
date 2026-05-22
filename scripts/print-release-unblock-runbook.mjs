@@ -8,6 +8,7 @@ const runbookPath = path.join(cwd, "docs/external-release-unblock-runbook.md");
 const requiredTerms = [
   "pnpm check:real-device-availability",
   "pnpm release:capture-real-device-qa",
+  "pnpm release:capture-ios-real-device-qa",
   "pnpm release:capture-operator-handoff",
   "pnpm release:security-check",
   "pnpm check:real-device-qa-evidence",

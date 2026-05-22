@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 21:57 KST
+Updated: 2026-05-22 22:14 KST
 
 ## Local code state
 
@@ -9,7 +9,7 @@ Updated: 2026-05-22 21:57 KST
 - Store-readiness PR: PR #2, `feat(release): finalize store readiness gates`, merged into `origin/main` at merge commit `f0752ad2a72fb33081bd46cd02a13b61cfc4685f`.
 - Latest pushed commits: use `git log -2 --oneline` for the exact current head.
 - Remote tracking branch: `origin/main`
-- Working tree after this ledger update: expected clean after the App Store review packet commit is pushed.
+- Working tree after this ledger update: expected clean after the platform-scoped real-device QA packet commit is pushed.
 - Main branch state: latest store readiness work is merged into `origin/main`.
 - PR readiness: completed; follow-up release work now happens on `main`.
 - Release verdict: main is a local release candidate, not a production release. Supabase live/read/write/RLS checks, family sharing service-role write checks, Google/Apple/Kakao OAuth start flows, Vercel Production server-only env, production family sharing smoke, production account-deletion route smoke, and Supabase Auth URL Configuration pass. iOS build `2026052001` has been uploaded successfully for App Store Connect processing. Full real-device QA, TestFlight dashboard/internal tester availability for the actual JipbabNote app, and Play Console internal testing are still release blockers.
@@ -23,6 +23,17 @@ Updated: 2026-05-22 21:57 KST
 
 ## Verification evidence
 
+- Platform-scoped real-device QA packet: pass/blocking as designed on 2026-05-22 22:05 KST. `pnpm release:capture-ios-real-device-qa` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T13-05-20-283Z-real-device-qa-ios`; the packet is scoped to iOS only, includes iOS archive/app/IPA inventory and an iOS-only manual QA template, and records 3 blocked iOS captures because iPhone `영빈` remains unavailable through `check-real-device-availability`, `devicectl`, and `xctrace`. Android/Play device blockers are not mixed into this iOS-only packet.
+- Targeted platform-scoped real-device tests: pass on 2026-05-22 22:06 KST. `pnpm exec node --experimental-strip-types --test tests/real-device-availability.test.ts tests/release-unblock-runbook.test.ts tests/appstore-submit-gate.test.ts` passed 14 tests.
+- Release unblock runbook iOS real-device sequence: pass on 2026-05-22 22:06 KST. `pnpm release:unblock-runbook` now validates 21 required terms and includes `pnpm release:capture-ios-real-device-qa` after the full real-device QA packet capture.
+- `pnpm build`: pass on 2026-05-22 22:13 KST after sandbox-escalated rerun. The first sandboxed attempt failed with the known Turbopack port-binding `Operation not permitted`; the unrestricted rerun compiled 32 routes successfully.
+- `pnpm release:security-check`: pass on 2026-05-22 22:13 KST. Production dependency audit reported no known moderate+ vulnerabilities, `.env*` and `.release-secrets` remain ignored, and no env or release-secret files are tracked.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 22:13 KST after sandbox-escalated rerun for npm audit network access. All 8 CI-safe release gates passed.
+- `pnpm test`: pass on 2026-05-22 22:14 KST after the platform-scoped real-device QA packet update. Lint, `tsc --noEmit`, and 166 unit tests passed.
+- `pnpm release:check`: pass on 2026-05-22 22:14 KST. All 8 local release gates passed, including iOS archive/IPA artifact and Android signed AAB checks.
+- `pnpm release:appstore-submit-gate`: still blocked on 2026-05-22 22:13 KST after sandbox-escalated rerun to avoid DNS false-negatives. The gate returned `Passed: 8`, `Blocked: 1`; local core loop, local mode, release readiness, Supabase local RLS/schema, partner links, store assets, iOS release artifact, and release security passed. The remaining App Store external status group returned `Passed: 5`, `Blocked: 3`: iPhone `영빈` CoreDevice unavailable, missing iOS real-device QA evidence, and missing App Store Connect/TestFlight confirmation. App Store review submission must not be started yet.
+- `git diff --check`: pass on 2026-05-22 22:14 KST.
+- Secret pattern scan: pass on 2026-05-22 22:13 KST. `rg` over the changed platform-scoped QA packet files, runbooks, tests, package scripts, and release ledger returned no matches for common API keys, JWTs, private-key headers, or store/Supabase secret env assignments.
 - App Store review packet capture: pass/blocking as designed on 2026-05-22 21:53 KST. `pnpm release:capture-appstore-review-packet` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-52-56-696Z-appstore-review-packet`; it copied 8 App Store-only files, validated the App Store screenshot/icon subset, passed the iOS release artifact check, and recorded `App Store submission readiness gate: blocked`. This packet does not upload to App Store Connect and does not submit for review.
 - Operator handoff App Store packet capture: pass/blocking as designed on 2026-05-22 21:57 KST. `pnpm release:capture-operator-handoff` generated `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-56-16-332Z-operator-handoff`; it captured 5 packets, checked 1 Store API credential-status command, passed the release security gate, and recorded 3 blocked commands: `appstore-submit-gate`, `playstore-submit-gate`, and `goal-check`. The handoff now links a nested App Store review packet at `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-22T12-56-39-934Z-appstore-review-packet` for the iOS-only upload set.
 - Targeted App Store packet/handoff tests: pass on 2026-05-22 21:57 KST. `pnpm exec node --experimental-strip-types --test tests/appstore-review-packet.test.ts tests/operator-handoff-capture.test.ts tests/release-unblock-runbook.test.ts` passed 12 tests.

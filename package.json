@@ -33,6 +33,8 @@
     "release:capture-store-submission-packet": "node scripts/capture-store-submission-packet.mjs",
     "release:capture-appstore-review-packet": "node scripts/capture-appstore-review-packet.mjs",
     "release:capture-real-device-qa": "node scripts/capture-real-device-qa-packet.mjs",
+    "release:capture-ios-real-device-qa": "node scripts/capture-real-device-qa-packet.mjs --platform=ios",
+    "release:capture-android-real-device-qa": "node scripts/capture-real-device-qa-packet.mjs --platform=android",
     "release:capture-store-console": "node scripts/capture-store-console-confirmation-packet.mjs",
     "release:security-check": "node scripts/check-release-security.mjs",
     "release:ci-static-check": "node scripts/run-ci-release-gates.mjs",

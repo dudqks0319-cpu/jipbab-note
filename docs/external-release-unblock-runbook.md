@@ -26,6 +26,12 @@ pnpm check:real-device-availability
 pnpm release:capture-real-device-qa
 ```
 
+App Store만 먼저 진행할 때는 Android 기기 차단과 섞지 않도록 아래 iOS 전용 packet도 같이 만듭니다.
+
+```bash
+pnpm release:capture-ios-real-device-qa
+```
+
 실제 기기에서 확인할 항목:
 
 - iOS/Android 홈, 냉장고, 레시피, 장보기 진입

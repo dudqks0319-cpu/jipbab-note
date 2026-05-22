@@ -27,6 +27,7 @@ test("release unblock runbook covers all remaining external blocker surfaces", (
 test("release unblock runbook includes the post-unblock verification commands", () => {
   assert.match(runbook, /pnpm check:real-device-availability/);
   assert.match(runbook, /pnpm release:capture-real-device-qa/);
+  assert.match(runbook, /pnpm release:capture-ios-real-device-qa/);
   assert.match(runbook, /pnpm release:capture-operator-handoff/);
   assert.match(runbook, /pnpm release:security-check/);
   assert.match(runbook, /pnpm check:real-device-qa-evidence/);
