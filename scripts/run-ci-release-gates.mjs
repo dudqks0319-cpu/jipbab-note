@@ -18,6 +18,11 @@ const checks = [
     args: ["scripts/check-store-assets.mjs"],
   },
   {
+    name: "release-security",
+    command: "node",
+    args: ["scripts/check-release-security.mjs"],
+  },
+  {
     name: "external-unblock-runbook",
     command: "node",
     args: ["scripts/print-release-unblock-runbook.mjs"],

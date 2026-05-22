@@ -1,6 +1,6 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-22 19:33 KST
+Updated: 2026-05-22 19:41 KST
 
 ## Local code state
 
@@ -23,6 +23,15 @@ Updated: 2026-05-22 19:33 KST
 
 ## Verification evidence
 
+- Release security gate automation: pass on 2026-05-22 19:41 KST. `pnpm release:security-check` now runs [check-release-security.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/scripts/check-release-security.mjs), which enforces `pnpm audit --prod --audit-level moderate`, confirms `.env*` and `.release-secrets` paths are ignored by git, and fails if env/release secret files are tracked. `pnpm release:full-check` and `pnpm release:ci-static-check` now include this security gate.
+- Targeted security-gate tests: pass on 2026-05-22 19:41 KST. `pnpm exec node --experimental-strip-types --test tests/ci-release-gate.test.ts tests/release-security.test.ts` passed 6 tests.
+- `pnpm release:security-check`: pass on 2026-05-22 19:41 KST. Passes: production dependency audit, secret file ignore rules, tracked secret files.
+- `pnpm test`: pass on 2026-05-22 19:41 KST after release security gate automation. Lint, `tsc --noEmit`, and 137 unit tests passed.
+- `pnpm build`: pass on 2026-05-22 19:41 KST after release security gate automation. Next.js `16.2.6` compiled 32 routes successfully.
+- `pnpm release:ci-static-check`: pass on 2026-05-22 19:41 KST. All 6 CI-safe release gates passed, including the new `release-security` gate.
+- `pnpm release:check`: pass on 2026-05-22 19:41 KST. All 6 local release gates passed.
+- `pnpm release:external-status`: still blocked on 2026-05-22 19:41 KST with `Passed: 5`, `Blocked: 3`. Supabase live read/write/RLS, OAuth provider boundary, Vercel Production env, production family route smoke, and production account-deletion route smoke pass. Remaining blockers are unchanged: real-device availability/evidence and store console confirmation.
+- `pnpm release:goal-check`: still blocked on 2026-05-22 19:41 KST with `Passed: 7`, `Blocked: 3`, `Missing: 0`. Remaining blockers are unchanged: real-device QA, App Store Connect/TestFlight confirmation, and Play Console internal testing. Do not mark the active goal complete yet.
 - Security dependency patch: pass on 2026-05-22 19:33 KST. `next` was updated from `16.2.4` to `16.2.6`, `eslint-config-next` from `16.1.6` to `16.2.6`, and the existing pnpm security override set now pins `ws` to `8.20.1` for the `@supabase/realtime-js` transitive path. `react-hooks/set-state-in-effect` is explicitly disabled in [eslint.config.mjs](/Users/jyb-m3max/Desktop/codex/jipbab-note/eslint.config.mjs) because the upgraded React Hooks lint preset flags the app's existing data-loading/session-sync effects as errors without changing security posture.
 - `pnpm audit --prod --audit-level moderate`: pass on 2026-05-22 19:33 KST after the Next and `ws` patches. Result: `No known vulnerabilities found`.
 - `pnpm why ws`: pass on 2026-05-22 19:33 KST. Installed dependency tree now resolves `@supabase/supabase-js -> @supabase/realtime-js -> ws@8.20.1`.

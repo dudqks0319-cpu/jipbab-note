@@ -19,6 +19,7 @@ test("CI static release gate runs only repository-local deterministic release ch
   assert.match(ciGateSource, /scripts\/check-supabase-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-partner-links\.mjs/);
   assert.match(ciGateSource, /scripts\/check-store-assets\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-release-security\.mjs/);
   assert.match(ciGateSource, /scripts\/print-release-unblock-runbook\.mjs/);
   assert.match(ciGateSource, /scripts\/print-store-api-credentials-runbook\.mjs/);
   assert.match(ciGateSource, /CI intentionally excludes machine-local or account-bound release gates/);
@@ -41,6 +42,11 @@ test("GitHub release workflow runs code gates and keeps goal status informationa
   assert.match(workflowSource, /pnpm build/);
   assert.match(workflowSource, /pnpm release:ci-static-check/);
   assert.match(workflowSource, /pnpm release:goal-check \|\| true/);
+  assert.equal(
+    packageJson.scripts["release:security-check"],
+    "node scripts/check-release-security.mjs",
+  );
+  assert.match(packageJson.scripts["release:full-check"], /pnpm release:security-check/);
   assert.doesNotMatch(workflowSource, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(workflowSource, /ADMIN_EMAILS/);
   assert.doesNotMatch(workflowSource, /release:external-check/);
