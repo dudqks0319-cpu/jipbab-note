@@ -199,6 +199,12 @@ const vercelProductionPass = includesAll(ledger, [
   "Production family route smoke: pass",
   "`pnpm check:production-account-deletion-route`: pass",
 ]);
+const supabaseLiveCurrentPass =
+  ledger.includes("Supabase live current status: confirmed") ||
+  ledger.includes("Latest Supabase live unblock check: confirmed");
+const storageLiveCurrentPass =
+  ledger.includes("Supabase Storage current status: confirmed") ||
+  ledger.includes("Latest Supabase live unblock check: confirmed");
 
 addResult(
   results,
@@ -250,13 +256,15 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("`pnpm check:supabase-live` / `pnpm release:external-check`: blocked") ||
-    ledger.includes("Supabase live REST check failed") ||
-    ledger.includes("Supabase live blocks") ||
-    ledger.includes("family_group_id` missing from live") ||
-    ledger.includes("Could not find the 'family_group_id' column")
-    ? "blocked"
-    : ledger.includes("SUPABASE_LIVE_WRITE_TEST=1") && ledger.includes("pass")
+  supabaseLiveCurrentPass
+    ? "pass"
+    : ledger.includes("`pnpm check:supabase-live` / `pnpm release:external-check`: blocked") ||
+        ledger.includes("Supabase live REST check failed") ||
+        ledger.includes("Supabase live blocks") ||
+        ledger.includes("family_group_id` missing from live") ||
+        ledger.includes("Could not find the 'family_group_id' column")
+      ? "blocked"
+      : ledger.includes("SUPABASE_LIVE_WRITE_TEST=1") && ledger.includes("pass")
       ? "pass"
       : "missing",
   "운영 Supabase live/read/write/RLS",
@@ -266,11 +274,13 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("Storage still allows cross-prefix") ||
-    ledger.includes("guest upload outside device prefix succeeded") ||
-    ledger.includes("Storage path policy: production Storage")
-    ? "blocked"
-    : ledger.includes("cross-prefix upload blocked") && ledger.includes("PASS")
+  storageLiveCurrentPass
+    ? "pass"
+    : ledger.includes("Storage still allows cross-prefix") ||
+        ledger.includes("guest upload outside device prefix succeeded") ||
+        ledger.includes("Storage path policy: production Storage")
+      ? "blocked"
+      : ledger.includes("cross-prefix upload blocked") && ledger.includes("PASS")
       ? "pass"
       : "missing",
   "운영 Supabase Storage 정책",

@@ -77,7 +77,7 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
         {steps.map((step) => {
           const tools = getStepTools(step);
           const heatLabel = getHeatLabel(step);
-          const showImage = mode !== "text" && Boolean(step.imageUrl);
+          const showMediaColumn = mode !== "text";
 
           return (
             <li key={step.index} className={mode === "compact" ? "rounded-[8px] border border-[#ece8e2] p-4" : ""}>
@@ -96,16 +96,18 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                     {step.minutes ? <p className="break-keep">• {step.minutes}분</p> : null}
                   </div>
                 </div>
-                {showImage ? (
+                {showMediaColumn && step.imageUrl ? (
                   <RecipeImage
                     src={step.imageUrl}
                     alt={step.imageAlt || `${recipeName} 조리 순서 ${step.index}`}
                     className="relative mt-1 h-[74px] w-full overflow-hidden rounded-[8px] bg-[#f2eee8] min-[390px]:h-[82px]"
                     imageClassName="h-full w-full object-cover"
                   />
-                ) : (
-                  <div className="mt-1 hidden h-[74px] rounded-[8px] bg-[#f2eee8] min-[390px]:block min-[390px]:h-[82px]" />
-                )}
+                ) : showMediaColumn ? (
+                  <div className="mt-1 flex h-[74px] items-center justify-center rounded-[8px] bg-[#f2eee8] px-2 text-center text-[11px] font-black leading-4 text-[#9f9388] min-[390px]:h-[82px]">
+                    사진 준비중
+                  </div>
+                ) : null}
               </div>
               {mode !== "compact" && (step.visualCue || step.beginnerTip) ? (
                 <div className="ml-[54px] mt-4 space-y-2 rounded-[8px] bg-[#f8f5f0] px-3 py-3 text-[13px] font-semibold leading-5 text-[#6f655b] min-[390px]:ml-[58px]">

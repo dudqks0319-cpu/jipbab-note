@@ -6,7 +6,10 @@ import { AlertCircle, CheckCircle2, RefreshCw, ShoppingCart } from "lucide-react
 
 import { useFamilyShare } from "@/hooks/useFamilyShare";
 import { useIngredients } from "@/hooks/useIngredients";
+import { usePartnerLinks } from "@/hooks/usePartnerLinks";
 import { useShopping } from "@/hooks/useShopping";
+import CoupangAffiliateCard from "@/components/affiliate/CoupangAffiliateCard";
+import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
@@ -60,6 +63,7 @@ export default function RecipeShoppingAssistant({
   const [selectedMissingNames, setSelectedMissingNames] = useState<Set<string>>(new Set());
   const [statusMessage, setStatusMessage] = useState("");
   const [actionError, setActionError] = useState("");
+  const partnerLinks = usePartnerLinks();
   const activeIngredients = useMemo(
     () => ingredients.filter((item) => !item.consumedAt && !item.discardedAt),
     [ingredients],
@@ -113,6 +117,29 @@ export default function RecipeShoppingAssistant({
   const selectableMissingIngredients = useMemo(
     () => match.missingIngredients.filter((ingredient) => !shoppingNames.has(ingredient.trim().toLowerCase())),
     [match.missingIngredients, shoppingNames],
+  );
+  const affiliateSuggestions = useMemo(
+    () =>
+      match.missingIngredients
+        .map((ingredient) => {
+          const detail = detailByName.get(ingredient.trim().toLowerCase());
+          const category = inferCategory(ingredient, ownedCategories);
+          const purchaseLink = getCoupangPurchaseLink({ name: ingredient, category }, partnerLinks);
+          if (!purchaseLink.isPartnerLink) {
+            return null;
+          }
+
+          return {
+            name: ingredient,
+            href: purchaseLink.href,
+            reason: detail?.display
+              ? `${recipeName}에 필요한 ${detail.display} 기준으로 확인해 보세요.`
+              : `${recipeName}에 부족한 재료예요.`,
+          };
+        })
+        .filter((item): item is { name: string; href: string; reason: string } => Boolean(item))
+        .slice(0, 3),
+    [detailByName, match.missingIngredients, ownedCategories, partnerLinks, recipeName],
   );
 
   const matchedInventoryItems = useMemo(
@@ -331,6 +358,24 @@ export default function RecipeShoppingAssistant({
               <ShoppingCart size={16} />
               {missingDrafts.length === 0 ? "선택할 새 재료 없음" : `${missingDrafts.length}개 장보기에 추가`}
             </button>
+            {affiliateSuggestions.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div>
+                  <p className="text-[13px] font-black text-[#2f2117]">쿠팡에서 부족 재료 보기</p>
+                  <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+                    검증된 쿠팡 파트너스 링크가 있는 재료만 보여줍니다.
+                  </p>
+                </div>
+                {affiliateSuggestions.map((item) => (
+                  <CoupangAffiliateCard
+                    key={`${item.name}-${item.href}`}
+                    productName={item.name}
+                    affiliateUrl={item.href}
+                    reason={item.reason}
+                  />
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

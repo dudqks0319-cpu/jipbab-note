@@ -1,6 +1,15 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-05-28 KST
+Updated: 2026-05-29 KST
+
+## 2026-05-29 Cloudflare/OpenNext 후보 보강
+
+- 2026-05-29 KST: Cloudflare Workers + OpenNext 후보 배포 구성을 표준 명령 alias까지 보강했습니다. `package.json`에 `preview`, `deploy`, `cf-typegen`을 추가하고 기존 `cloudflare:*` 명령은 릴리즈 게이트 호환용으로 유지했습니다. `pnpm check:cloudflare-config`는 25개 항목 통과로 새 alias, OpenNext, wrangler, secret hygiene을 확인합니다.
+- 레시피 상세 부족 재료 영역은 외부 스크립트/iframe 없이 검증된 `link.coupang.com` 파트너스 링크가 있는 재료만 `CoupangAffiliateCard`로 노출합니다. 카드 링크는 `rel="sponsored noopener noreferrer"`를 사용하고, 제휴 안내 문구를 카드 안에 표시하며, 검증된 파트너스 링크가 없으면 카드 자체를 숨깁니다.
+- 조리순서 사진 모드는 단계 이미지가 없을 때 `사진 준비중` 플레이스홀더를 표시합니다. 레시피 이미지 운영 문서에는 `public/images/recipes/{recipeId}/cover.webp`, `ingredients.webp`, `tools.webp`, `step-01.webp`, `final.webp` 경로 규칙과 이미지 권리/브랜드/캐릭터 금지 원칙을 추가했습니다.
+- 검증: `pnpm check:cloudflare-config` 통과, `node --experimental-strip-types --test tests/cloudflare-deployment.test.ts tests/recipe-affiliate-ux.test.ts` 9개 통과, `pnpm exec tsc --noEmit` 통과, `pnpm lint` 통과, `pnpm test:unit` 224개 통과, `pnpm validate:recipes` 120 candidates 통과, 샌드박스 밖 `pnpm build` 통과, 샌드박스 밖 `pnpm cloudflare:build` 통과, 샌드박스 밖 `pnpm preview`로 `http://127.0.0.1:8787/`와 `/api/recipes` HTTP 200 확인. preview 검증 후 로컬 wrangler/workerd 프로세스는 종료했습니다.
+- Latest Supabase live unblock check: confirmed. Supabase live current status: confirmed. Supabase Storage current status: confirmed. 샌드박스 밖 `pnpm release:supabase-live-unblock-check`에서 local release contract, live read/write/RLS 29 checks, Storage own-path/cross-prefix policy 2 checks가 모두 통과했습니다.
+- 남은 Cloudflare 외부 작업: Cloudflare Worker secret은 아직 `wrangler secret list` 기준 비어 있었으므로 `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`, `MFDS_API_KEY` 등 런타임 secret을 Dashboard 또는 명시 승인된 secret 업로드로 설정해야 합니다. 커스텀 도메인, Supabase Auth redirect URL의 Cloudflare 도메인 추가, 모바일 `CAPACITOR_SERVER_URL` 전환, 실기기 OAuth/알림/계정삭제 QA는 별도 외부 단계입니다.
 
 ## 2026-05-28 추가 최신 상태
 

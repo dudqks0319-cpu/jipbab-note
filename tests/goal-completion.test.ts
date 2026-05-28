@@ -85,6 +85,9 @@ test("goal completion check runs the executable Supabase release check", () => {
 
 test("goal completion check treats live Supabase and Storage blockers as blockers", () => {
   assert.match(source, /운영 Supabase live\/read\/write\/RLS/);
+  assert.match(source, /Supabase live current status: confirmed/);
+  assert.match(source, /Supabase Storage current status: confirmed/);
+  assert.match(source, /Latest Supabase live unblock check: confirmed/);
   assert.match(source, /Supabase live blocks/);
   assert.match(source, /family_group_id` missing from live/);
   assert.match(source, /Could not find the 'family_group_id' column/);

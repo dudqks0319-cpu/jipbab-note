@@ -6,6 +6,9 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 
 test("Cloudflare OpenNext scripts and dependencies are configured", () => {
   assert.equal(packageJson.scripts["check:cloudflare-config"], "node scripts/check-cloudflare-config.mjs");
+  assert.equal(packageJson.scripts.preview, "opennextjs-cloudflare build && opennextjs-cloudflare preview");
+  assert.equal(packageJson.scripts.deploy, "opennextjs-cloudflare build && opennextjs-cloudflare deploy");
+  assert.equal(packageJson.scripts["cf-typegen"], "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts");
   assert.equal(packageJson.scripts["cloudflare:build"], "opennextjs-cloudflare build");
   assert.equal(packageJson.scripts["cloudflare:preview"], "opennextjs-cloudflare preview");
   assert.equal(packageJson.scripts["cloudflare:deploy"], "opennextjs-cloudflare build && opennextjs-cloudflare deploy");

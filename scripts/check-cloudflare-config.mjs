@@ -8,6 +8,9 @@ const requiredFiles = [
   "docs/cloudflare-deployment.md",
 ];
 const requiredPackageScripts = [
+  "preview",
+  "deploy",
+  "cf-typegen",
   "cloudflare:build",
   "cloudflare:preview",
   "cloudflare:deploy",
