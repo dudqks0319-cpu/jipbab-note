@@ -8,7 +8,7 @@
 2. `supabase/migrations/*`를 순서대로 반영합니다.
 3. `recipes`, `ingredients`, `favorites`, `shopping_items`, `community_*` 테이블이 생성됐는지 확인합니다.
 4. Free-tier pause 메일을 받았거나 `pnpm check:supabase-live`가 `ENOTFOUND`로 실패하면 Supabase Dashboard에서 프로젝트를 Resume/Restore 한 뒤 다시 확인합니다.
-5. 제출 전에는 `pnpm release:full-check`로 로컬 게이트와 운영 Supabase REST 확인을 같이 통과시킵니다.
+5. 제출 전에는 `pnpm release:full-check`로 로컬 게이트, 운영 Supabase REST/RLS, Storage path policy 확인을 같이 통과시킵니다.
 
 ## 2. OAuth 제공자
 
@@ -32,8 +32,10 @@ Supabase Auth URL Configuration에 아래를 등록합니다.
 - `http://localhost:3000/**`
 - 실제 배포 도메인 `https://<your-domain>/**`
 - Vercel preview를 쓸 경우 `https://*-<team-or-account-slug>.vercel.app/**`
+- 네이티브 앱 콜백 `com.jipbab.note://auth/callback`
 
 OAuth 코드는 `/auth/callback` 경로에서 세션으로 교환합니다.
+네이티브 iOS/Android에서는 Google의 embedded WebView 차단을 피하기 위해 Capacitor Browser로 시스템 브라우저를 열고, `com.jipbab.note://auth/callback` 딥링크로 돌아온 PKCE `code`를 앱 안에서 세션으로 교환합니다.
 
 Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부 콘솔에 그대로 등록합니다.
 
@@ -42,6 +44,7 @@ Supabase OAuth provider 화면에는 provider별 Callback/Redirect URL을 외부
 - Apple Services ID Return URL: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
 - Kakao Developers Redirect URI: `https://<supabase-project-ref>.supabase.co/auth/v1/callback`
 - 앱 내부 콜백 URL: `https://<your-domain>/auth/callback`
+- 네이티브 앱 내부 콜백 URL: `com.jipbab.note://auth/callback`
 
 배포 도메인이 바뀌면 Supabase URL Configuration과 Google/Apple/Kakao 콘솔의 등록값을 함께 갱신합니다.
 
@@ -153,8 +156,9 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 ### 공통
 
 - Supabase `Site URL`이 운영 도메인 `https://<your-domain>`으로 설정되어 있는지 확인
-- Supabase `Redirect URLs`에 `https://<your-domain>/**`, `https://<your-domain>/auth/callback`, 필요한 Vercel preview 패턴이 등록되어 있는지 확인
+- Supabase `Redirect URLs`에 `https://<your-domain>/**`, `https://<your-domain>/auth/callback`, `com.jipbab.note://auth/callback`, 필요한 Vercel preview 패턴이 등록되어 있는지 확인
 - Google/Apple 콘솔에는 Supabase Redirect URL `https://<supabase-project-ref>.supabase.co/auth/v1/callback`만 등록하고, 앱 내부 `/auth/callback` URL을 잘못 등록하지 않았는지 확인
+- Google/Apple/Kakao provider 화면은 앱 WebView 안에 열지 않습니다. iOS/Android OAuth는 시스템 브라우저에서 진행되고 앱 딥링크로 돌아와야 합니다.
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`가 운영 배포 환경에 설정되어 있는지 확인
 - OAuth 공개 플래그가 `true`/`false` 중 하나인지 확인. 잘못된 값은 앱에서 provider를 비활성화하고 설정 오류로 표시합니다.
 - 배포 화면에서 Google/Apple 버튼이 먼저 보이고, 비활성 provider는 누락된 환경변수나 `false` 플래그명을 표시하는지 확인
@@ -167,6 +171,7 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 - Web OAuth Client의 Authorized redirect URIs에 `https://<supabase-project-ref>.supabase.co/auth/v1/callback` 등록
 - Supabase Google provider에 Client ID와 Client Secret 등록 후 Enabled 상태 확인
 - 운영 도메인에서 Google 로그인 후 `/auth/callback`을 거쳐 `/mypage`로 이동하는지 확인
+- iOS/Android 앱에서는 Google 로그인 후 `com.jipbab.note://auth/callback`으로 돌아와 `/mypage` 세션이 생기는지 확인
 
 ### Apple
 
@@ -177,6 +182,7 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 - Apple private key는 저장소, 문서, 로그에 남기지 않고 Supabase provider 설정에만 입력
 - Apple client secret 생성은 `APPLE_CLIENT_SECRET_OUT=.release-secrets/apple-client-secret.txt pnpm apple:client-secret`처럼 ignored 파일 출력으로 수행합니다. 터미널 출력은 `APPLE_CLIENT_SECRET_PRINT=1`을 명시한 경우에만 허용합니다.
 - 운영 도메인에서 Apple 로그인 후 `/auth/callback`을 거쳐 `/mypage`로 이동하는지 확인
+- iOS/Android 앱에서는 Apple 로그인 후 `com.jipbab.note://auth/callback`으로 돌아와 `/mypage` 세션이 생기는지 확인
 
 ### Kakao
 
@@ -187,3 +193,4 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 - Kakao 동의항목에서 `account_email`은 필수 동의, `profile_nickname`/`profile_image`는 선택 동의로 설정 확인
 - `KAKAO_ACCOUNT_EMAIL_PERMISSION_CONFIRMED=true` 설정 후 `pnpm check:oauth-live`에서 Kakao provider page가 `KOE205` 없이 통과하는지 확인
 - 운영 도메인에서 Kakao 로그인 후 `/auth/callback`을 거쳐 `/mypage`로 이동하는지 확인
+- iOS/Android 앱에서는 Kakao 로그인 후 `com.jipbab.note://auth/callback`으로 돌아와 `/mypage` 세션이 생기는지 확인

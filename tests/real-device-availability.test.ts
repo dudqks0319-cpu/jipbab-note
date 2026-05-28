@@ -47,8 +47,20 @@ test("real device availability check inspects iOS physical devices and excludes 
 test("real device availability check requires an attached Android device", () => {
   assert.match(source, /adbPath/);
   assert.match(source, /\["devices", "-l"\]/);
-  assert.ok(source.includes("available: deviceLines.filter((line) => /^\\S+\\s+device\\b/.test(line)),"));
+  assert.match(source, /available: deviceLines\.filter\(\(line\) => \/\^\\S\+\\s\+device\\b\/\.test\(line\)\)\.map\(redactAndroidDeviceLine\)/);
   assert.match(source, /Android physical device: none attached/);
+});
+
+test("real device availability output redacts device identifiers", () => {
+  assert.match(source, /function redactAppleDeviceLine/);
+  assert.match(source, /\[redacted-device-id\]/);
+  assert.match(source, /\[redacted-device\]/);
+  assert.match(source, /function redactAndroidDeviceLine/);
+  assert.match(source, /\[redacted-android-device\]/);
+  assert.match(packetSource, /\[redacted-device-id\]/);
+  assert.match(packetSource, /Apple host \(\[redacted-device-id\]\)/);
+  assert.match(packetSource, /iOS device/);
+  assert.match(packetSource, /\[redacted-android-device\]/);
 });
 
 test("real-device QA evidence gate requires end-to-end manual release checks", () => {
@@ -79,10 +91,15 @@ test("real-device QA evidence gate requires end-to-end manual release checks", (
   assert.match(evidenceSource, /existsSync\(artifactPath\)/);
 });
 
-test("real-device QA evidence starts blocked until actual device evidence is recorded", () => {
+test("real-device QA evidence stays blocked until full manual evidence is recorded", () => {
   assert.match(evidenceDoc, /iOS real-device QA: not confirmed/);
   assert.match(evidenceDoc, /Android real-device QA: not confirmed/);
-  assert.match(evidenceDoc, /iOS evidence artifacts: pending/);
+  assert.match(evidenceDoc, /iOS Google login: not confirmed/);
+  assert.match(evidenceDoc, /iOS Apple login: not confirmed/);
+  assert.match(evidenceDoc, /iOS Kakao login: not confirmed/);
+  assert.match(evidenceDoc, /iOS local notification permission and scheduling: not confirmed/);
+  assert.match(evidenceDoc, /iOS account deletion request: not confirmed/);
+  assert.match(evidenceDoc, /iOS evidence artifacts: (pending|\/Users\/jyb-m3max\/Desktop\/codex\/jipbab-note\/output\/release-evidence\/)/);
   assert.match(evidenceDoc, /Android evidence artifacts: pending/);
   assert.doesNotMatch(evidenceDoc, /iOS real-device QA: confirmed/);
   assert.doesNotMatch(evidenceDoc, /Android real-device QA: confirmed/);

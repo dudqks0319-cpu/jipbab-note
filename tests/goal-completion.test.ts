@@ -82,3 +82,29 @@ test("goal completion check runs the executable Supabase release check", () => {
   assert.doesNotMatch(source, /Supabase contract checks passed/);
   assert.doesNotMatch(source, /local Supabase schema\/RLS contract evidence in release ledger/);
 });
+
+test("goal completion check treats live Supabase and Storage blockers as blockers", () => {
+  assert.match(source, /운영 Supabase live\/read\/write\/RLS/);
+  assert.match(source, /Supabase live blocks/);
+  assert.match(source, /family_group_id` missing from live/);
+  assert.match(source, /Could not find the 'family_group_id' column/);
+  assert.match(source, /운영 Supabase Storage 정책/);
+  assert.match(source, /Storage still allows cross-prefix/);
+  assert.match(source, /guest upload outside device prefix succeeded/);
+  assert.match(source, /release:supabase-live-unblock-check/);
+  assert.match(source, /check:supabase-storage-live/);
+});
+
+test("goal completion check runs the beginner recipe expansion gates", () => {
+  assert.match(source, /초보자 레시피 데이터 계약\/검증/);
+  assert.match(source, /초보자 레시피 제품 목표/);
+  assert.match(source, /scripts\/validate-recipes\.mjs/);
+  assert.match(source, /scripts\/check-curated-beginner-guidance\.mjs/);
+  assert.match(source, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(source, /scripts\/check-beginner-mobile-evidence\.mjs/);
+  assert.match(source, /recipeValidationCheck\.evidence/);
+  assert.match(source, /curatedBeginnerGuidanceCheck\.evidence/);
+  assert.match(source, /beginnerGoalReadinessCheck\.evidence/);
+  assert.match(source, /beginnerMobileEvidenceCheck\.evidence/);
+  assert.match(source, /초보자 모바일 화면 증거/);
+});

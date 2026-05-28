@@ -2,18 +2,21 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 
 import BottomTab from '@/components/layout/BottomTab'
 
 const AUTH_ROUTES = ['/welcome', '/login', '/signup']
+const ROOT_ROUTES = ['/', '/fridge', '/recipe', '/shopping', '/mypage']
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const edgeSwipeStart = useRef<{ x: number; y: number } | null>(null)
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname === route)
+  const canShowBackButton = !ROOT_ROUTES.includes(pathname)
 
   return (
     <div className="min-h-screen bg-[#f4eee5]">
@@ -41,6 +44,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
             }
           }}
         >
+          {canShowBackButton ? (
+            <button
+              type="button"
+              aria-label="이전 화면으로 돌아가기"
+              className="absolute left-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 flex h-11 w-11 items-center justify-center rounded-full border border-[#ead9c6] bg-[#fffaf3]/95 text-[#3b2a1d] shadow-[0_8px_24px_rgba(82,59,35,0.16)] backdrop-blur"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft size={20} aria-hidden="true" />
+            </button>
+          ) : null}
           {children}
         </main>
         {isAuthRoute ? null : <BottomTab />}

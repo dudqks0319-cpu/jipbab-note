@@ -72,8 +72,25 @@ test("builds a fridge payload from a purchased shopping item", () => {
     quantity: "1모",
     expiryDate: null,
     purchaseDate: "2026-05-19",
+    purchasePlace: null,
+    unitPrice: null,
     memo: "두부조림 장보기에서 냉장고 반영",
   });
+});
+
+test("applies purchase storage and expiry options when reflecting shopping items", () => {
+  const payload = buildIngredientPayloadFromShoppingItem(shoppingItem(), {
+    now: new Date("2026-05-19T08:00:00.000Z"),
+    storageType: "냉동",
+    expiryDate: "2026-06-02",
+    purchasePlace: "동네마트",
+    unitPrice: 2500,
+  });
+
+  assert.equal(payload.storageType, "냉동");
+  assert.equal(payload.expiryDate, "2026-06-02");
+  assert.equal(payload.purchasePlace, "동네마트");
+  assert.equal(payload.unitPrice, 2500);
 });
 
 test("merges purchased shopping items into existing fridge ingredients", () => {

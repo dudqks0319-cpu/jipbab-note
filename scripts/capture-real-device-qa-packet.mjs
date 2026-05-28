@@ -104,6 +104,14 @@ function redact(value) {
     .replace(/\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g, "[redacted-jwt]")
     .replace(/\bsk-[A-Za-z0-9_-]{20,}\b/g, "[redacted-api-key]")
     .replace(/\b(AIza[0-9A-Za-z_-]{20,})\b/g, "[redacted-google-api-key]")
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}\b/g, "[redacted-device-id]")
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b/g, "[redacted-device-id]")
+    .replace(/^.+?MacBook[^\n]*\(\[redacted-device-id\]\)$/gm, "Apple host ([redacted-device-id])")
+    .replace(/^.+?(?=\s+\[redacted-device-id\]\s+(?:available|unavailable))/gm, "iOS device")
+    .replace(/^.+?(?=\s+\(\d+(?:\.\d+){0,2}\)\s+\(\[redacted-device-id\]\)$)/gm, "iOS device")
+    .replace(/[^\s()]+의\s+(?=iPhone|iPad)/g, "[redacted-device] ")
+    .replace(/[^\s()]+(?:'s|’s)\s+(?=iPhone|iPad)/g, "[redacted-device] ")
+    .replace(/(^|\n)(\S+)(\s+device\b(?=\s+(?:usb:|product:|model:|transport_id:)|\s*$)[^\n]*)/g, "$1[redacted-android-device]$3")
     .replace(/((?:SUPABASE_SERVICE_ROLE_KEY|ADMIN_EMAILS|APP_STORE_CONNECT_API_PRIVATE_KEY|GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)\s*=\s*)\S+/g, "$1[redacted]");
 }
 
@@ -326,7 +334,7 @@ function writeDeviceUnblockChecklist() {
     lines.push(
     "## iOS CoreDevice",
     "",
-    "- [ ] Keep iPhone `영빈` unlocked and awake.",
+    "- [ ] Keep iPhone `[redacted-device]` unlocked and awake.",
     "- [ ] Confirm the iPhone trusts this Mac if the trust prompt appears.",
     "- [ ] Confirm Developer Mode is enabled on the iPhone.",
     "- [ ] If iPhone Mirroring prompts for the Mac password, the operator must unlock it before QA continues.",

@@ -37,9 +37,12 @@ test("Play Store submission gate checks Android release readiness without the fu
 });
 
 test("Play Store external gate excludes iOS device and App Store Connect blockers", () => {
+  assert.match(playStoreExternalSource, /scripts\/check-supabase-live\.mjs/);
+  assert.match(playStoreExternalSource, /scripts\/check-supabase-storage-live\.mjs/);
   assert.match(playStoreExternalSource, /scripts\/check-real-device-availability\.mjs", "--platform=android"/);
   assert.match(playStoreExternalSource, /scripts\/check-real-device-qa-evidence\.mjs", "--platform=android"/);
   assert.match(playStoreExternalSource, /scripts\/check-store-console-confirmation\.mjs", "--platform=play"/);
+  assert.match(playStoreExternalSource, /shared production blockers and Android\/Play Store blockers/);
   assert.match(playStoreExternalSource, /does not validate App Store readiness/);
   assert.doesNotMatch(playStoreExternalSource, /--platform=ios/);
   assert.doesNotMatch(playStoreExternalSource, /--platform=appstore/);

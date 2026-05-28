@@ -19,12 +19,35 @@ import type {
 
 const STORAGE_KEY = "jipbab-note-ingredients";
 const DEFAULT_STORAGE_TYPE: IngredientStorageType = "냉장";
+const INGREDIENT_SYNC_UNAVAILABLE_MESSAGE = "재료 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
 type IngredientDataSource = "supabase" | "local";
+type IngredientScope = "personal" | "family";
+
+type IngredientScopeOptions = {
+  scope?: IngredientScope;
+  familyGroupId?: string | null;
+  enabled?: boolean;
+};
+
+type IngredientScopeContext = {
+  scope: IngredientScope;
+  familyGroupId: string | null;
+};
+
+type ScopedSupabaseQuery = PromiseLike<{
+  data: unknown;
+  error: unknown;
+}> & {
+  eq: (column: string, value: string) => ScopedSupabaseQuery;
+  is: (column: string, value: null) => ScopedSupabaseQuery;
+  maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
+};
 
 type RawIngredientRow = {
   id: string;
   device_id: string;
   user_id: string | null;
+  family_group_id?: string | null;
   name: string;
   category: IngredientRecord["category"];
   storage_type: IngredientStorageType;
@@ -73,6 +96,7 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
     id: row.id,
     deviceId: row.device_id,
     userId: row.user_id,
+    familyGroupId: row.family_group_id ?? null,
     name: row.name,
     category: row.category,
     storageType: row.storage_type,
@@ -94,7 +118,23 @@ function rowToRecord(row: RawIngredientRow): IngredientRecord {
   };
 }
 
-function safeReadLocalIngredients(deviceId: string): IngredientRecord[] {
+function buildScopeContext(options?: IngredientScopeOptions): IngredientScopeContext {
+  const familyGroupId = options?.familyGroupId?.trim() || null;
+  return {
+    scope: options?.scope === "family" && familyGroupId ? "family" : "personal",
+    familyGroupId,
+  };
+}
+
+function belongsToScope(item: IngredientRecord, deviceId: string, scopeContext: IngredientScopeContext): boolean {
+  if (scopeContext.scope === "family") {
+    return item.familyGroupId === scopeContext.familyGroupId;
+  }
+
+  return item.deviceId === deviceId && !item.familyGroupId;
+}
+
+function safeReadAllLocalIngredients(): IngredientRecord[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -122,11 +162,14 @@ function safeReadLocalIngredients(deviceId: string): IngredientRecord[] {
           typeof item.deviceId === "string" &&
           typeof item.name === "string"
         );
-      })
-      .filter((item) => item.deviceId === deviceId);
+      });
   } catch {
     return [];
   }
+}
+
+function safeReadLocalIngredients(deviceId: string, scopeContext: IngredientScopeContext): IngredientRecord[] {
+  return safeReadAllLocalIngredients().filter((item) => belongsToScope(item, deviceId, scopeContext));
 }
 
 function safeWriteLocalIngredients(nextItems: IngredientRecord[]): void {
@@ -136,38 +179,57 @@ function safeWriteLocalIngredients(nextItems: IngredientRecord[]): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextItems));
 }
 
-function upsertLocalIngredient(nextItem: IngredientRecord): IngredientRecord[] {
-  const current = safeReadLocalIngredients(nextItem.deviceId);
+function replaceScopedLocalIngredients(
+  deviceId: string,
+  scopeContext: IngredientScopeContext,
+  nextScopedItems: IngredientRecord[],
+): IngredientRecord[] {
+  const nextItems = [
+    ...nextScopedItems,
+    ...safeReadAllLocalIngredients().filter((item) => !belongsToScope(item, deviceId, scopeContext)),
+  ];
+  safeWriteLocalIngredients(nextItems);
+  return nextScopedItems;
+}
+
+function upsertLocalIngredient(nextItem: IngredientRecord, scopeContext: IngredientScopeContext): IngredientRecord[] {
+  const current = safeReadAllLocalIngredients();
   const index = current.findIndex((item) => item.id === nextItem.id);
   if (index === -1) {
     const next = [nextItem, ...current];
     safeWriteLocalIngredients(next);
-    return next;
+    return next.filter((item) => belongsToScope(item, nextItem.deviceId, scopeContext));
   }
 
   const next = [...current];
   next[index] = nextItem;
   safeWriteLocalIngredients(next);
-  return next;
+  return next.filter((item) => belongsToScope(item, nextItem.deviceId, scopeContext));
 }
 
-function removeLocalIngredient(deviceId: string, ingredientId: string): IngredientRecord[] {
-  const current = safeReadLocalIngredients(deviceId);
+function removeLocalIngredient(
+  deviceId: string,
+  scopeContext: IngredientScopeContext,
+  ingredientId: string,
+): IngredientRecord[] {
+  const current = safeReadAllLocalIngredients();
   const next = current.filter((item) => item.id !== ingredientId);
   safeWriteLocalIngredients(next);
-  return next;
+  return next.filter((item) => belongsToScope(item, deviceId, scopeContext));
 }
 
 function toInsertPayload(
   deviceId: string,
   payload: IngredientFormPayload,
   userId: string | null,
+  familyGroupId: string | null,
 ): IngredientInsertPayload {
   const normalized = normalizeFormPayload(payload);
 
   return {
     device_id: deviceId,
     user_id: userId,
+    ...(familyGroupId ? { family_group_id: familyGroupId } : {}),
     name: normalized.name,
     category: normalized.category,
     storage_type: normalized.storageType,
@@ -214,6 +276,7 @@ function makeLocalRecord(
   deviceId: string,
   payload: IngredientFormPayload,
   userId: string | null,
+  familyGroupId: string | null,
 ): IngredientRecord {
   const normalized = normalizeFormPayload(payload);
   const now = new Date().toISOString();
@@ -222,6 +285,7 @@ function makeLocalRecord(
     id: uuidv4(),
     deviceId,
     userId,
+    familyGroupId,
     name: normalized.name,
     category: normalized.category ?? null,
     storageType: normalized.storageType ?? DEFAULT_STORAGE_TYPE,
@@ -247,6 +311,20 @@ function makeError(message: string, source: IngredientQueryError["source"]): Ing
   return { message, source };
 }
 
+function hasMissingFamilyScopeColumnError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("family_group_id") && /column|schema cache|does not exist/i.test(message);
+}
+
+function applyIngredientScope(
+  query: ScopedSupabaseQuery,
+  scopeContext: IngredientScopeContext,
+): ScopedSupabaseQuery {
+  return scopeContext.scope === "family" && scopeContext.familyGroupId
+    ? query.eq("family_group_id", scopeContext.familyGroupId)
+    : query.is("family_group_id", null);
+}
+
 export interface UseIngredientsResult {
   ingredients: IngredientRecord[];
   loading: boolean;
@@ -263,15 +341,30 @@ function normalizeIngredientKey(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, "");
 }
 
-export function useIngredients(): UseIngredientsResult {
+export function useIngredients(options?: IngredientScopeOptions): UseIngredientsResult {
   const deviceId = useMemo(() => getDeviceId(), []);
+  const requestedScope = options?.scope ?? "personal";
+  const requestedFamilyGroupId = options?.familyGroupId ?? null;
+  const enabled = options?.enabled ?? true;
+  const scopeContext = useMemo(
+    () => buildScopeContext({ scope: requestedScope, familyGroupId: requestedFamilyGroupId }),
+    [requestedFamilyGroupId, requestedScope],
+  );
   const [ingredients, setIngredients] = useState<IngredientRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<IngredientQueryError | null>(null);
   const [source, setSource] = useState<IngredientDataSource>("local");
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
-    const localFallback = safeReadLocalIngredients(deviceId);
+    if (!enabled) {
+      setIngredients([]);
+      setLoading(false);
+      setError(null);
+      setSource("local");
+      return [];
+    }
+
+    const localFallback = safeReadLocalIngredients(deviceId, scopeContext);
     if (localFallback.length > 0) {
       setIngredients(localFallback);
     }
@@ -280,8 +373,12 @@ export function useIngredients(): UseIngredientsResult {
 
     try {
       const client = getSupabaseClient({ deviceId });
+      const scopedQuery = applyIngredientScope(
+        client.from("ingredients").select("*").order("created_at", { ascending: false }) as unknown as ScopedSupabaseQuery,
+        scopeContext,
+      );
       const { data, error: queryError } = await withTimeout(
-        Promise.resolve(client.from("ingredients").select("*").order("created_at", { ascending: false })),
+        Promise.resolve(scopedQuery),
         INGREDIENT_SYNC_TIMEOUT_MS,
         "재료 목록 동기화 시간이 초과되었습니다.",
       );
@@ -290,27 +387,50 @@ export function useIngredients(): UseIngredientsResult {
         throw queryError;
       }
 
-      const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
+      const mapped = (Array.isArray(data) ? data : []).map((row: unknown) => rowToRecord(row as RawIngredientRow));
       const merged = mergeIngredientRecords(localFallback, mapped);
       setIngredients(merged);
       setSource("supabase");
-      safeWriteLocalIngredients(merged);
+      replaceScopedLocalIngredients(deviceId, scopeContext, merged);
       return merged;
     } catch (caught) {
-      const fallback = safeReadLocalIngredients(deviceId);
+      if (scopeContext.scope === "personal" && hasMissingFamilyScopeColumnError(caught)) {
+        try {
+          const client = getSupabaseClient({ deviceId });
+          const { data, error: legacyQueryError } = await withTimeout(
+            Promise.resolve(client.from("ingredients").select("*").order("created_at", { ascending: false })),
+            INGREDIENT_SYNC_TIMEOUT_MS,
+            "재료 목록 동기화 시간이 초과되었습니다.",
+          );
+          if (legacyQueryError) {
+            throw legacyQueryError;
+          }
+
+          const mapped = (data ?? []).map((row) => rowToRecord(row as RawIngredientRow));
+          const merged = mergeIngredientRecords(localFallback, mapped.filter((item) => !item.familyGroupId));
+          setIngredients(merged);
+          setSource("supabase");
+          replaceScopedLocalIngredients(deviceId, scopeContext, merged);
+          return merged;
+        } catch (legacyCaught) {
+          console.warn("재료 목록 legacy 동기화도 실패", legacyCaught);
+        }
+      }
+
+      const fallback = safeReadLocalIngredients(deviceId, scopeContext);
       setIngredients(fallback);
       setSource("local");
       if (fallback.length > 0) {
         console.warn("재료 목록 로컬 표시로 전환", caught);
         setError(null);
       } else {
-        setError(makeError(caught instanceof Error ? caught.message : "재료 목록 조회 실패", "supabase"));
+        setError(makeError(INGREDIENT_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
       }
       return fallback;
     } finally {
       setLoading(false);
     }
-  }, [deviceId]);
+  }, [deviceId, enabled, scopeContext]);
 
   const fetchIngredient = useCallback(
     async (ingredientId: string): Promise<IngredientRecord | null> => {
@@ -319,26 +439,29 @@ export function useIngredients(): UseIngredientsResult {
 
       try {
         const client = getSupabaseClient({ deviceId });
-        const { data, error: queryError } = await client
+        const scopedQuery = applyIngredientScope(
+          client
           .from("ingredients")
           .select("*")
-          .eq("id", ingredientId)
-          .maybeSingle();
+          .eq("id", ingredientId) as unknown as ScopedSupabaseQuery,
+          scopeContext,
+        );
+        const { data, error: queryError } = await scopedQuery.maybeSingle();
 
         if (queryError) {
           throw queryError;
         }
 
         return data ? rowToRecord(data as RawIngredientRow) : null;
-      } catch (caught) {
-        const fallback = safeReadLocalIngredients(deviceId).find((item) => item.id === ingredientId) ?? null;
-        setError(makeError(caught instanceof Error ? caught.message : "재료 단건 조회 실패", "supabase"));
+      } catch {
+        const fallback = safeReadLocalIngredients(deviceId, scopeContext).find((item) => item.id === ingredientId) ?? null;
+        setError(makeError(INGREDIENT_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
         return fallback;
       } finally {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, scopeContext],
   );
 
   const addIngredient = useCallback(
@@ -352,7 +475,12 @@ export function useIngredients(): UseIngredientsResult {
         const { data: authData } = await client.auth.getUser();
         userId = authData.user?.id ?? null;
 
-        const insertPayload = toInsertPayload(deviceId, payload, userId);
+        const insertPayload = toInsertPayload(
+          deviceId,
+          payload,
+          userId,
+          scopeContext.scope === "family" ? scopeContext.familyGroupId : null,
+        );
         const { data, error: queryError } = await client
           .from("ingredients")
           .insert(insertPayload)
@@ -366,11 +494,16 @@ export function useIngredients(): UseIngredientsResult {
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => [nextRecord, ...prev]);
         setSource("supabase");
-        upsertLocalIngredient(nextRecord);
+        upsertLocalIngredient(nextRecord, scopeContext);
         return nextRecord;
       } catch (caught) {
-        const nextLocal = makeLocalRecord(deviceId, payload, userId);
-        const nextItems = upsertLocalIngredient(nextLocal);
+        const nextLocal = makeLocalRecord(
+          deviceId,
+          payload,
+          userId,
+          scopeContext.scope === "family" ? scopeContext.familyGroupId : null,
+        );
+        const nextItems = upsertLocalIngredient(nextLocal, scopeContext);
         setIngredients(nextItems);
         setSource("local");
         // Supabase가 지연되어도 로컬 저장이 성공하면 사용자는 성공 플로우를 유지합니다.
@@ -381,7 +514,7 @@ export function useIngredients(): UseIngredientsResult {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, scopeContext],
   );
 
   const updateIngredient = useCallback(
@@ -393,12 +526,15 @@ export function useIngredients(): UseIngredientsResult {
         const client = getSupabaseClient({ deviceId });
         const updatePayload = toUpdatePayload(payload);
 
-        const { data, error: queryError } = await client
+        const scopedQuery = applyIngredientScope(
+          client
           .from("ingredients")
           .update(updatePayload)
           .eq("id", ingredientId)
-          .select("*")
-          .maybeSingle();
+          .select("*") as unknown as ScopedSupabaseQuery,
+          scopeContext,
+        );
+        const { data, error: queryError } = await scopedQuery.maybeSingle();
 
         if (queryError) {
           throw queryError;
@@ -411,13 +547,13 @@ export function useIngredients(): UseIngredientsResult {
         const nextRecord = rowToRecord(data as RawIngredientRow);
         setIngredients((prev) => prev.map((item) => (item.id === ingredientId ? nextRecord : item)));
         setSource("supabase");
-        upsertLocalIngredient(nextRecord);
+        upsertLocalIngredient(nextRecord, scopeContext);
         return nextRecord;
       } catch (caught) {
-        const current = safeReadLocalIngredients(deviceId);
+        const current = safeReadLocalIngredients(deviceId, scopeContext);
         const target = current.find((item) => item.id === ingredientId);
         if (!target) {
-          setError(makeError(caught instanceof Error ? caught.message : "재료 수정 실패", "supabase"));
+          setError(makeError("재료를 수정하지 못했습니다. 잠시 후 다시 시도해주세요.", "supabase"));
           return null;
         }
 
@@ -443,7 +579,7 @@ export function useIngredients(): UseIngredientsResult {
           updatedAt: new Date().toISOString(),
         };
 
-        const nextItems = upsertLocalIngredient(nextRecord);
+        const nextItems = upsertLocalIngredient(nextRecord, scopeContext);
         setIngredients(nextItems);
         setSource("local");
         console.warn("재료 수정 로컬 저장으로 전환", caught);
@@ -453,7 +589,7 @@ export function useIngredients(): UseIngredientsResult {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, scopeContext],
   );
 
   const deleteIngredient = useCallback(
@@ -463,7 +599,11 @@ export function useIngredients(): UseIngredientsResult {
 
       try {
         const client = getSupabaseClient({ deviceId });
-        const { error: queryError } = await client.from("ingredients").delete().eq("id", ingredientId);
+        const scopedQuery = applyIngredientScope(
+          client.from("ingredients").delete().eq("id", ingredientId) as unknown as ScopedSupabaseQuery,
+          scopeContext,
+        );
+        const { error: queryError } = await scopedQuery;
 
         if (queryError) {
           throw queryError;
@@ -471,10 +611,10 @@ export function useIngredients(): UseIngredientsResult {
 
         setIngredients((prev) => prev.filter((item) => item.id !== ingredientId));
         setSource("supabase");
-        removeLocalIngredient(deviceId, ingredientId);
+        removeLocalIngredient(deviceId, scopeContext, ingredientId);
         return true;
       } catch (caught) {
-        const nextItems = removeLocalIngredient(deviceId, ingredientId);
+        const nextItems = removeLocalIngredient(deviceId, scopeContext, ingredientId);
         setIngredients(nextItems);
         setSource("local");
         console.warn("재료 삭제 로컬 저장으로 전환", caught);
@@ -484,7 +624,7 @@ export function useIngredients(): UseIngredientsResult {
         setLoading(false);
       }
     },
-    [deviceId],
+    [deviceId, scopeContext],
   );
 
   useEffect(() => {

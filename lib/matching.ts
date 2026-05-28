@@ -32,7 +32,7 @@ const INGREDIENT_ALIAS_GROUPS: Record<string, string[]> = {
   김치: ["배추김치", "묵은지", "신김치", "익은김치"],
   돼지고기: ["앞다리살", "뒷다리살", "목살", "삼겹살", "돼지", "제육용"],
   닭고기: ["닭다리살", "닭가슴살", "닭안심", "닭봉", "닭날개"],
-  두부: ["부침두부", "찌개두부", "순두부"],
+  두부: ["부침두부", "찌개두부"],
   멸치육수: ["육수팩", "코인육수", "다시팩", "멸치다시마육수"],
   간장: ["국간장", "진간장", "양조간장", "맛간장"],
   마늘: ["다진마늘", "간마늘"],
@@ -132,12 +132,23 @@ export type RecipeRecommendationScore = {
   missingIngredientPenalty: number;
   availableIngredientPoints: number;
   freshnessUrgencyPoints: number;
+  beginnerFitPoints: number;
 };
 
 export type RecipeRecommendationRank<TRecipe extends { ingredients: string }> = {
   recipe: TRecipe;
   match: RecipeIngredientMatch;
   score: RecipeRecommendationScore;
+};
+
+type BeginnerRankableRecipe = {
+  beginnerScore?: number | null;
+  difficultyLevel?: number | null;
+  totalMinutes?: number | null;
+  requiredTools?: string[] | null;
+  noFire?: boolean | null;
+  microwave?: boolean | null;
+  fallbackMeal?: string | null;
 };
 
 export function calculateRecipeIngredientMatch(
@@ -293,6 +304,7 @@ export function calculateRecipeRecommendationScore(
   match: RecipeIngredientMatch,
   myIngredients: Array<string | RecipeRecommendationIngredient>,
   today = new Date(),
+  recipe: BeginnerRankableRecipe = {},
 ): RecipeRecommendationScore {
   const inventory = myIngredients.map((item) => toRecommendationIngredient(item));
   const availableIngredientCount = match.matchedIngredients.length;
@@ -311,6 +323,7 @@ export function calculateRecipeRecommendationScore(
     missingIngredientPenalty: missingIngredientCount * 20,
     availableIngredientPoints: availableIngredientCount * 5,
     freshnessUrgencyPoints,
+    beginnerFitPoints: calculateBeginnerFitPoints(recipe),
   };
 
   return {
@@ -319,11 +332,27 @@ export function calculateRecipeRecommendationScore(
       score.matchRatePoints -
       score.missingIngredientPenalty +
       score.availableIngredientPoints +
-      score.freshnessUrgencyPoints,
+      score.freshnessUrgencyPoints +
+      score.beginnerFitPoints,
   };
 }
 
-export function rankRecipeRecommendations<TRecipe extends { ingredients: string }>(
+function calculateBeginnerFitPoints(recipe: BeginnerRankableRecipe): number {
+  if (typeof recipe.beginnerScore !== "number") {
+    return 0;
+  }
+
+  const scorePoints = Math.max(0, Math.min(5, (recipe.beginnerScore - 80) / 3));
+  const difficultyPoints = typeof recipe.difficultyLevel === "number" && recipe.difficultyLevel <= 2 ? 3 : 0;
+  const timePoints = typeof recipe.totalMinutes === "number" && recipe.totalMinutes <= 20 ? 2 : 0;
+  const toolPoints = Array.isArray(recipe.requiredTools) && recipe.requiredTools.length <= 3 ? 2 : 0;
+  const cookingModePoints = recipe.noFire || recipe.microwave ? 2 : 0;
+  const rescuePoints = recipe.fallbackMeal ? 1 : 0;
+
+  return scorePoints + difficultyPoints + timePoints + toolPoints + cookingModePoints + rescuePoints;
+}
+
+export function rankRecipeRecommendations<TRecipe extends { ingredients: string } & BeginnerRankableRecipe>(
   recipes: TRecipe[],
   myIngredients: Array<string | RecipeRecommendationIngredient>,
   today = new Date(),
@@ -333,7 +362,7 @@ export function rankRecipeRecommendations<TRecipe extends { ingredients: string 
   return recipes
     .map((recipe, index) => {
       const match = calculateRecipeIngredientMatch(ingredientNames, recipe.ingredients);
-      const score = calculateRecipeRecommendationScore(match, myIngredients, today);
+      const score = calculateRecipeRecommendationScore(match, myIngredients, today, recipe);
       return { recipe, match, score, index };
     })
     .sort((left, right) => {

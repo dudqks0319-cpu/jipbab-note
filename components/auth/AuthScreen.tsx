@@ -120,15 +120,26 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
       return
     }
 
-    const succeeded = isSignup
-      ? await signUpWithEmail(trimmedEmail, password, nickname)
-      : await signInWithEmail(trimmedEmail, password)
-
-    if (succeeded) {
-      setSuccessMessage(isSignup ? '회원가입이 완료되었습니다. 메일 확인이 필요한 경우 받은편지함을 확인해주세요.' : '로그인되었습니다.')
-      if (!isSignup) {
-        router.push('/mypage')
+    if (isSignup) {
+      const result = await signUpWithEmail(trimmedEmail, password, nickname)
+      if (!result.ok) {
+        return
       }
+
+      if (result.requiresEmailConfirmation) {
+        setSuccessMessage('인증 메일을 보냈습니다. 메일에서 확인을 완료한 뒤 로그인해주세요.')
+        return
+      }
+
+      setSuccessMessage('회원가입이 완료되어 로그인되었습니다.')
+      router.push('/mypage')
+      return
+    }
+
+    const result = await signInWithEmail(trimmedEmail, password)
+    if (result.ok) {
+      setSuccessMessage('로그인되었습니다.')
+      router.push('/mypage')
     }
   }
 
@@ -250,7 +261,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         ) : (
           <section className="flex items-center justify-between pt-2">
             <CheckboxLine text="로그인 상태 유지" />
-            <Link href="/support" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
+            <Link href="/reset-password" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
           </section>
         )}
 

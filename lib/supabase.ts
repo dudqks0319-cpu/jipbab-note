@@ -53,7 +53,7 @@ export function getSupabaseClient(options?: SupabaseClientOptions): SupabaseClie
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      detectSessionInUrl: false,
       flowType: "pkce",
     },
     global: {

@@ -10,6 +10,13 @@ import { getDeviceId } from '@/lib/device-id'
 import { isCommunityEnabled } from '@/lib/release-flags'
 import { getSupabaseClient } from '@/lib/supabase'
 
+const MAX_COMMUNITY_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+const ALLOWED_COMMUNITY_IMAGE_TYPES: Record<string, 'png' | 'jpg' | 'webp'> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+}
+
 function extractFirstUrl(value: string): string | null {
   const match = value.match(/https?:\/\/[^\s]+/i)
   return match?.[0] ?? null
@@ -17,6 +24,19 @@ function extractFirstUrl(value: string): string | null {
 
 function isImageUrl(value: string | null): value is string {
   return Boolean(value?.match(/\.(png|jpe?g|webp|gif)(\?.*)?$/i))
+}
+
+function getCommunityImageExtension(file: File): 'png' | 'jpg' | 'webp' | null {
+  const typeExtension = ALLOWED_COMMUNITY_IMAGE_TYPES[file.type]
+  if (typeExtension) {
+    return typeExtension
+  }
+
+  const extension = file.name.split('.').pop()?.toLowerCase()
+  if (extension === 'jpeg') {
+    return 'jpg'
+  }
+  return extension === 'png' || extension === 'jpg' || extension === 'webp' ? extension : null
 }
 
 export default function CommunityPage() {
@@ -78,6 +98,17 @@ function CommunityEnabledPage() {
 
   const uploadImageFile = async (): Promise<string> => {
     if (!imageFile) return imageUrl.trim()
+    if (imageFile.size > MAX_COMMUNITY_IMAGE_SIZE_BYTES) {
+      setStatusMessage('사진은 5MB 이하 PNG, JPG, WebP만 올릴 수 있어요.')
+      return imageUrl.trim()
+    }
+
+    const extension = getCommunityImageExtension(imageFile)
+    if (!extension) {
+      setStatusMessage('사진은 PNG, JPG, WebP 형식만 올릴 수 있어요.')
+      return imageUrl.trim()
+    }
+
     if (source === 'local') {
       return imagePreviewUrl
     }
@@ -85,8 +116,9 @@ function CommunityEnabledPage() {
     try {
       const deviceId = getDeviceId()
       const client = getSupabaseClient({ deviceId })
-      const extension = imageFile.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const filePath = `${deviceId}/${Date.now()}-${crypto.randomUUID()}.${extension}`
+      const { data: authData } = await client.auth.getUser()
+      const ownerPrefix = authData.user?.id ?? deviceId
+      const filePath = `${ownerPrefix}/${Date.now()}-${crypto.randomUUID()}.${extension}`
       const { error: uploadError } = await client.storage
         .from('community-images')
         .upload(filePath, imageFile, {

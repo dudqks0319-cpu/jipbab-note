@@ -3,6 +3,10 @@ const useRemoteServer = Boolean(
   runtimeAppUrl?.startsWith('https://') || runtimeAppUrl?.startsWith('http://localhost'),
 )
 const cleartext = runtimeAppUrl?.startsWith('http://') ?? false
+const oauthNavigationHosts = [
+  'jipbab-note-app.vercel.app',
+  'xqelabiwtjntwrjqcteo.supabase.co',
+]
 
 const config = {
   appId: 'com.jipbab.note',
@@ -18,6 +22,7 @@ const config = {
         server: {
           url: runtimeAppUrl,
           cleartext,
+          allowNavigation: oauthNavigationHosts,
         },
       }
     : {}),

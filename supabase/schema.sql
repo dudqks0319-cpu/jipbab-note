@@ -36,11 +36,38 @@ begin
 end;
 $$;
 
+-- 가족 냉장고 공유 테이블입니다.
+create table if not exists public.family_groups (
+  id uuid primary key default gen_random_uuid(),
+  owner_user_id uuid null references auth.users(id) on delete set null,
+  owner_device_id text not null,
+  name text not null,
+  invite_code text not null unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint family_groups_name_length check (char_length(name) between 1 and 40),
+  constraint family_groups_invite_code_length check (char_length(invite_code) between 4 and 12)
+);
+
+create table if not exists public.family_members (
+  id uuid primary key default gen_random_uuid(),
+  family_group_id uuid not null references public.family_groups(id) on delete cascade,
+  user_id uuid null references auth.users(id) on delete cascade,
+  device_id text not null,
+  display_name text not null,
+  role text not null default 'member',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint family_members_role_allowed check (role in ('owner', 'member')),
+  constraint family_members_display_name_length check (char_length(display_name) between 1 and 24)
+);
+
 -- 재료 테이블입니다.
 create table if not exists public.ingredients (
   id uuid primary key default gen_random_uuid(),
   device_id text not null,
   user_id uuid null references auth.users(id) on delete set null,
+  family_group_id uuid null references public.family_groups(id) on delete cascade,
   name text not null,
   category text,
   storage_type text not null default '냉장',
@@ -161,6 +188,7 @@ create table if not exists public.shopping_items (
   id uuid primary key default gen_random_uuid(),
   device_id text not null,
   user_id uuid null references auth.users(id) on delete cascade,
+  family_group_id uuid null references public.family_groups(id) on delete cascade,
   name text not null,
   quantity text,
   category text,
@@ -195,6 +223,23 @@ create table if not exists public.community_comments (
   updated_at timestamptz not null default now()
 );
 
+-- 레시피 댓글 테이블입니다.
+create table if not exists public.recipe_comments (
+  id uuid primary key default gen_random_uuid(),
+  recipe_id text not null,
+  device_id text not null,
+  user_id uuid null references auth.users(id) on delete set null,
+  author_name text not null default '집밥러',
+  content text not null,
+  status text not null default 'visible',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint recipe_comments_content_length
+    check (char_length(content) between 1 and 500),
+  constraint recipe_comments_status_allowed
+    check (status in ('visible', 'hidden', 'deleted'))
+);
+
 -- 커뮤니티 좋아요 테이블입니다.
 create table if not exists public.community_likes (
   id uuid primary key default gen_random_uuid(),
@@ -224,8 +269,24 @@ create table if not exists public.account_deletion_request_events (
   created_at timestamptz not null default now()
 );
 
+create unique index if not exists family_members_user_group_unique
+on public.family_members(family_group_id, user_id)
+where user_id is not null;
+
+create unique index if not exists family_members_device_group_unique
+on public.family_members(family_group_id, device_id)
+where user_id is null;
+
+create index if not exists idx_family_groups_owner_user_id on public.family_groups(owner_user_id);
+create index if not exists idx_family_groups_owner_device_id on public.family_groups(owner_device_id);
+create index if not exists idx_family_groups_invite_code on public.family_groups(invite_code);
+create index if not exists idx_family_members_family_group_id on public.family_members(family_group_id);
+create index if not exists idx_family_members_user_id on public.family_members(user_id);
+create index if not exists idx_family_members_device_id on public.family_members(device_id);
+
 create index if not exists idx_ingredients_device_id on public.ingredients(device_id);
 create index if not exists idx_ingredients_user_id on public.ingredients(user_id);
+create index if not exists idx_ingredients_family_group_id on public.ingredients(family_group_id);
 create index if not exists idx_ingredients_expiry_date on public.ingredients(expiry_date);
 
 create index if not exists idx_recipes_category on public.recipes(category);
@@ -240,6 +301,7 @@ create index if not exists idx_favorites_recipe_id on public.favorites(recipe_id
 
 create index if not exists idx_shopping_items_device_id on public.shopping_items(device_id);
 create index if not exists idx_shopping_items_user_id on public.shopping_items(user_id);
+create index if not exists idx_shopping_items_family_group_id on public.shopping_items(family_group_id);
 create index if not exists idx_shopping_items_checked on public.shopping_items(checked);
 create index if not exists idx_shopping_items_created_at on public.shopping_items(created_at desc);
 
@@ -251,6 +313,10 @@ create index if not exists idx_community_comments_post_id on public.community_co
 create index if not exists idx_community_comments_device_id on public.community_comments(device_id);
 create index if not exists idx_community_comments_user_id on public.community_comments(user_id);
 create index if not exists idx_community_comments_created_at on public.community_comments(created_at asc);
+
+create index if not exists idx_recipe_comments_recipe_id on public.recipe_comments(recipe_id, created_at desc);
+create index if not exists idx_recipe_comments_user_id on public.recipe_comments(user_id);
+create index if not exists idx_recipe_comments_status on public.recipe_comments(status);
 
 create index if not exists idx_community_likes_post_id on public.community_likes(post_id);
 create index if not exists idx_community_likes_device_id on public.community_likes(device_id);
@@ -283,6 +349,34 @@ where status = 'requested';
 alter table public.favorites alter column device_id set not null;
 alter table public.community_posts alter column author_name set default '익명 집밥러';
 alter table public.community_comments alter column author_name set default '익명 집밥러';
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'set_family_groups_updated_at'
+      and tgrelid = 'public.family_groups'::regclass
+  ) then
+    create trigger set_family_groups_updated_at
+    before update on public.family_groups
+    for each row
+    execute function public.set_updated_at();
+  end if;
+
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'set_family_members_updated_at'
+      and tgrelid = 'public.family_members'::regclass
+  ) then
+    create trigger set_family_members_updated_at
+    before update on public.family_members
+    for each row
+    execute function public.set_updated_at();
+  end if;
+end
+$$;
 
 do $$
 begin
@@ -348,6 +442,24 @@ begin
 end
 $$;
 
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'set_recipe_comments_updated_at'
+      and tgrelid = 'public.recipe_comments'::regclass
+  ) then
+    create trigger set_recipe_comments_updated_at
+    before update on public.recipe_comments
+    for each row
+    execute function public.set_updated_at();
+  end if;
+end
+$$;
+
+alter table public.family_groups enable row level security;
+alter table public.family_members enable row level security;
 alter table public.ingredients enable row level security;
 alter table public.favorites enable row level security;
 alter table public.recipes enable row level security;
@@ -355,17 +467,123 @@ alter table public.recipe_sources enable row level security;
 alter table public.shopping_items enable row level security;
 alter table public.community_posts enable row level security;
 alter table public.community_comments enable row level security;
+alter table public.recipe_comments enable row level security;
 alter table public.community_likes enable row level security;
 alter table public.account_deletion_requests enable row level security;
 alter table public.account_deletion_request_events enable row level security;
+
+drop policy if exists family_groups_select_member on public.family_groups;
+create policy family_groups_select_member
+on public.family_groups
+for select
+using (
+  exists (
+    select 1
+    from public.family_members m
+    where m.family_group_id = family_groups.id
+      and (
+        ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+        or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+      )
+  )
+);
+
+drop policy if exists family_groups_insert_owner on public.family_groups;
+create policy family_groups_insert_owner
+on public.family_groups
+for insert
+with check (
+  ((select auth.uid()) is not null and owner_user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and owner_user_id is null and owner_device_id = (select app.current_device_id()))
+);
+
+drop policy if exists family_groups_update_owner on public.family_groups;
+create policy family_groups_update_owner
+on public.family_groups
+for update
+using (
+  ((select auth.uid()) is not null and owner_user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and owner_user_id is null and owner_device_id = (select app.current_device_id()))
+)
+with check (
+  ((select auth.uid()) is not null and owner_user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and owner_user_id is null and owner_device_id = (select app.current_device_id()))
+);
+
+drop policy if exists family_members_select_same_group on public.family_members;
+create policy family_members_select_same_group
+on public.family_members
+for select
+using (
+  exists (
+    select 1
+    from public.family_members viewer
+    where viewer.family_group_id = family_members.family_group_id
+      and (
+        ((select auth.uid()) is not null and viewer.user_id = (select auth.uid()))
+        or ((select auth.uid()) is null and viewer.user_id is null and viewer.device_id = (select app.current_device_id()))
+      )
+  )
+);
+
+drop policy if exists family_members_insert_self_or_owner on public.family_members;
+create policy family_members_insert_self_or_owner
+on public.family_members
+for insert
+with check (
+  (
+    ((select auth.uid()) is not null and user_id = (select auth.uid()))
+    or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  )
+  and (
+    select count(*)
+    from public.family_members m
+    where m.family_group_id = family_members.family_group_id
+  ) < 4
+);
+
+drop policy if exists family_members_delete_self_or_owner on public.family_members;
+create policy family_members_delete_self_or_owner
+on public.family_members
+for delete
+using (
+  ((select auth.uid()) is not null and user_id = (select auth.uid()))
+  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  or exists (
+    select 1
+    from public.family_groups g
+    where g.id = family_members.family_group_id
+      and (
+        ((select auth.uid()) is not null and g.owner_user_id = (select auth.uid()))
+        or ((select auth.uid()) is null and g.owner_user_id is null and g.owner_device_id = (select app.current_device_id()))
+      )
+  )
+);
 
 drop policy if exists ingredients_select_own on public.ingredients;
 create policy ingredients_select_own
 on public.ingredients
 for select
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = ingredients.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists ingredients_insert_own on public.ingredients;
@@ -373,8 +591,29 @@ create policy ingredients_insert_own
 on public.ingredients
 for insert
 with check (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = ingredients.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists ingredients_update_own on public.ingredients;
@@ -382,12 +621,46 @@ create policy ingredients_update_own
 on public.ingredients
 for update
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = ingredients.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 )
 with check (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = ingredients.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists ingredients_delete_own on public.ingredients;
@@ -395,8 +668,25 @@ create policy ingredients_delete_own
 on public.ingredients
 for delete
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = ingredients.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists favorites_select_own on public.favorites;
@@ -451,8 +741,25 @@ create policy shopping_items_select_own
 on public.shopping_items
 for select
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = shopping_items.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists shopping_items_insert_own on public.shopping_items;
@@ -460,8 +767,29 @@ create policy shopping_items_insert_own
 on public.shopping_items
 for insert
 with check (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = shopping_items.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists shopping_items_update_own on public.shopping_items;
@@ -469,12 +797,46 @@ create policy shopping_items_update_own
 on public.shopping_items
 for update
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = shopping_items.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 )
 with check (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = shopping_items.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists shopping_items_delete_own on public.shopping_items;
@@ -482,8 +844,25 @@ create policy shopping_items_delete_own
 on public.shopping_items
 for delete
 using (
-  ((select auth.uid()) is not null and user_id = (select auth.uid()))
-  or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+  (
+    family_group_id is null
+    and (
+      ((select auth.uid()) is not null and user_id = (select auth.uid()))
+      or ((select auth.uid()) is null and user_id is null and device_id = (select app.current_device_id()))
+    )
+  )
+  or (
+    family_group_id is not null
+    and exists (
+      select 1
+      from public.family_members m
+      where m.family_group_id = shopping_items.family_group_id
+        and (
+          ((select auth.uid()) is not null and m.user_id = (select auth.uid()))
+          or ((select auth.uid()) is null and m.user_id is null and m.device_id = (select app.current_device_id()))
+        )
+    )
+  )
 );
 
 drop policy if exists recipes_select_public on public.recipes;
@@ -541,6 +920,47 @@ on public.recipe_sources
 for delete
 to service_role
 using (true);
+
+drop policy if exists recipe_comments_select_visible on public.recipe_comments;
+create policy recipe_comments_select_visible
+on public.recipe_comments
+for select
+using (status = 'visible');
+
+drop policy if exists recipe_comments_insert_authenticated on public.recipe_comments;
+create policy recipe_comments_insert_authenticated
+on public.recipe_comments
+for insert
+with check (
+  (select auth.uid()) is not null
+  and user_id = (select auth.uid())
+  and status = 'visible'
+  and char_length(content) between 1 and 500
+);
+
+drop policy if exists recipe_comments_update_own on public.recipe_comments;
+create policy recipe_comments_update_own
+on public.recipe_comments
+for update
+using (
+  (select auth.uid()) is not null
+  and user_id = (select auth.uid())
+)
+with check (
+  (select auth.uid()) is not null
+  and user_id = (select auth.uid())
+  and status in ('visible', 'hidden', 'deleted')
+  and char_length(content) between 1 and 500
+);
+
+drop policy if exists recipe_comments_delete_own on public.recipe_comments;
+create policy recipe_comments_delete_own
+on public.recipe_comments
+for delete
+using (
+  (select auth.uid()) is not null
+  and user_id = (select auth.uid())
+);
 
 drop policy if exists community_posts_select_public on public.community_posts;
 create policy community_posts_select_public
@@ -690,5 +1110,95 @@ using (
     where r.id = account_deletion_request_events.request_id
       and (select auth.uid()) is not null
       and r.user_id = (select auth.uid())
+  )
+);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'community-images',
+  'community-images',
+  true,
+  5242880,
+  array['image/png', 'image/jpeg', 'image/webp']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists community_images_select_public on storage.objects;
+create policy community_images_select_public
+on storage.objects
+for select
+using (bucket_id = 'community-images');
+
+drop policy if exists community_images_insert_own_path on storage.objects;
+create policy community_images_insert_own_path
+on storage.objects
+for insert
+with check (
+  bucket_id = 'community-images'
+  and (
+    (
+      (select auth.uid()) is not null
+      and name like ((select auth.uid())::text || '/%')
+    )
+    or (
+      (select auth.uid()) is null
+      and (select app.current_device_id()) is not null
+      and name like ((select app.current_device_id()) || '/%')
+    )
+  )
+);
+
+drop policy if exists community_images_update_own_path on storage.objects;
+create policy community_images_update_own_path
+on storage.objects
+for update
+using (
+  bucket_id = 'community-images'
+  and (
+    (
+      (select auth.uid()) is not null
+      and name like ((select auth.uid())::text || '/%')
+    )
+    or (
+      (select auth.uid()) is null
+      and (select app.current_device_id()) is not null
+      and name like ((select app.current_device_id()) || '/%')
+    )
+  )
+)
+with check (
+  bucket_id = 'community-images'
+  and (
+    (
+      (select auth.uid()) is not null
+      and name like ((select auth.uid())::text || '/%')
+    )
+    or (
+      (select auth.uid()) is null
+      and (select app.current_device_id()) is not null
+      and name like ((select app.current_device_id()) || '/%')
+    )
+  )
+);
+
+drop policy if exists community_images_delete_own_path on storage.objects;
+create policy community_images_delete_own_path
+on storage.objects
+for delete
+using (
+  bucket_id = 'community-images'
+  and (
+    (
+      (select auth.uid()) is not null
+      and name like ((select auth.uid())::text || '/%')
+    )
+    or (
+      (select auth.uid()) is null
+      and (select app.current_device_id()) is not null
+      and name like ((select app.current_device_id()) || '/%')
+    )
   )
 );

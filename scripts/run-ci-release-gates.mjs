@@ -13,6 +13,11 @@ const checks = [
     args: ["scripts/check-local-mode-release.mjs"],
   },
   {
+    name: "beginner-goal-readiness",
+    command: "node",
+    args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],
@@ -26,6 +31,11 @@ const checks = [
     name: "store-assets-contract",
     command: "node",
     args: ["scripts/check-store-assets.mjs"],
+  },
+  {
+    name: "cloudflare-config-contract",
+    command: "node",
+    args: ["scripts/check-cloudflare-config.mjs"],
   },
   {
     name: "release-security",

@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare/open-next generated artifacts
+.open-next/
+.wrangler/
+
 # Supabase local CLI state
 supabase/.temp/
 
@@ -59,3 +63,4 @@ uidump*.xml
 
 # local agent/orchestration state
 .omx/
+.worktrees/

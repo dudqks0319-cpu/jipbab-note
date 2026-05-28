@@ -58,6 +58,19 @@ function parseCoreDeviceRows(output) {
     .filter((device) => /\b(iPhone|iPad)\b/.test(device.model));
 }
 
+function redactAppleDeviceLine(line) {
+  return line
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}\b/g, "[redacted-device-id]")
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b/g, "[redacted-device-id]")
+    .replace(/^.+?(?=\s+\(\d+(?:\.\d+){0,2}\)\s+\(\[redacted-device-id\]\)$)/, "iOS device")
+    .replace(/[^\s()]+의\s+(?=iPhone|iPad)/g, "[redacted-device] ")
+    .replace(/[^\s()]+(?:'s|’s)\s+(?=iPhone|iPad)/g, "[redacted-device] ");
+}
+
+function summarizeCoreDevice(device) {
+  return redactAppleDeviceLine([device.state, device.model].filter(Boolean).join(" "));
+}
+
 function listIosCoreDevices() {
   const result = spawnSync("xcrun", ["devicectl", "list", "devices"], {
     cwd: process.cwd(),
@@ -83,8 +96,8 @@ function listIosCoreDevices() {
 
   const devices = parseCoreDeviceRows(output);
   return {
-    available: devices.filter((device) => device.state === "available").map((device) => device.raw),
-    unavailable: devices.filter((device) => device.state && device.state !== "available").map((device) => device.raw),
+    available: devices.filter((device) => device.state === "available").map(summarizeCoreDevice),
+    unavailable: devices.filter((device) => device.state && device.state !== "available").map(summarizeCoreDevice),
     error: "",
   };
 }
@@ -113,10 +126,14 @@ function listIosDevices() {
   }
 
   return {
-    available: sectionLines(output, "Devices").filter(looksLikeIosPhysicalDevice),
-    offline: sectionLines(output, "Devices Offline").filter(looksLikeIosPhysicalDevice),
+    available: sectionLines(output, "Devices").filter(looksLikeIosPhysicalDevice).map(redactAppleDeviceLine),
+    offline: sectionLines(output, "Devices Offline").filter(looksLikeIosPhysicalDevice).map(redactAppleDeviceLine),
     error: "",
   };
+}
+
+function redactAndroidDeviceLine(line) {
+  return line.replace(/^\S+/, "[redacted-android-device]");
 }
 
 function listAndroidDevices() {
@@ -156,8 +173,8 @@ function listAndroidDevices() {
     .filter((line) => line && !line.startsWith("List of devices attached"));
 
   return {
-    available: deviceLines.filter((line) => /^\S+\s+device\b/.test(line)),
-    unavailable: deviceLines.filter((line) => !/^\S+\s+device\b/.test(line)),
+    available: deviceLines.filter((line) => /^\S+\s+device\b/.test(line)).map(redactAndroidDeviceLine),
+    unavailable: deviceLines.filter((line) => !/^\S+\s+device\b/.test(line)).map(redactAndroidDeviceLine),
     error: "",
   };
 }
@@ -166,10 +183,39 @@ function summarizeDevice(line) {
   return line.replace(/\s+/g, " ").slice(0, 160);
 }
 
+function isConnectingOnlyFailure(coreIos) {
+  return (
+    coreIos &&
+    coreIos.unavailable.length > 0 &&
+    coreIos.unavailable.every((device) => /\bconnecting\b/i.test(device))
+  );
+}
+
+function waitForMs(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function listIosDevicesWithRetry() {
+  let ios = listIosDevices();
+  let coreIos = listIosCoreDevices();
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (ios.available.length > 0 || coreIos.available.length > 0 || !isConnectingOnlyFailure(coreIos)) {
+      break;
+    }
+    waitForMs(1000);
+    ios = listIosDevices();
+    coreIos = listIosCoreDevices();
+  }
+
+  return { ios, coreIos };
+}
+
 function run() {
   const platform = targetPlatform();
-  const ios = shouldCheck(platform, "ios") ? listIosDevices() : null;
-  const coreIos = shouldCheck(platform, "ios") ? listIosCoreDevices() : null;
+  const iosState = shouldCheck(platform, "ios") ? listIosDevicesWithRetry() : null;
+  const ios = iosState?.ios ?? null;
+  const coreIos = iosState?.coreIos ?? null;
   const android = shouldCheck(platform, "android") ? listAndroidDevices() : null;
   const failures = [];
   const passes = [];

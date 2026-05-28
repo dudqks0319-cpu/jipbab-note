@@ -45,7 +45,6 @@ export default function MyPage() {
     refreshUser,
   } = useAuth()
 
-  const isAdminUser = Boolean(userEmail && userEmail === 'dudqks0319@gmail.com')
   const syncSummary = summarizeAuthMigrationState({ migrating, error, migrationResult })
 
   return (
@@ -150,7 +149,6 @@ export default function MyPage() {
           <MenuLink href="/community" icon={MessageCircle} label="커뮤니티 안내" />
           <MenuLink href="/support" icon={MessageCircle} label="고객센터" />
           {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제 요청" danger /> : null}
-          {isAdminUser ? <MenuLink href="/admin/account-deletions" icon={Settings} label="운영자 삭제 요청함" /> : null}
         </div>
       </section>
 

@@ -6,6 +6,14 @@ import type {
   ShoppingItem,
 } from "../types/index.ts";
 
+type ShoppingToFridgeOptions = {
+  now?: Date;
+  storageType?: IngredientStorageType;
+  expiryDate?: string | null;
+  purchasePlace?: string | null;
+  unitPrice?: number | null;
+};
+
 export function normalizeShoppingIngredientName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, "");
 }
@@ -57,15 +65,17 @@ function buildShoppingMemo(item: ShoppingItem, action: "added" | "merged"): stri
 
 export function buildIngredientPayloadFromShoppingItem(
   item: ShoppingItem,
-  options: { now?: Date } = {},
+  options: ShoppingToFridgeOptions = {},
 ): IngredientFormPayload {
   return {
     name: item.name,
     category: item.category,
-    storageType: getStorageTypeForShoppingCategory(item.category),
+    storageType: options.storageType ?? getStorageTypeForShoppingCategory(item.category),
     quantity: item.quantity,
-    expiryDate: null,
+    expiryDate: options.expiryDate ?? null,
     purchaseDate: todayDateOnly(options.now),
+    purchasePlace: options.purchasePlace ?? null,
+    unitPrice: options.unitPrice ?? null,
     memo: buildShoppingMemo(item, "added"),
   };
 }
@@ -73,19 +83,19 @@ export function buildIngredientPayloadFromShoppingItem(
 export function buildMergedIngredientPayloadFromShoppingItem(
   existing: IngredientRecord,
   item: ShoppingItem,
-  options: { now?: Date } = {},
+  options: ShoppingToFridgeOptions = {},
 ): IngredientFormPayload {
   return {
     name: existing.name,
     category: existing.category ?? item.category,
-    storageType: existing.storageType,
+    storageType: options.storageType ?? existing.storageType,
     quantity: mergeQuantityDisplay(existing.quantity, item.quantity),
-    expiryDate: existing.expiryDate,
+    expiryDate: options.expiryDate ?? existing.expiryDate,
     purchaseDate: existing.purchaseDate ?? todayDateOnly(options.now),
     openedAt: existing.openedAt,
     storageLocation: existing.storageLocation,
-    unitPrice: existing.unitPrice,
-    purchasePlace: existing.purchasePlace,
+    unitPrice: options.unitPrice ?? existing.unitPrice,
+    purchasePlace: options.purchasePlace ?? existing.purchasePlace,
     consumedAt: null,
     discardedAt: null,
     repeatPurchase: existing.repeatPurchase,

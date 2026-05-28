@@ -1,10 +1,30 @@
 // 이 파일은 경쟁 앱 대비 첫 체감 품질을 높이기 위한 한국 집밥 큐레이션 레시피를 제공합니다.
-import type { RecipeDetailRecord, RecipeIngredientDetail, RecipeRecord } from "@/types";
+import type {
+  BeginnerRecipeSafety,
+  BeginnerRecipeSource,
+  RecipeHomeCardCopy,
+  RecipeDetailRecord,
+  RecipeDetailStep,
+  RecipeDifficultyLevel,
+  RecipeIngredientDetail,
+  RecipeRecord,
+} from "@/types";
+import {
+  BEGINNER_RECIPE_LIBRARY,
+  CORE_RECIPE_50_NAMES as BEGINNER_CORE_RECIPE_50_NAMES,
+  ONBOARDING_RECIPE_10_NAMES as BEGINNER_ONBOARDING_RECIPE_10_NAMES,
+  RELEASE_RECIPE_30_NAMES as BEGINNER_RELEASE_RECIPE_30_NAMES,
+  type BeginnerRecipe,
+} from "./beginner-recipes.ts";
 
 export type CuratedRecipe = RecipeDetailRecord & {
   trustLabel: string;
   featuredReason: string;
 };
+
+export const ONBOARDING_RECIPE_10_NAMES = BEGINNER_ONBOARDING_RECIPE_10_NAMES;
+export const RELEASE_RECIPE_30_NAMES = BEGINNER_RELEASE_RECIPE_30_NAMES;
+export const CORE_RECIPE_50_NAMES = BEGINNER_CORE_RECIPE_50_NAMES;
 
 const DEFAULT_MEASUREMENT_TIPS = [
   "1큰술 = 밥숟가락 평평하게 1번 = 약 15ml",
@@ -12,6 +32,136 @@ const DEFAULT_MEASUREMENT_TIPS = [
   "1컵 = 일반 종이컵 1컵 = 약 180ml",
   "한줌 = 한 손으로 가볍게 집히는 양 = 약 30~50g",
 ];
+
+const JIPBAB_ORIGINAL_SOURCE: BeginnerRecipeSource = {
+  sourceType: "original-general-principle",
+  sourceName: "집밥노트 자체 작성",
+  sourceUrl: null,
+  licenseOrUsageNote: "외부 레시피 원문, 자막, 사진, 썸네일을 복제하지 않고 일반 조리 원리만 바탕으로 새로 작성",
+  rightsNote: "상업 앱 본문 노출 가능하도록 집밥노트 문장으로 작성",
+  imageUsageAllowed: true,
+  adaptedByJipbabNote: true,
+};
+
+const JIPBAB_ORIGINAL_SAFETY: BeginnerRecipeSafety = {
+  safetyLevel: "B",
+  copyrightRisk: "low",
+  privacyRisk: "low",
+  commercialUseRisk: "low",
+  notes: "이미지는 public/images/recipes/SOURCES.md에 기록된 집밥노트용 로컬 자산만 사용",
+  imageUsageAllowed: true,
+  adaptedByJipbabNote: true,
+};
+
+const NO_FIRE_METHODS = new Set(["비비기", "무치기"]);
+
+const inferRequiredTools = (recipe: CuratedRecipe): string[] => {
+  if (recipe.name.includes("전자레인지")) {
+    return ["전자레인지", "전자레인지용 그릇", "숟가락"];
+  }
+  if (recipe.name.includes("냉두부") || recipe.name.includes("연두부") || NO_FIRE_METHODS.has(recipe.method)) {
+    return ["그릇", "숟가락"];
+  }
+  if (recipe.method.includes("볶") || recipe.method.includes("부치")) {
+    return ["프라이팬", "뒤집개", "그릇"];
+  }
+  if (recipe.method.includes("끓") || recipe.method.includes("국") || recipe.method.includes("찌개")) {
+    return ["냄비", "국자", "그릇"];
+  }
+  return ["그릇", "숟가락"];
+};
+
+const inferDifficultyLevel = (recipe: CuratedRecipe): RecipeDifficultyLevel => {
+  const raw = typeof recipe.difficulty === "number" ? recipe.difficulty : Number.parseInt(String(recipe.difficulty ?? 2), 10);
+  const normalized = Number.isFinite(raw) ? Math.max(1, Math.min(2, raw)) : 2;
+  return normalized as RecipeDifficultyLevel;
+};
+
+const inferBeginnerScore = (recipe: CuratedRecipe): number => {
+  const ingredientPenalty = Math.max(0, recipe.ingredientList.length - 5) * 2;
+  const stepPenalty = Math.max(0, recipe.steps.length - 4) * 2;
+  const timePenalty = Math.max(0, (recipe.cookingTime ?? 20) - 12);
+  const noFireBonus = recipe.name.includes("냉두부") || recipe.name.includes("연두부") || NO_FIRE_METHODS.has(recipe.method) ? 4 : 0;
+  const microwaveBonus = recipe.name.includes("전자레인지") ? 3 : 0;
+  return Math.max(80, Math.min(96, 92 + noFireBonus + microwaveBonus - ingredientPenalty - timePenalty - stepPenalty));
+};
+
+const inferStepMinutes = (description: string): number | null => {
+  const minuteMatch = description.match(/(\d+(?:\.\d+)?)\s*분/);
+  if (minuteMatch) {
+    return Number(minuteMatch[1]);
+  }
+  const secondMatch = description.match(/(\d+)\s*초/);
+  if (secondMatch) {
+    return Math.max(0.5, Number(secondMatch[1]) / 60);
+  }
+  return null;
+};
+
+const inferStepHeat = (recipe: CuratedRecipe, description: string): string => {
+  if (recipe.name.includes("전자레인지") || description.includes("전자레인지")) {
+    return "불 없음";
+  }
+  if (recipe.name.includes("냉두부") || recipe.name.includes("연두부") || NO_FIRE_METHODS.has(recipe.method)) {
+    return "불 없음";
+  }
+  if (description.includes("강불")) {
+    return "강불";
+  }
+  if (description.includes("약불")) {
+    return "약불";
+  }
+  if (description.includes("중불")) {
+    return "중불";
+  }
+  return "중불";
+};
+
+const enrichStepForBeginner = (recipe: CuratedRecipe, step: RecipeDetailStep): RecipeDetailStep => ({
+  ...step,
+  heat: step.heat ?? inferStepHeat(recipe, step.description),
+  minutes: step.minutes ?? inferStepMinutes(step.description) ?? 1,
+  commonMistake: step.commonMistake ?? "불을 너무 세게 하거나 한 번에 많이 섞으면 기준을 놓치기 쉽습니다.",
+  rescueTip: step.rescueTip ?? "타거나 짜다고 느껴지면 불을 끄고 밥, 두부, 물 중 하나로 맛을 연하게 만드세요.",
+});
+
+const enrichBeginnerRecipe = (recipe: CuratedRecipe): CuratedRecipe => {
+  const requiredTools = recipe.requiredTools ?? inferRequiredTools(recipe);
+  const totalMinutes = recipe.totalMinutes ?? recipe.cookingTime ?? 20;
+  const inferredBeginnerScore = recipe.beginnerScore ?? inferBeginnerScore(recipe);
+  const beginnerScore = ONBOARDING_RECIPE_10_NAMES.some((recipeName) => recipeName === recipe.name)
+    ? Math.max(88, inferredBeginnerScore)
+    : inferredBeginnerScore;
+  return {
+    ...recipe,
+    difficultyLevel: recipe.difficultyLevel ?? inferDifficultyLevel(recipe),
+    beginnerScore,
+    totalMinutes,
+    activeMinutes: recipe.activeMinutes ?? totalMinutes,
+    requiredTools,
+    substituteIngredients: recipe.substituteIngredients ?? [],
+    beforeStart: recipe.beforeStart ?? [
+      "재료를 먼저 꺼내고 양념은 밥숟가락 기준으로 준비합니다.",
+      "팬이나 냄비를 쓰는 메뉴는 불을 켜기 전에 물, 기름, 양념을 손 닿는 곳에 둡니다.",
+    ],
+    steps: recipe.steps.map((step) => enrichStepForBeginner(recipe, step)),
+    successCheck: recipe.successCheck ?? recipe.imageCaption ?? recipe.beginnerSummary ?? "먹기 전 중심부가 충분히 익었는지 확인합니다.",
+    storageTip: recipe.storageTip ?? "남은 음식은 식힌 뒤 밀폐 용기에 담아 냉장 보관하고 가능하면 다음 날 먹습니다.",
+    reheatTip: recipe.reheatTip ?? "다시 데울 때는 김이 충분히 올라올 때까지 데우고 중간에 한 번 섞습니다.",
+    fallbackMeal: recipe.fallbackMeal ?? "간이 세거나 모양이 무너지면 밥 위에 올려 덮밥처럼 먹습니다.",
+    homeCardCopy: recipe.homeCardCopy ?? {
+      title: recipe.name,
+      subtitle: recipe.featuredReason,
+      badge: recipe.trustLabel,
+      cta: "지금 만들기",
+    },
+    noFire: recipe.noFire ?? requiredTools.every((tool) => tool !== "프라이팬" && tool !== "냄비"),
+    microwave: recipe.microwave ?? recipe.name.includes("전자레인지"),
+    source: recipe.source ?? JIPBAB_ORIGINAL_SOURCE,
+    safety: recipe.safety ?? JIPBAB_ORIGINAL_SAFETY,
+    reviewedForBeginner: true,
+  };
+};
 
 function ingredient(
   name: string,
@@ -27,7 +177,721 @@ function ingredient(
   };
 }
 
-export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
+type ReleaseRecipeDraft = {
+  id: string;
+  name: string;
+  category: string;
+  method: string;
+  calories: string;
+  thumbnailUrl: string;
+  ingredients: Array<[name: string, display: string, beginnerNote?: string, prepNote?: string]>;
+  cookingTime: number;
+  servings: number;
+  trustLabel: string;
+  featuredReason: string;
+  beginnerSummary: string;
+  imageCaption: string;
+  steps: Array<[description: string, beginnerTip: string, visualCue: string]>;
+};
+
+function releaseRecipe(draft: ReleaseRecipeDraft): CuratedRecipe {
+  return {
+    id: draft.id,
+    name: draft.name,
+    category: draft.category,
+    method: draft.method,
+    calories: draft.calories,
+    thumbnailUrl: draft.thumbnailUrl,
+    ingredients: draft.ingredients.map(([name]) => name).join(", "),
+    hashTag: "#초보가능 #집밥노트 #실패복구",
+    ingredientList: draft.ingredients.map(([name]) => name),
+    ingredientDetails: draft.ingredients.map(([name, display, beginnerNote, prepNote]) =>
+      ingredient(name, display, beginnerNote, prepNote),
+    ),
+    trustLabel: draft.trustLabel,
+    featuredReason: draft.featuredReason,
+    difficulty: 1,
+    cookingTime: draft.cookingTime,
+    servings: draft.servings,
+    beginnerSummary: draft.beginnerSummary,
+    measurementTips: DEFAULT_MEASUREMENT_TIPS,
+    imageAlt: `${draft.name} 완성 예시`,
+    imageCaption: draft.imageCaption,
+    steps: draft.steps.map(([description, beginnerTip, visualCue], index) => ({
+      index: index + 1,
+      description,
+      imageUrl: null,
+      beginnerTip,
+      visualCue,
+    })),
+  };
+}
+
+const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
+  releaseRecipe({
+    id: "curated-egg-drop-soup",
+    name: "달걀국",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "170",
+    thumbnailUrl: "/images/recipes/jipbab-curated/steamed-egg.png",
+    ingredients: [
+      ["계란", "2개", "국물에 풀면 부드럽게 익습니다."],
+      ["물", "500ml", "종이컵 약 2컵 반입니다."],
+      ["대파", "2큰술", "송송 썰어 마지막에 넣습니다."],
+      ["국간장", "1큰술", "없으면 진간장 1큰술로 시작하세요."],
+      ["소금", "1꼬집", "마지막 간 맞춤용입니다."],
+    ],
+    cookingTime: 10,
+    servings: 2,
+    trustLabel: "10분 국",
+    featuredReason: "계란 2개로 바로 끓이는 가장 쉬운 국",
+    beginnerSummary: "계란은 한 번에 붓지 말고 얇게 흘려 넣어야 큰 덩어리로 뭉치지 않습니다.",
+    imageCaption: "계란이 노랗게 떠 있고 국물이 맑으면 완성입니다.",
+    steps: [
+      ["냄비에 물 500ml와 국간장 1큰술을 넣고 중불로 끓입니다.", "물이 끓기 전부터 간장을 넣으면 간이 고르게 퍼집니다.", "냄비 가장자리에 작은 기포가 올라오면 다음 단계입니다."],
+      ["계란 2개를 그릇에 풀어 젓가락으로 20번 정도 섞습니다.", "흰자 줄이 조금 남아도 괜찮지만 큰 덩어리는 풀어주세요.", "노른자와 흰자가 노란색으로 섞이면 됩니다."],
+      ["국물이 끓으면 계란물을 얇게 돌려 넣고 20초 그대로 둡니다.", "넣자마자 저으면 국물이 탁해질 수 있습니다.", "계란이 구름처럼 떠오르면 젓가락으로 한 번만 저어주세요."],
+      ["대파를 넣고 맛을 본 뒤 싱거우면 소금 1꼬집으로 마무리합니다.", "짠맛은 되돌리기 어려우니 소금은 아주 조금만 넣습니다.", "계란이 하얗고 노랗게 굳으면 먹어도 됩니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-scrambled-egg-rice",
+    name: "스크램블에그 덮밥",
+    category: "밥",
+    method: "볶기",
+    calories: "520",
+    thumbnailUrl: "/images/recipes/jipbab-curated/soy-egg-rice.png",
+    ingredients: [
+      ["계란", "2개", "덮밥 한 그릇에 넉넉한 양입니다."],
+      ["밥", "1공기", "즉석밥 1개도 가능합니다."],
+      ["우유", "2큰술", "없으면 물 2큰술로 대체하세요."],
+      ["간장", "1작은술", "마지막에 밥 가장자리로 넣습니다."],
+      ["식용유", "1작은술", "팬을 얇게 코팅하는 양입니다."],
+    ],
+    cookingTime: 8,
+    servings: 1,
+    trustLabel: "계란 한끼",
+    featuredReason: "계란을 부드럽게 익혀 밥 위에 올리는 덮밥",
+    beginnerSummary: "스크램블은 다 익기 전에 불을 끄면 남은 열로 촉촉하게 마무리됩니다.",
+    imageCaption: "계란 표면이 살짝 촉촉할 때 밥 위에 올리면 부드럽습니다.",
+    steps: [
+      ["계란 2개와 우유 2큰술을 그릇에 넣고 잘 풉니다.", "우유가 없으면 물을 넣어도 퍽퍽함이 줄어듭니다.", "계란물이 연한 노란색으로 고르게 섞이면 됩니다."],
+      ["팬에 식용유 1작은술을 두르고 약불로 30초 데웁니다.", "팬이 너무 뜨거우면 계란이 바로 굳습니다.", "기름이 팬 바닥에 얇게 퍼지면 충분합니다."],
+      ["계란물을 붓고 젓가락으로 천천히 밀어가며 1분 익힙니다.", "빠르게 휘젓기보다 가장자리에서 가운데로 밀어주세요.", "계란이 몽글몽글하지만 윤기가 남아 있으면 됩니다."],
+      ["밥 위에 계란을 올리고 간장 1작은술을 가장자리로 둘러 마무리합니다.", "싱거우면 간장을 1작은술만 더 추가하세요.", "밥과 계란을 섞었을 때 질척하지 않으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-ham-vegetable-fried-rice",
+    name: "햄야채볶음밥",
+    category: "밥",
+    method: "볶기",
+    calories: "560",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    ingredients: [
+      ["밥", "1공기", "찬밥이면 더 고슬고슬합니다."],
+      ["햄", "1/3캔", "스팸이나 슬라이스햄 모두 가능합니다."],
+      ["양파", "1/4개", "작게 썰수록 빨리 익습니다."],
+      ["계란", "1개", "볶음밥을 부드럽게 잡아줍니다."],
+      ["간장", "1큰술", "팬 가장자리로 넣으면 향이 납니다."],
+    ],
+    cookingTime: 15,
+    servings: 1,
+    trustLabel: "팬 1개",
+    featuredReason: "햄과 남은 채소로 만드는 기본 볶음밥",
+    beginnerSummary: "밥을 넣기 전에 햄과 양파를 먼저 볶아야 물기가 줄고 질척하지 않습니다.",
+    imageCaption: "밥알이 따로 움직이고 햄 가장자리가 노릇하면 완성입니다.",
+    steps: [
+      ["햄과 양파를 새끼손톱 크기로 작게 자릅니다.", "크기가 작을수록 익는 시간이 짧아 실패가 줄어듭니다.", "햄과 양파 크기가 비슷하면 볶기 쉽습니다."],
+      ["팬에 햄과 양파를 넣고 중불에서 3분 볶습니다.", "햄에서 기름이 나오면 식용유를 많이 넣지 않아도 됩니다.", "양파가 투명해지고 햄 가장자리가 갈색이면 됩니다."],
+      ["밥 1공기를 넣고 주걱으로 눌러 풀며 2분 볶습니다.", "밥덩어리가 크면 불을 잠깐 약하게 줄이세요.", "밥알에 햄 기름이 고르게 묻으면 됩니다."],
+      ["계란 1개와 간장 1큰술을 넣고 1분 더 볶아 마무리합니다.", "계란이 팬 바닥에 눌기 전에 밥과 섞어주세요.", "계란이 익고 밥이 고슬고슬하면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-kimchi-rice-bowl",
+    name: "김치덮밥",
+    category: "밥",
+    method: "볶기",
+    calories: "480",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    ingredients: [
+      ["김치", "1컵", "가위로 잘게 잘라도 됩니다."],
+      ["밥", "1공기", "따뜻한 밥이면 바로 올릴 수 있습니다."],
+      ["계란", "1개", "프라이로 올리면 간이 부드러워집니다."],
+      ["설탕", "1작은술", "신김치의 신맛을 줄입니다."],
+      ["참기름", "1작은술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 12,
+    servings: 1,
+    trustLabel: "김치 활용",
+    featuredReason: "볶음밥보다 쉬운 김치 한 그릇",
+    beginnerSummary: "밥을 같이 볶지 않고 김치만 볶아 올리면 눌어붙을 걱정이 줄어듭니다.",
+    imageCaption: "김치가 부드럽고 국물이 자작하게 남으면 밥 위에 올리기 좋습니다.",
+    steps: [
+      ["김치를 1cm 크기로 자르고 설탕 1작은술을 섞습니다.", "신김치일수록 설탕이 신맛을 줄여줍니다.", "김치 조각이 숟가락에 잘 올라가면 됩니다."],
+      ["팬에 김치를 넣고 중불에서 4분 볶습니다.", "타기 시작하면 물 2큰술을 넣어주세요.", "김치 색이 진해지고 줄기가 부드러워지면 됩니다."],
+      ["따뜻한 밥 1공기를 그릇에 담고 볶은 김치를 올립니다.", "밥은 전자레인지로 데우면 덮밥이 더 맛있습니다.", "김치가 밥 위를 반 정도 덮으면 간이 적당합니다."],
+      ["계란프라이와 참기름 1작은술을 올려 마무리합니다.", "계란이 어렵다면 김가루만 올려도 됩니다.", "밥과 섞었을 때 짜면 밥을 조금 더 넣으세요."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-rice-balls",
+    name: "주먹밥",
+    category: "밥",
+    method: "비비기",
+    calories: "430",
+    thumbnailUrl: "/images/recipes/jipbab-curated/soy-egg-rice.png",
+    ingredients: [
+      ["밥", "1공기", "따뜻할 때 뭉치기 쉽습니다."],
+      ["김", "2장", "조미김 1봉도 가능합니다."],
+      ["참치캔", "1/2캔", "기름을 빼면 덜 질척합니다."],
+      ["참기름", "1작은술", "고소한 향을 냅니다."],
+      ["소금", "1꼬집", "간이 부족할 때만 넣습니다."],
+    ],
+    cookingTime: 8,
+    servings: 1,
+    trustLabel: "불 없이",
+    featuredReason: "불 없이 손으로 뭉치는 간단 한끼",
+    beginnerSummary: "밥이 너무 뜨거우면 손을 데일 수 있으니 1분 식힌 뒤 비닐장갑을 끼고 뭉치세요.",
+    imageCaption: "손에 밥알이 많이 묻지 않고 동그랗게 잡히면 완성입니다.",
+    steps: [
+      ["참치캔 기름을 빼고 김은 잘게 부숩니다.", "캔 뚜껑으로 참치를 눌러 기름을 빼면 쉽습니다.", "참치에 기름이 고이지 않으면 됩니다."],
+      ["밥에 참치, 김, 참기름 1작은술을 넣고 섞습니다.", "뜨거운 밥은 1분 식힌 뒤 섞어주세요.", "밥알 전체에 김이 고르게 보이면 됩니다."],
+      ["맛을 보고 싱거우면 소금 1꼬집만 넣습니다.", "조미김을 쓰면 이미 짤 수 있으니 먼저 맛을 보세요.", "짠맛이 약하게 느껴지는 정도가 좋습니다."],
+      ["비닐장갑을 끼고 한입 크기로 꾹 눌러 뭉칩니다.", "잘 안 뭉치면 밥을 조금 더 따뜻하게 데우세요.", "들었을 때 부서지지 않으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-pan-fried-tofu",
+    name: "두부부침",
+    category: "반찬",
+    method: "부치기",
+    calories: "260",
+    thumbnailUrl: "/images/recipes/jipbab-curated/dubu-jorim-basic.png",
+    ingredients: [
+      ["두부", "1모", "부침용 두부가 가장 쉽습니다."],
+      ["소금", "1꼬집", "두부 밑간용입니다."],
+      ["식용유", "1큰술", "팬을 코팅하는 양입니다."],
+      ["간장", "1큰술", "찍어 먹는 양념입니다."],
+      ["대파", "1큰술", "양념에 넣으면 향이 납니다."],
+    ],
+    cookingTime: 15,
+    servings: 2,
+    trustLabel: "두부 기본",
+    featuredReason: "두부 한 모로 바로 만드는 쉬운 반찬",
+    beginnerSummary: "두부 물기를 키친타월로 닦아야 기름이 덜 튀고 모양이 덜 부서집니다.",
+    imageCaption: "두부 겉면이 연한 갈색이고 가운데가 따뜻하면 완성입니다.",
+    steps: [
+      ["두부를 손가락 두께로 자르고 키친타월로 물기를 닦습니다.", "물기가 많으면 기름이 튈 수 있습니다.", "두부 표면에 물방울이 거의 없으면 됩니다."],
+      ["두부 양면에 소금 1꼬집을 나눠 뿌립니다.", "소금을 많이 뿌리면 짜니 아주 조금만 씁니다.", "두부 표면에 소금 알갱이가 살짝 보이면 충분합니다."],
+      ["팬에 식용유 1큰술을 두르고 중불에서 두부를 3분 부칩니다.", "뒤집기 전까지 자주 만지지 마세요.", "가장자리가 연한 갈색이면 뒤집을 때입니다."],
+      ["뒤집어 3분 더 부치고 간장과 대파를 섞어 곁들입니다.", "부서지면 그대로 밥 위에 올려도 맛있습니다.", "양면이 단단하게 잡히면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-soft-tofu-soy-bowl",
+    name: "연두부 간장비빔",
+    category: "반찬",
+    method: "비비기",
+    calories: "180",
+    thumbnailUrl: "/images/recipes/jipbab-curated/dubu-jorim-basic.png",
+    ingredients: [
+      ["연두부", "1팩", "차갑게 먹어도 됩니다."],
+      ["간장", "1큰술", "짠맛의 기준입니다."],
+      ["참기름", "1작은술", "고소한 향을 냅니다."],
+      ["김", "1장", "잘게 부숴 올립니다."],
+      ["대파", "1큰술", "생략해도 됩니다."],
+    ],
+    cookingTime: 5,
+    servings: 1,
+    trustLabel: "불 없이",
+    featuredReason: "포장만 뜯으면 완성되는 초저난도 반찬",
+    beginnerSummary: "연두부는 쉽게 깨지므로 숟가락으로 크게 떠서 그릇에 옮기면 모양이 덜 무너집니다.",
+    imageCaption: "간장이 바닥에 살짝 고이고 김이 위에 올라가면 완성입니다.",
+    steps: [
+      ["연두부 포장을 열고 물을 조심히 따라냅니다.", "두부가 떨어질 수 있으니 싱크대 위에서 여세요.", "포장 안에 물이 거의 남지 않으면 됩니다."],
+      ["연두부를 숟가락으로 크게 떠서 그릇에 담습니다.", "한 번에 뒤집으려다 깨져도 먹는 데 문제없습니다.", "두부가 그릇 중앙에 모이면 됩니다."],
+      ["간장 1큰술과 참기름 1작은술을 두부 위에 뿌립니다.", "간장은 처음부터 많이 넣지 마세요.", "간장이 두부 옆으로 살짝 흘러내리면 충분합니다."],
+      ["김과 대파를 올리고 숟가락으로 크게 떠 먹습니다.", "짰다면 밥 위에 올려 덮밥처럼 먹으면 됩니다.", "두부가 차갑고 고소하게 느껴지면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-soondubu-egg-soup",
+    name: "순두부계란탕",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "240",
+    thumbnailUrl: "/images/recipes/jipbab-curated/doenjang-jjigae-basic.png",
+    ingredients: [
+      ["순두부", "1팩", "봉지째 반으로 잘라 넣으면 쉽습니다."],
+      ["계란", "1개", "마지막에 넣어 부드럽게 익힙니다."],
+      ["물", "400ml", "종이컵 약 2컵입니다."],
+      ["국간장", "1큰술", "기본 간입니다."],
+      ["대파", "2큰술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 12,
+    servings: 2,
+    trustLabel: "부드러운 국",
+    featuredReason: "순두부와 계란으로 부담 없이 끓이는 탕",
+    beginnerSummary: "순두부는 오래 저으면 잘게 부서지니 넣은 뒤에는 크게 한두 번만 저어주세요.",
+    imageCaption: "순두부가 따뜻하고 계란 흰자가 하얗게 익으면 완성입니다.",
+    steps: [
+      ["냄비에 물 400ml와 국간장 1큰술을 넣고 끓입니다.", "간은 마지막에 다시 맞출 수 있으니 처음엔 1큰술만 넣습니다.", "물이 보글보글 끓으면 다음 단계입니다."],
+      ["순두부를 넣고 숟가락으로 큰 덩어리만 나눕니다.", "잘게 으깨지 않아도 먹기 좋습니다.", "두부 덩어리가 숟가락 크기면 됩니다."],
+      ["중불에서 5분 끓인 뒤 계란 1개를 넣습니다.", "계란을 넣고 바로 세게 젓지 마세요.", "흰자가 하얗게 변하면 익고 있는 상태입니다."],
+      ["대파를 넣고 1분 더 끓인 뒤 맛을 봅니다.", "싱거우면 국간장 1작은술만 더 넣으세요.", "국물이 뜨겁고 계란이 흐르지 않으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-bean-sprout-muchim",
+    name: "콩나물무침",
+    category: "반찬",
+    method: "무치기",
+    calories: "120",
+    thumbnailUrl: "/images/recipes/jipbab-curated/bean-sprout-soup.png",
+    ingredients: [
+      ["콩나물", "1봉", "씻어서 물기를 빼고 사용합니다."],
+      ["소금", "1/3작은술", "삶을 때와 무칠 때 나눠 씁니다."],
+      ["참기름", "1작은술", "마지막 향내기용입니다."],
+      ["다진마늘", "1/2작은술", "없으면 생략 가능합니다."],
+      ["대파", "1큰술", "색과 향을 냅니다."],
+    ],
+    cookingTime: 12,
+    servings: 2,
+    trustLabel: "기본 반찬",
+    featuredReason: "콩나물 한 봉지로 만드는 쉬운 나물",
+    beginnerSummary: "콩나물은 뚜껑을 열고 삶으면 비린내 걱정이 적고 익은 정도를 보기 쉽습니다.",
+    imageCaption: "콩나물 줄기가 반투명하고 아삭하게 휘어지면 완성입니다.",
+    steps: [
+      ["콩나물을 흐르는 물에 씻고 지저분한 껍질을 골라냅니다.", "뿌리를 전부 다듬지 않아도 괜찮습니다.", "물에 떠다니는 껍질이 줄면 됩니다."],
+      ["끓는 물에 소금 한 꼬집을 넣고 콩나물을 4분 삶습니다.", "처음이면 뚜껑을 열고 삶는 편이 안전합니다.", "콩나물이 살짝 투명해지면 익은 상태입니다."],
+      ["찬물에 10초 헹군 뒤 체에 밭쳐 물기를 뺍니다.", "물기가 많으면 양념이 싱거워집니다.", "손으로 잡았을 때 물이 뚝뚝 떨어지지 않으면 됩니다."],
+      ["참기름, 다진마늘, 대파, 소금을 넣고 살살 무칩니다.", "세게 주무르면 콩나물이 부러집니다.", "양념이 고르게 묻고 고소한 향이 나면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-gamja-bokkeum",
+    name: "감자볶음",
+    category: "반찬",
+    method: "볶기",
+    calories: "250",
+    thumbnailUrl: "/images/recipes/jipbab-curated/gamja-jorim-basic.png",
+    ingredients: [
+      ["감자", "2개", "얇게 썰수록 빨리 익습니다."],
+      ["양파", "1/4개", "단맛을 더합니다."],
+      ["소금", "1/3작은술", "처음 간은 적게 합니다."],
+      ["식용유", "1큰술", "팬 코팅용입니다."],
+      ["후추", "1꼬집", "생략 가능합니다."],
+    ],
+    cookingTime: 15,
+    servings: 2,
+    trustLabel: "감자 기본",
+    featuredReason: "감자 2개로 만드는 도시락 반찬",
+    beginnerSummary: "감자를 너무 두껍게 썰면 겉은 타고 속은 덜 익으니 얇은 막대 모양으로 썰어주세요.",
+    imageCaption: "감자가 젓가락으로 눌렀을 때 부드럽게 들어가면 완성입니다.",
+    steps: [
+      ["감자는 얇은 막대 모양으로 썰고 물에 3분 담급니다.", "전분을 빼면 팬에 덜 달라붙습니다.", "물이 살짝 뿌옇게 변하면 충분합니다."],
+      ["감자 물기를 빼고 키친타월로 겉물을 닦습니다.", "물기가 많으면 기름이 튈 수 있습니다.", "감자 표면이 축축하지 않으면 됩니다."],
+      ["팬에 식용유를 두르고 감자를 중불에서 6분 볶습니다.", "자주 뒤집기보다 1분마다 섞어주세요.", "감자 가장자리가 투명해지면 익고 있습니다."],
+      ["양파와 소금을 넣고 3분 더 볶아 후추로 마무리합니다.", "덜 익었으면 물 2큰술을 넣고 2분 더 익히세요.", "감자가 휘어지고 부드러우면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-gamja-guk",
+    name: "감자국",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "190",
+    thumbnailUrl: "/images/recipes/jipbab-curated/gamja-jorim-basic.png",
+    ingredients: [
+      ["감자", "2개", "얇게 썰면 빨리 익습니다."],
+      ["계란", "1개", "마지막에 풀어 넣습니다."],
+      ["물", "600ml", "종이컵 약 3컵입니다."],
+      ["국간장", "1큰술", "기본 간입니다."],
+      ["대파", "2큰술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 15,
+    servings: 2,
+    trustLabel: "쉬운 국",
+    featuredReason: "감자와 계란으로 끓이는 담백한 국",
+    beginnerSummary: "감자는 얇게 썰어야 10분 안에 속까지 익고 국물이 탁해지지 않습니다.",
+    imageCaption: "감자 가장자리가 투명하고 젓가락이 들어가면 완성입니다.",
+    steps: [
+      ["감자는 반달 모양으로 얇게 썰고 계란은 풀어둡니다.", "감자가 두꺼우면 익는 시간이 길어집니다.", "감자 두께가 동전 2개 정도면 좋습니다."],
+      ["냄비에 물과 감자를 넣고 중불에서 8분 끓입니다.", "처음부터 감자를 넣어야 속까지 익습니다.", "감자 가장자리가 투명해지면 됩니다."],
+      ["국간장 1큰술을 넣고 계란물을 얇게 돌려 붓습니다.", "계란을 넣고 20초 기다린 뒤 저어주세요.", "계란이 노랗게 떠오르면 됩니다."],
+      ["대파를 넣고 1분 더 끓인 뒤 맛을 봅니다.", "싱거우면 소금 한 꼬집만 넣으세요.", "감자가 부드럽고 국물이 뜨거우면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-tuna-kimchi-jjigae",
+    name: "참치김치찌개",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "360",
+    thumbnailUrl: "/images/recipes/jipbab-curated/pork-kimchi-jjigae-basic.png",
+    ingredients: [
+      ["김치", "1컵", "신김치면 더 맛이 납니다."],
+      ["참치캔", "1캔", "기름은 절반만 사용합니다."],
+      ["두부", "1/2모", "없으면 생략 가능합니다."],
+      ["물", "500ml", "종이컵 약 2컵 반입니다."],
+      ["대파", "2큰술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 18,
+    servings: 2,
+    trustLabel: "캔 찌개",
+    featuredReason: "참치캔과 김치로 끓이는 초보자 찌개",
+    beginnerSummary: "참치는 오래 끓이면 부서지므로 김치를 먼저 끓인 뒤 마지막 쪽에 넣습니다.",
+    imageCaption: "김치가 부드럽고 참치 향이 국물에 섞이면 완성입니다.",
+    steps: [
+      ["김치를 한입 크기로 자르고 냄비에 넣습니다.", "가위로 잘라도 충분합니다.", "김치가 숟가락에 올라가는 크기면 됩니다."],
+      ["물 500ml를 넣고 중불에서 10분 끓입니다.", "김치가 딱딱하면 3분 더 끓여도 됩니다.", "김치 줄기가 휘어지면 부드러워진 상태입니다."],
+      ["참치와 두부를 넣고 5분 더 끓입니다.", "참치는 너무 많이 젓지 않아야 덜 부서집니다.", "두부가 뜨겁고 국물이 다시 끓으면 됩니다."],
+      ["대파를 넣고 맛을 본 뒤 짜면 물을 조금 추가합니다.", "싱거우면 김치국물 2큰술을 넣으세요.", "밥에 올렸을 때 간이 맞으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-spam-kimchi-bokkeum",
+    name: "스팸김치볶음",
+    category: "반찬",
+    method: "볶기",
+    calories: "420",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    ingredients: [
+      ["스팸", "1/2캔", "작은 깍둑 모양으로 자릅니다."],
+      ["김치", "1컵", "잘게 자르면 먹기 쉽습니다."],
+      ["양파", "1/4개", "단맛을 더합니다."],
+      ["설탕", "1작은술", "신맛을 줄입니다."],
+      ["참기름", "1작은술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 12,
+    servings: 2,
+    trustLabel: "밥반찬",
+    featuredReason: "스팸과 김치로 만드는 실패 적은 반찬",
+    beginnerSummary: "스팸이 짜기 때문에 간장은 넣지 않고 김치와 설탕만으로 맛을 맞춥니다.",
+    imageCaption: "김치가 부드럽고 스팸 가장자리가 갈색이면 완성입니다.",
+    steps: [
+      ["스팸은 깍둑썰고 김치와 양파는 작게 자릅니다.", "스팸이 크면 짠맛이 한쪽에 몰립니다.", "재료가 숟가락에 올라가는 크기면 됩니다."],
+      ["팬에 스팸을 넣고 중불에서 2분 볶습니다.", "스팸에서 기름이 나와 식용유가 없어도 됩니다.", "스팸 가장자리가 살짝 갈색이면 됩니다."],
+      ["김치, 양파, 설탕을 넣고 5분 볶습니다.", "타면 물 2큰술을 넣어주세요.", "김치 색이 진해지고 양파가 투명해지면 됩니다."],
+      ["불을 끄고 참기름 1작은술을 넣어 섞습니다.", "짜면 밥 위에 올려 덮밥처럼 먹으면 됩니다.", "기름 향이 올라오면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-eomuk-tang",
+    name: "어묵탕",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "260",
+    thumbnailUrl: "/images/recipes/jipbab-curated/fishcake-bokkeum.png",
+    ingredients: [
+      ["어묵", "4장", "한입 크기로 자릅니다."],
+      ["물", "700ml", "종이컵 약 3컵 반입니다."],
+      ["무", "1컵", "없으면 생략 가능합니다."],
+      ["국간장", "1큰술", "기본 간입니다."],
+      ["대파", "2큰술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 18,
+    servings: 2,
+    trustLabel: "따뜻한 국",
+    featuredReason: "어묵만 있으면 끓일 수 있는 쉬운 국물",
+    beginnerSummary: "어묵은 이미 익은 식품이라 오래 끓일 필요가 없고, 무가 익은 뒤 넣으면 됩니다.",
+    imageCaption: "어묵이 부풀고 국물이 따뜻하게 우러나면 완성입니다.",
+    steps: [
+      ["어묵과 무를 한입 크기로 자릅니다.", "어묵은 가위로 잘라도 됩니다.", "조각이 숟가락에 올라가는 크기면 됩니다."],
+      ["냄비에 물과 무를 넣고 중불에서 10분 끓입니다.", "무가 없으면 이 단계를 5분으로 줄이세요.", "무 가장자리가 투명해지면 됩니다."],
+      ["어묵과 국간장 1큰술을 넣고 5분 끓입니다.", "어묵은 오래 끓이면 너무 불 수 있습니다.", "어묵이 살짝 부풀면 됩니다."],
+      ["대파를 넣고 맛을 본 뒤 싱거우면 소금 한 꼬집을 더합니다.", "짜면 물을 조금 추가하세요.", "국물이 뜨겁고 어묵이 부드러우면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-doenjang-dubu-guk",
+    name: "된장두부국",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "210",
+    thumbnailUrl: "/images/recipes/jipbab-curated/doenjang-jjigae-basic.png",
+    ingredients: [
+      ["된장", "1큰술", "처음에는 적게 풀고 맛을 봅니다."],
+      ["두부", "1/2모", "숟가락 크기로 자릅니다."],
+      ["물", "600ml", "종이컵 약 3컵입니다."],
+      ["애호박", "1/3개", "없으면 양파로 대체 가능합니다."],
+      ["대파", "2큰술", "마지막에 넣습니다."],
+    ],
+    cookingTime: 15,
+    servings: 2,
+    trustLabel: "된장 기본",
+    featuredReason: "두부와 된장으로 끓이는 쉬운 국",
+    beginnerSummary: "된장은 한 번에 많이 넣지 말고 1큰술부터 풀어야 짜지 않습니다.",
+    imageCaption: "된장이 풀려 국물이 탁한 베이지색이고 두부가 뜨거우면 완성입니다.",
+    steps: [
+      ["냄비에 물 600ml를 넣고 된장 1큰술을 풀어 끓입니다.", "된장이 덩어리로 남으면 숟가락으로 눌러 풀어주세요.", "국물이 고르게 베이지색이면 됩니다."],
+      ["애호박을 넣고 중불에서 5분 끓입니다.", "애호박이 없으면 양파를 넣어도 됩니다.", "애호박 가장자리가 투명해지면 됩니다."],
+      ["두부를 넣고 4분 더 끓입니다.", "두부를 넣은 뒤 세게 젓지 마세요.", "두부가 국물 위로 살짝 떠오르면 따뜻해진 상태입니다."],
+      ["대파를 넣고 맛을 본 뒤 짜면 물을 조금 더합니다.", "싱거우면 된장 1작은술만 추가하세요.", "밥과 먹었을 때 간이 맞으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-kimchi-guk",
+    name: "김치국",
+    category: "국·찌개",
+    method: "끓이기",
+    calories: "180",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    ingredients: [
+      ["김치", "1컵", "신김치가 잘 어울립니다."],
+      ["물", "700ml", "종이컵 약 3컵 반입니다."],
+      ["두부", "1/2모", "없으면 생략 가능합니다."],
+      ["국간장", "1큰술", "기본 간입니다."],
+      ["대파", "2큰술", "마지막 향내기용입니다."],
+    ],
+    cookingTime: 15,
+    servings: 2,
+    trustLabel: "김치 국물",
+    featuredReason: "김치만 있어도 끓이는 시원한 국",
+    beginnerSummary: "김치는 충분히 끓여야 신맛이 부드러워지고 국물 맛이 납니다.",
+    imageCaption: "김치 줄기가 부드럽고 국물이 붉게 우러나면 완성입니다.",
+    steps: [
+      ["김치를 한입 크기로 자르고 냄비에 넣습니다.", "가위로 잘라도 됩니다.", "김치 조각이 숟가락에 올라가면 됩니다."],
+      ["물 700ml를 넣고 중불에서 10분 끓입니다.", "김치가 덜 익으면 맛이 날카로울 수 있습니다.", "김치 줄기가 휘어지면 부드러워진 상태입니다."],
+      ["두부와 국간장 1큰술을 넣고 3분 더 끓입니다.", "국간장은 짜니 처음엔 1큰술만 넣습니다.", "두부가 뜨거워지고 국물이 다시 끓으면 됩니다."],
+      ["대파를 넣고 맛을 본 뒤 물이나 김치국물로 조절합니다.", "짜면 물, 싱거우면 김치국물을 조금 넣으세요.", "밥과 먹기 좋은 간이면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-soy-bibim-guksu",
+    name: "간장비빔국수",
+    category: "일품",
+    method: "비비기",
+    calories: "430",
+    thumbnailUrl: "/images/recipes/jipbab-curated/bibim-guksu.png",
+    ingredients: [
+      ["소면", "1인분", "500원 동전 굵기 정도입니다."],
+      ["간장", "1큰술", "양념의 기본입니다."],
+      ["참기름", "1작은술", "고소한 향을 냅니다."],
+      ["설탕", "1작은술", "단맛을 맞춥니다."],
+      ["김", "1장", "잘게 부숴 올립니다."],
+    ],
+    cookingTime: 12,
+    servings: 1,
+    trustLabel: "맵지 않은 면",
+    featuredReason: "고추장 없이 만드는 초보자 비빔국수",
+    beginnerSummary: "면은 삶은 뒤 찬물에 충분히 헹궈야 끈적이지 않고 양념이 깔끔하게 묻습니다.",
+    imageCaption: "면이 갈색 양념으로 고르게 코팅되면 완성입니다.",
+    steps: [
+      ["끓는 물에 소면을 넣고 3분 삶습니다.", "물이 넘치려 하면 찬물 반 컵을 넣으세요.", "면 한 가닥을 먹어 봤을 때 딱딱한 심이 없으면 됩니다."],
+      ["삶은 면을 찬물에 20초 헹구고 물기를 뺍니다.", "전분을 씻어내야 면이 달라붙지 않습니다.", "손으로 만졌을 때 미끈함이 줄면 됩니다."],
+      ["간장, 참기름, 설탕을 그릇에 섞습니다.", "양념은 2/3만 먼저 넣어도 됩니다.", "설탕 알갱이가 거의 녹으면 됩니다."],
+      ["면과 양념을 비빈 뒤 김을 올립니다.", "짜면 면이나 오이를 조금 더 넣어주세요.", "면 전체가 반짝이면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-kimchi-ramyeon",
+    name: "김치라면",
+    category: "일품",
+    method: "끓이기",
+    calories: "540",
+    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    ingredients: [
+      ["라면", "1봉", "기본 봉지라면 기준입니다."],
+      ["김치", "1/2컵", "잘게 자르면 먹기 쉽습니다."],
+      ["계란", "1개", "선택이지만 부드러워집니다."],
+      ["대파", "1큰술", "없으면 생략 가능합니다."],
+      ["물", "550ml", "라면 봉지 기준을 우선합니다."],
+    ],
+    cookingTime: 8,
+    servings: 1,
+    trustLabel: "초간단",
+    featuredReason: "라면에 김치를 더해 한 끼로 만드는 메뉴",
+    beginnerSummary: "김치를 먼저 넣고 끓이면 신맛이 국물에 풀리고, 계란은 마지막에 넣어야 부드럽습니다.",
+    imageCaption: "면이 풀리고 계란 흰자가 하얗게 익으면 완성입니다.",
+    steps: [
+      ["냄비에 물과 김치를 넣고 중불에서 끓입니다.", "김치가 크면 가위로 잘라 넣으세요.", "물이 붉게 끓기 시작하면 됩니다."],
+      ["라면 스프와 면을 넣고 3분 끓입니다.", "면을 억지로 누르지 말고 풀릴 때까지 기다리세요.", "면이 젓가락으로 들리면 풀린 상태입니다."],
+      ["계란 1개를 넣고 40초 그대로 둡니다.", "국물을 맑게 먹고 싶으면 계란을 휘젓지 마세요.", "흰자가 하얗게 변하면 익고 있습니다."],
+      ["대파를 넣고 면 익힘을 확인한 뒤 불을 끕니다.", "덜 익었으면 30초만 더 끓이세요.", "면 가운데 딱딱함이 없으면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-microwave-butter-potato",
+    name: "전자레인지 감자버터",
+    category: "일품",
+    method: "전자레인지",
+    calories: "290",
+    thumbnailUrl: "/images/recipes/jipbab-curated/gamja-jorim-basic.png",
+    ingredients: [
+      ["감자", "1개", "중간 크기 1개입니다."],
+      ["버터", "1조각", "밥숟가락 1/2큰술 정도입니다."],
+      ["소금", "1꼬집", "마지막 간입니다."],
+      ["후추", "1꼬집", "생략 가능합니다."],
+      ["치즈", "1장", "없으면 빼도 됩니다."],
+    ],
+    cookingTime: 8,
+    servings: 1,
+    trustLabel: "전자레인지",
+    featuredReason: "불 없이 감자 하나로 만드는 간식 겸 한끼",
+    beginnerSummary: "감자는 젓가락으로 찔러 보고 딱딱하면 1분씩 추가로 돌리면 됩니다.",
+    imageCaption: "감자 속이 포슬하고 버터가 녹으면 완성입니다.",
+    steps: [
+      ["감자를 깨끗이 씻고 포크로 5번 찌릅니다.", "구멍을 내야 전자레인지에서 터질 위험이 줄어듭니다.", "감자 표면에 작은 구멍이 보이면 됩니다."],
+      ["젖은 키친타월로 감자를 감싸 전자레인지에 4분 돌립니다.", "마른 상태보다 촉촉하게 익습니다.", "감자가 뜨거워지고 껍질이 살짝 주름지면 됩니다."],
+      ["젓가락으로 찔러 보고 딱딱하면 1분 더 돌립니다.", "한 번에 오래 돌리기보다 1분씩 추가하세요.", "젓가락이 가운데까지 들어가면 익은 상태입니다."],
+      ["반을 갈라 버터, 소금, 후추, 치즈를 올립니다.", "너무 뜨거우니 장갑이나 집게를 쓰세요.", "버터가 녹아 감자에 스며들면 완성입니다."],
+    ],
+  }),
+  releaseRecipe({
+    id: "curated-cold-tofu",
+    name: "냉두부",
+    category: "반찬",
+    method: "비비기",
+    calories: "160",
+    thumbnailUrl: "/images/recipes/jipbab-curated/dubu-jorim-basic.png",
+    ingredients: [
+      ["두부", "1/2모", "부드러운 찌개두부도 가능합니다."],
+      ["간장", "1큰술", "짜면 줄여도 됩니다."],
+      ["참기름", "1작은술", "고소한 향을 냅니다."],
+      ["김", "1장", "잘게 부숴 올립니다."],
+      ["대파", "1큰술", "없으면 생략 가능합니다."],
+    ],
+    cookingTime: 5,
+    servings: 1,
+    trustLabel: "불 없이",
+    featuredReason: "처음 요리하는 날에도 바로 성공하는 반찬",
+    beginnerSummary: "두부는 꺼내서 물만 빼면 먹을 수 있어 첫 성공 경험을 만들기 좋습니다.",
+    imageCaption: "두부 위에 양념과 김이 올라가면 바로 먹을 수 있습니다.",
+    steps: [
+      ["두부 포장을 열고 물을 따라냅니다.", "싱크대 위에서 열면 흘려도 정리하기 쉽습니다.", "포장 안에 물이 거의 없으면 됩니다."],
+      ["두부를 접시에 옮기고 먹기 좋은 크기로 자릅니다.", "모양이 무너져도 괜찮습니다.", "숟가락으로 떠먹기 좋은 크기면 됩니다."],
+      ["간장과 참기름을 두부 위에 뿌립니다.", "간장은 1큰술만 먼저 넣고 맛을 보세요.", "양념이 두부 옆으로 살짝 흐르면 충분합니다."],
+      ["김과 대파를 올려 마무리합니다.", "짜면 밥 위에 올려 같이 먹으면 됩니다.", "불을 쓰지 않아도 바로 먹을 수 있는 상태입니다."],
+    ],
+  }),
+];
+
+function getBeginnerRecipeThumbnail(recipe: BeginnerRecipe): string {
+  const title = recipe.title;
+  if (title.includes("토마토")) return "/images/recipes/jipbab-curated/tomato-egg-stirfry.png";
+  if (title.includes("계란말이")) return "/images/recipes/jipbab-curated/gyeran-mari-basic.png";
+  if (title.includes("계란") || title.includes("달걀")) {
+    return title.includes("찜") ? "/images/recipes/jipbab-curated/steamed-egg.png" : "/images/recipes/jipbab-curated/soy-egg-rice.png";
+  }
+  if (title.includes("김치볶음밥") || title.includes("볶음밥")) return "/images/recipes/kimchi-fried-rice.png";
+  if (title.includes("김치찌개")) return "/images/recipes/jipbab-curated/pork-kimchi-jjigae-basic.png";
+  if (title.includes("된장") || title.includes("찌개")) return "/images/recipes/jipbab-curated/doenjang-jjigae-basic.png";
+  if (title.includes("콩나물") || title.includes("국")) return "/images/recipes/jipbab-curated/bean-sprout-soup.png";
+  if (title.includes("두부") || title.includes("순두부") || title.includes("연두부")) return "/images/recipes/jipbab-curated/dubu-jorim-basic.png";
+  if (title.includes("감자") || title.includes("고구마")) return "/images/recipes/jipbab-curated/gamja-jorim-basic.png";
+  if (title.includes("오이")) return "/images/recipes/jipbab-curated/cucumber-muchim.png";
+  if (title.includes("양배추")) return "/images/recipes/jipbab-curated/cabbage-egg-stirfry.png";
+  if (title.includes("어묵")) return "/images/recipes/jipbab-curated/fishcake-bokkeum.png";
+  if (title.includes("국수") || title.includes("우동") || title.includes("라면")) return "/images/recipes/jipbab-curated/bibim-guksu.png";
+  if (title.includes("참치")) return "/images/recipes/jipbab-curated/tuna-mayo-rice-bowl.png";
+  return "/images/recipes/kimchi-fried-rice.png";
+}
+
+function getBeginnerRecipeMethod(recipe: BeginnerRecipe): string {
+  if (recipe.requiredTools.includes("전자레인지")) return "전자레인지";
+  if (recipe.requiredTools.includes("냄비")) return "끓이기";
+  if (recipe.requiredTools.includes("프라이팬")) {
+    return recipe.title.includes("전") || recipe.title.includes("부침") || recipe.title.includes("계란말이")
+      ? "부치기"
+      : "볶기";
+  }
+  return "비비기";
+}
+
+function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
+  const requiredIngredients = recipe.ingredients.filter((ingredientItem) => ingredientItem.required);
+  const homeCardCopy: RecipeHomeCardCopy = recipe.homeCardCopy;
+
+  return {
+    id: recipe.id,
+    slug: recipe.slug,
+    title: recipe.title,
+    name: recipe.title,
+    category: recipe.category,
+    method: getBeginnerRecipeMethod(recipe),
+    calories: "-",
+    thumbnailUrl: getBeginnerRecipeThumbnail(recipe),
+    ingredients: requiredIngredients.map((ingredientItem) => ingredientItem.name).join(", "),
+    hashTag: "#초보가능 #집밥노트 #냉장고추천",
+    ingredientList: requiredIngredients.map((ingredientItem) => ingredientItem.name),
+    ingredientDetails: recipe.ingredients.map((ingredientItem) =>
+      ingredient(
+        ingredientItem.name,
+        ingredientItem.amount,
+        ingredientItem.beginnerNote,
+        ingredientItem.required ? "필수 재료입니다." : "있으면 더 좋아요.",
+      ),
+    ).map((ingredientItem, index) => ({
+      ...ingredientItem,
+      required: recipe.ingredients[index]?.required ?? true,
+      substitute: recipe.ingredients[index]?.substitute ?? null,
+    })),
+    substituteIngredients: recipe.ingredients
+      .filter((ingredientItem) => ingredientItem.substitute)
+      .map((ingredientItem) => ({
+        name: ingredientItem.name,
+        display: ingredientItem.substitute ?? "",
+        amount: null,
+        unit: null,
+        required: false,
+        substitute: null,
+        beginnerNote: `${ingredientItem.name}이 없을 때만 사용하세요.`,
+        prepNote: null,
+      })),
+    trustLabel: recipe.homeCardCopy.badge,
+    featuredReason: recipe.oneLineDescription,
+    difficulty: recipe.difficultyLevel,
+    difficultyLevel: recipe.difficultyLevel,
+    cookingTime: recipe.totalMinutes,
+    totalMinutes: recipe.totalMinutes,
+    activeMinutes: recipe.activeMinutes,
+    servings: recipe.servings,
+    requiredTools: recipe.requiredTools,
+    beginnerScore: recipe.beginnerScore,
+    beginnerSummary: recipe.oneLineDescription,
+    measurementTips: DEFAULT_MEASUREMENT_TIPS,
+    imageAlt: `${recipe.title} 완성 예시`,
+    imageCaption: `${recipe.title}은 초보자 기준으로 상태 확인 문장을 붙인 집밥노트 자체 레시피입니다.`,
+    beforeStart: recipe.beforeStart,
+    steps: recipe.steps.map((step) => ({
+      index: step.order,
+      order: step.order,
+      title: step.title,
+      action: step.action,
+      description: step.action,
+      imageUrl: null,
+      heat: step.heat,
+      minutes: step.minutes,
+      beginnerTip: step.commonMistake,
+      visualCue: step.visualCue,
+      commonMistake: step.commonMistake,
+      rescueTip: step.rescueTip,
+    })),
+    successCheck: recipe.successCheck.join(" "),
+    storageTip: recipe.storageTip,
+    reheatTip: recipe.reheatTip,
+    fallbackMeal: recipe.fallbackMeal,
+    homeCardCopy,
+    noFire: recipe.steps.every((step) => step.heat === "불 없음"),
+    microwave: recipe.requiredTools.includes("전자레인지"),
+    source: recipe.source,
+    safety: {
+      ...recipe.safety,
+      imageUsageAllowed: recipe.source.imageUsageAllowed,
+      adaptedByJipbabNote: recipe.source.adaptedByJipbabNote,
+    },
+    reviewedForBeginner: true,
+    releaseTier: recipe.releaseTier,
+    publishStatus: recipe.publishStatus,
+  };
+}
+
+const RAW_CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
+  ...RELEASE_RECIPE_30_ADDITIONS,
   {
     id: "curated-kimchi-fried-rice",
     name: "김치볶음밥",
@@ -144,7 +1008,7 @@ export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   },
   {
     id: "curated-gyeran-mari",
-    name: "계란말이",
+    name: "프라이팬 계란말이",
     category: "반찬",
     method: "부치기",
     calories: "260",
@@ -493,7 +1357,7 @@ export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   },
   {
     id: "curated-soy-egg-rice",
-    name: "간장계란밥",
+    name: "계란간장밥",
     category: "밥",
     method: "비비기",
     calories: "460",
@@ -550,7 +1414,7 @@ export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   },
   {
     id: "curated-steamed-egg",
-    name: "부드러운 계란찜",
+    name: "전자레인지 계란찜",
     category: "반찬",
     method: "찌기",
     calories: "210",
@@ -1291,7 +2155,7 @@ export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   },
   {
     id: "curated-tomato-egg-stir-fry",
-    name: "토마토계란볶음",
+    name: "토마토달걀볶음",
     category: "일품",
     method: "볶기",
     calories: "300",
@@ -1348,8 +2212,60 @@ export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   },
 ];
 
+const LEGACY_CURATED_FALLBACK_RECIPES: CuratedRecipe[] = RAW_CURATED_JIPBAB_RECIPES.map(enrichBeginnerRecipe);
+const LEGACY_RECIPE_BY_TITLE = new Map(LEGACY_CURATED_FALLBACK_RECIPES.map((recipe) => [recipe.name, recipe]));
+
+function mergeBeginnerContractIntoLegacyRecipe(recipe: BeginnerRecipe, legacy: CuratedRecipe): CuratedRecipe {
+  return {
+    ...legacy,
+    slug: recipe.slug,
+    title: recipe.title,
+    difficultyLevel: legacy.difficultyLevel ?? recipe.difficultyLevel,
+    beginnerScore: Math.max(legacy.beginnerScore ?? 0, recipe.beginnerScore),
+    totalMinutes: legacy.totalMinutes ?? recipe.totalMinutes,
+    activeMinutes: legacy.activeMinutes ?? recipe.activeMinutes,
+    requiredTools: legacy.requiredTools ?? recipe.requiredTools,
+    beforeStart: legacy.beforeStart ?? recipe.beforeStart,
+    successCheck: legacy.successCheck ?? recipe.successCheck.join(" "),
+    storageTip: legacy.storageTip ?? recipe.storageTip,
+    reheatTip: legacy.reheatTip ?? recipe.reheatTip,
+    fallbackMeal: legacy.fallbackMeal ?? recipe.fallbackMeal,
+    homeCardCopy: recipe.homeCardCopy,
+    noFire: legacy.noFire ?? recipe.steps.every((step) => step.heat === "불 없음"),
+    microwave: legacy.microwave ?? recipe.requiredTools.includes("전자레인지"),
+    source: recipe.source,
+    safety: {
+      ...recipe.safety,
+      imageUsageAllowed: recipe.source.imageUsageAllowed,
+      adaptedByJipbabNote: recipe.source.adaptedByJipbabNote,
+    },
+    reviewedForBeginner: true,
+    releaseTier: recipe.releaseTier,
+    publishStatus: recipe.publishStatus,
+  };
+}
+
+const BEGINNER_CURATED_RECIPES = BEGINNER_RECIPE_LIBRARY.map((recipe) => {
+  const legacy = LEGACY_RECIPE_BY_TITLE.get(recipe.title);
+  return legacy ? mergeBeginnerContractIntoLegacyRecipe(recipe, legacy) : beginnerRecipeToCurated(recipe);
+});
+const BEGINNER_CURATED_RECIPE_BY_BEGINNER_ID = new Map(
+  BEGINNER_RECIPE_LIBRARY.map((recipe, index) => [recipe.id, BEGINNER_CURATED_RECIPES[index]]),
+);
+const BEGINNER_RECIPE_TITLES = new Set(BEGINNER_CURATED_RECIPES.map((recipe) => recipe.name));
+const LEGACY_NON_DUPLICATE_RECIPES = LEGACY_CURATED_FALLBACK_RECIPES.filter(
+  (recipe) => !BEGINNER_RECIPE_TITLES.has(recipe.name),
+);
+
+export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
+  ...BEGINNER_CURATED_RECIPES,
+  ...LEGACY_NON_DUPLICATE_RECIPES,
+];
+
 export const CURATED_RECIPE_RECORDS: RecipeRecord[] = CURATED_JIPBAB_RECIPES.map((recipe) => ({
   id: recipe.id,
+  slug: recipe.slug,
+  title: recipe.title ?? recipe.name,
   name: recipe.name,
   category: recipe.category,
   method: recipe.method,
@@ -1357,8 +2273,26 @@ export const CURATED_RECIPE_RECORDS: RecipeRecord[] = CURATED_JIPBAB_RECIPES.map
   thumbnailUrl: recipe.thumbnailUrl,
   ingredients: recipe.ingredients,
   hashTag: recipe.hashTag,
+  difficultyLevel: recipe.difficultyLevel,
+  beginnerScore: recipe.beginnerScore,
+  totalMinutes: recipe.totalMinutes,
+  activeMinutes: recipe.activeMinutes,
+  requiredTools: recipe.requiredTools,
+  homeCardCopy: recipe.homeCardCopy,
+  noFire: recipe.noFire,
+  microwave: recipe.microwave,
+  fallbackMeal: recipe.fallbackMeal,
+  source: recipe.source,
+  safety: recipe.safety,
+  releaseTier: recipe.releaseTier,
+  publishStatus: recipe.publishStatus,
 }));
 
 export function findCuratedRecipe(recipeId: string): CuratedRecipe | null {
-  return CURATED_JIPBAB_RECIPES.find((recipe) => recipe.id === recipeId) ?? null;
+  return (
+    CURATED_JIPBAB_RECIPES.find((recipe) => recipe.id === recipeId) ??
+    BEGINNER_CURATED_RECIPE_BY_BEGINNER_ID.get(recipeId) ??
+    LEGACY_CURATED_FALLBACK_RECIPES.find((recipe) => recipe.id === recipeId) ??
+    null
+  );
 }

@@ -51,6 +51,7 @@ async function deleteRowsForUser(
     client.from("favorites").delete().eq("user_id", userId),
     client.from("shopping_items").delete().eq("user_id", userId),
     client.from("community_likes").delete().eq("user_id", userId),
+    client.from("recipe_comments").delete().eq("user_id", userId),
     client.from("community_comments").delete().eq("user_id", userId),
     client.from("community_posts").delete().eq("user_id", userId),
   ];

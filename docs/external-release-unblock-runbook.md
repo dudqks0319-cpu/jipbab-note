@@ -3,19 +3,60 @@
 이 문서는 코드/백엔드 게이트가 통과한 뒤에도 남는 외부 차단을 해제하는 순서입니다.
 아래 항목은 실제 콘솔, 실제 기기, 실제 계정 상태를 봐야 하므로 확인 전에는 `confirmed`로 바꾸지 않습니다.
 
+Latest evidence packet: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-27T03-46-27-019Z` captured on 2026-05-27 12:46 KST. It preserves the current external-status, real-device availability, real-device QA evidence, and store-console confirmation outputs; review it for screenshots, account names, device identifiers, and other sensitive details before sharing.
+
 ## 현재 차단
 
-- 실기기 QA: iPhone `영빈`은 CoreDevice `unavailable`, iPhone Mirroring은 Mac 로그인 암호 입력 필요, Android 물리 기기는 미연결입니다.
-- App Store Connect/TestFlight: JipbabNote 앱 레코드는 보였지만, 직접 TestFlight URL이 `authResult=FAILED`로 돌아가므로 Apple 계정 재인증이 필요합니다.
-- Play Console 내부 테스트: 개발자 계정 설정이 미완료라 앱 생성, AAB 업로드, 내부 테스트 트랙 생성이 막혀 있습니다.
+- Supabase live schema/RLS: production에 `20260527093000_add_family_scoped_fridge_shopping.sql`이 아직 적용되지 않아 live `ingredients`와 `shopping_items` schema cache에 `family_group_id`가 없습니다. `pnpm release:external-status`의 Supabase live read/write/RLS 단계가 family ingredient/shopping member insert에서 HTTP 400 `PGRST204`로 막힙니다.
+- Supabase Storage path policy: production Storage에서 `community-images` guest cross-prefix upload가 아직 성공합니다. `20260526093000_harden_community_image_storage.sql` 적용과 Storage policy cache 반영 확인이 필요합니다.
+- 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
+- Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
+- App Store Connect/TestFlight: 최신 `pnpm release:external-status`에서는 PASS입니다. 다만 제출 직전에는 `pnpm check:store-console-confirmation` 또는 App Store Connect API로 build `2026052001`과 내부 TestFlight 그룹을 다시 확인합니다.
 
 브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
+
+## 0. Supabase live schema/RLS 해제
+
+운영자가 먼저 해야 할 일:
+
+- Supabase SQL Editor 또는 migration pipeline에서 아래 새 migration을 production에 적용합니다.
+- `supabase/migrations/20260527093000_add_family_scoped_fridge_shopping.sql`
+- `supabase/migrations/20260526093000_harden_community_image_storage.sql`
+- 기존 migration 파일은 수정하지 않습니다.
+- 적용 후 PostgREST schema cache가 갱신될 때까지 기다립니다.
+
+SQL Editor에 붙여 넣을 정확한 bundle은 아래 명령으로 출력합니다.
+
+```bash
+pnpm release:supabase-live-unblock-sql
+```
+
+그 다음 실행:
+
+```bash
+pnpm release:supabase-live-unblock-check
+pnpm release:external-status
+```
+
+세부 실패 지점을 따로 확인해야 하면 아래 명령을 개별 실행합니다.
+
+```bash
+pnpm check:supabase-release
+SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live
+pnpm check:supabase-storage-live
+```
+
+확인할 항목:
+
+- `check:supabase-release`가 `family fridge and shopping rows are member-scoped`를 PASS로 표시
+- `check:supabase-live`에서 family ingredient/shopping member insert, joiner read, non-member isolation PASS
+- `check:supabase-storage-live`에서 cross-prefix upload blocked PASS
 
 ## 1. 실기기 QA 해제
 
 운영자가 먼저 해야 할 일:
 
-- iPhone `영빈`을 잠그고, Mac의 iPhone Mirroring 잠금 화면에 Mac 로그인 암호를 입력합니다.
+- iPhone `[redacted-device]`을 잠그고, Mac의 iPhone Mirroring 잠금 화면에 Mac 로그인 암호를 입력합니다.
 - iPhone에서 이 Mac 신뢰, Developer Mode, 화면 잠금 해제 상태를 확인합니다.
 - Android 물리 기기를 USB로 연결하고, 개발자 옵션과 USB 디버깅을 켠 뒤 RSA 프롬프트를 허용합니다.
 
@@ -47,11 +88,12 @@ pnpm release:capture-ios-real-device-qa
 
 완료 후 [real-device-qa.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/real-device-qa.md)에 `confirmed`, evidence date, evidence artifacts를 실제 증거 기준으로만 갱신합니다.
 
-## 2. App Store Connect/TestFlight 해제
+## 2. App Store Connect/TestFlight 재확인
 
 운영자가 먼저 해야 할 일:
 
-- App Store Connect에 Apple 계정으로 재로그인합니다.
+- 최신 게이트에서는 App Store Connect/TestFlight가 PASS입니다.
+- 제출 직전 App Store Connect에 Apple 계정으로 재로그인하거나 App Store Connect API credential을 사용합니다.
 - JipbabNote 앱 레코드를 엽니다.
 - 직접 URL: `https://appstoreconnect.apple.com/teams/d0f73d2e-b3a6-49ef-938f-4639fea25fee/apps/6762567054/testflight/ios`
 - 앱 메뉴가 `jipbab-note`인지 확인합니다.
@@ -70,7 +112,7 @@ pnpm release:capture-ios-real-device-qa
 
 운영자가 먼저 해야 할 일:
 
-- Google Play Console 개발자 계정 `정영빈`의 본인 확인을 완료합니다.
+- Google Play Console 개발자 계정 `[redacted-operator-name]`의 본인 확인을 완료합니다.
 - Play Console 모바일 앱으로 Android 휴대기기 접근 확인을 완료합니다.
 - 연락처 전화번호 인증을 완료합니다.
 - 앱 만들기가 활성화되면 패키지명 `com.jipbab.note`로 앱을 생성합니다.

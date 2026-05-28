@@ -2,13 +2,27 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Clock3, PlayCircle, Ruler, ShoppingBasket, Star, Users } from "lucide-react";
+import {
+  BookOpenText,
+  ChevronLeft,
+  Clock3,
+  HelpCircle,
+  NotebookText,
+  Play,
+  Ruler,
+  Search,
+  ShoppingBag,
+  ShoppingBasket,
+  Star,
+  Users,
+} from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 import RecipeImage from "@/components/recipe/RecipeImage";
-import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
 import RecipeCookMode from "@/components/recipe/RecipeCookMode";
+import RecipeComments from "@/components/recipe/RecipeComments";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
+import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { findCuratedRecipe } from "@/lib/curated-recipes";
@@ -25,6 +39,12 @@ const DEFAULT_DETAIL_MEASUREMENT_TIPS = [
   "1작은술 = 티스푼 평평하게 1번 = 약 5ml",
   "1컵 = 일반 종이컵 1컵 = 약 180ml",
   "한줌 = 한 손으로 가볍게 집히는 양 = 약 30~50g",
+];
+const DEFAULT_KNOW_HOW_ITEMS = [
+  { title: "손질 순서", detail: "씻기, 물기 제거, 먹기 좋은 크기 순서로 준비하세요." },
+  { title: "불 조절", detail: "처음엔 중불, 타기 시작하면 약불로 낮추면 실패가 줄어요." },
+  { title: "간 맞추기", detail: "양념은 한 번에 다 넣지 말고 마지막에 조금씩 보정하세요." },
+  { title: "보관", detail: "남은 음식은 한 김 식힌 뒤 밀폐 용기에 담으세요." },
 ];
 const INGREDIENT_SPLIT_PLACEHOLDER = "__JIPBAB_FRACTION_SLASH__";
 const INGREDIENT_SECTION_LABEL_PATTERN =
@@ -253,6 +273,8 @@ const normalizeIngredientDetails = (value: unknown): RecipeIngredientDetail[] =>
         return {
           name: inferIngredientName(display),
           display,
+          required: true,
+          substitute: null,
           beginnerNote: null,
           prepNote: null,
         } satisfies RecipeIngredientDetail;
@@ -278,6 +300,13 @@ const normalizeIngredientDetails = (value: unknown): RecipeIngredientDetail[] =>
         display,
         amount: amount || null,
         unit: unit || null,
+        required: typeof record.required === "boolean" ? record.required : true,
+        substitute:
+          typeof record.substitute === "string"
+            ? record.substitute.trim()
+            : typeof record.substitute_ingredient === "string"
+              ? record.substitute_ingredient.trim()
+              : null,
         beginnerNote:
           typeof record.beginnerNote === "string"
             ? record.beginnerNote.trim()
@@ -300,6 +329,32 @@ const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
     return [];
   }
 
+  const getStringField = (record: Record<string, unknown>, ...keys: string[]): string | null => {
+    for (const key of keys) {
+      const value = record[key];
+      if (typeof value === "string" && value.trim()) {
+        return value.trim();
+      }
+    }
+    return null;
+  };
+
+  const getNumberField = (record: Record<string, unknown>, ...keys: string[]): number | null => {
+    for (const key of keys) {
+      const value = record[key];
+      const parsed =
+        typeof value === "number"
+          ? value
+          : typeof value === "string"
+            ? Number(value)
+            : Number.NaN;
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return parsed;
+      }
+    }
+    return null;
+  };
+
   const steps = value
     .map((item): RecipeDetailStep | null => {
       if (typeof item !== "object" || item === null) {
@@ -307,8 +362,9 @@ const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
       }
 
       const record = item as Record<string, unknown>;
-      const rawDescription = record.description;
-      const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
+      const title = getStringField(record, "title");
+      const action = getStringField(record, "action");
+      const description = getStringField(record, "description") ?? action ?? "";
       if (!description) {
         return null;
       }
@@ -332,8 +388,12 @@ const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
 
       return {
         index: Number.isFinite(parsedIndex) && parsedIndex > 0 ? Math.floor(parsedIndex) : 0,
+        title,
+        action,
         description,
         imageUrl: normalizeRecipeImageUrl(imageUrl),
+        heat: getStringField(record, "heat"),
+        minutes: getNumberField(record, "minutes", "minute", "duration_minutes"),
         beginnerTip:
           typeof record.beginnerTip === "string"
             ? record.beginnerTip.trim()
@@ -345,6 +405,18 @@ const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
             ? record.visualCue.trim()
             : typeof record.visual_cue === "string"
               ? record.visual_cue.trim()
+              : null,
+        commonMistake:
+          typeof record.commonMistake === "string"
+            ? record.commonMistake.trim()
+            : typeof record.common_mistake === "string"
+              ? record.common_mistake.trim()
+              : null,
+        rescueTip:
+          typeof record.rescueTip === "string"
+            ? record.rescueTip.trim()
+            : typeof record.rescue_tip === "string"
+              ? record.rescue_tip.trim()
               : null,
         imageAlt:
           typeof record.imageAlt === "string"
@@ -564,13 +636,15 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const servingLabel = `${recipe.servings ?? 2}인분`;
   const difficultyLabel = formatDifficulty(recipe.difficulty);
   const ingredientDetails = recipe.ingredientDetails?.length
-    ? recipe.ingredientDetails
-    : recipe.ingredientList.map((ingredientName) => ({
-        name: ingredientName,
-        display: "적당량",
-        beginnerNote: null,
-        prepNote: null,
-      }));
+      ? recipe.ingredientDetails
+      : recipe.ingredientList.map((ingredientName) => ({
+          name: ingredientName,
+          display: "분량 확인 필요",
+          required: true,
+          substitute: null,
+          beginnerNote: null,
+          prepNote: null,
+        } satisfies RecipeIngredientDetail));
   const measurementTips = recipe.measurementTips?.length
     ? recipe.measurementTips
     : DEFAULT_DETAIL_MEASUREMENT_TIPS;
@@ -586,13 +660,15 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     user_bookmark: "사용자 북마크",
   }[recipe.contentOrigin ?? (recipe.id.startsWith("curated-") ? "original" : "licensed")];
 
+  const heroDescription = recipe.beginnerSummary || recipe.imageCaption || `${recipe.method}로 만드는 ${difficultyLabel} 난이도 집밥 레시피입니다.`;
+
   return (
-    <div className="min-h-full bg-[#fbf6ee] pb-8">
-      <section className="relative overflow-hidden bg-[#f8eddf] pb-4">
+    <div className="min-h-full bg-white pb-8 text-[#2b2b2b]">
+      <section className="relative overflow-hidden bg-white">
         <div className="mobile-safe-top absolute left-4 top-0 z-20">
           <Link
             href="/recipe"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/92 text-[#242424] shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
             aria-label="레시피 목록으로 돌아가기"
           >
             <ChevronLeft size={18} />
@@ -608,7 +684,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           />
         </div>
 
-        <div className="relative h-[250px] w-full overflow-hidden">
+        <div className="relative h-[345px] w-full overflow-hidden bg-[#eee7dd] min-[390px]:h-[370px]">
           <RecipeImage
             src={heroImage}
             fallbackSrc={FALLBACK_IMAGE}
@@ -616,26 +692,21 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             className="h-full w-full"
             imageClassName="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#2f2117]/60 via-transparent to-transparent" />
         </div>
 
-        <div className="-mt-7 px-5">
-          <div className="jipbab-panel relative rounded-[20px] px-4 py-4">
-            <span className="rounded-full border border-[#eadcc9] bg-[#fff7ed] px-3 py-1 text-[11px] font-black text-[#d94d19]">
-              {recipe.category}
-            </span>
-            <h1 className="mt-2 text-[24px] font-black leading-tight text-[#2f2117]">{recipe.name}</h1>
-            <p className="mt-1 text-[13px] font-semibold text-[#7d6d5f]">{recipe.method} · {recipe.calories} kcal</p>
-            {recipe.imageCaption ? (
-              <p className="mt-2 text-[12px] font-semibold leading-5 text-[#8f7f70]">{recipe.imageCaption}</p>
-            ) : null}
-
-            <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-              <DetailMetric icon={<Clock3 size={14} />} label={`${cookingMinutes}분`} />
-              <DetailMetric icon={<Users size={14} />} label={servingLabel} />
-              <DetailMetric icon={<Star size={14} />} label={difficultyLabel} />
-              <DetailMetric icon={<ShoppingBasket size={14} />} label={`${recipe.ingredientList.length}개`} />
-            </div>
+        <div className="px-6 py-8">
+          <p className="text-[12px] font-black text-[#78a95f]">{recipe.category} · {recipe.method} · {recipe.calories} kcal</p>
+          <h1 className="mt-3 break-keep text-[34px] font-black leading-[1.22] tracking-normal text-[#2d2d2d] min-[390px]:text-[38px]">
+            {recipe.name}
+          </h1>
+          <p className="mt-5 break-keep text-[19px] font-medium leading-[1.72] tracking-normal text-[#3a3a3a]">
+            {heroDescription}
+          </p>
+          <div className="mt-7 grid grid-cols-4 gap-2 text-center">
+            <DetailMetric icon={<Clock3 size={15} />} label={`${cookingMinutes}분`} />
+            <DetailMetric icon={<Users size={15} />} label={servingLabel} />
+            <DetailMetric icon={<Star size={15} />} label={difficultyLabel} />
+            <DetailMetric icon={<ShoppingBasket size={15} />} label={`${recipe.ingredientList.length}개`} />
           </div>
         </div>
       </section>
@@ -650,7 +721,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </section>
       )}
 
-      <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
+      <section className="bg-white px-5 pb-7 pt-2">
+        <div className="grid grid-cols-4 gap-3">
+          <QuickAction href="#ingredients" icon={<Search size={30} />} label="재료검색" tone="orange" />
+          <QuickAction href="#shopping-assistant" icon={<ShoppingBag size={30} />} label="장보기" tone="violet" />
+          <QuickAction href="#recipe-qna" icon={<HelpCircle size={30} />} label="Q&A" tone="mint" />
+          <QuickAction href="#recipe-notes" icon={<NotebookText size={30} />} label="노트" tone="blue" />
+        </div>
+      </section>
 
       {recipe.beginnerSummary ? (
         <section className="px-5 pt-5">
@@ -661,39 +739,78 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </section>
       ) : null}
 
-      <section className="px-5 pt-5">
-        <h2 className="text-[17px] font-black text-[#2f2117]">재료</h2>
+      {recipe.beforeStart?.length ? (
+        <section className="px-5 pt-5">
+          <div className="jipbab-panel rounded-[16px] px-4 py-4">
+            <h2 className="text-[17px] font-black text-[#2f2117]">시작 전 준비</h2>
+            <ul className="mt-3 space-y-2">
+              {recipe.beforeStart.map((item) => (
+                <li key={item} className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="ingredients" className="scroll-mt-24 bg-white px-5 py-8">
+        <div className="flex items-center justify-between gap-3 border-b-2 border-[#2d2d2d] pb-3">
+          <h2 className="text-[27px] font-black tracking-normal text-[#242424]">{recipe.name} 재료</h2>
+          <a
+            href="#measurement"
+            className="shrink-0 rounded-[8px] border border-[#dedbd6] bg-white px-3 py-2 text-[14px] font-bold text-[#3a3a3a]"
+          >
+            계량법안내
+          </a>
+        </div>
         {ingredientDetails.length === 0 ? (
-          <p className="mt-2 rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-sm text-[#8f7f70]">재료 정보가 없습니다.</p>
+          <p className="mt-4 rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-3 text-sm text-[#6f655b]">재료 정보가 없습니다.</p>
         ) : (
-          <ul className="jipbab-panel mt-2 divide-y divide-[#eadcc9] overflow-hidden rounded-[16px]">
+          <ul className="divide-y divide-[#ededed]">
             {ingredientDetails.map((ingredient) => (
-              <li key={`${ingredient.name}-${ingredient.display}`} className="px-4 py-3">
-                <div className="flex items-start justify-between gap-3 text-[13px] font-semibold text-[#4b3929]">
-                  <span>{ingredient.name}</span>
-                  <span className="shrink-0 font-black text-[#d94d19]">{ingredient.display}</span>
-                </div>
-                {ingredient.beginnerNote || ingredient.prepNote ? (
-                  <div className="mt-1 space-y-0.5 text-[11px] font-semibold leading-5 text-[#8f7f70]">
+              <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_92px_64px] items-center gap-2 py-4 min-[390px]:grid-cols-[minmax(0,1fr)_104px_72px]">
+                <div className="min-w-0">
+                  <p className="break-keep text-[19px] font-medium leading-7 text-[#303030]">
+                    {ingredient.name}
+                  </p>
+                {ingredient.beginnerNote || ingredient.prepNote || ingredient.substitute ? (
+                  <div className="mt-1 space-y-0.5 text-[12px] font-semibold leading-5 text-[#7a7168]">
                     {ingredient.beginnerNote ? <p>{ingredient.beginnerNote}</p> : null}
                     {ingredient.prepNote ? <p>{ingredient.prepNote}</p> : null}
+                    {ingredient.substitute ? <p>없으면: {ingredient.substitute}</p> : null}
                   </div>
                 ) : null}
+                </div>
+                <span className="break-keep text-center text-[18px] font-medium leading-6 text-[#303030]">{ingredient.display}</span>
+                <Link
+                  href={`/shopping?recipe=${encodeURIComponent(recipe.id)}&ingredient=${encodeURIComponent(ingredient.name)}`}
+                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#d8d6d2] px-3 text-[16px] font-medium text-[#303030]"
+                >
+                  구매
+                </Link>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="px-5 pt-4">
-        <div className="jipbab-panel rounded-[16px] px-4 py-4">
+      <RecipeShoppingAssistant
+        recipeId={recipe.id}
+        recipeName={recipe.name}
+        ingredientList={recipe.ingredientList}
+        ingredientDetails={ingredientDetails}
+      />
+
+      <section id="measurement" className="scroll-mt-24 bg-white px-5 py-7">
+        <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
           <div className="flex items-center gap-2">
-            <Ruler size={16} className="text-[#d94d19]" />
-            <h2 className="text-[15px] font-black text-[#2f2117]">초보자 계량 기준</h2>
+            <Ruler size={18} className="text-[#78a95f]" />
+            <h2 className="text-[19px] font-black text-[#242424]">계량법안내</h2>
           </div>
           <div className="mt-3 grid gap-2">
             {measurementTips.map((tip) => (
-              <p key={tip} className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
+              <p key={tip} className="break-keep rounded-[8px] bg-white px-3 py-2 text-[14px] font-semibold leading-6 text-[#5d554d]">
                 {tip}
               </p>
             ))}
@@ -701,47 +818,70 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      <RecipeExploreLinks recipeName={recipe.name} />
-      <RecipeCookMode recipeName={recipe.name} steps={recipe.steps} />
+      <KnowHowRail recipeName={recipe.name} items={recipe.beforeStart?.length ? recipe.beforeStart : DEFAULT_KNOW_HOW_ITEMS.map((item) => item.detail)} />
+      <VideoRecipePanel recipeName={recipe.name} />
+      <RecipeInstructionView recipeName={recipe.name} steps={recipe.steps} />
 
-      <section className="px-5 pt-5">
-        <h2 className="text-[17px] font-black text-[#2f2117]">만드는 순서</h2>
-        <ol className="mt-3 space-y-2.5">
-          {recipe.steps.map((step) => (
-            <li key={step.index} className="jipbab-panel overflow-hidden rounded-[16px]">
-              <div className="flex items-start gap-3 px-4 py-4">
-                <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6e431d] text-xs font-black text-white">
-                  {step.index}
-                </span>
-                <p className="text-sm leading-relaxed text-[#4b3929]">{step.description}</p>
-              </div>
-              {step.beginnerTip || step.visualCue ? (
-                <div className="space-y-1 border-t border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-[12px] font-semibold leading-5">
-                  {step.beginnerTip ? <p className="text-[#6e431d]">팁: {step.beginnerTip}</p> : null}
-                  {step.visualCue ? <p className="text-[#8f7f70]">눈으로 확인: {step.visualCue}</p> : null}
-                </div>
-              ) : null}
-              {step.imageUrl && (
-                <RecipeImage
-                  src={step.imageUrl}
-                  alt={step.imageAlt || `${recipe.name} 조리 순서 ${step.index}`}
-                  className="relative h-44 w-full overflow-hidden border-t border-[#eadcc9]"
-                  imageClassName="h-full w-full object-cover"
-                  caption={step.imageCaption}
-                />
-              )}
-            </li>
-          ))}
-        </ol>
+      <section id="recipe-notes" className="scroll-mt-24 bg-white px-5 py-7">
+        <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <div className="flex items-center gap-2">
+            <NotebookText size={18} className="text-[#4c93df]" />
+            <h2 className="text-[19px] font-black text-[#242424]">노트</h2>
+          </div>
+          <p className="mt-2 break-keep text-[14px] font-semibold leading-6 text-[#6f655b]">
+            만든 뒤 바꾼 재료, 다음에 줄일 양, 가족 반응은 Q&A와 댓글에 남겨 다시 볼 수 있어요.
+          </p>
+        </div>
       </section>
 
-      <section className="px-5 pb-24 pt-5">
-        <div className="rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
-          <h2 className="text-[14px] font-black text-[#2f2117]">레시피 출처</h2>
-          <p className="mt-2 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
+      <RecipeCookMode recipeName={recipe.name} steps={recipe.steps} />
+
+      <section className="bg-white px-5 pt-5">
+        <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[21px] font-black text-[#242424]">망했어요</h2>
+          <div className="mt-3 space-y-2 text-[13px] font-semibold leading-5">
+            <p className="rounded-[8px] bg-white px-3 py-2 text-[#8a5a2a]">탔을 때: 탄 부분은 섞지 말고 위쪽만 덜어낸 뒤 물 2큰술을 더하세요.</p>
+            <p className="rounded-[8px] bg-white px-3 py-2 text-[#8a5a2a]">짰을 때: 밥, 두부, 물 중 하나를 더해 간을 연하게 만드세요.</p>
+            <p className="rounded-[8px] bg-white px-3 py-2 text-[#8a5a2a]">덜 익었을 때: 불을 약하게 줄이고 1분씩 추가로 익히며 가운데를 확인하세요.</p>
+            <p className="rounded-[8px] bg-white px-3 py-2 text-[#8a5a2a]">질어졌을 때: 뚜껑을 열고 약불로 1분 더 두어 수분을 날리세요.</p>
+            <p className="rounded-[8px] bg-white px-3 py-2 text-[#8a5a2a]">부서졌을 때: 모양을 포기하고 밥 위에 올려 덮밥이나 비빔밥처럼 먹어도 됩니다.</p>
+            <p className="rounded-[8px] bg-[#eef6df] px-3 py-2 text-[#4f8740]">{recipe.fallbackMeal ?? "모양이 무너지면 밥 위에 올려 덮밥처럼 먹으면 됩니다."}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-5 pt-5">
+        <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[21px] font-black text-[#242424]">완성 확인</h2>
+          <p className="mt-2 break-keep text-[15px] font-semibold leading-7 text-[#4b4540]">
+            {recipe.successCheck ?? "가장 두꺼운 재료가 차갑지 않고, 한입 맛봤을 때 짠맛이 강하지 않으면 완성입니다."}
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-white px-5 pt-5">
+        <div className="grid gap-2 rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[21px] font-black text-[#242424]">남았을 때</h2>
+          <p className="rounded-[8px] bg-white px-3 py-2 text-[13px] font-bold leading-6 text-[#5d554d]">
+            보관: {recipe.storageTip ?? "한 김 식힌 뒤 밀폐 용기에 담아 냉장 보관하세요."}
+          </p>
+          <p className="rounded-[8px] bg-white px-3 py-2 text-[13px] font-bold leading-6 text-[#5d554d]">
+            다시 데우기: {recipe.reheatTip ?? "물 1큰술을 더하고 가운데까지 따뜻해졌는지 확인하세요."}
+          </p>
+        </div>
+      </section>
+
+      <div id="recipe-qna" className="scroll-mt-24">
+        <RecipeComments recipeId={recipe.id} recipeName={recipe.name} />
+      </div>
+
+      <section className="bg-white px-5 pb-24 pt-5">
+        <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[14px] font-black text-[#242424]">레시피 출처</h2>
+          <p className="mt-2 text-[12px] font-semibold leading-5 text-[#6f655b]">
             출처: {sourceLabel} · 라이선스/권한: {sourceLicense}
           </p>
-          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#7a7168]">
             제공자: {recipe.sourceProvider ?? "집밥노트"} · 콘텐츠 기준: {contentOriginLabel}
             {recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
           </p>
@@ -755,7 +895,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
               원천 페이지 확인
             </Link>
           ) : null}
-          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#7a7168]">
             {reviewedForBeginner
               ? "초보자용 계량, 실패 방지 팁, 조리 문장은 집밥노트 기준으로 검수했습니다."
               : "공공 API 원천 정보는 앱 표시 기준으로 정리하며, 초보자 문장은 원문을 그대로 복사하지 않습니다."}
@@ -763,18 +903,18 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[430px] border-t border-[#eadcc9] bg-[#fffaf3]/95 px-5 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <nav className="bg-white px-5 pb-4 pt-2">
         <div className="grid grid-cols-2 gap-2">
           <a
-            href="#cook-mode"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] px-3 text-[13px] font-black text-white"
+            href="#instructions"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#242424] px-3 text-[13px] font-black text-white"
           >
-            <PlayCircle size={16} />
-            요리 시작
+            <BookOpenText size={16} />
+            순서 보기
           </a>
           <a
             href="#shopping-assistant"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-3 text-[13px] font-black text-white"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#78a95f] px-3 text-[13px] font-black text-white"
           >
             <ShoppingBasket size={16} />
             부족 재료 장보기
@@ -787,9 +927,87 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
 function DetailMetric({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <div className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-2 py-2">
-      <span className="mx-auto flex h-5 w-5 items-center justify-center text-[#8a5a2a]">{icon}</span>
-      <p className="mt-1 text-[11px] font-black text-[#4b3929]">{label}</p>
+    <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] px-1.5 py-2">
+      <span className="mx-auto flex h-5 w-5 items-center justify-center text-[#78a95f]">{icon}</span>
+      <p className="mt-1 break-keep text-[11px] font-black leading-4 text-[#39342f]">{label}</p>
     </div>
+  );
+}
+
+function QuickAction({
+  href,
+  icon,
+  label,
+  tone,
+}: {
+  href: string;
+  icon: ReactNode;
+  label: string;
+  tone: "orange" | "violet" | "mint" | "blue";
+}) {
+  const toneClass = {
+    orange: "bg-[#f5f1ec] text-[#ef8a3a]",
+    violet: "bg-[#f5f1ec] text-[#8d62df]",
+    mint: "bg-[#f5f1ec] text-[#63b7a8]",
+    blue: "bg-[#f5f1ec] text-[#4c93df]",
+  }[tone];
+
+  return (
+    <a href={href} className="min-w-0 text-center">
+      <span className={`mx-auto flex aspect-square w-full max-w-[86px] items-center justify-center rounded-[28px] ${toneClass}`}>
+        {icon}
+      </span>
+      <span className="mt-2 block break-keep text-[15px] font-medium leading-5 text-[#303030]">{label}</span>
+    </a>
+  );
+}
+
+function KnowHowRail({ recipeName, items }: { recipeName: string; items: string[] }) {
+  const cards = (items.length > 0 ? items : DEFAULT_KNOW_HOW_ITEMS.map((item) => item.detail)).slice(0, 6);
+
+  return (
+    <section className="border-y-[14px] border-[#f4f4f4] bg-white px-5 py-8">
+      <h2 className="text-[27px] font-black tracking-normal text-[#242424]">노하우</h2>
+      <div className="scrollbar-hide -mx-5 mt-5 flex gap-3 overflow-x-auto px-5 pb-4">
+        {cards.map((item, index) => (
+          <article key={`${item}-${index}`} className="w-[168px] shrink-0">
+            <div className="flex aspect-[1.22] items-center justify-center rounded-[8px] bg-[#eee7dd] px-4 text-center">
+              <span className="break-keep text-[15px] font-black leading-6 text-[#5b5148]">{recipeName}</span>
+            </div>
+            <h3 className="mt-3 break-keep text-[18px] font-medium leading-6 text-[#303030]">
+              {DEFAULT_KNOW_HOW_ITEMS[index]?.title ?? "요리 팁"}
+            </h3>
+            <p className="mt-1 line-clamp-2 break-keep text-[12px] font-semibold leading-5 text-[#777]">{item}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function VideoRecipePanel({ recipeName }: { recipeName: string }) {
+  const query = encodeURIComponent(`${recipeName} 레시피`);
+
+  return (
+    <section className="border-b-[14px] border-[#f4f4f4] bg-white px-5 py-8">
+      <h2 className="text-[27px] font-black tracking-normal text-[#242424]">동영상 레시피</h2>
+      <a
+        href={`https://www.youtube.com/results?search_query=${query}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-5 block overflow-hidden rounded-[2px] bg-[#423a32] text-white"
+      >
+        <div className="relative aspect-video bg-[linear-gradient(135deg,#5d554d_0%,#242424_55%,#8a5a2a_100%)] px-5 py-5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_30%,rgba(255,255,255,0.18),transparent_34%)]" />
+          <div className="relative z-10 max-w-[72%]">
+            <p className="break-keep text-[22px] font-black leading-8">{recipeName}</p>
+            <p className="mt-2 text-[13px] font-semibold text-white/72">외부 영상 검색으로 열기</p>
+          </div>
+          <span className="absolute left-1/2 top-1/2 z-10 flex h-16 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[16px] bg-[#f23a2f]">
+            <Play size={34} fill="white" strokeWidth={0} />
+          </span>
+        </div>
+      </a>
+    </section>
   );
 }

@@ -628,9 +628,9 @@ export async function GET(request: Request) {
   let searchKeyword: string | null;
   try {
     searchKeyword = normalizeSearch(searchParams.get("q"));
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : "검색어가 올바르지 않습니다." },
+      { message: "검색어가 올바르지 않습니다." },
       { status: 400 },
     );
   }

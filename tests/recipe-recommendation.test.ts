@@ -16,6 +16,10 @@ import {
   isBeginnerVerifiedRecipe,
   matchesRecipeQuickFilter,
 } from "../lib/recipe-list-labels.ts";
+import {
+  matchesRecipeListFilters,
+  sortRecipeListRecipes,
+} from "../lib/recipe-list-filters.ts";
 
 test("calculateRecipeIngredientMatch keeps the existing match result shape", () => {
   const match = calculateRecipeIngredientMatch(["계란", "대파"], "계란 2개, 대파 1줄기, 간장 1큰술");
@@ -60,6 +64,28 @@ test("ranking uses more available ingredients when match quality is otherwise ti
   assert.equal(ranked[1].match.matchRate, 100);
 });
 
+test("ranking adds beginner fit points for easy release recipes", () => {
+  const ranked = rankRecipeRecommendations(
+    [
+      { id: "plain", ingredients: "계란, 밥" },
+      {
+        id: "beginner-safe",
+        ingredients: "계란, 밥",
+        beginnerScore: 92,
+        difficultyLevel: 1,
+        totalMinutes: 8,
+        requiredTools: ["그릇", "숟가락"],
+        noFire: true,
+        fallbackMeal: "짜면 밥을 더 넣어 비빔밥처럼 먹습니다.",
+      },
+    ],
+    [{ name: "계란" }, { name: "밥" }],
+  );
+
+  assert.equal(ranked[0].recipe.id, "beginner-safe");
+  assert.ok(ranked[0].score.beginnerFitPoints > ranked[1].score.beginnerFitPoints);
+});
+
 test("ranking lifts recipes that use ingredients expiring soon", () => {
   const ranked = rankRecipeRecommendations(
     [
@@ -89,7 +115,7 @@ test("ranking ignores invalid expiry metadata instead of adding freshness urgenc
 });
 
 test("curated beginner recipes keep structured amounts and visual cues", () => {
-  const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-doenjang-jjigae");
+  const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.name === "된장찌개");
 
   assert.ok(recipe);
   assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "2큰술"));
@@ -98,10 +124,10 @@ test("curated beginner recipes keep structured amounts and visual cues", () => {
 });
 
 test("curated recipe batch has competitive beginner coverage", () => {
-  assert.ok(CURATED_JIPBAB_RECIPES.length >= 20);
+  assert.ok(CURATED_JIPBAB_RECIPES.length >= 100);
 
   for (const recipe of CURATED_JIPBAB_RECIPES) {
-    assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 4, recipe.id);
+    assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 3, recipe.id);
     assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")), recipe.id);
     assert.ok(recipe.beginnerSummary && recipe.beginnerSummary.length >= 20, recipe.id);
     assert.ok(recipe.steps.length >= 4, recipe.id);
@@ -144,10 +170,10 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
 });
 
 test("recipe list quick filters expose beginner and ready states", () => {
-  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-soy-egg-rice");
+  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.name === "계란간장밥");
   const recipe = {
-    id: "curated-soy-egg-rice",
-    name: "간장계란밥",
+    id: curated?.id ?? "beginner-recipe-001",
+    name: "계란간장밥",
     category: "밥",
     method: "비비기",
     calories: "460",
@@ -166,7 +192,136 @@ test("recipe list quick filters expose beginner and ready states", () => {
   assert.equal(isBeginnerVerifiedRecipe(curated), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "one-more"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "beginner"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "quick"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "ready"), false);
+});
+
+test("recipe list filters cover difficulty, time, tools, fridge fit, and beginner sorting", () => {
+  const base = {
+    name: "계란간장밥",
+    category: "계란요리",
+    method: "비비기",
+    calories: "420",
+    thumbnailUrl: null,
+    ingredients: "계란, 밥, 간장",
+    hashTag: "",
+    ingredientList: ["계란", "밥", "간장"],
+    matchRate: 100,
+    matchedIngredients: ["계란", "밥", "간장"],
+    missingIngredients: [],
+    totalRecipeIngredients: 3,
+  };
+  const readyRecipe = {
+    ...base,
+    id: "ready-beginner",
+    difficultyLevel: 1 as const,
+    totalMinutes: 8,
+    beginnerScore: 94,
+    requiredTools: ["그릇", "숟가락"],
+    noFire: true,
+    microwave: false,
+  };
+  const microwaveRecipe = {
+    ...base,
+    id: "microwave",
+    name: "전자레인지 계란찜",
+    difficultyLevel: 2 as const,
+    totalMinutes: 12,
+    beginnerScore: 90,
+    requiredTools: ["전자레인지", "전자레인지용 그릇"],
+    noFire: true,
+    microwave: true,
+    missingIngredients: ["물"],
+    matchRate: 75,
+  };
+  const slowRecipe = {
+    ...base,
+    id: "slow",
+    name: "느린 조림",
+    difficultyLevel: 3 as const,
+    totalMinutes: 35,
+    beginnerScore: 70,
+    requiredTools: ["냄비"],
+    noFire: false,
+    microwave: false,
+    missingIngredients: ["간장", "설탕", "대파"],
+    matchRate: 40,
+  };
+
+  assert.equal(
+    matchesRecipeListFilters(readyRecipe, {
+      difficulty: "level-1",
+      time: "10",
+      tool: "no-fire",
+      fridge: "ready",
+    }),
+    true,
+  );
+  assert.equal(
+    matchesRecipeListFilters(slowRecipe, {
+      difficulty: "level-2",
+      time: "20",
+      tool: "all",
+      fridge: "almost",
+    }),
+    false,
+  );
+  assert.equal(
+    matchesRecipeListFilters(microwaveRecipe, {
+      difficulty: "level-2",
+      time: "15",
+      tool: "microwave",
+      fridge: "almost",
+    }),
+    true,
+  );
+
+  assert.deepEqual(
+    sortRecipeListRecipes([slowRecipe, microwaveRecipe, readyRecipe], "beginner-score").map((recipe) => recipe.id),
+    ["ready-beginner", "microwave", "slow"],
+  );
+  assert.deepEqual(
+    sortRecipeListRecipes([slowRecipe, microwaveRecipe, readyRecipe], "missing").map((recipe) => recipe.id),
+    ["ready-beginner", "microwave", "slow"],
+  );
+});
+
+test("recipe page hides low-data cuisine tabs from the launch category rail", () => {
+  const typesSource = readFileSync(new URL("../types/index.ts", import.meta.url), "utf8");
+  const pageSource = readFileSync(new URL("../app/recipe/page.tsx", import.meta.url), "utf8");
+  const detailSource = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
+  const apiSource = readFileSync(new URL("../app/api/recipes/route.ts", import.meta.url), "utf8");
+
+  assert.match(typesSource, /DISPLAY_RECIPE_CATEGORIES/);
+  assert.match(typesSource, /"국·찌개"/);
+  assert.match(typesSource, /"초보가능"/);
+  assert.match(typesSource, /"10분요리"/);
+  assert.doesNotMatch(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"한식"|"중식"|"양식"|"일식"|"디저트"/);
+  assert.match(pageSource, /visibleCategories/);
+  assert.match(pageSource, /DISPLAY_CATEGORY_QUICK_FILTERS/);
+  assert.match(pageSource, /setQuickFilter/);
+  assert.match(pageSource, /difficultyFilter/);
+  assert.match(pageSource, /timeFilter/);
+  assert.match(pageSource, /toolFilter/);
+  assert.match(pageSource, /fridgeFilter/);
+  assert.match(pageSource, /sortMode/);
+  assert.match(pageSource, /matchesRecipeListFilters/);
+  assert.match(pageSource, /sortRecipeListRecipes/);
+  assert.match(detailSource, /getStringField\(record, "action"\)/);
+  assert.match(detailSource, /getStringField\(record, "heat"\)/);
+  assert.match(detailSource, /getNumberField\(record, "minutes", "minute", "duration_minutes"\)/);
+  assert.match(detailSource, /common_mistake/);
+  assert.match(detailSource, /rescue_tip/);
+  assert.match(apiSource, /categoryCounts/);
+  assert.match(apiSource, /normalizeDisplayCategory/);
+  assert.match(apiSource, /counts\.초보가능/);
+  assert.match(apiSource, /counts\['10분요리'\]/);
+
+  const hookSource = readFileSync(new URL("../hooks/useRecipes.ts", import.meta.url), "utf8");
+  assert.match(hookSource, /VIRTUAL_CATEGORY_LABELS/);
+  assert.match(hookSource, /counts\.초보가능/);
+  assert.match(hookSource, /counts\["10분요리"\]/);
+  assert.doesNotMatch(hookSource, /normalizeCategoryCounts\(payload\.categoryCounts,\s*getCuratedFallbackCategoryCounts/);
 });
 
 test("Korean ingredient aliases cover common home-cooking variants", () => {

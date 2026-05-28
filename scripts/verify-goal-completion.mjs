@@ -179,6 +179,21 @@ const localModeReleaseCheck = runLocalCheck("node scripts/check-local-mode-relea
 const supabaseReleaseCheck = runLocalCheck("node scripts/check-supabase-release.mjs", [
   "scripts/check-supabase-release.mjs",
 ]);
+const recipeValidationCheck = runLocalCheck("node --experimental-strip-types scripts/validate-recipes.mjs", [
+  "--experimental-strip-types",
+  "scripts/validate-recipes.mjs",
+]);
+const curatedBeginnerGuidanceCheck = runLocalCheck("node --experimental-strip-types scripts/check-curated-beginner-guidance.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-curated-beginner-guidance.mjs",
+]);
+const beginnerGoalReadinessCheck = runLocalCheck("node --experimental-strip-types scripts/check-beginner-goal-readiness.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-beginner-goal-readiness.mjs",
+]);
+const beginnerMobileEvidenceCheck = runLocalCheck("node scripts/check-beginner-mobile-evidence.mjs", [
+  "scripts/check-beginner-mobile-evidence.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -211,15 +226,56 @@ addResult(
 
 addResult(
   results,
+  recipeValidationCheck.status === "pass" && curatedBeginnerGuidanceCheck.status === "pass" ? "pass" : "missing",
+  "초보자 레시피 데이터 계약/검증",
+  `${recipeValidationCheck.evidence}; ${curatedBeginnerGuidanceCheck.evidence}`,
+  "pnpm validate:recipes 및 pnpm check:curated-beginner-guidance 실패 원인 수정",
+);
+
+addResult(
+  results,
+  beginnerGoalReadinessCheck.status,
+  "초보자 레시피 제품 목표",
+  beginnerGoalReadinessCheck.evidence,
+  "pnpm check:beginner-goal-readiness 실패 원인 수정",
+);
+
+addResult(
+  results,
+  beginnerMobileEvidenceCheck.status,
+  "초보자 모바일 화면 증거",
+  beginnerMobileEvidenceCheck.evidence,
+  "360/390/430px 홈/목록/상세/장보기 스크린샷을 다시 캡처한 뒤 pnpm check:beginner-mobile-evidence 재실행",
+);
+
+addResult(
+  results,
   ledger.includes("`pnpm check:supabase-live` / `pnpm release:external-check`: blocked") ||
-    ledger.includes("Supabase live REST check failed")
+    ledger.includes("Supabase live REST check failed") ||
+    ledger.includes("Supabase live blocks") ||
+    ledger.includes("family_group_id` missing from live") ||
+    ledger.includes("Could not find the 'family_group_id' column")
     ? "blocked"
     : ledger.includes("SUPABASE_LIVE_WRITE_TEST=1") && ledger.includes("pass")
       ? "pass"
       : "missing",
   "운영 Supabase live/read/write/RLS",
   "production Supabase REST and write-isolation evidence",
-  "Supabase 프로젝트 복구 후 pnpm release:external-check 및 SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live 실행",
+  "Supabase production migration 적용 후 pnpm release:supabase-live-unblock-check 및 pnpm release:external-check 실행",
+);
+
+addResult(
+  results,
+  ledger.includes("Storage still allows cross-prefix") ||
+    ledger.includes("guest upload outside device prefix succeeded") ||
+    ledger.includes("Storage path policy: production Storage")
+    ? "blocked"
+    : ledger.includes("cross-prefix upload blocked") && ledger.includes("PASS")
+      ? "pass"
+      : "missing",
+  "운영 Supabase Storage 정책",
+  "production community-images Storage write policy evidence",
+  "Storage 정책 migration 적용 후 pnpm release:supabase-live-unblock-check 및 pnpm check:supabase-storage-live 재실행",
 );
 
 addResult(

@@ -14,10 +14,24 @@ import {
   matchesRecipeQuickFilter,
   type RecipeQuickFilter,
 } from '@/lib/recipe-list-labels'
+import {
+  RECIPE_DIFFICULTY_FILTERS,
+  RECIPE_FRIDGE_FILTERS,
+  RECIPE_LIST_SORT_OPTIONS,
+  RECIPE_TIME_FILTERS,
+  RECIPE_TOOL_FILTERS,
+  matchesRecipeListFilters,
+  sortRecipeListRecipes,
+  type RecipeDifficultyListFilter,
+  type RecipeFridgeListFilter,
+  type RecipeListSortMode,
+  type RecipeTimeListFilter,
+  type RecipeToolListFilter,
+} from '@/lib/recipe-list-filters'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
-import { RECIPE_CATEGORIES } from '@/types'
+import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
 const FALLBACK_RECIPE_IMAGE =
   '/images/recipes/kimchi-fried-rice.png'
@@ -30,6 +44,14 @@ const RECIPE_FALLBACK_IMAGES = [
 const curatedRecipeMeta = new Map(
   CURATED_JIPBAB_RECIPES.map((recipe) => [recipe.id, recipe]),
 )
+const DISPLAY_CATEGORY_QUICK_FILTERS: Partial<Record<DisplayRecipeCategory, RecipeQuickFilter>> = {
+  초보가능: 'beginner',
+  '10분요리': 'quick',
+}
+
+function toRealRecipeCategory(category: DisplayRecipeCategory): RecipeCategory {
+  return category as RecipeCategory
+}
 
 export default function RecipePage() {
   const isAppStoreDemo = useDemoMode()
@@ -42,6 +64,7 @@ export default function RecipePage() {
     totalPages,
     searchQuery,
     selectedCategory,
+    categoryCounts,
     ingredientsLoading,
     setSearchQuery,
     setSelectedCategory,
@@ -53,33 +76,62 @@ export default function RecipePage() {
   const { favorites, isFavorite, toggleFavorite } = useFavorites()
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [quickFilter, setQuickFilter] = useState<RecipeQuickFilter>('all')
+  const [difficultyFilter, setDifficultyFilter] = useState<RecipeDifficultyListFilter>('all')
+  const [timeFilter, setTimeFilter] = useState<RecipeTimeListFilter>('all')
+  const [toolFilter, setToolFilter] = useState<RecipeToolListFilter>('all')
+  const [fridgeFilter, setFridgeFilter] = useState<RecipeFridgeListFilter>('all')
+  const [sortMode, setSortMode] = useState<RecipeListSortMode>('recommended')
   const baseRecipes = isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipes
   const visibleTotalCount = isAppStoreDemo ? baseRecipes.length : Math.max(totalCount, baseRecipes.length)
+  const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
   const filteredRecipes = useMemo(() => {
     const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
     const quickFiltered = base.filter((recipe) =>
       matchesRecipeQuickFilter(recipe, curatedRecipeMeta.get(recipe.id), quickFilter),
     )
+    const listFiltered = quickFiltered.filter((recipe) =>
+      matchesRecipeListFilters(recipe, {
+        difficulty: difficultyFilter,
+        time: timeFilter,
+        tool: toolFilter,
+        fridge: fridgeFilter,
+      }),
+    )
 
-    return [...quickFiltered].sort((left, right) => {
-      const leftFavorite = isFavorite(left.id) ? 1 : 0
-      const rightFavorite = isFavorite(right.id) ? 1 : 0
-      if (rightFavorite !== leftFavorite) {
-        return rightFavorite - leftFavorite
+    return sortRecipeListRecipes(listFiltered, sortMode, favoriteRecipeIds)
+  }, [baseRecipes, difficultyFilter, favoriteRecipeIds, favoritesOnly, fridgeFilter, isFavorite, quickFilter, sortMode, timeFilter, toolFilter])
+
+  const visibleCategories = useMemo(() => {
+    const hasCounts = Object.keys(categoryCounts).length > 0
+    return DISPLAY_RECIPE_CATEGORIES.filter((category) => {
+      const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
+      if (
+        category === '전체' ||
+        selectedCategory === category ||
+        (quickFilterForCategory && quickFilter === quickFilterForCategory)
+      ) {
+        return true
       }
-      if (right.matchRate !== left.matchRate) {
-        return right.matchRate - left.matchRate
-      }
-      if (right.matchedIngredients.length !== left.matchedIngredients.length) {
-        return right.matchedIngredients.length - left.matchedIngredients.length
-      }
-      return left.name.localeCompare(right.name, 'ko')
+      return !hasCounts || (categoryCounts[category] ?? 0) > 0
     })
-  }, [baseRecipes, favoritesOnly, isFavorite, quickFilter])
+  }, [categoryCounts, quickFilter, selectedCategory])
+
+  const handleDisplayCategoryClick = (category: DisplayRecipeCategory) => {
+    const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
+    if (quickFilterForCategory) {
+      setSelectedCategory('전체')
+      setQuickFilter(quickFilter === quickFilterForCategory ? 'all' : quickFilterForCategory)
+      return
+    }
+
+    const realCategory = toRealRecipeCategory(category)
+    setQuickFilter('all')
+    setSelectedCategory(selectedCategory === realCategory ? '전체' : realCategory)
+  }
 
   return (
-    <div className="min-h-full bg-[#fbf6ee] pb-6">
+    <div className="min-h-full bg-[#fbf6ee] pb-28">
       <section className="mobile-safe-top px-5">
         <div className="flex items-center justify-between">
           <div>
@@ -120,29 +172,40 @@ export default function RecipePage() {
             placeholder="레시피 검색"
             className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
           />
-          <button onClick={refresh} aria-label="레시피 새로고침" className="text-[#9f8d7a]">
+          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-9 w-9 shrink-0 items-center justify-center text-[#9f8d7a]">
             <RefreshCw size={15} />
           </button>
         </div>
       </section>
 
       <section className="grid grid-cols-4 gap-2 px-5 pt-3 min-[380px]:grid-cols-5">
-        {RECIPE_CATEGORIES.map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(selectedCategory === category ? '전체' : category)}
-            className={`min-h-9 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
-              selectedCategory === category
-                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        {visibleCategories.map((category) => {
+          const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
+          const active = quickFilterForCategory
+            ? quickFilter === quickFilterForCategory
+            : quickFilter === 'all' && selectedCategory === category
+
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => handleDisplayCategoryClick(category)}
+              className={`min-h-9 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
+                active
+                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+              }`}
+            >
+              {category}
+              {category !== '전체' && typeof categoryCounts[category] === 'number' ? (
+                <span className="ml-1 text-[10px] opacity-70">{categoryCounts[category]}</span>
+              ) : null}
+            </button>
+          )
+        })}
       </section>
 
-      <section className="grid grid-cols-4 gap-2 px-5 pt-2">
+      <section className="grid grid-cols-3 gap-2 px-5 pt-2">
         {RECIPE_QUICK_FILTERS.map((filter) => (
           <button
             key={filter.id}
@@ -157,6 +220,55 @@ export default function RecipePage() {
             {filter.label}
           </button>
         ))}
+      </section>
+
+      <section className="px-5 pt-3">
+        <div className="jipbab-panel rounded-[16px] px-3 py-3">
+          <div className="flex items-center gap-2 text-[12px] font-black text-[#4b3929]">
+            <SlidersHorizontal size={14} className="text-[#d94d19]" />
+            목록 필터
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <FilterSelect
+              label="난이도"
+              value={difficultyFilter}
+              options={RECIPE_DIFFICULTY_FILTERS}
+              onChange={(value) => setDifficultyFilter(value as RecipeDifficultyListFilter)}
+            />
+            <FilterSelect
+              label="조리시간"
+              value={timeFilter}
+              options={RECIPE_TIME_FILTERS}
+              onChange={(value) => setTimeFilter(value as RecipeTimeListFilter)}
+            />
+            <FilterSelect
+              label="도구"
+              value={toolFilter}
+              options={RECIPE_TOOL_FILTERS}
+              onChange={(value) => setToolFilter(value as RecipeToolListFilter)}
+            />
+            <FilterSelect
+              label="냉장고"
+              value={fridgeFilter}
+              options={RECIPE_FRIDGE_FILTERS}
+              onChange={(value) => setFridgeFilter(value as RecipeFridgeListFilter)}
+            />
+            <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+              정렬
+              <select
+                value={sortMode}
+                onChange={(event) => setSortMode(event.target.value as RecipeListSortMode)}
+                className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
+              >
+                {RECIPE_LIST_SORT_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
       </section>
 
       <section className="px-5 pt-4">
@@ -201,6 +313,15 @@ export default function RecipePage() {
                   className="rounded-full border border-[#eadcc9] px-4 py-2 text-[12px] font-black text-[#4b3929]"
                 >
                   전체 목록 보기
+                </button>
+              ) : null}
+              {quickFilter !== 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => setQuickFilter('all')}
+                  className="rounded-full border border-[#eadcc9] px-4 py-2 text-[12px] font-black text-[#4b3929]"
+                >
+                  추천 레시피 보기
                 </button>
               ) : null}
             </div>
@@ -319,7 +440,7 @@ export default function RecipePage() {
         <button
           onClick={prevPage}
           disabled={page <= 1 || loading}
-          className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-10 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           이전
         </button>
@@ -330,11 +451,40 @@ export default function RecipePage() {
         <button
           onClick={nextPage}
           disabled={page >= totalPages || loading}
-          className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-10 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           다음
         </button>
       </section>
     </div>
+  )
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: Array<{ id: string; label: string }>
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
+      >
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }

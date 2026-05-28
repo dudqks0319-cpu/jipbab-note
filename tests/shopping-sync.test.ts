@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { mergeShoppingItems } from "../lib/shopping-sync.ts";
@@ -48,4 +49,37 @@ test("sorts merged shopping items by newest update first", () => {
   );
 
   assert.deepEqual(merged.map((item) => item.id), ["new", "old"]);
+});
+
+test("shopping page exposes direct add, quick chips, duplicate merge, and fridge options", () => {
+  const pageSource = readFileSync(new URL("../app/shopping/page.tsx", import.meta.url), "utf8");
+  const hookSource = readFileSync(new URL("../hooks/useShopping.ts", import.meta.url), "utf8");
+
+  assert.match(pageSource, /\+ 직접 추가/);
+  assert.match(pageSource, /QUICK_SHOPPING_CHIPS/);
+  assert.match(pageSource, /이미 장보기 목록에 있어요/);
+  assert.match(pageSource, /INGREDIENT_STORAGE_TYPES/);
+  assert.match(pageSource, /EXPIRY_PRESETS/);
+  assert.match(hookSource, /mergeDuplicates/);
+  assert.match(hookSource, /mergeQuantityDisplay/);
+});
+
+test("recipe shopping assistant supports scoped and selective missing ingredient adds", () => {
+  const assistantSource = readFileSync(new URL("../components/recipe/RecipeShoppingAssistant.tsx", import.meta.url), "utf8");
+  const shoppingPageSource = readFileSync(new URL("../app/shopping/page.tsx", import.meta.url), "utf8");
+
+  assert.match(assistantSource, /useFamilyShare/);
+  assert.match(assistantSource, /selectedMissingNames/);
+  assert.match(assistantSource, /requiredIngredientNames/);
+  assert.match(assistantSource, /required !== false/);
+  assert.match(assistantSource, /scope: activeScope/);
+  assert.match(assistantSource, /familyGroupId/);
+  assert.match(assistantSource, /가족 장보기/);
+  assert.match(assistantSource, /이미 담긴 항목/);
+  assert.match(assistantSource, /필수 부족 재료/);
+  assert.match(assistantSource, /대체:/);
+  assert.match(shoppingPageSource, /useFamilyShare/);
+  assert.match(shoppingPageSource, /내 장보기/);
+  assert.match(shoppingPageSource, /가족 장보기/);
+  assert.match(shoppingPageSource, /scope: activeScope/);
 });

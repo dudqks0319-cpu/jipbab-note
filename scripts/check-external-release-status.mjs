@@ -9,6 +9,10 @@ const checks = [
     },
   },
   {
+    label: "Supabase Storage path policy",
+    args: ["scripts/check-supabase-storage-live.mjs"],
+  },
+  {
     label: "OAuth provider start/callback boundary",
     args: ["scripts/check-oauth-live.mjs"],
   },

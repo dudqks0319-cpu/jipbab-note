@@ -338,6 +338,99 @@ async function run() {
         } else {
           addResult(results, "fail", "family members service readback count", "expected owner and joiner rows");
         }
+
+        const familyIngredientRows = await expectOk(results, "family ingredient member insert", {
+          supabaseUrl,
+          anonKey,
+          method: "POST",
+          pathName: "ingredients",
+          deviceId: FAMILY_OWNER_DEVICE_ID,
+          body: {
+            device_id: FAMILY_OWNER_DEVICE_ID,
+            user_id: null,
+            family_group_id: familyGroupId,
+            name: `${WRITE_TEST_NAME}-family-ingredient`,
+            category: "기타",
+            storage_type: "냉장",
+            quantity: "1개",
+            expiry_date: null,
+          },
+        });
+        const familyIngredientId = Array.isArray(familyIngredientRows) ? familyIngredientRows[0]?.id : null;
+        if (familyIngredientId) {
+          const joinerIngredientRows = await expectOk(results, "family ingredient joiner read", {
+            supabaseUrl,
+            anonKey,
+            pathName: `ingredients?select=id,name&id=eq.${familyIngredientId}`,
+            deviceId: FAMILY_JOINER_DEVICE_ID,
+          });
+          if (Array.isArray(joinerIngredientRows) && joinerIngredientRows.length === 1) {
+            addResult(results, "pass", "family ingredient member visibility", "joiner can read shared family ingredient");
+          } else {
+            addResult(results, "fail", "family ingredient member visibility", "joiner could not read shared family ingredient");
+          }
+
+          const otherIngredientRows = await expectOk(results, "family ingredient non-member read", {
+            supabaseUrl,
+            anonKey,
+            pathName: `ingredients?select=id,name&id=eq.${familyIngredientId}`,
+            deviceId: OTHER_DEVICE_ID,
+          });
+          if (Array.isArray(otherIngredientRows) && otherIngredientRows.length === 0) {
+            addResult(results, "pass", "family ingredient non-member isolation", "non-member cannot read shared family ingredient");
+          } else {
+            addResult(results, "fail", "family ingredient non-member isolation", "family ingredient leaked to non-member");
+          }
+        } else {
+          addResult(results, "fail", "family ingredient insert id", "temporary family ingredient did not return an id");
+        }
+
+        const familyShoppingRows = await expectOk(results, "family shopping member insert", {
+          supabaseUrl,
+          anonKey,
+          method: "POST",
+          pathName: "shopping_items",
+          deviceId: FAMILY_OWNER_DEVICE_ID,
+          body: {
+            device_id: FAMILY_OWNER_DEVICE_ID,
+            user_id: null,
+            family_group_id: familyGroupId,
+            name: `${WRITE_TEST_NAME}-family-shopping`,
+            quantity: "1개",
+            category: "기타",
+            checked: false,
+            source_recipe_id: "release-check",
+            source_recipe_name: "release check recipe",
+          },
+        });
+        const familyShoppingId = Array.isArray(familyShoppingRows) ? familyShoppingRows[0]?.id : null;
+        if (familyShoppingId) {
+          const joinerShoppingRows = await expectOk(results, "family shopping joiner read", {
+            supabaseUrl,
+            anonKey,
+            pathName: `shopping_items?select=id,name&id=eq.${familyShoppingId}`,
+            deviceId: FAMILY_JOINER_DEVICE_ID,
+          });
+          if (Array.isArray(joinerShoppingRows) && joinerShoppingRows.length === 1) {
+            addResult(results, "pass", "family shopping member visibility", "joiner can read shared family shopping item");
+          } else {
+            addResult(results, "fail", "family shopping member visibility", "joiner could not read shared family shopping item");
+          }
+
+          const otherShoppingRows = await expectOk(results, "family shopping non-member read", {
+            supabaseUrl,
+            anonKey,
+            pathName: `shopping_items?select=id,name&id=eq.${familyShoppingId}`,
+            deviceId: OTHER_DEVICE_ID,
+          });
+          if (Array.isArray(otherShoppingRows) && otherShoppingRows.length === 0) {
+            addResult(results, "pass", "family shopping non-member isolation", "non-member cannot read shared family shopping item");
+          } else {
+            addResult(results, "fail", "family shopping non-member isolation", "family shopping item leaked to non-member");
+          }
+        } else {
+          addResult(results, "fail", "family shopping insert id", "temporary family shopping item did not return an id");
+        }
       } finally {
         if (shouldCleanupFamilyGroup) {
           await expectOk(results, "family group cleanup", {

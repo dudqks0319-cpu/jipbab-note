@@ -10,6 +10,7 @@ const requiredTables = [
   "ingredients",
   "recipes",
   "recipe_sources",
+  "recipe_comments",
   "favorites",
   "shopping_items",
   "partner_links",
@@ -37,6 +38,12 @@ const requiredPolicies = {
     "recipe_sources_insert_service_role",
     "recipe_sources_update_service_role",
     "recipe_sources_delete_service_role",
+  ],
+  recipe_comments: [
+    "recipe_comments_select_visible",
+    "recipe_comments_insert_authenticated",
+    "recipe_comments_update_own",
+    "recipe_comments_delete_own",
   ],
   favorites: [
     "favorites_select_own",
@@ -95,6 +102,10 @@ const requiredMigrationFiles = [
   "20260508133307_add_partner_links.sql",
   "20260508143719_optimize_rls_initplan.sql",
   "20260521160347_add_family_group_rpc.sql",
+  "20260523090000_add_recipe_comments.sql",
+  "20260526093000_harden_community_image_storage.sql",
+  "20260527093000_add_family_scoped_fridge_shopping.sql",
+  "20260528010000_fix_family_member_rls_recursion.sql",
 ];
 
 function readSqlBundle() {
@@ -143,7 +154,7 @@ function hasPolicy(sql, tableName, policyName) {
 
 function getPolicyBlock(sql, policyName) {
   const marker = `create policy ${policyName.toLowerCase()}`;
-  const start = sql.indexOf(marker);
+  const start = sql.lastIndexOf(marker);
   if (start < 0) {
     return "";
   }
@@ -154,6 +165,38 @@ function getPolicyBlock(sql, policyName) {
 
 function addResult(results, level, label, detail) {
   results.push({ level, label, detail });
+}
+
+function hasCommunityImageOwnerPathConstraint(block) {
+  return (
+    block.includes("bucket_id = 'community-images'") &&
+    block.includes("name like") &&
+    block.includes("(select auth.uid())::text || '/%'") &&
+    block.includes("(select app.current_device_id()) || '/%'")
+  );
+}
+
+function hasFamilyScopePolicyConstraint(block, tableName) {
+  const hasInlineFamilyMemberCheck =
+    block.includes("family_group_id is null") &&
+    block.includes("family_group_id is not null") &&
+    block.includes("from public.family_members m") &&
+    block.includes(`m.family_group_id = ${tableName}.family_group_id`) &&
+    block.includes("(select auth.uid())") &&
+    block.includes("(select app.current_device_id())");
+  const hasNonRecursiveFamilyMemberCheck =
+    block.includes("family_group_id is null") &&
+    block.includes("family_group_id is not null") &&
+    block.includes(`public.is_current_family_member(${tableName}.family_group_id)`) &&
+    block.includes("(select auth.uid())") &&
+    block.includes("(select app.current_device_id())");
+
+  return (
+    hasInlineFamilyMemberCheck ||
+    (hasNonRecursiveFamilyMemberCheck &&
+      sql.includes("create or replace function public.is_current_family_member") &&
+      sql.includes("security definer"))
+  );
 }
 
 const results = [];
@@ -220,6 +263,35 @@ for (const policyName of serviceRolePolicies) {
   }
 }
 
+for (const tableName of ["ingredients", "shopping_items"]) {
+  const columnPattern = new RegExp(
+    `alter\\s+table\\s+public\\.${tableName}\\s+add\\s+column\\s+if\\s+not\\s+exists\\s+family_group_id\\s+uuid`,
+    "i",
+  );
+  if (columnPattern.test(sql)) {
+    addResult(results, "pass", `${tableName}.family_group_id`, "family scope column migration exists");
+  } else {
+    addResult(results, "fail", `${tableName}.family_group_id`, "family scope column migration is missing");
+  }
+
+  for (const policyName of requiredPolicies[tableName]) {
+    const block = getPolicyBlock(sql, policyName);
+    if (!block) {
+      continue;
+    }
+    if (hasFamilyScopePolicyConstraint(block, tableName)) {
+      addResult(results, "pass", `${policyName} family scope`, "family rows are constrained to family_members");
+    } else {
+      addResult(
+        results,
+        "fail",
+        `${policyName} family scope`,
+        "family scoped rows must remain readable/writable only by family_members",
+      );
+    }
+  }
+}
+
 const partnerLinksMigration = readFileSync(
   path.join(migrationsDir, "20260508133307_add_partner_links.sql"),
   "utf8",
@@ -252,6 +324,46 @@ if (
   );
 }
 
+if (
+  sql.includes("insert into storage.buckets") &&
+  sql.includes("'community-images'") &&
+  sql.includes("file_size_limit") &&
+  sql.includes("allowed_mime_types") &&
+  sql.includes("array['image/png', 'image/jpeg', 'image/webp']")
+) {
+  addResult(results, "pass", "community-images bucket", "bucket has size and MIME restrictions in SQL");
+} else {
+  addResult(
+    results,
+    "fail",
+    "community-images bucket",
+    "must declare size and MIME restrictions for the community image bucket",
+  );
+}
+
+for (const policyName of [
+  "community_images_insert_own_path",
+  "community_images_update_own_path",
+  "community_images_delete_own_path",
+]) {
+  const block = getPolicyBlock(sql, policyName);
+  if (!block) {
+    addResult(results, "fail", policyName, "community image storage write policy is missing");
+    continue;
+  }
+
+  if (hasCommunityImageOwnerPathConstraint(block)) {
+    addResult(results, "pass", policyName, "storage writes are constrained to auth/device-owned paths");
+  } else {
+    addResult(
+      results,
+      "fail",
+      policyName,
+      "must constrain storage writes to auth.uid or app.current_device_id path prefixes",
+    );
+  }
+}
+
 const failures = results.filter((item) => item.level === "fail");
 const passes = results.filter((item) => item.level === "pass");
 
@@ -273,3 +385,5 @@ console.log("- required tables have RLS enabled in SQL");
 console.log("- required ownership and service-role policies are present");
 console.log("- partner_links is read-only for anon/authenticated users");
 console.log("- family invite-code RPC contract is present");
+console.log("- family fridge and shopping rows are member-scoped");
+console.log("- community image storage writes are owner/path constrained");

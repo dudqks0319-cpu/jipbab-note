@@ -2,13 +2,14 @@
 import type { CuratedRecipe } from "@/lib/curated-recipes";
 import type { RecipeWithMatch } from "@/types";
 
-export type RecipeQuickFilter = "all" | "ready" | "one-more" | "beginner";
+export type RecipeQuickFilter = "all" | "ready" | "one-more" | "beginner" | "quick" | "no-fire" | "microwave";
 
 export const RECIPE_QUICK_FILTERS: Array<{ id: RecipeQuickFilter; label: string }> = [
-  { id: "all", label: "전체 추천" },
+  { id: "all", label: "추천" },
   { id: "ready", label: "바로 가능" },
   { id: "one-more", label: "1개만 사면" },
-  { id: "beginner", label: "초보 검수" },
+  { id: "no-fire", label: "불 없이" },
+  { id: "microwave", label: "전자레인지" },
 ];
 
 export function getReadinessBadge(
@@ -47,6 +48,15 @@ export function matchesRecipeQuickFilter(
   }
   if (quickFilter === "beginner") {
     return isBeginnerVerifiedRecipe(curated);
+  }
+  if (quickFilter === "quick") {
+    return typeof curated?.cookingTime === "number" && curated.cookingTime <= 10;
+  }
+  if (quickFilter === "no-fire") {
+    return curated?.noFire === true;
+  }
+  if (quickFilter === "microwave") {
+    return curated?.microwave === true;
   }
   return true;
 }

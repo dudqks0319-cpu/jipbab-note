@@ -9,6 +9,10 @@ const checks = [
     },
   },
   {
+    label: "Supabase Storage path policy",
+    args: ["scripts/check-supabase-storage-live.mjs"],
+  },
+  {
     label: "OAuth provider start/callback boundary",
     args: ["scripts/check-oauth-live.mjs"],
   },
@@ -72,7 +76,7 @@ const passed = results.filter((result) => result.status === "pass");
 const blocked = results.filter((result) => result.status !== "pass");
 
 console.log("Play Store external release status");
-console.log("This command checks Android/Play Store blockers only; it does not validate App Store readiness.");
+console.log("This command checks shared production blockers and Android/Play Store blockers only; it does not validate App Store readiness.");
 console.log(`Passed: ${passed.length}`);
 console.log(`Blocked: ${blocked.length}`);
 

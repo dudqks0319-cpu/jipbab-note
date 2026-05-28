@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { getSupabaseClient } from "@/lib/supabase";
 import type { FamilyGroupRecord, FamilyMemberRecord } from "@/types";
 
 const STORAGE_KEY = "jipbab-note-family-group";
@@ -64,6 +65,25 @@ function safeWriteFamilyGroup(group: FamilyGroupRecord | null): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(group));
 }
 
+async function buildFamilyRequestHeaders(deviceId: string): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-device-id": deviceId,
+  };
+
+  try {
+    const { data } = await getSupabaseClient({ deviceId }).auth.getSession();
+    const accessToken = data.session?.access_token?.trim();
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+  } catch {
+    return headers;
+  }
+
+  return headers;
+}
+
 export function useFamilyShare() {
   const deviceId = useMemo(() => getDeviceId(), []);
   const [group, setGroup] = useState<FamilyGroupRecord | null>(() => safeReadFamilyGroup());
@@ -95,10 +115,7 @@ export function useFamilyShare() {
     try {
       const response = await fetch("/api/family-groups", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-device-id": deviceId,
-        },
+        headers: await buildFamilyRequestHeaders(deviceId),
         body: JSON.stringify({
           action: "create",
           groupId: nextGroup.id,
@@ -135,10 +152,7 @@ export function useFamilyShare() {
     try {
       const response = await fetch("/api/family-groups", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-device-id": deviceId,
-        },
+        headers: await buildFamilyRequestHeaders(deviceId),
         body: JSON.stringify({
           action: "join",
           inviteCode: normalizedCode,

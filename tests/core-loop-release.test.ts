@@ -21,6 +21,8 @@ test("core loop release check is wired into package and release gates", () => {
   assert.equal(packageJson.scripts["check:core-loop-release"], "node scripts/check-core-loop-release.mjs");
   assert.match(releaseGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-core-loop-release\.mjs/);
+  assert.match(releaseGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
 });
 
 test("fridge ingredients drive a recipe, missing item shopping, and purchased item fridge refill", () => {

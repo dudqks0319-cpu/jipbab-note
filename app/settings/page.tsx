@@ -107,9 +107,8 @@ export default function SettingsPage() {
         const result = await generateWithGemma(gemmaPrompt)
         setGemmaAnswer(result.text)
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gemma 실행 중 오류가 발생했습니다.'
-      setGemmaError(message)
+    } catch {
+      setGemmaError('온디바이스 추천을 실행하지 못했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setGemmaBusy(null)
     }
@@ -137,8 +136,8 @@ export default function SettingsPage() {
           ? '브라우저 알림'
           : '앱 내 예약 원장'
       setNotificationMessage(`${modeLabel}으로 ${result.jobs.length}개 알림을 준비했어요.`)
-    } catch (error) {
-      setNotificationMessage(error instanceof Error ? error.message : '알림 예약 중 오류가 발생했습니다.')
+    } catch {
+      setNotificationMessage('알림을 예약하지 못했습니다. 알림 권한과 기기 설정을 확인해주세요.')
     } finally {
       setNotificationBusy(false)
     }

@@ -55,6 +55,7 @@ export interface IngredientRecord {
   id: string;
   deviceId: string;
   userId: string | null;
+  familyGroupId?: string | null;
   name: string;
   category: IngredientCategory | null;
   storageType: IngredientStorageType;
@@ -97,6 +98,7 @@ export interface IngredientFormPayload {
 export interface IngredientInsertPayload {
   device_id: string;
   user_id?: string | null;
+  family_group_id?: string | null;
   name: string;
   category?: IngredientCategory | null;
   storage_type?: IngredientStorageType;
@@ -116,6 +118,7 @@ export interface IngredientInsertPayload {
 }
 
 export interface IngredientUpdatePayload {
+  family_group_id?: string | null;
   name?: string;
   category?: IngredientCategory | null;
   storage_type?: IngredientStorageType;
@@ -144,6 +147,7 @@ export interface ShoppingItem {
   id: string;
   deviceId: string;
   userId: string | null;
+  familyGroupId?: string | null;
   name: string;
   quantity: string | null;
   category: IngredientCategory | null;
@@ -158,6 +162,7 @@ export interface ShoppingItemDraft {
   name: string;
   quantity?: string | null;
   category?: IngredientCategory | null;
+  familyGroupId?: string | null;
   sourceRecipeId?: string | null;
   sourceRecipeName?: string | null;
 }
@@ -258,6 +263,14 @@ export interface CommunityQueryError {
 // 레시피 페이지에서 공통으로 사용하는 카테고리/응답/매칭 타입 정의입니다.
 export const RECIPE_CATEGORIES = [
   "전체",
+  "계란요리",
+  "김치/밥 요리",
+  "두부/저렴 재료",
+  "참치캔/스팸/햄/어묵",
+  "국/찌개",
+  "면요리",
+  "전자레인지/노불",
+  "도시락/반찬",
   "반찬",
   "국·찌개",
   "밥",
@@ -275,8 +288,85 @@ export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number];
 
 export type RecipeQueryCategory = Exclude<RecipeCategory, "전체">;
 
+export const DISPLAY_RECIPE_CATEGORIES = [
+  "전체",
+  "계란요리",
+  "김치/밥 요리",
+  "두부/저렴 재료",
+  "참치캔/스팸/햄/어묵",
+  "국/찌개",
+  "면요리",
+  "전자레인지/노불",
+  "도시락/반찬",
+  "초보가능",
+  "10분요리",
+] as const;
+
+export type DisplayRecipeCategory = (typeof DISPLAY_RECIPE_CATEGORIES)[number];
+
+export type RecipeCategoryCounts = Partial<Record<RecipeCategory | DisplayRecipeCategory, number>>;
+
+export type RecipeDifficultyLevel = 1 | 2 | 3 | 4 | 5;
+
+export type RecipeSafetyLevel = "A" | "B" | "C" | "D";
+
+export type RecipeSourceType =
+  | "original"
+  | "original-general-principle"
+  | "public-data"
+  | "licensed-kogl"
+  | "trend-reference-platform"
+  | "reference-link";
+
+export type RecipeReleaseTier =
+  | "onboarding"
+  | "release_30"
+  | "core_50"
+  | "library_100"
+  | "candidate"
+  | "blocked";
+
+export type RecipePublishStatus =
+  | "draft"
+  | "needs_rewrite"
+  | "rights_review"
+  | "qa_ready"
+  | "published"
+  | "hidden";
+
+export type RecipeHeatLevel = "불 없음" | "약불" | "중약불" | "중불" | "강불";
+
+export interface RecipeHomeCardCopy {
+  title: string;
+  subtitle: string;
+  badge: string;
+  cta: string;
+}
+
+export interface BeginnerRecipeSource {
+  sourceType: RecipeSourceType;
+  sourceName: string;
+  sourceUrl?: string | null;
+  licenseOrUsageNote: string;
+  rightsNote: string;
+  imageUsageAllowed: boolean;
+  adaptedByJipbabNote: boolean;
+}
+
+export interface BeginnerRecipeSafety {
+  safetyLevel: RecipeSafetyLevel;
+  copyrightRisk: "low" | "medium" | "high";
+  privacyRisk: "low" | "medium" | "high";
+  commercialUseRisk: "low" | "medium" | "high";
+  notes?: string | null;
+  imageUsageAllowed?: boolean;
+  adaptedByJipbabNote?: boolean;
+}
+
 export interface RecipeRecord {
   id: string;
+  slug?: string;
+  title?: string;
   name: string;
   category: string;
   method: string;
@@ -284,6 +374,19 @@ export interface RecipeRecord {
   thumbnailUrl: string | null;
   ingredients: string;
   hashTag: string;
+  difficultyLevel?: RecipeDifficultyLevel | null;
+  beginnerScore?: number | null;
+  totalMinutes?: number | null;
+  activeMinutes?: number | null;
+  requiredTools?: string[];
+  homeCardCopy?: string | RecipeHomeCardCopy | null;
+  noFire?: boolean | null;
+  microwave?: boolean | null;
+  fallbackMeal?: string | null;
+  source?: BeginnerRecipeSource | null;
+  safety?: BeginnerRecipeSafety | null;
+  releaseTier?: RecipeReleaseTier | null;
+  publishStatus?: RecipePublishStatus | null;
 }
 
 export interface RecipeListResponse {
@@ -291,6 +394,7 @@ export interface RecipeListResponse {
   totalCount: number;
   page: number;
   size: number;
+  categoryCounts?: RecipeCategoryCounts;
   code?: string;
   message?: string;
 }
@@ -308,10 +412,17 @@ export interface RecipeWithMatch extends RecipeRecord, RecipeMatchResult {
 
 export interface RecipeDetailStep {
   index: number;
+  order?: number;
+  title?: string | null;
+  action?: string | null;
   description: string;
   imageUrl: string | null;
+  heat?: RecipeHeatLevel | string | null;
+  minutes?: number | null;
   beginnerTip?: string | null;
   visualCue?: string | null;
+  commonMistake?: string | null;
+  rescueTip?: string | null;
   imageAlt?: string | null;
   imageCaption?: string | null;
 }
@@ -321,6 +432,8 @@ export interface RecipeIngredientDetail {
   display: string;
   amount?: string | null;
   unit?: string | null;
+  required?: boolean;
+  substitute?: string | null;
   beginnerNote?: string | null;
   prepNote?: string | null;
 }
@@ -328,12 +441,26 @@ export interface RecipeIngredientDetail {
 export interface RecipeDetailRecord extends RecipeRecord {
   ingredientList: string[];
   ingredientDetails?: RecipeIngredientDetail[];
+  substituteIngredients?: RecipeIngredientDetail[];
   steps: RecipeDetailStep[];
   difficulty?: number | string | null;
+  difficultyLevel?: RecipeDifficultyLevel | null;
+  beginnerScore?: number | null;
   cookingTime?: number | null;
+  totalMinutes?: number | null;
+  activeMinutes?: number | null;
   servings?: number | null;
+  requiredTools?: string[];
+  beforeStart?: string[];
   beginnerSummary?: string | null;
   measurementTips?: string[];
+  successCheck?: string | null;
+  storageTip?: string | null;
+  reheatTip?: string | null;
+  fallbackMeal?: string | null;
+  homeCardCopy?: string | RecipeHomeCardCopy | null;
+  source?: BeginnerRecipeSource | null;
+  safety?: BeginnerRecipeSafety | null;
   imageAlt?: string | null;
   imageCaption?: string | null;
   sourceProvider?: string | null;
@@ -343,6 +470,22 @@ export interface RecipeDetailRecord extends RecipeRecord {
   sourceLicense?: string | null;
   contentOrigin?: "original" | "public_api" | "licensed" | "user_bookmark" | null;
   reviewedForBeginner?: boolean;
+}
+
+export interface RecipeCommentRecord {
+  id: string;
+  recipeId: string;
+  deviceId: string;
+  userId: string | null;
+  authorName: string;
+  content: string;
+  status: "visible" | "hidden" | "deleted";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeCommentPayload {
+  content: string;
 }
 
 export interface FavoriteRecipeSummary {

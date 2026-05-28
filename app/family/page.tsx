@@ -7,7 +7,9 @@ import { ChevronLeft, Copy, Home, Plus, Trash2, Users } from "lucide-react";
 
 import { useFamilyShare } from "@/hooks/useFamilyShare";
 import { useIngredients } from "@/hooks/useIngredients";
-import { useRecipes } from "@/hooks/useRecipes";
+import { filterBeginnerHomeRecipes } from "@/lib/beginner-recipe-contract";
+import { CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
+import { buildRecipeRecommendationReason, rankRecipeRecommendations } from "@/lib/matching";
 import { getDday } from "@/lib/utils";
 
 export default function FamilyPage() {
@@ -22,8 +24,11 @@ export default function FamilyPage() {
     removeMember,
     leaveGroup,
   } = useFamilyShare();
-  const { ingredients } = useIngredients();
-  const { recipes } = useRecipes(8);
+  const familyGroupId = group?.id ?? null;
+  const { ingredients } = useIngredients({
+    scope: group ? "family" : "personal",
+    familyGroupId,
+  });
   const [groupName, setGroupName] = useState("우리집 냉장고");
   const [ownerName, setOwnerName] = useState("나");
   const [inviteCode, setInviteCode] = useState("");
@@ -33,7 +38,23 @@ export default function FamilyPage() {
     () => ingredients.filter((item) => getDday(item.expiryDate) <= 3).slice(0, 5),
     [ingredients],
   );
-  const todayRecipe = recipes[0] ?? null;
+  const familyRecommendations = useMemo(
+    () =>
+      rankRecipeRecommendations(filterBeginnerHomeRecipes(CURATED_RECIPE_RECORDS), ingredients)
+        .slice(0, 8)
+        .map(({ recipe, match }) => ({
+          ...recipe,
+          ...match,
+          recommendationReason: buildRecipeRecommendationReason({
+            recipeName: recipe.name,
+            matchedIngredients: match.matchedIngredients,
+            missingIngredients: match.missingIngredients,
+            expiringIngredients: [],
+          }),
+        })),
+    [ingredients],
+  );
+  const todayRecipe = familyRecommendations[0] ?? null;
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
@@ -189,6 +210,48 @@ export default function FamilyPage() {
             <div className="jipbab-panel rounded-[16px] px-3 py-3">
               <p className="text-[12px] font-bold text-[#8f7f70]">소진임박</p>
               <p className="mt-1 text-[15px] font-black text-[#d94d19]">{expiringItems.length}개</p>
+            </div>
+          </section>
+
+          <section className="px-5 pt-4">
+            <div className="jipbab-panel rounded-[18px] px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-black text-[#2f2117]">가족 냉장고 추천</h2>
+                  <p className="mt-1 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
+                    현재 공유된 재료 기준으로 {group.members.length}명이 먹기 쉬운 메뉴를 먼저 보여줍니다.
+                  </p>
+                </div>
+                <Link href="/recipe" className="shrink-0 text-[12px] font-black text-[#d94d19]">
+                  더보기
+                </Link>
+              </div>
+              {familyRecommendations.length === 0 ? (
+                <div className="mt-3 rounded-[14px] bg-[#fff7ed] px-3 py-3">
+                  <p className="text-[12px] font-black text-[#4b3929]">추천할 가족 메뉴가 아직 없어요.</p>
+                  <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">냉장고 재료를 추가하면 초보자용 메뉴가 먼저 정렬됩니다.</p>
+                </div>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {familyRecommendations.slice(0, 4).map((recipe) => (
+                    <Link
+                      key={recipe.id}
+                      href={`/recipe/${recipe.id}?scope=family#shopping-assistant`}
+                      className="flex items-center justify-between gap-3 rounded-[14px] bg-[#fffaf3] px-3 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-[#4b3929]">{recipe.name}</p>
+                        <p className="mt-0.5 truncate text-[11px] font-bold text-[#8f7f70]">
+                          부족 {recipe.missingIngredients.length}개 · {recipe.recommendationReason} · {group.members.length}인 가족 기준
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-[#fff0e4] px-2 py-1 text-[10px] font-black text-[#d94d19]">
+                        만들기
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 

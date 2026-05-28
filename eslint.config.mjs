@@ -26,8 +26,11 @@ const eslintConfig = defineConfig([
     "ios/build/**",
     "ios/**/SourcePackages/**",
     "ios/App/App/public/**",
+    ".worktrees/**",
     ".tmp/**",
     ".vercel/**",
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

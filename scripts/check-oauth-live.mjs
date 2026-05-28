@@ -5,6 +5,7 @@ import path from "node:path";
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
 const PROVIDERS = ["google", "apple", "kakao"];
+const NATIVE_REDIRECT_TO = "com.jipbab.note://auth/callback";
 
 const PROVIDER_ENV_KEYS = {
   google: "NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED",
@@ -199,12 +200,22 @@ async function checkProviderLandingPage({ provider, locationUrl, results }) {
   addResult(results, "pass", "kakao OAuth provider page", "provider endpoint reached");
 }
 
-async function checkProvider({ env, provider, supabaseUrl, redirectTo, results }) {
+async function checkProvider({
+  env,
+  provider,
+  supabaseUrl,
+  redirectTo,
+  results,
+  labelPrefix = "",
+  includeConsentCheck = true,
+  includeProviderLandingPage = true,
+}) {
   const authorizeUrl = new URL("/auth/v1/authorize", supabaseUrl);
   authorizeUrl.searchParams.set("provider", provider);
   authorizeUrl.searchParams.set("redirect_to", redirectTo);
+  const label = `${provider}${labelPrefix ? ` ${labelPrefix}` : ""} OAuth redirect`;
 
-  if (provider === "kakao") {
+  if (provider === "kakao" && includeConsentCheck) {
     const emailPermissionConfirmed = parseBooleanFlag(env[KAKAO_ACCOUNT_EMAIL_PERMISSION_ENV_KEY]) === true;
     if (emailPermissionConfirmed) {
       addResult(results, "pass", "kakao account_email consent", "Kakao Biz App email consent is confirmed");
@@ -227,17 +238,19 @@ async function checkProvider({ env, provider, supabaseUrl, redirectTo, results }
     const locationUrl = new URL(location);
     const expectedHost = EXPECTED_AUTH_HOSTS[provider];
     if (locationUrl.host === expectedHost) {
-      addResult(results, "pass", `${provider} OAuth redirect`, `302 to ${expectedHost}`);
-      await checkProviderLandingPage({ provider, locationUrl, results });
+      addResult(results, "pass", label, `302 to ${expectedHost}`);
+      if (includeProviderLandingPage) {
+        await checkProviderLandingPage({ provider, locationUrl, results });
+      }
       return;
     }
 
-    addResult(results, "fail", `${provider} OAuth redirect`, `unexpected redirect host ${locationUrl.host}`);
+    addResult(results, "fail", label, `unexpected redirect host ${locationUrl.host}`);
     return;
   }
 
   const body = await readResponseBody(response);
-  addResult(results, "fail", `${provider} OAuth redirect`, `HTTP ${response.status}: ${body || "no redirect"}`);
+  addResult(results, "fail", label, `HTTP ${response.status}: ${body || "no redirect"}`);
 }
 
 async function run() {
@@ -279,6 +292,21 @@ async function run() {
   if (supabaseUrl && redirectTo) {
     for (const provider of enabledProviders) {
       await checkProvider({ env, provider, supabaseUrl, redirectTo, results });
+    }
+  }
+
+  if (supabaseUrl) {
+    for (const provider of enabledProviders) {
+      await checkProvider({
+        env,
+        provider,
+        supabaseUrl,
+        redirectTo: NATIVE_REDIRECT_TO,
+        results,
+        labelPrefix: "native",
+        includeConsentCheck: false,
+        includeProviderLandingPage: false,
+      });
     }
   }
 

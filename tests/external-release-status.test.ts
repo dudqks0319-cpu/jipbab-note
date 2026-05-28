@@ -13,14 +13,19 @@ test("external status command is available as a non short-circuiting release hel
   assert.match(source, /External release is not complete/);
 });
 
-test("external release checks require live Supabase write isolation", () => {
+test("external release checks require live Supabase write isolation and Storage policy", () => {
   assert.match(packageJson.scripts["release:external-check"], /SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live/);
+  assert.match(packageJson.scripts["release:external-check"], /pnpm check:supabase-storage-live/);
+  assert.match(packageJson.scripts["release:full-check"], /pnpm release:external-check/);
+  assert.equal(packageJson.scripts["check:supabase-storage-live"], "node scripts/check-supabase-storage-live.mjs");
   assert.match(source, /Supabase live read\/write\/RLS/);
+  assert.match(source, /Supabase Storage path policy/);
   assert.match(source, /SUPABASE_LIVE_WRITE_TEST: "1"/);
 });
 
 test("external status command includes every external release blocker surface", () => {
   assert.match(source, /scripts\/check-supabase-live\.mjs/);
+  assert.match(source, /scripts\/check-supabase-storage-live\.mjs/);
   assert.match(source, /scripts\/check-oauth-live\.mjs/);
   assert.match(source, /scripts\/check-vercel-production-env\.mjs/);
   assert.match(source, /scripts\/check-production-family-route\.mjs/);

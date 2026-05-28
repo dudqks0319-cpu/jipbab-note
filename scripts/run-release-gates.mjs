@@ -13,6 +13,11 @@ const checks = [
     args: ["scripts/check-local-mode-release.mjs"],
   },
   {
+    name: "beginner-goal-readiness",
+    command: "node",
+    args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
+  },
+  {
     name: "release-readiness",
     command: "node",
     args: ["scripts/release-readiness-check.mjs"],

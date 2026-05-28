@@ -85,9 +85,8 @@ export default function AccountDeletePage() {
       setStatusMessage("계정 삭제 요청이 접수되었습니다. 운영자가 완료 처리하면 계정과 연동 데이터가 실제 삭제됩니다.");
       setReason("");
       await refreshRequests();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "계정 삭제 요청을 접수하지 못했습니다.";
-      setErrorMessage(message);
+    } catch {
+      setErrorMessage("계정 삭제 요청을 접수하지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setSubmitting(false);
     }

@@ -2,7 +2,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { CURATED_JIPBAB_RECIPES } from '@/lib/curated-recipes'
+import { isBeginnerVerifiedRecipe } from '@/lib/recipe-list-labels'
 import { getRateLimitKey, normalizeHttpUrl } from '@/lib/request-security'
+import type { RecipeCategoryCounts } from '@/types'
 
 const SERVICE_ID = 'COOKRCP01'
 const BASE_URL = 'https://openapi.foodsafetykorea.go.kr/api'
@@ -24,7 +27,29 @@ const INGREDIENT_FRACTION_DENOMINATOR_PATTERN =
 const INGREDIENT_MEASUREMENT_PATTERN =
   /\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)/i
 
-const CATEGORY_ALLOWLIST = new Set(['한식', '중식', '양식', '일식', '분식', '디저트', '후식', '국·찌개', '국&찌개', '반찬', '밥', '일품', '기타'])
+const CATEGORY_ALLOWLIST = new Set([
+  '계란요리',
+  '김치/밥 요리',
+  '두부/저렴 재료',
+  '참치캔/스팸/햄/어묵',
+  '국/찌개',
+  '면요리',
+  '전자레인지/노불',
+  '도시락/반찬',
+  '한식',
+  '중식',
+  '양식',
+  '일식',
+  '분식',
+  '디저트',
+  '후식',
+  '국·찌개',
+  '국&찌개',
+  '반찬',
+  '밥',
+  '일품',
+  '기타',
+])
 const QUERY_PATTERN = /^[0-9A-Za-z가-힣\s\-_/(),.&]+$/
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
@@ -101,6 +126,63 @@ const normalizeCategory = (value: string | null): string | null => {
   if (!value || value === '전체') return null
   const normalized = value === '국·찌개' ? '국&찌개' : value === '디저트' ? '후식' : value.trim()
   return CATEGORY_ALLOWLIST.has(normalized) ? normalized : null
+}
+
+const normalizeDisplayCategory = (value: string | null | undefined): string => {
+  const normalized = value?.trim() || '기타'
+  if (normalized === '국&찌개') return '국·찌개'
+  if (normalized === '후식') return '디저트'
+  return normalized
+}
+
+const incrementCategoryCount = (counts: RecipeCategoryCounts, value: string | null | undefined) => {
+  const category = normalizeDisplayCategory(value) as keyof RecipeCategoryCounts
+  counts.전체 = (counts.전체 ?? 0) + 1
+  counts[category] = (counts[category] ?? 0) + 1
+}
+
+const countRecipeCategories = (recipes: Array<{ category: string | null | undefined }>): RecipeCategoryCounts => {
+  const counts: RecipeCategoryCounts = { 전체: 0 }
+  for (const recipe of recipes) {
+    incrementCategoryCount(counts, recipe.category)
+  }
+  return counts
+}
+
+const getCuratedCategoryCounts = (query: string | null): RecipeCategoryCounts => {
+  const normalizedQuery = query?.trim().toLowerCase() ?? ''
+  const counts: RecipeCategoryCounts = { 전체: 0 }
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    if (recipe.publishStatus && recipe.publishStatus !== 'published') {
+      continue
+    }
+    const matchesQuery = !normalizedQuery ||
+      recipe.name.toLowerCase().includes(normalizedQuery) ||
+      recipe.ingredients.toLowerCase().includes(normalizedQuery)
+    if (!matchesQuery) {
+      continue
+    }
+
+    incrementCategoryCount(counts, recipe.category)
+    if (isBeginnerVerifiedRecipe(recipe)) {
+      counts.초보가능 = (counts.초보가능 ?? 0) + 1
+    }
+    if (typeof recipe.cookingTime === 'number' && recipe.cookingTime <= 10) {
+      counts['10분요리'] = (counts['10분요리'] ?? 0) + 1
+    }
+  }
+  return counts
+}
+
+const mergeCategoryCounts = (...countSets: Array<RecipeCategoryCounts | null | undefined>): RecipeCategoryCounts => {
+  const merged: RecipeCategoryCounts = { 전체: 0 }
+  for (const countSet of countSets) {
+    for (const [category, count] of Object.entries(countSet ?? {})) {
+      const normalizedCategory = normalizeDisplayCategory(category) as keyof RecipeCategoryCounts
+      merged[normalizedCategory] = (merged[normalizedCategory] ?? 0) + Number(count ?? 0)
+    }
+  }
+  return merged
 }
 
 const isRateLimited = (key: string): boolean => {
@@ -228,7 +310,7 @@ const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
   return {
     id: row.RCP_SEQ ?? '',
     name: row.RCP_NM?.trim() ?? '이름 없음',
-    category: row.RCP_PAT2?.trim() ?? '기타',
+    category: normalizeDisplayCategory(row.RCP_PAT2),
     method: row.RCP_WAY2?.trim() ?? '정보 없음',
     calories: row.INFO_ENG?.trim() ?? '-',
     thumbnailUrl: normalizeRecipeImageUrl(row.ATT_FILE_NO_MK || row.ATT_FILE_NO_MAIN || null),
@@ -277,7 +359,7 @@ const supabaseRowToRecipe = (row: SupabaseRecipeRow): RecipeDto => {
   return {
     id: row.id,
     name: row.title?.trim() || '이름 없음',
-    category: row.category?.trim() || '기타',
+    category: normalizeDisplayCategory(row.category),
     method: parsed.method,
     calories: parsed.calories,
     thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
@@ -333,6 +415,37 @@ const fetchRecipesFromSupabase = async (
   }
 }
 
+const fetchRecipeCategoryCountsFromSupabase = async (
+  query: string | null,
+): Promise<RecipeCategoryCounts | null> => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null
+  }
+
+  try {
+    const client = createClient(supabaseUrl, supabaseAnonKey)
+    let request = client
+      .from('recipes')
+      .select('title,category')
+      .limit(1000)
+
+    if (query) {
+      request = request.ilike('title', `%${query}%`)
+    }
+
+    const { data, error } = await request
+    if (error) {
+      return null
+    }
+
+    return countRecipeCategories((data ?? []) as Array<{ category: string | null }>)
+  } catch {
+    return null
+  }
+}
+
 export async function GET(request: Request) {
   const clientKey = getRateLimitKey(request)
   if (isRateLimited(clientKey)) {
@@ -350,19 +463,23 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const page = toPositiveInt(searchParams.get('page'), DEFAULT_PAGE)
   const size = Math.min(toPositiveInt(searchParams.get('size'), DEFAULT_SIZE), MAX_SIZE)
+  const includeCounts = searchParams.get('includeCounts') === '1'
   const start = (page - 1) * size + 1
   const end = start + size - 1
   let query: string | null
   try {
     query = sanitizeQuery(searchParams.get('q'))
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : '잘못된 검색어입니다.' },
+      { message: '잘못된 검색어입니다.' },
       { status: 400 },
     )
   }
 
   const category = normalizeCategory(searchParams.get('category'))
+  const categoryCounts = includeCounts
+    ? mergeCategoryCounts(await fetchRecipeCategoryCountsFromSupabase(query), getCuratedCategoryCounts(query))
+    : undefined
 
   const dbResult = await fetchRecipesFromSupabase(page, size, query, category)
   if (dbResult && dbResult.totalCount > 0) {
@@ -371,6 +488,7 @@ export async function GET(request: Request) {
       totalCount: dbResult.totalCount,
       page,
       size,
+      categoryCounts,
       code: 'DB-000',
       message: '저장된 레시피 데이터를 조회했습니다.',
     })
@@ -384,6 +502,7 @@ export async function GET(request: Request) {
         totalCount: dbResult?.totalCount ?? 0,
         page,
         size,
+        categoryCounts,
         code: 'NO-API-KEY',
         message:
           '레시피 API 키가 없어 저장된 데이터만 표시합니다. MFDS_API_KEY(권장) 또는 FOODSAFETY_API_KEY를 설정해 주세요.',
@@ -414,6 +533,9 @@ export async function GET(request: Request) {
     const rows = serviceData?.row ?? []
     const totalCount = Number(serviceData?.total_count ?? rows.length ?? 0)
     const recipes = rows.map(rowToRecipe)
+    const responseCategoryCounts = includeCounts
+      ? mergeCategoryCounts(categoryCounts, countRecipeCategories(recipes))
+      : undefined
 
     if (!serviceData) {
       return NextResponse.json(
@@ -422,6 +544,7 @@ export async function GET(request: Request) {
           totalCount: 0,
           page,
           size,
+          categoryCounts: responseCategoryCounts,
           code: result?.CODE ?? 'NO_DATA',
           message: result?.MSG ?? '응답에 COOKRCP01 데이터가 없습니다.',
         },
@@ -434,6 +557,7 @@ export async function GET(request: Request) {
       totalCount,
       page,
       size,
+      categoryCounts: responseCategoryCounts,
       code: result?.CODE ?? 'INFO-000',
       message: result?.MSG ?? '정상 처리되었습니다.',
     })

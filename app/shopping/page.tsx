@@ -3,10 +3,11 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
+import { CalendarDays, Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
+import { useFamilyShare } from '@/hooks/useFamilyShare'
 import { useIngredients } from '@/hooks/useIngredients'
 import { usePartnerLinks } from '@/hooks/usePartnerLinks'
 import { useShopping } from '@/hooks/useShopping'
@@ -18,28 +19,77 @@ import {
   normalizeShoppingIngredientName,
 } from '@/lib/shopping-to-fridge'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
-import { INGREDIENT_CATEGORIES, type IngredientCategory } from '@/types'
+import { INGREDIENT_CATEGORIES, INGREDIENT_STORAGE_TYPES, type IngredientCategory, type IngredientStorageType } from '@/types'
 import type { ShoppingItem } from '@/types'
 import type { PartnerLinkConfig } from '@/lib/partner-links'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
 const PARTNERS_DISCLOSURE = '일부 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
+const QUICK_SHOPPING_CHIPS: Array<{ name: string; quantity: string; category: IngredientCategory }> = [
+  { name: '두부', quantity: '1모', category: '유제품' },
+  { name: '계란', quantity: '10개', category: '유제품' },
+  { name: '우유', quantity: '1L', category: '유제품' },
+  { name: '대파', quantity: '1단', category: '채소' },
+  { name: '양파', quantity: '3개', category: '채소' },
+  { name: '김치', quantity: '1팩', category: '통조림/가공식품' },
+  { name: '돼지고기', quantity: '600g', category: '육류' },
+]
+const EXPIRY_PRESETS = [
+  { label: '3일', days: 3 },
+  { label: '1주', days: 7 },
+  { label: '2주', days: 14 },
+  { label: '1달', days: 30 },
+] as const
 
 function externalLinkRel(isPartnerLink: boolean) {
   return isPartnerLink ? 'sponsored noopener noreferrer' : 'noopener noreferrer'
 }
 
+function parseQuickShoppingInput(value: string): { name: string; quantity: string } {
+  const normalized = normalizeIngredientInput(value)
+  const match = normalized.match(/^(.+?)\s+(\d+(?:\.\d+)?\s*\S+)$/)
+  if (!match) {
+    return { name: normalized, quantity: '' }
+  }
+
+  return {
+    name: normalizeIngredientInput(match[1] ?? ''),
+    quantity: match[2]?.trim() ?? '',
+  }
+}
+
+function getDateAfterDays(days: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
 export default function ShoppingPage() {
   const isAppStoreDemo = useDemoMode()
-  const { items, addItem, toggleItem, removeItem, clearCheckedItems, source: shoppingSource } = useShopping()
-  const { ingredients, addIngredient, updateIngredient, source: ingredientSource } = useIngredients()
+  const { group } = useFamilyShare()
+  const [selectedScope, setSelectedScope] = useState<'personal' | 'family'>('personal')
+  const activeScope = selectedScope === 'family' && group ? 'family' : 'personal'
+  const familyGroupId = activeScope === 'family' ? group?.id ?? null : null
+  const { items, addItem, toggleItem, removeItem, clearCheckedItems, source: shoppingSource } = useShopping({
+    scope: activeScope,
+    familyGroupId,
+  })
+  const { ingredients, addIngredient, updateIngredient, source: ingredientSource } = useIngredients({
+    scope: activeScope,
+    familyGroupId,
+  })
   const partnerLinks = usePartnerLinks()
   const [showAddForm, setShowAddForm] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
+  const [quickInput, setQuickInput] = useState('')
   const [name, setName] = useState('')
   const [quantity, setQuantity] = useState('')
   const [category, setCategory] = useState<IngredientCategory>(DEFAULT_CATEGORY)
   const [categoryTouched, setCategoryTouched] = useState(false)
+  const [fridgeStorageType, setFridgeStorageType] = useState<IngredientStorageType>('냉장')
+  const [fridgeExpiryDays, setFridgeExpiryDays] = useState<number>(7)
+  const [purchasePlace, setPurchasePlace] = useState('')
+  const [unitPrice, setUnitPrice] = useState('')
 
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
@@ -54,21 +104,59 @@ export default function ShoppingPage() {
     return Array.from(groups.entries())
   }, [uncheckedItems])
 
-  const handleAdd = () => {
-    const normalizedName = normalizeIngredientInput(name)
-    const normalizedQuantity = quantity.trim()
-    const safeCategory = categoryTouched ? category : suggestIngredientCategory(normalizedName, category)
+  const addShoppingDraft = async (draft: { name: string; quantity?: string; category?: IngredientCategory }) => {
+    const normalizedName = normalizeIngredientInput(draft.name)
+    const normalizedQuantity = draft.quantity?.trim() ?? ''
+    const safeCategory = draft.category ?? suggestIngredientCategory(normalizedName, DEFAULT_CATEGORY)
 
     if (!normalizedName) {
       return
     }
 
-    void addItem({ name: normalizedName, quantity: normalizedQuantity, category: safeCategory })
+    const duplicate = items.find((item) => normalizeShoppingIngredientName(item.name) === normalizeShoppingIngredientName(normalizedName))
+    const shouldMerge = duplicate
+      ? window.confirm(`이미 장보기 목록에 있어요. ${normalizedName}${normalizedQuantity ? ` ${normalizedQuantity}` : ''} 수량을 합칠까요?`)
+      : false
+    if (duplicate && !shouldMerge) {
+      setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
+      return
+    }
+
+    const result = await addItem(
+      { name: normalizedName, quantity: normalizedQuantity, category: safeCategory },
+      { mergeDuplicates: shouldMerge },
+    )
+    if (result.mergedCount > 0) {
+      setStatusMessage(`${normalizedName} 수량을 기존 장보기 항목과 합쳤어요.`)
+    } else if (result.addedCount > 0) {
+      setStatusMessage(result.source === 'local'
+        ? `${normalizedName}을 이 기기에 임시 저장했어요. 로그인하면 클라우드에 동기화됩니다.`
+        : `${normalizedName}을 장보기 목록에 추가했어요.`)
+    } else if (result.skippedDuplicates.length > 0) {
+      setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
+    }
+  }
+
+  const handleAdd = () => {
+    const normalizedName = normalizeIngredientInput(name)
+    const normalizedQuantity = quantity.trim()
+    const safeCategory = categoryTouched ? category : suggestIngredientCategory(normalizedName, category)
+
+    void addShoppingDraft({ name: normalizedName, quantity: normalizedQuantity, category: safeCategory })
     setName('')
     setQuantity('')
     setCategory(DEFAULT_CATEGORY)
     setCategoryTouched(false)
-    setStatusMessage('장보기 항목을 추가했어요. 계속 추가할 수 있습니다.')
+  }
+
+  const handleQuickAdd = () => {
+    const parsed = parseQuickShoppingInput(quickInput)
+    void addShoppingDraft({
+      name: parsed.name,
+      quantity: parsed.quantity,
+      category: suggestIngredientCategory(parsed.name, DEFAULT_CATEGORY),
+    })
+    setQuickInput('')
   }
 
   const handleNameChange = (value: string) => {
@@ -79,6 +167,14 @@ export default function ShoppingPage() {
   }
 
   const addShoppingItemToFridge = async (item: ShoppingItem) => {
+    const expiryDate = getDateAfterDays(fridgeExpiryDays)
+    const parsedUnitPrice = unitPrice.trim() ? Number(unitPrice.trim()) : null
+    const fridgeOptions = {
+      storageType: fridgeStorageType,
+      expiryDate,
+      purchasePlace: purchasePlace.trim() || null,
+      unitPrice: Number.isFinite(parsedUnitPrice) && parsedUnitPrice !== null ? parsedUnitPrice : null,
+    }
     const duplicate = ingredients.find(
       (ingredient) => normalizeShoppingIngredientName(ingredient.name) === normalizeShoppingIngredientName(item.name),
     )
@@ -86,7 +182,7 @@ export default function ShoppingPage() {
       const shouldMerge = window.confirm(`${item.name}이 이미 냉장고에 있어요. 기존 재료와 합칠까요?`)
       if (!shouldMerge) return
 
-      await updateIngredient(duplicate.id, buildMergedIngredientPayloadFromShoppingItem(duplicate, item))
+      await updateIngredient(duplicate.id, buildMergedIngredientPayloadFromShoppingItem(duplicate, item, fridgeOptions))
       if (!item.checked) {
         await toggleItem(item.id)
       }
@@ -94,11 +190,11 @@ export default function ShoppingPage() {
       return
     }
 
-    await addIngredient(buildIngredientPayloadFromShoppingItem(item))
+    await addIngredient(buildIngredientPayloadFromShoppingItem(item, fridgeOptions))
     if (!item.checked) {
       await toggleItem(item.id)
     }
-    setStatusMessage(`${item.name}을 냉장고에 추가했어요. 유통기한은 나중에 입력할 수 있습니다.`)
+    setStatusMessage(`${item.name}을 냉장고에 추가했어요. 보관 ${fridgeStorageType}, 유통기한 ${expiryDate}로 저장했습니다.`)
   }
 
   const addCheckedItemsToFridge = async () => {
@@ -129,14 +225,16 @@ export default function ShoppingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
-            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">필요한 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.</p>
+            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+              {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.
+            </p>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={shareList} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
               <Share2 size={15} />
             </button>
             <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
-              편집
+              + 직접 추가
             </button>
           </div>
         </div>
@@ -146,6 +244,34 @@ export default function ShoppingPage() {
           <ShoppingStat label="구매완료" value={`${checkedItems.length}개`} good />
           <ShoppingStat label="미구매" value={`${uncheckedItems.length}개`} warning />
         </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-[14px] bg-[#fff7ed] p-1">
+          <button
+            type="button"
+            onClick={() => setSelectedScope('personal')}
+            className={`min-h-10 rounded-[11px] text-xs font-black ${
+              activeScope === 'personal' ? 'bg-[#2f2117] text-white' : 'text-[#7d6d5f]'
+            }`}
+          >
+            내 장보기
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedScope('family')}
+            disabled={!group}
+            className={`min-h-10 rounded-[11px] text-xs font-black ${
+              activeScope === 'family'
+                ? 'bg-[#2f2117] text-white'
+                : 'text-[#7d6d5f] disabled:text-[#c5b4a1]'
+            }`}
+          >
+            가족 장보기
+          </button>
+        </div>
+        {!group ? (
+          <p className="mt-2 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#8f7f70]">
+            가족 장보기는 가족 냉장고를 만들거나 초대코드로 참여한 뒤 사용할 수 있어요.
+          </p>
+        ) : null}
         {statusMessage ? (
           <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
             {statusMessage}
@@ -162,8 +288,48 @@ export default function ShoppingPage() {
       </section>
 
       <section className="px-5 pt-4">
+        <div className="jipbab-panel rounded-[16px] p-3">
+          <form
+            className="grid grid-cols-[minmax(0,1fr)_72px] gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              handleQuickAdd()
+            }}
+          >
+            <input
+              type="text"
+              value={quickInput}
+              onChange={(event) => setQuickInput(event.target.value)}
+              placeholder="두부 1모처럼 바로 추가"
+              className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
+            />
+            <button
+              type="submit"
+              disabled={!normalizeIngredientInput(quickInput)}
+              className="inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
+            >
+              <Plus size={14} />
+              추가
+            </button>
+          </form>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {QUICK_SHOPPING_CHIPS.map((chip) => (
+              <button
+                key={chip.name}
+                type="button"
+                onClick={() => {
+                  void addShoppingDraft(chip)
+                }}
+                className="shrink-0 rounded-full border border-[#eadcc9] bg-[#fff7ed] px-3 py-1.5 text-[11px] font-black text-[#8a5a2a]"
+              >
+                {chip.name} {chip.quantity}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {showAddForm ? (
-          <div className="jipbab-panel rounded-[16px] p-4">
+          <div className="jipbab-panel mt-3 rounded-[16px] p-4">
             <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_92px]">
               <input
                 type="text"
@@ -264,7 +430,63 @@ export default function ShoppingPage() {
 
             {checkedItems.length > 0 ? (
               <ShoppingGroup title={`구매완료 (${checkedItems.length})`}>
-                <div className="bg-[#f2f7e7] px-3 py-3">
+                <div className="space-y-3 bg-[#f2f7e7] px-3 py-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    {INGREDIENT_STORAGE_TYPES.map((storageType) => (
+                      <button
+                        key={storageType}
+                        type="button"
+                        onClick={() => setFridgeStorageType(storageType)}
+                        className={`min-h-9 rounded-[11px] border px-2 text-[11px] font-black ${
+                          fridgeStorageType === storageType
+                            ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
+                            : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                        }`}
+                      >
+                        {storageType}
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="mb-2 flex items-center gap-1 text-[11px] font-black text-[#3d7b38]">
+                      <CalendarDays size={13} />
+                      유통기한 빠른 선택
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {EXPIRY_PRESETS.map((preset) => (
+                        <button
+                          key={preset.days}
+                          type="button"
+                          onClick={() => setFridgeExpiryDays(preset.days)}
+                          className={`min-h-9 rounded-[11px] border px-1 text-[11px] font-black ${
+                            fridgeExpiryDays === preset.days
+                              ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
+                              : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={purchasePlace}
+                      onChange={(event) => setPurchasePlace(event.target.value)}
+                      placeholder="구매처 선택"
+                      className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
+                    />
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="0"
+                      value={unitPrice}
+                      onChange={(event) => setUnitPrice(event.target.value)}
+                      placeholder="가격 선택"
+                      className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => {

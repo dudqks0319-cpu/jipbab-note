@@ -2,11 +2,19 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
 import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
 import { getSupabaseClient } from "@/lib/supabase";
+import {
+  buildAuthCallbackUrl,
+  buildEmailConfirmationRedirectUrl,
+  buildNativeAuthCallbackUrl,
+  isNativeAuthCallbackUrl,
+  normalizeAuthNextPath,
+} from "@/lib/auth-redirect";
 import { resolveAuthProviderOptions, type ResolvedAuthProviderOption } from "@/lib/auth-config";
 import type {
   AuthQueryError,
@@ -23,8 +31,45 @@ const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_
 
 const AUTH_UNAVAILABLE_MESSAGE = "지금은 로그인 기능을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
 
+type EmailSignInResult = {
+  ok: boolean;
+};
+
+type EmailSignUpResult = {
+  ok: boolean;
+  requiresEmailConfirmation: boolean;
+};
+
 function toAuthError(message: string, source: AuthQueryError["source"]): AuthQueryError {
   return { message, source };
+}
+
+function getAuthUserMessage(
+  caught: unknown,
+  fallbackMessage: string,
+): string {
+  const rawMessage = caught instanceof Error ? caught.message.toLowerCase() : "";
+  if (!rawMessage) {
+    return fallbackMessage;
+  }
+
+  if (rawMessage.includes("email not confirmed")) {
+    return "이메일 확인이 필요합니다. 받은편지함의 인증 메일을 확인해주세요.";
+  }
+
+  if (rawMessage.includes("invalid login credentials")) {
+    return "이메일 또는 비밀번호를 확인해주세요.";
+  }
+
+  if (rawMessage.includes("user already registered") || rawMessage.includes("already registered")) {
+    return "이미 가입된 이메일입니다. 로그인으로 계속해주세요.";
+  }
+
+  if (rawMessage.includes("rate limit") || rawMessage.includes("too many")) {
+    return "요청이 많습니다. 잠시 후 다시 시도해주세요.";
+  }
+
+  return fallbackMessage;
 }
 
 function isIgnorableMissingSessionError(error: { message?: string } | null | undefined): boolean {
@@ -104,14 +149,118 @@ function resolveCurrentProvider(user: User | null): string | null {
   return provider && provider.trim() ? provider : null;
 }
 
-function buildAuthRedirectUrl(nextPath = "/mypage"): string | undefined {
+function buildBrowserAuthCallbackUrl(nextPath = "/mypage"): string | undefined {
   if (typeof window === "undefined") {
     return undefined;
   }
 
-  const callbackUrl = new URL("/auth/callback", window.location.origin);
-  callbackUrl.searchParams.set("next", nextPath);
-  return callbackUrl.toString();
+  return buildAuthCallbackUrl(window.location.origin, nextPath);
+}
+
+function buildBrowserEmailConfirmationRedirectUrl(): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return buildEmailConfirmationRedirectUrl(window.location.origin);
+}
+
+function isDuplicateSignupResponse(user: User | null): boolean {
+  if (!user || !Array.isArray(user.identities)) {
+    return false;
+  }
+
+  return user.identities.length === 0;
+}
+
+function shouldUseNativeOAuth(): boolean {
+  return typeof window !== "undefined" && Capacitor.isNativePlatform();
+}
+
+async function openNativeOAuthSession(
+  client: SupabaseClient,
+  providerUrl: string,
+  fallbackNextPath: string,
+): Promise<void> {
+  const [{ App }, { Browser }] = await Promise.all([
+    import("@capacitor/app"),
+    import("@capacitor/browser"),
+  ]);
+
+  let appUrlListener: PluginListenerHandle | null = null;
+  let browserFinishedListener: PluginListenerHandle | null = null;
+  let settled = false;
+
+  await new Promise<void>((resolve, reject) => {
+    const cleanup = async () => {
+      await appUrlListener?.remove();
+      await browserFinishedListener?.remove();
+      appUrlListener = null;
+      browserFinishedListener = null;
+    };
+
+    const finish = (callback: () => void) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      void Browser.close().catch(() => undefined);
+      void cleanup().finally(callback);
+    };
+
+    const fail = (caught: unknown) => {
+      finish(() => reject(caught instanceof Error ? caught : new Error("Native OAuth failed.")));
+    };
+
+    const complete = () => {
+      finish(resolve);
+    };
+
+    Promise.all([
+      App.addListener("appUrlOpen", async ({ url }) => {
+        if (!isNativeAuthCallbackUrl(url)) {
+          return;
+        }
+
+        try {
+          const callbackUrl = new URL(url);
+          const providerError = callbackUrl.searchParams.get("error") ?? callbackUrl.searchParams.get("error_description");
+          if (providerError) {
+            throw new Error(providerError);
+          }
+
+          const code = callbackUrl.searchParams.get("code");
+          if (!code) {
+            throw new Error("OAuth callback code was not returned.");
+          }
+
+          const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            throw exchangeError;
+          }
+
+          const nextPath = normalizeAuthNextPath(callbackUrl.searchParams.get("next") ?? fallbackNextPath);
+          window.location.assign(nextPath);
+          complete();
+        } catch (caught) {
+          fail(caught);
+        }
+      }),
+      Browser.addListener("browserFinished", () => {
+        fail(new Error("OAuth browser was closed before login completed."));
+      }),
+    ])
+      .then(([nextAppUrlListener, nextBrowserFinishedListener]) => {
+        appUrlListener = nextAppUrlListener;
+        browserFinishedListener = nextBrowserFinishedListener;
+        return Browser.open({
+          url: providerUrl,
+          presentationStyle: "fullscreen",
+          toolbarColor: "#fffaf3",
+        });
+      })
+      .catch(fail);
+  });
 }
 
 export interface UseAuthResult {
@@ -128,8 +277,8 @@ export interface UseAuthResult {
   userAvatarUrl: string | null;
   currentProvider: string | null;
   signInWithProvider: (provider: OAuthProvider) => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<boolean>;
-  signUpWithEmail: (email: string, password: string, nickname?: string) => Promise<boolean>;
+  signInWithEmail: (email: string, password: string) => Promise<EmailSignInResult>;
+  signUpWithEmail: (email: string, password: string, nickname?: string) => Promise<EmailSignUpResult>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -173,7 +322,7 @@ export function useAuth(): UseAuthResult {
         });
         setMigrationResult(result);
       } catch (caught) {
-        const message = caught instanceof Error ? caught.message : "디바이스 데이터 이전 중 오류가 발생했습니다.";
+        const message = getAuthUserMessage(caught, "디바이스 데이터 이전 중 오류가 발생했습니다.");
         setError(toAuthError(message, "supabase"));
         migratedKeyRef.current.delete(migrationKey);
       } finally {
@@ -192,7 +341,7 @@ export function useAuth(): UseAuthResult {
 
     const { data, error: authError } = await client.auth.getUser();
     if (authError && !isIgnorableMissingSessionError(authError)) {
-      setError(toAuthError(authError.message, "supabase"));
+      setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "supabase"));
       return;
     }
 
@@ -222,21 +371,35 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
-        const redirectTo = buildAuthRedirectUrl("/mypage");
-        const { error: signInError } = await client.auth.signInWithOAuth({
+        const nextPath = "/mypage";
+        const redirectTo = shouldUseNativeOAuth()
+          ? buildNativeAuthCallbackUrl(nextPath)
+          : buildBrowserAuthCallbackUrl(nextPath);
+        const { data, error: signInError } = await client.auth.signInWithOAuth({
           provider,
           options: {
             redirectTo,
+            skipBrowserRedirect: true,
           },
         });
 
         if (signInError) {
           throw signInError;
         }
+
+        if (!data.url) {
+          throw new Error("OAuth provider URL was not returned.");
+        }
+
+        if (shouldUseNativeOAuth()) {
+          await openNativeOAuthSession(client, data.url, nextPath);
+          return;
+        }
+
+        window.location.assign(data.url);
       } catch (caught) {
-        const message = caught instanceof Error ? caught.message : "로그인 요청 중 오류가 발생했습니다.";
+        const message = getAuthUserMessage(caught, "소셜 로그인을 완료하지 못했습니다. 다시 시도하거나 이메일로 로그인해주세요.");
         setError(toAuthError(message, "supabase"));
-      } finally {
         setSigningIn(false);
       }
     },
@@ -248,7 +411,7 @@ export function useAuth(): UseAuthResult {
       const client = createAuthClient(deviceId);
       if (!client) {
         setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
-        return false;
+        return { ok: false };
       }
 
       setSigningIn(true);
@@ -269,11 +432,11 @@ export function useAuth(): UseAuthResult {
         if (sessionUser) {
           await runMigration(sessionUser);
         }
-        return true;
+        return { ok: true };
       } catch (caught) {
-        const message = caught instanceof Error ? caught.message : "이메일 로그인 중 오류가 발생했습니다.";
+        const message = getAuthUserMessage(caught, "이메일 로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         setError(toAuthError(message, "supabase"));
-        return false;
+        return { ok: false };
       } finally {
         setSigningIn(false);
       }
@@ -286,7 +449,7 @@ export function useAuth(): UseAuthResult {
       const client = createAuthClient(deviceId);
       if (!client) {
         setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
-        return false;
+        return { ok: false, requiresEmailConfirmation: false };
       }
 
       setSigningIn(true);
@@ -304,7 +467,7 @@ export function useAuth(): UseAuthResult {
                   full_name: displayName,
                 }
               : undefined,
-            emailRedirectTo: buildAuthRedirectUrl("/mypage"),
+            emailRedirectTo: buildBrowserEmailConfirmationRedirectUrl(),
           },
         });
 
@@ -312,16 +475,22 @@ export function useAuth(): UseAuthResult {
           throw signUpError;
         }
 
+        if (isDuplicateSignupResponse(data.user ?? null)) {
+          setError(toAuthError("이미 가입된 이메일입니다. 로그인으로 계속해주세요.", "supabase"));
+          return { ok: false, requiresEmailConfirmation: false };
+        }
+
         const sessionUser = data.session?.user ?? null;
         setUser(sessionUser);
         if (sessionUser) {
           await runMigration(sessionUser);
+          return { ok: true, requiresEmailConfirmation: false };
         }
-        return true;
+        return { ok: true, requiresEmailConfirmation: true };
       } catch (caught) {
-        const message = caught instanceof Error ? caught.message : "이메일 회원가입 중 오류가 발생했습니다.";
+        const message = getAuthUserMessage(caught, "이메일 회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         setError(toAuthError(message, "supabase"));
-        return false;
+        return { ok: false, requiresEmailConfirmation: false };
       } finally {
         setSigningIn(false);
       }
@@ -340,7 +509,7 @@ export function useAuth(): UseAuthResult {
 
     const { error: signOutError } = await client.auth.signOut();
     if (signOutError) {
-      setError(toAuthError(signOutError.message, "supabase"));
+      setError(toAuthError("로그아웃 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "supabase"));
       return;
     }
 
@@ -369,7 +538,7 @@ export function useAuth(): UseAuthResult {
       }
 
       if (authError && !isIgnorableMissingSessionError(authError)) {
-        setError(toAuthError(authError.message, "supabase"));
+        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "supabase"));
       }
 
       setUser(data.user ?? null);
