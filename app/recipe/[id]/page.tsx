@@ -26,6 +26,7 @@ import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { findCuratedRecipe } from "@/lib/curated-recipes";
+import { isBeginnerRecipePosterImage } from "@/lib/recipe-images";
 import { normalizeHttpUrl } from "@/lib/request-security";
 import type { RecipeDetailRecord, RecipeDetailStep, RecipeIngredientDetail } from "@/types";
 
@@ -631,6 +632,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   }
 
   const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
+  const isPosterHeroImage = isBeginnerRecipePosterImage(heroImage);
   const tags = parseHashTags(recipe.hashTag);
   const cookingMinutes = recipe.cookingTime ?? Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
   const servingLabel = `${recipe.servings ?? 2}인분`;
@@ -684,13 +686,13 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           />
         </div>
 
-        <div className="relative h-[345px] w-full overflow-hidden bg-[#eee7dd] min-[390px]:h-[370px]">
+        <div className={`relative w-full overflow-hidden ${isPosterHeroImage ? "h-[248px] bg-[#fff8ef] min-[390px]:h-[268px]" : "h-[345px] bg-[#eee7dd] min-[390px]:h-[370px]"}`}>
           <RecipeImage
             src={heroImage}
             fallbackSrc={FALLBACK_IMAGE}
             alt={recipe.imageAlt || recipe.name}
             className="h-full w-full"
-            imageClassName="h-full w-full object-cover"
+            imageClassName={`h-full w-full ${isPosterHeroImage ? "object-contain p-2" : "object-cover"}`}
           />
         </div>
 

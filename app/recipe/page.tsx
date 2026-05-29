@@ -31,6 +31,7 @@ import {
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
+import { isBeginnerRecipePosterImage } from '@/lib/recipe-images'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
 const FALLBACK_RECIPE_IMAGE =
@@ -334,6 +335,7 @@ export default function RecipePage() {
                 recipe.thumbnailUrl ||
                 RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] ||
                 FALLBACK_RECIPE_IMAGE
+              const isPosterImage = isBeginnerRecipePosterImage(coverImage)
               const curated = curatedRecipeMeta.get(recipe.id)
               const minutes = curated?.cookingTime ?? 15 + (index % 4) * 5
               const servings = curated?.servings ? `${curated.servings}인분` : index % 3 === 0 ? '1인분' : index % 3 === 1 ? '2인분' : '2-3인분'
@@ -358,7 +360,7 @@ export default function RecipePage() {
                         onError={(event) => {
                           event.currentTarget.src = RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] || FALLBACK_RECIPE_IMAGE
                         }}
-                        className="h-full w-full object-cover"
+                        className={`h-full w-full ${isPosterImage ? 'object-contain p-1' : 'object-cover'}`}
                       />
                     </Link>
 
