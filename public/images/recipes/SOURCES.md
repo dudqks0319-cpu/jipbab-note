@@ -40,6 +40,8 @@ The contact sheet was generated in-house and cropped into local app assets; it d
 
 These poster/detail assets were generated locally from project scripts and in-house recipe copy. They combine local generated food images with code-native SVG layout.
 
+- `beginner-posters/manifest.json`: manifest for generated BeginnerRecipe poster assets, added 2026-05-29
+- `beginner-posters/recipe-poster__*.svg`: code-generated BeginnerRecipe poster assets built from `lib/beginner-recipes.ts`, added 2026-05-29. These are original 집밥노트 layout assets and do not use external photos, blog screenshots, marketplace images, brand logos, or character references.
 - `*-recipe-poster.svg`
 - `*-recipe-poster.png`
 - `*-photo-recipe-poster.png`

@@ -771,24 +771,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
 ];
 
 function getBeginnerRecipeThumbnail(recipe: BeginnerRecipe): string {
-  const title = recipe.title;
-  if (title.includes("토마토")) return "/images/recipes/jipbab-curated/tomato-egg-stirfry.png";
-  if (title.includes("계란말이")) return "/images/recipes/jipbab-curated/gyeran-mari-basic.png";
-  if (title.includes("계란") || title.includes("달걀")) {
-    return title.includes("찜") ? "/images/recipes/jipbab-curated/steamed-egg.png" : "/images/recipes/jipbab-curated/soy-egg-rice.png";
-  }
-  if (title.includes("김치볶음밥") || title.includes("볶음밥")) return "/images/recipes/kimchi-fried-rice.png";
-  if (title.includes("김치찌개")) return "/images/recipes/jipbab-curated/pork-kimchi-jjigae-basic.png";
-  if (title.includes("된장") || title.includes("찌개")) return "/images/recipes/jipbab-curated/doenjang-jjigae-basic.png";
-  if (title.includes("콩나물") || title.includes("국")) return "/images/recipes/jipbab-curated/bean-sprout-soup.png";
-  if (title.includes("두부") || title.includes("순두부") || title.includes("연두부")) return "/images/recipes/jipbab-curated/dubu-jorim-basic.png";
-  if (title.includes("감자") || title.includes("고구마")) return "/images/recipes/jipbab-curated/gamja-jorim-basic.png";
-  if (title.includes("오이")) return "/images/recipes/jipbab-curated/cucumber-muchim.png";
-  if (title.includes("양배추")) return "/images/recipes/jipbab-curated/cabbage-egg-stirfry.png";
-  if (title.includes("어묵")) return "/images/recipes/jipbab-curated/fishcake-bokkeum.png";
-  if (title.includes("국수") || title.includes("우동") || title.includes("라면")) return "/images/recipes/jipbab-curated/bibim-guksu.png";
-  if (title.includes("참치")) return "/images/recipes/jipbab-curated/tuna-mayo-rice-bowl.png";
-  return "/images/recipes/kimchi-fried-rice.png";
+  return `/images/recipes/beginner-posters/recipe-poster__${recipe.slug}__v001__16x9__ko-KR.svg`;
 }
 
 function getBeginnerRecipeMethod(recipe: BeginnerRecipe): string {
@@ -2220,6 +2203,7 @@ function mergeBeginnerContractIntoLegacyRecipe(recipe: BeginnerRecipe, legacy: C
     ...legacy,
     slug: recipe.slug,
     title: recipe.title,
+    thumbnailUrl: getBeginnerRecipeThumbnail(recipe),
     difficultyLevel: legacy.difficultyLevel ?? recipe.difficultyLevel,
     beginnerScore: Math.max(legacy.beginnerScore ?? 0, recipe.beginnerScore),
     totalMinutes: legacy.totalMinutes ?? recipe.totalMinutes,

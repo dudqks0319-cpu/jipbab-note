@@ -1,0 +1,6008 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-29",
+  "assetFamily": "beginner-recipe-posters",
+  "sourcePolicy": "Generated from 집밥노트 BeginnerRecipe data. No external photos, blog screenshots, shopping images, brand logos, or character references are used.",
+  "namingRule": "recipe-poster__{recipeSlug}__v001__16x9__ko-KR.svg",
+  "count": 120,
+  "assets": [
+    {
+      "assetId": "recipe-poster__beginner-001__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-001",
+      "recipeSlug": "beginner-001",
+      "titleKo": "계란간장밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-001__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-001__v001__16x9__ko-KR.svg",
+      "promptHash": "3f093f9c",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "계란간장밥",
+        "subtitle": "계란간장밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-002__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-002",
+      "recipeSlug": "beginner-002",
+      "titleKo": "전자레인지 계란찜",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-002__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-002__v001__16x9__ko-KR.svg",
+      "promptHash": "27220f68",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 계란찜",
+        "subtitle": "전자레인지 계란찜은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-003__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-003",
+      "recipeSlug": "beginner-003",
+      "titleKo": "프라이팬 계란말이",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-003__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-003__v001__16x9__ko-KR.svg",
+      "promptHash": "0239d04a",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "프라이팬 계란말이",
+        "subtitle": "프라이팬 계란말이은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-004__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-004",
+      "recipeSlug": "beginner-004",
+      "titleKo": "달걀국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-004__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-004__v001__16x9__ko-KR.svg",
+      "promptHash": "4a751717",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "달걀국",
+        "subtitle": "달걀국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-005__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-005",
+      "recipeSlug": "beginner-005",
+      "titleKo": "스크램블에그 덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-005__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-005__v001__16x9__ko-KR.svg",
+      "promptHash": "d6a4b3b8",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "스크램블에그 덮밥",
+        "subtitle": "스크램블에그 덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-006__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-006",
+      "recipeSlug": "beginner-006",
+      "titleKo": "토마토달걀볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-006__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-006__v001__16x9__ko-KR.svg",
+      "promptHash": "6d339035",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "토마토달걀볶음",
+        "subtitle": "토마토달걀볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "토마토",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-007__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-007",
+      "recipeSlug": "beginner-007",
+      "titleKo": "양배추달걀전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-007__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-007__v001__16x9__ko-KR.svg",
+      "promptHash": "dec49cfd",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양배추달걀전",
+        "subtitle": "양배추달걀전은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "양배추",
+          "배추",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-008__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-008",
+      "recipeSlug": "beginner-008",
+      "titleKo": "참치계란말이",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-008__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-008__v001__16x9__ko-KR.svg",
+      "promptHash": "5cadf672",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치계란말이",
+        "subtitle": "참치계란말이은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "참치캔",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-009__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-009",
+      "recipeSlug": "beginner-009",
+      "titleKo": "달걀죽",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-009__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-009__v001__16x9__ko-KR.svg",
+      "promptHash": "9ed71059",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "달걀죽",
+        "subtitle": "달걀죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-010__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-010",
+      "recipeSlug": "beginner-010",
+      "titleKo": "치즈계란밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-010__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-010__v001__16x9__ko-KR.svg",
+      "promptHash": "21057761",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "치즈계란밥",
+        "subtitle": "치즈계란밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "치즈",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-011__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-011",
+      "recipeSlug": "beginner-011",
+      "titleKo": "버터간장계란밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-011__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-011__v001__16x9__ko-KR.svg",
+      "promptHash": "4d0f0692",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "버터간장계란밥",
+        "subtitle": "버터간장계란밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-012__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-012",
+      "recipeSlug": "beginner-012",
+      "titleKo": "양파계란덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-012__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-012__v001__16x9__ko-KR.svg",
+      "promptHash": "c6a1eaaa",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양파계란덮밥",
+        "subtitle": "양파계란덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "양파",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-013__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-013",
+      "recipeSlug": "beginner-013",
+      "titleKo": "김치볶음밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-013__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-013__v001__16x9__ko-KR.svg",
+      "promptHash": "55f073e4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치볶음밥",
+        "subtitle": "김치볶음밥은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "김치",
+          "김",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-014__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-014",
+      "recipeSlug": "beginner-014",
+      "titleKo": "참치김치볶음밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-014__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-014__v001__16x9__ko-KR.svg",
+      "promptHash": "3d8f2456",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치김치볶음밥",
+        "subtitle": "참치김치볶음밥은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "김치",
+          "참치캔",
+          "김",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-015__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-015",
+      "recipeSlug": "beginner-015",
+      "titleKo": "참치마요덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-015__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-015__v001__16x9__ko-KR.svg",
+      "promptHash": "96d6862f",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치마요덮밥",
+        "subtitle": "참치마요덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-016__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-016",
+      "recipeSlug": "beginner-016",
+      "titleKo": "햄야채볶음밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-016__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-016__v001__16x9__ko-KR.svg",
+      "promptHash": "f30d1b78",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "햄야채볶음밥",
+        "subtitle": "햄야채볶음밥은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "햄",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-017__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-017",
+      "recipeSlug": "beginner-017",
+      "titleKo": "김치덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-017__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-017__v001__16x9__ko-KR.svg",
+      "promptHash": "e165d10e",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치덮밥",
+        "subtitle": "김치덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "김치",
+          "김",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-018__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-018",
+      "recipeSlug": "beginner-018",
+      "titleKo": "김치계란밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-018__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-018__v001__16x9__ko-KR.svg",
+      "promptHash": "76987845",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치계란밥",
+        "subtitle": "김치계란밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "김치",
+          "김",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-019__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-019",
+      "recipeSlug": "beginner-019",
+      "titleKo": "주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-019__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-019__v001__16x9__ko-KR.svg",
+      "promptHash": "fd2170aa",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "주먹밥",
+        "subtitle": "주먹밥은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-020__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-020",
+      "recipeSlug": "beginner-020",
+      "titleKo": "김치주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-020__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-020__v001__16x9__ko-KR.svg",
+      "promptHash": "62930b04",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치주먹밥",
+        "subtitle": "김치주먹밥은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "김치",
+          "김",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-021__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-021",
+      "recipeSlug": "beginner-021",
+      "titleKo": "스팸마요덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-021__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-021__v001__16x9__ko-KR.svg",
+      "promptHash": "7925f3c8",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "스팸마요덮밥",
+        "subtitle": "스팸마요덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "스팸",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-022__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-022",
+      "recipeSlug": "beginner-022",
+      "titleKo": "콩나물밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-022__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-022__v001__16x9__ko-KR.svg",
+      "promptHash": "e5be8c24",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "콩나물밥",
+        "subtitle": "콩나물밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "콩나물",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-023__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-023",
+      "recipeSlug": "beginner-023",
+      "titleKo": "간장버터밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-023__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-023__v001__16x9__ko-KR.svg",
+      "promptHash": "4ed7fd20",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "간장버터밥",
+        "subtitle": "간장버터밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-024__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-024",
+      "recipeSlug": "beginner-024",
+      "titleKo": "참치주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-024__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-024__v001__16x9__ko-KR.svg",
+      "promptHash": "e08deb9c",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치주먹밥",
+        "subtitle": "참치주먹밥은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-025__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-025",
+      "recipeSlug": "beginner-025",
+      "titleKo": "깻잎주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-025__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-025__v001__16x9__ko-KR.svg",
+      "promptHash": "a689bab7",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "깻잎주먹밥",
+        "subtitle": "깻잎주먹밥은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "깻잎",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-026__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-026",
+      "recipeSlug": "beginner-026",
+      "titleKo": "나물비빔밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-026__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-026__v001__16x9__ko-KR.svg",
+      "promptHash": "0ad445b3",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "나물비빔밥",
+        "subtitle": "나물비빔밥은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-027__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-027",
+      "recipeSlug": "beginner-027",
+      "titleKo": "두부부침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-027__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-027__v001__16x9__ko-KR.svg",
+      "promptHash": "3e73127d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부부침",
+        "subtitle": "두부부침은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-028__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-028",
+      "recipeSlug": "beginner-028",
+      "titleKo": "두부조림",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-028__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-028__v001__16x9__ko-KR.svg",
+      "promptHash": "17bbfb0c",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부조림",
+        "subtitle": "두부조림은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-029__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-029",
+      "recipeSlug": "beginner-029",
+      "titleKo": "연두부 간장비빔",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-029__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-029__v001__16x9__ko-KR.svg",
+      "promptHash": "5ec6e071",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "연두부 간장비빔",
+        "subtitle": "연두부 간장비빔은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "연두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-030__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-030",
+      "recipeSlug": "beginner-030",
+      "titleKo": "순두부계란탕",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-030__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-030__v001__16x9__ko-KR.svg",
+      "promptHash": "f9867308",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "순두부계란탕",
+        "subtitle": "순두부계란탕은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "순두부",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-031__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-031",
+      "recipeSlug": "beginner-031",
+      "titleKo": "콩나물국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-031__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-031__v001__16x9__ko-KR.svg",
+      "promptHash": "88752d33",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "콩나물국",
+        "subtitle": "콩나물국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "콩나물",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-032__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-032",
+      "recipeSlug": "beginner-032",
+      "titleKo": "콩나물무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-032__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-032__v001__16x9__ko-KR.svg",
+      "promptHash": "a10e9d2e",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "콩나물무침",
+        "subtitle": "콩나물무침은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "콩나물",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-033__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-033",
+      "recipeSlug": "beginner-033",
+      "titleKo": "감자볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-033__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-033__v001__16x9__ko-KR.svg",
+      "promptHash": "6bf4c141",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자볶음",
+        "subtitle": "감자볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-034__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-034",
+      "recipeSlug": "beginner-034",
+      "titleKo": "감자국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-034__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-034__v001__16x9__ko-KR.svg",
+      "promptHash": "d5a33975",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자국",
+        "subtitle": "감자국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-035__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-035",
+      "recipeSlug": "beginner-035",
+      "titleKo": "감자채전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-035__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-035__v001__16x9__ko-KR.svg",
+      "promptHash": "7c144767",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자채전",
+        "subtitle": "감자채전은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-036__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-036",
+      "recipeSlug": "beginner-036",
+      "titleKo": "양파두부볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-036__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-036__v001__16x9__ko-KR.svg",
+      "promptHash": "7162668d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양파두부볶음",
+        "subtitle": "양파두부볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "양파",
+          "두부",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-037__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-037",
+      "recipeSlug": "beginner-037",
+      "titleKo": "감자채볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-037__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-037__v001__16x9__ko-KR.svg",
+      "promptHash": "604ab64f",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자채볶음",
+        "subtitle": "감자채볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-038__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-038",
+      "recipeSlug": "beginner-038",
+      "titleKo": "두부미역국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-038__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-038__v001__16x9__ko-KR.svg",
+      "promptHash": "985a47c6",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부미역국",
+        "subtitle": "두부미역국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "불린 미역",
+          "두부",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-039__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-039",
+      "recipeSlug": "beginner-039",
+      "titleKo": "들기름두부구이",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-039__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-039__v001__16x9__ko-KR.svg",
+      "promptHash": "2b5919e4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "들기름두부구이",
+        "subtitle": "들기름두부구이은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-040__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-040",
+      "recipeSlug": "beginner-040",
+      "titleKo": "순두부간장비빔",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-040__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-040__v001__16x9__ko-KR.svg",
+      "promptHash": "d6674ae7",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "순두부간장비빔",
+        "subtitle": "순두부간장비빔은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "순두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-041__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-041",
+      "recipeSlug": "beginner-041",
+      "titleKo": "브로콜리버터볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-041__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-041__v001__16x9__ko-KR.svg",
+      "promptHash": "0b2d18c0",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "브로콜리버터볶음",
+        "subtitle": "브로콜리버터볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "브로콜리",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-042__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-042",
+      "recipeSlug": "beginner-042",
+      "titleKo": "냉두부",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-042__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-042__v001__16x9__ko-KR.svg",
+      "promptHash": "bb8d1583",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "냉두부",
+        "subtitle": "냉두부은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-043__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-043",
+      "recipeSlug": "beginner-043",
+      "titleKo": "오이무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-043__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-043__v001__16x9__ko-KR.svg",
+      "promptHash": "07f58f49",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "오이무침",
+        "subtitle": "오이무침은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "오이",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-044__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-044",
+      "recipeSlug": "beginner-044",
+      "titleKo": "감자달걀샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-044__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-044__v001__16x9__ko-KR.svg",
+      "promptHash": "c0de93f0",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자달걀샐러드",
+        "subtitle": "감자달걀샐러드은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "감자",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-045__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-045",
+      "recipeSlug": "beginner-045",
+      "titleKo": "깻잎무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-045__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-045__v001__16x9__ko-KR.svg",
+      "promptHash": "9a1455be",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "깻잎무침",
+        "subtitle": "깻잎무침은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "깻잎",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-046__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-046",
+      "recipeSlug": "beginner-046",
+      "titleKo": "깻잎두부무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-046__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-046__v001__16x9__ko-KR.svg",
+      "promptHash": "ea6de77f",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "깻잎두부무침",
+        "subtitle": "깻잎두부무침은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "깻잎",
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-047__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-047",
+      "recipeSlug": "beginner-047",
+      "titleKo": "참치김치찌개",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-047__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-047__v001__16x9__ko-KR.svg",
+      "promptHash": "295cc21d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치김치찌개",
+        "subtitle": "참치김치찌개은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "참치캔",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-048__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-048",
+      "recipeSlug": "beginner-048",
+      "titleKo": "참치두부조림",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-048__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-048__v001__16x9__ko-KR.svg",
+      "promptHash": "bac0c5de",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치두부조림",
+        "subtitle": "참치두부조림은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-049__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-049",
+      "recipeSlug": "beginner-049",
+      "titleKo": "스팸김치볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-049__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-049__v001__16x9__ko-KR.svg",
+      "promptHash": "56863195",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "스팸김치볶음",
+        "subtitle": "스팸김치볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "스팸",
+          "김",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-050__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-050",
+      "recipeSlug": "beginner-050",
+      "titleKo": "햄감자볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-050__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-050__v001__16x9__ko-KR.svg",
+      "promptHash": "d731dfed",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "햄감자볶음",
+        "subtitle": "햄감자볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "햄",
+          "감자",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-051__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-051",
+      "recipeSlug": "beginner-051",
+      "titleKo": "어묵볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-051__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-051__v001__16x9__ko-KR.svg",
+      "promptHash": "609014d4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵볶음",
+        "subtitle": "어묵볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-052__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-052",
+      "recipeSlug": "beginner-052",
+      "titleKo": "어묵탕",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-052__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-052__v001__16x9__ko-KR.svg",
+      "promptHash": "cc3b7dfc",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵탕",
+        "subtitle": "어묵탕은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-053__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-053",
+      "recipeSlug": "beginner-053",
+      "titleKo": "어묵우동",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-053__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-053__v001__16x9__ko-KR.svg",
+      "promptHash": "5855b7cd",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵우동",
+        "subtitle": "어묵우동은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "우동면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-054__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-054",
+      "recipeSlug": "beginner-054",
+      "titleKo": "소시지야채볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-054__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-054__v001__16x9__ko-KR.svg",
+      "promptHash": "abb9a6f2",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "소시지야채볶음",
+        "subtitle": "소시지야채볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "소시지",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-055__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-055",
+      "recipeSlug": "beginner-055",
+      "titleKo": "참치샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-055__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-055__v001__16x9__ko-KR.svg",
+      "promptHash": "aa8b55ab",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치샐러드",
+        "subtitle": "참치샐러드은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-056__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-056",
+      "recipeSlug": "beginner-056",
+      "titleKo": "통조림옥수수햄볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-056__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-056__v001__16x9__ko-KR.svg",
+      "promptHash": "d4a602a5",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "통조림옥수수햄볶음",
+        "subtitle": "통조림옥수수햄볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "햄",
+          "통조림 옥수수",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-057__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-057",
+      "recipeSlug": "beginner-057",
+      "titleKo": "어묵달걀국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-057__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-057__v001__16x9__ko-KR.svg",
+      "promptHash": "40ab6aff",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵달걀국",
+        "subtitle": "어묵달걀국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "어묵",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-058__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-058",
+      "recipeSlug": "beginner-058",
+      "titleKo": "어묵간장볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-058__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-058__v001__16x9__ko-KR.svg",
+      "promptHash": "1ab9c1f7",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵간장볶음",
+        "subtitle": "어묵간장볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-059__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-059",
+      "recipeSlug": "beginner-059",
+      "titleKo": "참치양배추덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-059__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-059__v001__16x9__ko-KR.svg",
+      "promptHash": "b46af1fb",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치양배추덮밥",
+        "subtitle": "참치양배추덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "양배추",
+          "배추",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-060__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-060",
+      "recipeSlug": "beginner-060",
+      "titleKo": "햄계란전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-060__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-060__v001__16x9__ko-KR.svg",
+      "promptHash": "3ad07ec4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "햄계란전",
+        "subtitle": "햄계란전은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "햄",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-061__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-061",
+      "recipeSlug": "beginner-061",
+      "titleKo": "깻잎어묵볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-061__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-061__v001__16x9__ko-KR.svg",
+      "promptHash": "0584b905",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "깻잎어묵볶음",
+        "subtitle": "깻잎어묵볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "깻잎",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-062__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-062",
+      "recipeSlug": "beginner-062",
+      "titleKo": "참치오이무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-062__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-062__v001__16x9__ko-KR.svg",
+      "promptHash": "3e1a664b",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치오이무침",
+        "subtitle": "참치오이무침은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "오이",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-063__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-063",
+      "recipeSlug": "beginner-063",
+      "titleKo": "된장두부국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-063__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-063__v001__16x9__ko-KR.svg",
+      "promptHash": "3bc37faa",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "된장두부국",
+        "subtitle": "된장두부국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "된장",
+          "두부",
+          "물"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-064__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-064",
+      "recipeSlug": "beginner-064",
+      "titleKo": "미역국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-064__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-064__v001__16x9__ko-KR.svg",
+      "promptHash": "0ff3f544",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "미역국",
+        "subtitle": "미역국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "불린 미역",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-065__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-065",
+      "recipeSlug": "beginner-065",
+      "titleKo": "북엇국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-065__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-065__v001__16x9__ko-KR.svg",
+      "promptHash": "55f6bf54",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "북엇국",
+        "subtitle": "북엇국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-066__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-066",
+      "recipeSlug": "beginner-066",
+      "titleKo": "김치국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-066__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-066__v001__16x9__ko-KR.svg",
+      "promptHash": "de92a236",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치국",
+        "subtitle": "김치국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-067__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-067",
+      "recipeSlug": "beginner-067",
+      "titleKo": "된장찌개",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-067__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-067__v001__16x9__ko-KR.svg",
+      "promptHash": "ec724f09",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "된장찌개",
+        "subtitle": "된장찌개은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "된장",
+          "물"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-068__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-068",
+      "recipeSlug": "beginner-068",
+      "titleKo": "김치찌개",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-068__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-068__v001__16x9__ko-KR.svg",
+      "promptHash": "5032bc07",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치찌개",
+        "subtitle": "김치찌개은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-069__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-069",
+      "recipeSlug": "beginner-069",
+      "titleKo": "두부버섯국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-069__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-069__v001__16x9__ko-KR.svg",
+      "promptHash": "0b7c5f07",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부버섯국",
+        "subtitle": "두부버섯국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "버섯",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-070__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-070",
+      "recipeSlug": "beginner-070",
+      "titleKo": "떡국떡달걀국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-070__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-070__v001__16x9__ko-KR.svg",
+      "promptHash": "59c93703",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "떡국떡달걀국",
+        "subtitle": "떡국떡달걀국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "떡국떡",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-071__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-071",
+      "recipeSlug": "beginner-071",
+      "titleKo": "감자된장국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-071__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-071__v001__16x9__ko-KR.svg",
+      "promptHash": "7275daab",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자된장국",
+        "subtitle": "감자된장국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "된장",
+          "물"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-072__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-072",
+      "recipeSlug": "beginner-072",
+      "titleKo": "콩나물김치국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-072__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-072__v001__16x9__ko-KR.svg",
+      "promptHash": "f7522951",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "콩나물김치국",
+        "subtitle": "콩나물김치국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "콩나물",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-073__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-073",
+      "recipeSlug": "beginner-073",
+      "titleKo": "순두부국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-073__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-073__v001__16x9__ko-KR.svg",
+      "promptHash": "7580729e",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "순두부국",
+        "subtitle": "순두부국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "순두부",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-074__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-074",
+      "recipeSlug": "beginner-074",
+      "titleKo": "애호박된장국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-074__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-074__v001__16x9__ko-KR.svg",
+      "promptHash": "a7d53839",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "애호박된장국",
+        "subtitle": "애호박된장국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "된장",
+          "애호박",
+          "물"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-075__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-075",
+      "recipeSlug": "beginner-075",
+      "titleKo": "양파국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-075__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-075__v001__16x9__ko-KR.svg",
+      "promptHash": "c3eebe66",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양파국",
+        "subtitle": "양파국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "양파",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-076__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-076",
+      "recipeSlug": "beginner-076",
+      "titleKo": "배추된장국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-076__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-076__v001__16x9__ko-KR.svg",
+      "promptHash": "4f9fac33",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "배추된장국",
+        "subtitle": "배추된장국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "된장",
+          "배추",
+          "물"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-077__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-077",
+      "recipeSlug": "beginner-077",
+      "titleKo": "만두국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-077__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-077__v001__16x9__ko-KR.svg",
+      "promptHash": "1cb3d02a",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "만두국",
+        "subtitle": "만두국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "냉동만두",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-078__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-078",
+      "recipeSlug": "beginner-078",
+      "titleKo": "부추달걀국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-078__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-078__v001__16x9__ko-KR.svg",
+      "promptHash": "e398fb88",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "부추달걀국",
+        "subtitle": "부추달걀국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "부추",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-079__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-079",
+      "recipeSlug": "beginner-079",
+      "titleKo": "간장비빔국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-079__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-079__v001__16x9__ko-KR.svg",
+      "promptHash": "15eea910",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "간장비빔국수",
+        "subtitle": "간장비빔국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-080__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-080",
+      "recipeSlug": "beginner-080",
+      "titleKo": "비빔국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-080__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-080__v001__16x9__ko-KR.svg",
+      "promptHash": "201ae311",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "비빔국수",
+        "subtitle": "비빔국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-081__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-081",
+      "recipeSlug": "beginner-081",
+      "titleKo": "잔치국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-081__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-081__v001__16x9__ko-KR.svg",
+      "promptHash": "e4e51f4f",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "잔치국수",
+        "subtitle": "잔치국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-082__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-082",
+      "recipeSlug": "beginner-082",
+      "titleKo": "김치라면",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-082__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-082__v001__16x9__ko-KR.svg",
+      "promptHash": "8bffd22b",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치라면",
+        "subtitle": "김치라면은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "라면",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-083__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-083",
+      "recipeSlug": "beginner-083",
+      "titleKo": "라면계란죽",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-083__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-083__v001__16x9__ko-KR.svg",
+      "promptHash": "8ba4d1f1",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "라면계란죽",
+        "subtitle": "라면계란죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "라면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-084__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-084",
+      "recipeSlug": "beginner-084",
+      "titleKo": "볶음우동",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-084__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-084__v001__16x9__ko-KR.svg",
+      "promptHash": "46740a7a",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "볶음우동",
+        "subtitle": "볶음우동은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "우동면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-085__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-085",
+      "recipeSlug": "beginner-085",
+      "titleKo": "어묵우동볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-085__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-085__v001__16x9__ko-KR.svg",
+      "promptHash": "08101628",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵우동볶음",
+        "subtitle": "어묵우동볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "어묵",
+          "우동면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-086__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-086",
+      "recipeSlug": "beginner-086",
+      "titleKo": "토마토파스타",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-086__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-086__v001__16x9__ko-KR.svg",
+      "promptHash": "f3f2220b",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "토마토파스타",
+        "subtitle": "토마토파스타은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "파스타면",
+          "토마토",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-087__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-087",
+      "recipeSlug": "beginner-087",
+      "titleKo": "참치파스타",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-087__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-087__v001__16x9__ko-KR.svg",
+      "promptHash": "8c055b98",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치파스타",
+        "subtitle": "참치파스타은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "파스타면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-088__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-088",
+      "recipeSlug": "beginner-088",
+      "titleKo": "우동",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-088__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-088__v001__16x9__ko-KR.svg",
+      "promptHash": "1646f36d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "우동",
+        "subtitle": "우동은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "우동면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-089__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-089",
+      "recipeSlug": "beginner-089",
+      "titleKo": "참치라면",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-089__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-089__v001__16x9__ko-KR.svg",
+      "promptHash": "2b308fbd",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치라면",
+        "subtitle": "참치라면은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "라면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-090__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-090",
+      "recipeSlug": "beginner-090",
+      "titleKo": "냉국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-090__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-090__v001__16x9__ko-KR.svg",
+      "promptHash": "888e26fe",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "냉국수",
+        "subtitle": "냉국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-091__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-091",
+      "recipeSlug": "beginner-091",
+      "titleKo": "비빔우동",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-091__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-091__v001__16x9__ko-KR.svg",
+      "promptHash": "bf4ca339",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "비빔우동",
+        "subtitle": "비빔우동은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "우동면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-092__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-092",
+      "recipeSlug": "beginner-092",
+      "titleKo": "간장라면",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-092__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-092__v001__16x9__ko-KR.svg",
+      "promptHash": "71f38e60",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "간장라면",
+        "subtitle": "간장라면은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "라면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-093__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-093",
+      "recipeSlug": "beginner-093",
+      "titleKo": "전자레인지 감자버터",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-093__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-093__v001__16x9__ko-KR.svg",
+      "promptHash": "450332c9",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 감자버터",
+        "subtitle": "전자레인지 감자버터은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "감자",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-094__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-094",
+      "recipeSlug": "beginner-094",
+      "titleKo": "전자레인지 햄계란밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-094__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-094__v001__16x9__ko-KR.svg",
+      "promptHash": "7edcc2da",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 햄계란밥",
+        "subtitle": "전자레인지 햄계란밥은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "햄",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-095__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-095",
+      "recipeSlug": "beginner-095",
+      "titleKo": "전자레인지 두부찜",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-095__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-095__v001__16x9__ko-KR.svg",
+      "promptHash": "b5c7690b",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 두부찜",
+        "subtitle": "전자레인지 두부찜은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "두부",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-096__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-096",
+      "recipeSlug": "beginner-096",
+      "titleKo": "전자레인지 콘치즈",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-096__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-096__v001__16x9__ko-KR.svg",
+      "promptHash": "d2fa799d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 콘치즈",
+        "subtitle": "전자레인지 콘치즈은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "통조림 옥수수",
+          "치즈",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-097__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-097",
+      "recipeSlug": "beginner-097",
+      "titleKo": "오이참치무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-097__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-097__v001__16x9__ko-KR.svg",
+      "promptHash": "7b860d3b",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "오이참치무침",
+        "subtitle": "오이참치무침은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "오이",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 꺼내기",
+          "양념 넣기",
+          "살살 섞기",
+          "맛 확인"
+        ],
+        "rescueTip": "물기가 많으면 키친타월이나 체로 한 번 더 빼 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-098__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-098",
+      "recipeSlug": "beginner-098",
+      "titleKo": "양배추볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-098__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-098__v001__16x9__ko-KR.svg",
+      "promptHash": "3ea75edb",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양배추볶음",
+        "subtitle": "양배추볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "양배추",
+          "배추",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-099__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-099",
+      "recipeSlug": "beginner-099",
+      "titleKo": "양배추참치덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-099__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-099__v001__16x9__ko-KR.svg",
+      "promptHash": "0f194bd3",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양배추참치덮밥",
+        "subtitle": "양배추참치덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "양배추",
+          "배추",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-100__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-100",
+      "recipeSlug": "beginner-100",
+      "titleKo": "전자레인지 참치치즈밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-100__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-100__v001__16x9__ko-KR.svg",
+      "promptHash": "3c488038",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 참치치즈밥",
+        "subtitle": "전자레인지 참치치즈밥은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "치즈",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-101__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-101",
+      "recipeSlug": "beginner-101",
+      "titleKo": "게맛살계란볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-101__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-101__v001__16x9__ko-KR.svg",
+      "promptHash": "3c2eebbc",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "게맛살계란볶음",
+        "subtitle": "게맛살계란볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "게맛살",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-102__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-102",
+      "recipeSlug": "beginner-102",
+      "titleKo": "두부계란부침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-102__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-102__v001__16x9__ko-KR.svg",
+      "promptHash": "9645efd5",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부계란부침",
+        "subtitle": "두부계란부침은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "두부",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-103__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-103",
+      "recipeSlug": "beginner-103",
+      "titleKo": "스팸계란볶음밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-103__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-103__v001__16x9__ko-KR.svg",
+      "promptHash": "7738379f",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "스팸계란볶음밥",
+        "subtitle": "스팸계란볶음밥은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "스팸",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-104__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-104",
+      "recipeSlug": "beginner-104",
+      "titleKo": "누룽지 두부 계란죽",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-104__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-104__v001__16x9__ko-KR.svg",
+      "promptHash": "a8d640ca",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "누룽지 두부 계란죽",
+        "subtitle": "누룽지 두부 계란죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "두부",
+          "누룽지",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-105__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-105",
+      "recipeSlug": "beginner-105",
+      "titleKo": "고구마죽",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-105__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-105__v001__16x9__ko-KR.svg",
+      "promptHash": "7c0ba64d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "고구마죽",
+        "subtitle": "고구마죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "고구마",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-106__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-106",
+      "recipeSlug": "beginner-106",
+      "titleKo": "참치김치국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-106__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-106__v001__16x9__ko-KR.svg",
+      "promptHash": "2f8adcbc",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "참치김치국",
+        "subtitle": "참치김치국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "참치캔",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-107__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-107",
+      "recipeSlug": "beginner-107",
+      "titleKo": "숙주볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-107__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-107__v001__16x9__ko-KR.svg",
+      "promptHash": "e38a0a0d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "숙주볶음",
+        "subtitle": "숙주볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "숙주",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-108__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-108",
+      "recipeSlug": "beginner-108",
+      "titleKo": "숙주계란볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-108__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-108__v001__16x9__ko-KR.svg",
+      "promptHash": "491b64ef",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "숙주계란볶음",
+        "subtitle": "숙주계란볶음은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "숙주",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-109__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-109",
+      "recipeSlug": "beginner-109",
+      "titleKo": "김가루계란밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-109__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-109__v001__16x9__ko-KR.svg",
+      "promptHash": "9100615d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김가루계란밥",
+        "subtitle": "김가루계란밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "김",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-110__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-110",
+      "recipeSlug": "beginner-110",
+      "titleKo": "들기름계란국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-110__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-110__v001__16x9__ko-KR.svg",
+      "promptHash": "1eec70b4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "들기름계란국수",
+        "subtitle": "들기름계란국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-111__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-111",
+      "recipeSlug": "beginner-111",
+      "titleKo": "두부참치비빔밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-111__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-111__v001__16x9__ko-KR.svg",
+      "promptHash": "018e7696",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "두부참치비빔밥",
+        "subtitle": "두부참치비빔밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "참치캔",
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-112__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-112",
+      "recipeSlug": "beginner-112",
+      "titleKo": "양배추계란덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-112__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-112__v001__16x9__ko-KR.svg",
+      "promptHash": "e3cd51c3",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "양배추계란덮밥",
+        "subtitle": "양배추계란덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "양배추",
+          "배추",
+          "식용유"
+        ],
+        "tools": [
+          "프라이팬",
+          "뒤집개",
+          "그릇"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-113__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-113",
+      "recipeSlug": "beginner-113",
+      "titleKo": "감자참치조림",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-113__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-113__v001__16x9__ko-KR.svg",
+      "promptHash": "deb02444",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "감자참치조림",
+        "subtitle": "감자참치조림은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "참치캔",
+          "감자",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-114__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-114",
+      "recipeSlug": "beginner-114",
+      "titleKo": "햄두부구이",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-114__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-114__v001__16x9__ko-KR.svg",
+      "promptHash": "843ad368",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "햄두부구이",
+        "subtitle": "햄두부구이은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "햄",
+          "두부",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-115__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-115",
+      "recipeSlug": "beginner-115",
+      "titleKo": "김치콩나물밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-115__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-115__v001__16x9__ko-KR.svg",
+      "promptHash": "110d182e",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "김치콩나물밥",
+        "subtitle": "김치콩나물밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "밥",
+          "김치",
+          "콩나물",
+          "김",
+          "간장"
+        ],
+        "tools": [
+          "그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "재료 자르기",
+          "팬 데우기",
+          "익히기",
+          "마무리"
+        ],
+        "rescueTip": "큰 조각은 팬에 넣기 전 가위로 한 번 더 잘라 주세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-116__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-116",
+      "recipeSlug": "beginner-116",
+      "titleKo": "전자레인지 달걀밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-116__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-116__v001__16x9__ko-KR.svg",
+      "promptHash": "9d19cdc4",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 달걀밥",
+        "subtitle": "전자레인지 달걀밥은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "밥",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-117__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-117",
+      "recipeSlug": "beginner-117",
+      "titleKo": "전자레인지 두부계란찜",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-117__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-117__v001__16x9__ko-KR.svg",
+      "promptHash": "de7ffc8d",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "전자레인지 두부계란찜",
+        "subtitle": "전자레인지 두부계란찜은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "두부",
+          "식용유"
+        ],
+        "tools": [
+          "전자레인지",
+          "전자레인지용 그릇",
+          "숟가락"
+        ],
+        "steps": [
+          "그릇 준비",
+          "덮개 덮기",
+          "짧게 돌리기",
+          "마무리 확인"
+        ],
+        "rescueTip": "전용 그릇이 없으면 전자레인지 사용 가능 표시가 있는 그릇으로 바꾸세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-118__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-118",
+      "recipeSlug": "beginner-118",
+      "titleKo": "오이간장비빔국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-118__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-118__v001__16x9__ko-KR.svg",
+      "promptHash": "a9a0df98",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "오이간장비빔국수",
+        "subtitle": "오이간장비빔국수은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "오이",
+          "소면",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-119__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-119",
+      "recipeSlug": "beginner-119",
+      "titleKo": "만두계란국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-119__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-119__v001__16x9__ko-KR.svg",
+      "promptHash": "21e3e2d9",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "만두계란국",
+        "subtitle": "만두계란국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "계란",
+          "냉동만두",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    },
+    {
+      "assetId": "recipe-poster__beginner-120__v001__16x9__ko-KR",
+      "recipeId": "beginner-recipe-120",
+      "recipeSlug": "beginner-120",
+      "titleKo": "어묵김치국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "16:9",
+      "fileName": "recipe-poster__beginner-120__v001__16x9__ko-KR.svg",
+      "path": "/images/recipes/beginner-posters/recipe-poster__beginner-120__v001__16x9__ko-KR.svg",
+      "promptHash": "41b33622",
+      "generator": "jipbab-note-svg-poster-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "hasFallbackWhenBitmapUnavailable": true
+      },
+      "posterText": {
+        "title": "어묵김치국",
+        "subtitle": "어묵김치국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.",
+        "requiredIngredients": [
+          "김치",
+          "어묵",
+          "김",
+          "물",
+          "국간장"
+        ],
+        "tools": [
+          "냄비",
+          "국자",
+          "그릇"
+        ],
+        "steps": [
+          "냄비 시작",
+          "주재료 넣기",
+          "간 보기",
+          "완성 확인"
+        ],
+        "rescueTip": "넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요."
+      }
+    }
+  ]
+}

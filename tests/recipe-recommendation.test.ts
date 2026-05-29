@@ -165,6 +165,11 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
     assert.ok(thumbnailUrl, recipe.id);
 
     const ledgerPath = thumbnailUrl.replace(/^\/images\/recipes\//, "");
+    if (ledgerPath.startsWith("beginner-posters/")) {
+      assert.ok(sourceLedger.includes("beginner-posters/manifest.json"), recipe.id);
+      assert.ok(sourceLedger.includes("beginner-posters/recipe-poster__*.svg"), recipe.id);
+      continue;
+    }
     assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
   }
 });
