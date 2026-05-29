@@ -54,6 +54,8 @@ test("production account deletion smoke fails closed without leaking secrets", (
   assert.match(productionSmokeSource, /response\.status === 200/);
   assert.match(productionSmokeSource, /Cache-Control: no-store/);
   assert.match(productionSmokeSource, /hasSensitiveOutput/);
+  assert.match(productionSmokeSource, /active production host/);
+  assert.doesNotMatch(productionSmokeSource, /to Vercel Production, redeploy/);
   assert.doesNotMatch(productionSmokeSource, /process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(productionSmokeSource, /console\.(?:log|error)\([^)]*SUPABASE_SERVICE_ROLE_KEY/);
 });

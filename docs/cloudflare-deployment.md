@@ -76,6 +76,8 @@ CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm mobile:sync:ios
 CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm mobile:sync:android
 ```
 
+Workers 후보 도메인을 모바일 QA에 사용할 때는 `capacitor.config.ts`의 app-only `allowNavigation`에 `jipbab-note-app.dudqks0319.workers.dev`가 포함되어 있어야 합니다. Google/Apple/Kakao provider host는 계속 WebView allowNavigation에 넣지 않습니다.
+
 그 뒤 iOS/Android 실기기에서 Google/Apple/Kakao 로그인 완료, 알림 권한/예약, 장보기 링크, 계정삭제 요청을 다시 확인합니다.
 
 ## 쿠팡파트너스 고지

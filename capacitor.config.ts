@@ -5,6 +5,7 @@ const useRemoteServer = Boolean(
 const cleartext = runtimeAppUrl?.startsWith('http://') ?? false
 const oauthNavigationHosts = [
   'jipbab-note-app.vercel.app',
+  'jipbab-note-app.dudqks0319.workers.dev',
   'xqelabiwtjntwrjqcteo.supabase.co',
 ]
 

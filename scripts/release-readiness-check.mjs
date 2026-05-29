@@ -21,6 +21,7 @@ const REQUIRED_ENV_KEYS = [
 ];
 const REQUIRED_OAUTH_WEBVIEW_HOSTS = [
   "jipbab-note-app.vercel.app",
+  "jipbab-note-app.dudqks0319.workers.dev",
   "xqelabiwtjntwrjqcteo.supabase.co",
 ];
 const FORBIDDEN_OAUTH_WEBVIEW_HOSTS = [

@@ -158,7 +158,7 @@ async function run() {
       details: [
         "FAIL",
         ...details,
-        "- next: add SUPABASE_SERVICE_ROLE_KEY and ADMIN_EMAILS to Vercel Production, redeploy, then rerun this check",
+        "- next: add SUPABASE_SERVICE_ROLE_KEY and ADMIN_EMAILS to the active production host, redeploy, then rerun this check",
       ],
     });
     process.exit(1);

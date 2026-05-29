@@ -129,6 +129,7 @@ test("native OAuth uses system browser and app callback instead of embedded prov
   assert.match(iosInfoPlist, /<key>CFBundleURLSchemes<\/key>[\s\S]*<string>com\.jipbab\.note<\/string>/);
   assert.match(androidManifest, /android:scheme="com\.jipbab\.note"/);
   assert.match(capacitorConfig, /allowNavigation:\s*oauthNavigationHosts/);
+  assert.match(capacitorConfig, /jipbab-note-app\.dudqks0319\.workers\.dev/);
   assert.match(capacitorConfig, /xqelabiwtjntwrjqcteo\.supabase\.co/);
   assert.doesNotMatch(capacitorConfig, /accounts\.google\.com/);
   assert.doesNotMatch(capacitorConfig, /appleid\.apple\.com/);
@@ -136,6 +137,7 @@ test("native OAuth uses system browser and app callback instead of embedded prov
   assert.match(packageJson, /"@capacitor\/app"/);
   assert.match(packageJson, /"@capacitor\/browser"/);
   assert.match(releaseCheck, /REQUIRED_OAUTH_WEBVIEW_HOSTS/);
+  assert.match(releaseCheck, /jipbab-note-app\.dudqks0319\.workers\.dev/);
   assert.match(releaseCheck, /FORBIDDEN_OAUTH_WEBVIEW_HOSTS/);
   assert.match(releaseCheck, /hasRequiredOAuthNavigationHosts/);
 });
