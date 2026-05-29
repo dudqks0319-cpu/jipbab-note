@@ -10,6 +10,8 @@
 - Worker name: `jipbab-note-app`
 - Worker entry: `.open-next/worker.js`
 - Static assets binding: `ASSETS`
+- Static assets routing: `run_worker_first = true`
+- Capacitor bootstrap shell: `capacitor-shell/`, not `public/`, so Cloudflare/Next root assets cannot serve the mobile loader at `/`
 - Incremental cache: first candidate uses dummy cache, so R2/KV를 필수로 요구하지 않습니다.
 
 ## 명령
@@ -19,6 +21,7 @@ pnpm check:cloudflare-config
 pnpm preview
 pnpm deploy
 pnpm cf-typegen
+pnpm check:cloudflare-live-home
 pnpm cloudflare:build
 pnpm cloudflare:preview
 pnpm cloudflare:deploy
@@ -26,9 +29,12 @@ pnpm cloudflare:deploy
 
 `preview`/`deploy`는 OpenNext Cloudflare 표준 명령 alias이고, 기존 `cloudflare:*` 명령은 릴리즈 게이트 호환용으로 유지합니다. `deploy`와 `cloudflare:deploy`는 Cloudflare 계정 로그인과 프로젝트 권한이 필요합니다. 배포 전 `wrangler login` 또는 Cloudflare API token 설정을 완료합니다.
 
+`check:cloudflare-live-home`은 `/`가 단순 HTTP 200이어도 Capacitor bootstrap loader 문구인 `집밥노트 불러오는 중` 또는 `원격 앱 연결을 확인하는 중입니다`를 반환하면 실패합니다. Cloudflare 전환 완료 판단은 실제 Next 앱 shell markers가 보일 때만 합니다.
+
 ## 환경변수
 
 Cloudflare Dashboard 또는 `wrangler secret put`으로 운영 값을 설정합니다. 값을 저장소, 문서, 로그에 쓰지 않습니다.
+아래 이름은 운영 필수값입니다. 단, 현재 Cloudflare 후보는 루트 라우팅 수정 배포를 먼저 가능하게 하려고 `wrangler.jsonc`의 `secrets.required`를 아직 켜지 않습니다. `secrets.required`를 먼저 켜면 실제 secret 등록 전 `wrangler deploy`가 실패합니다. Cloudflare Dashboard에 값이 등록된 뒤에만 `secrets.required`를 켭니다.
 
 필수:
 
@@ -110,6 +116,20 @@ public/images/recipes/{recipeId}/final.webp
 7. `pnpm cloudflare:build`
 8. `pnpm preview`
 9. preview URL에서 `/`와 `/api/recipes` HTTP 200 확인
-10. Cloudflare 배포 후 `PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:production-family-route`
-11. Cloudflare 배포 후 `PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:production-account-deletion-route`
-12. Cloudflare/Supabase OAuth callback 등록 후 `NEXT_PUBLIC_SITE_URL=https://<cloudflare-domain> CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm check:oauth-live`
+10. Cloudflare 배포 후 `PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:cloudflare-live-home`
+11. Cloudflare 배포 후 `CHECK_VERCEL_PRODUCTION_ENV=0 PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:production-family-route`
+12. Cloudflare 배포 후 `PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:production-account-deletion-route`
+13. Cloudflare/Supabase OAuth callback 등록 후 `NEXT_PUBLIC_SITE_URL=https://<cloudflare-domain> CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm check:oauth-live`
+14. Cloudflare 운영 전용 묶음 검증은 `pnpm release:cloudflare-external-check`로 실행합니다. 이 명령은 `scripts/check-cloudflare-external-release.mjs`를 통해 Vercel env 확인을 건너뛰고 Cloudflare URL을 기준으로 home/API/live Supabase read-write-RLS/OAuth/production route smoke를 확인합니다.
+
+## Capacitor Shell 분리
+
+`public/index.html`과 `public/runtime-app-config.json`은 Cloudflare/Next public assets와 충돌하므로 사용하지 않습니다. Capacitor bootstrap shell은 아래 경로로 분리했습니다.
+
+```txt
+capacitor-shell/index.html
+capacitor-shell/runtime-app-config.json
+capacitor.config.ts webDir = "capacitor-shell"
+```
+
+`assets.run_worker_first = true`와 `check:cloudflare-live-home`은 전환 안전장치로 계속 유지합니다.

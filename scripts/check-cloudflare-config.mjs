@@ -64,6 +64,7 @@ if (existsSync(path.join(cwd, "wrangler.jsonc"))) {
     '"nodejs_compat"',
     '"global_fetch_strictly_public"',
     '".open-next/assets"',
+    '"run_worker_first": true',
     '"WORKER_SELF_REFERENCE"',
   ];
   for (const term of requiredWranglerTerms) {
@@ -84,6 +85,12 @@ if (existsSync(path.join(cwd, "wrangler.jsonc"))) {
     add(results, "fail", "wrangler secret hygiene", "must not hardcode Supabase/admin secret values");
   } else {
     add(results, "pass", "wrangler secret hygiene", "no Supabase/admin env values are hardcoded");
+  }
+
+  if (wrangler.includes('"secrets"') && wrangler.includes('"required"')) {
+    add(results, "fail", "wrangler secrets.required", "do not enable until Cloudflare runtime secrets are actually registered");
+  } else {
+    add(results, "pass", "wrangler secrets.required", "deferred until Cloudflare runtime secrets are registered");
   }
 }
 

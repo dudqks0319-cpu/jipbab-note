@@ -836,16 +836,16 @@ if (existsSync(iosSpmPackagePath)) {
   addResult(results, "fail", "ios/App/CapApp-SPM/Package.swift", "iOS SPM package is missing");
 }
 
-const runtimeAppConfigPath = path.join(cwd, "public/runtime-app-config.json");
+const runtimeAppConfigPath = path.join(cwd, "capacitor-shell/runtime-app-config.json");
 if (existsSync(runtimeAppConfigPath)) {
   const runtimeAppConfig = JSON.parse(readFileSync(runtimeAppConfigPath, "utf8"));
   if (runtimeAppConfig.remoteUrl === capacitorServerUrl && isHttpsUrl(runtimeAppConfig.remoteUrl)) {
-    addResult(results, "pass", "Runtime app config", "public runtime remote URL matches CAPACITOR_SERVER_URL");
+    addResult(results, "pass", "Runtime app config", "Capacitor shell runtime remote URL matches CAPACITOR_SERVER_URL");
   } else {
-    addResult(results, "fail", "Runtime app config", "public runtime remoteUrl must match CAPACITOR_SERVER_URL and use HTTPS");
+    addResult(results, "fail", "Runtime app config", "Capacitor shell runtime remoteUrl must match CAPACITOR_SERVER_URL and use HTTPS");
   }
 } else {
-  addResult(results, "fail", "public/runtime-app-config.json", "runtime app config is missing");
+  addResult(results, "fail", "capacitor-shell/runtime-app-config.json", "runtime app config is missing");
 }
 
 if (!isPresent(env.MFDS_API_KEY) && !isPresent(env.FOODSAFETY_API_KEY)) {

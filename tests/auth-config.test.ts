@@ -265,7 +265,7 @@ test("app UI avoids raw runtime errors in release-facing messages", () => {
 });
 
 test("public fallback support link uses the release contact email", () => {
-  const source = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../capacitor-shell/index.html", import.meta.url), "utf8");
 
   assert.match(source, /mailto:dudqks2@gmail\.com/);
   assert.doesNotMatch(source, /mailto:dudqks0319@gmail\.com/);

@@ -46,7 +46,7 @@ const env = {
   ...process.env,
 };
 const APP_MARKERS = ["집밥노트", "JIPBAB NOTE", "TODAY'S KITCHEN"];
-const runtimeConfigPath = path.join(cwd, "public", "runtime-app-config.json");
+const runtimeConfigPath = path.join(cwd, "capacitor-shell", "runtime-app-config.json");
 
 async function verifyAppUrl(serverUrl) {
   try {

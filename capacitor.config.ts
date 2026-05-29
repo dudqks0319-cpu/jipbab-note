@@ -11,7 +11,7 @@ const oauthNavigationHosts = [
 const config = {
   appId: 'com.jipbab.note',
   appName: '집밥노트',
-  webDir: 'public',
+  webDir: 'capacitor-shell',
   bundledWebRuntime: false,
   packageClassList: [
     'JipbabGemmaPlugin',

@@ -94,6 +94,13 @@ function assertVercelProductionServerEnv() {
   }
 }
 
+function shouldAssertVercelProductionEnv(productionUrl) {
+  if (process.env.CHECK_VERCEL_PRODUCTION_ENV === "0") {
+    return false;
+  }
+  return new URL(productionUrl).hostname.endsWith(".vercel.app");
+}
+
 async function postFamilyAction({ productionUrl, action, deviceId, body }) {
   const response = await fetch(`${productionUrl}/api/family-groups`, {
     method: "POST",
@@ -136,13 +143,15 @@ async function cleanupFamilyGroup({ supabaseUrl, serviceRoleKey, groupId }) {
 }
 
 async function run() {
-  assertVercelProductionServerEnv();
-
   const env = {
     ...readEnvFile(envFilePath),
     ...process.env,
   };
   const productionUrl = normalizeBaseUrl(env.PRODUCTION_APP_URL || env.CAPACITOR_SERVER_URL);
+  if (shouldAssertVercelProductionEnv(productionUrl)) {
+    assertVercelProductionServerEnv();
+  }
+
   const supabaseUrl = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_URL");
   const serviceRoleKey = requiredEnv(env, "SUPABASE_SERVICE_ROLE_KEY");
   const groupId = randomUUID();
