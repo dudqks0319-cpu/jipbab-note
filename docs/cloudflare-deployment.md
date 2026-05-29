@@ -53,13 +53,30 @@ Cloudflare Dashboard 또는 `wrangler secret put`으로 운영 값을 설정합�
 
 Cloudflare 도메인을 확정하면 `NEXT_PUBLIC_SITE_URL`, `CAPACITOR_SERVER_URL`, `PRODUCTION_APP_URL`은 같은 HTTPS origin으로 맞춥니다.
 
+운영 cutover 직전에는 Cloudflare runtime secrets를 먼저 등록한 뒤 `wrangler.jsonc`의 `secrets.required`를 켭니다. 후보 단계에서는 secret이 비어 있어도 root routing 배포를 검증하기 위해 `secrets.required`를 보류하지만, 운영 전환 후에는 secret 누락 배포를 막아야 합니다.
+
+```json
+"secrets": {
+  "required": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "ADMIN_EMAILS",
+    "MFDS_API_KEY"
+  ]
+}
+```
+
 ## OAuth 콜백
 
 Cloudflare 배포 URL이 정해지면 Supabase Auth URL Configuration에 아래를 추가합니다.
 
-- `https://<cloudflare-domain>/**`
 - `https://<cloudflare-domain>/auth/callback`
 - `com.jipbab.note://auth/callback`
+
+QA용 workers.dev를 계속 확인할 때는 아래 exact callback도 추가합니다.
+
+- `https://jipbab-note-app.dudqks0319.workers.dev/auth/callback`
+
+Production에서는 wildcard `/**`보다 exact callback path를 우선 사용합니다. Vercel을 종료하기로 결정한 뒤에는 Supabase redirect URL, 앱 메타데이터, 문서, Capacitor sync 값에서 Vercel URL 제거 여부를 별도 cutover checklist로 처리합니다.
 
 Google/Apple/Kakao 외부 콘솔에는 계속 Supabase provider callback만 등록합니다.
 
@@ -123,6 +140,28 @@ public/images/recipes/{recipeId}/final.webp
 12. Cloudflare 배포 후 `PRODUCTION_APP_URL=https://<cloudflare-domain> pnpm check:production-account-deletion-route`
 13. Cloudflare/Supabase OAuth callback 등록 후 `NEXT_PUBLIC_SITE_URL=https://<cloudflare-domain> CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm check:oauth-live`
 14. Cloudflare 운영 전용 묶음 검증은 `pnpm release:cloudflare-external-check`로 실행합니다. 이 명령은 `scripts/check-cloudflare-external-release.mjs`를 통해 Vercel env 확인을 건너뛰고 Cloudflare URL을 기준으로 home/API/live Supabase read-write-RLS/OAuth/production route smoke를 확인합니다.
+15. bare URL 증거는 아래처럼 저장합니다.
+
+```bash
+mkdir -p output/release-evidence/cloudflare
+curl -sS -D output/release-evidence/cloudflare/live-root-bare-headers.txt \
+  -H 'Cache-Control: no-cache' \
+  -H 'Pragma: no-cache' \
+  -H 'Accept: text/html' \
+  'https://jipbab-note-app.dudqks0319.workers.dev/' \
+  -o output/release-evidence/cloudflare/live-root-bare.html
+```
+
+`live-root-bare.html`에는 `집밥노트 불러오는 중`, `원격 앱 연결을 확인하는 중입니다`, `원격 앱으로 연결합니다`가 없어야 하고, `냉장고`, `레시피`, `장보기`가 보여야 합니다.
+
+## Cutover 전 보안 체크
+
+- `/api/family-groups` create/join에는 Cloudflare WAF/rate limit을 붙이고, create는 로그인 또는 Turnstile/signed device proof 요구를 검토합니다.
+- 초대코드 실패/성공 시도는 운영에서는 edge 메모리 Map만 믿지 않고 Cloudflare Rate Limiting, WAF, KV/Durable Object/Supabase table 중 하나로 보강합니다.
+- service role key를 쓰는 route 목록과 rotation runbook을 유지하고, 가능한 작업은 최소 권한 RPC/RLS로 줄입니다.
+- Supabase OAuth redirect는 production에서 exact callback path를 우선합니다.
+- CSP는 custom domain 적용 후 `img-src`와 `script-src 'unsafe-inline'` 축소 가능성을 별도 hardening task로 점검합니다.
+- Vercel을 fallback으로 유지할지 종료할지 결정하기 전까지 Vercel 운영면의 env/redirect/security gate를 계속 관리합니다.
 
 ## Capacitor Shell 분리
 
