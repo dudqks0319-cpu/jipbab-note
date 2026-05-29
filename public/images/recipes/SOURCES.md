@@ -42,6 +42,11 @@ These poster/detail assets were generated locally from project scripts and in-ho
 
 - `beginner-posters/manifest.json`: manifest for generated BeginnerRecipe poster assets, added 2026-05-29
 - `beginner-posters/recipe-poster__*.svg`: code-generated BeginnerRecipe poster assets built from `lib/beginner-recipes.ts`, added 2026-05-29. These are original 집밥노트 layout assets and do not use external photos, blog screenshots, marketplace images, brand logos, or character references.
+- `beginner-scenes/manifest.json`: manifest for generated BeginnerRecipe scene-set assets, added 2026-05-29
+- `beginner-scenes/{recipeSlug}/cover.svg`: code-generated representative recipe image for each BeginnerRecipe, added 2026-05-29
+- `beginner-scenes/{recipeSlug}/ingredients.svg`: code-generated ingredient preparation image for each BeginnerRecipe, added 2026-05-29
+- `beginner-scenes/{recipeSlug}/tools.svg`: code-generated cooking-tool image for each BeginnerRecipe, added 2026-05-29
+- `beginner-scenes/{recipeSlug}/step-*.svg`: code-generated step-by-step cooking scene images built from `lib/beginner-recipes.ts`, added 2026-05-29. These are original 집밥노트 layout assets and do not use external photos, blog screenshots, marketplace images, brand logos, or character references.
 - `*-recipe-poster.svg`
 - `*-recipe-poster.png`
 - `*-photo-recipe-poster.png`

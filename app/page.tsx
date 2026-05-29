@@ -30,7 +30,7 @@ import {
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { filterBeginnerHomeRecipes } from '@/lib/beginner-recipe-contract'
 import { CURATED_RECIPE_RECORDS, ONBOARDING_RECIPE_10_NAMES, RELEASE_RECIPE_30_NAMES } from '@/lib/curated-recipes'
-import { isBeginnerRecipePosterImage } from '@/lib/recipe-images'
+import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday } from '@/lib/utils'
 
@@ -493,7 +493,7 @@ function RecipeHomeCard({
   const recipeHref = `/recipe/${recipe.id}${scope === 'family' ? '?scope=family' : ''}`
   const shoppingHref = `/recipe/${recipe.id}${scope === 'family' ? '?scope=family' : ''}#shopping-assistant`
   const thumbnailUrl = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE
-  const isPosterImage = isBeginnerRecipePosterImage(thumbnailUrl)
+  const isGeneratedRecipeImage = isBeginnerRecipeGeneratedImage(thumbnailUrl)
   return (
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
@@ -505,7 +505,7 @@ function RecipeHomeCard({
             onError={(event) => {
               event.currentTarget.src = FALLBACK_RECIPE_IMAGE
             }}
-            className={`h-full w-full ${isPosterImage ? 'object-contain p-1' : 'object-cover'}`}
+            className={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
           />
         </div>
       </Link>

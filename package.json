@@ -68,6 +68,7 @@
     "android:bundle-release": "node scripts/build-android-release.mjs",
     "recipes:seed:generate": "node scripts/generate-mfds-recipes-migration.mjs",
     "recipes:posters:generate": "node --experimental-strip-types scripts/generate-beginner-recipe-posters.mjs",
+    "recipes:scenes:generate": "node --experimental-strip-types scripts/generate-beginner-recipe-scenes.mjs",
     "validate:recipes": "node --experimental-strip-types scripts/validate-recipes.mjs",
     "check:beginner-goal-readiness": "node --experimental-strip-types scripts/check-beginner-goal-readiness.mjs",
     "check:beginner-mobile-evidence": "node scripts/check-beginner-mobile-evidence.mjs",

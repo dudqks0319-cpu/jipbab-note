@@ -4,7 +4,6 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { BEGINNER_RECIPE_LIBRARY } from "../lib/beginner-recipes.ts";
-import { CURATED_RECIPE_RECORDS } from "../lib/curated-recipes.ts";
 
 const POSTER_DIR = join(process.cwd(), "public/images/recipes/beginner-posters");
 const MANIFEST_PATH = join(POSTER_DIR, "manifest.json");
@@ -69,16 +68,12 @@ test("beginner recipe poster assets exist and keep release-safe rights metadata"
   }
 });
 
-test("curated beginner recipe records use generated poster thumbnails", () => {
+test("beginner recipe poster assets remain available as fallback thumbnails", () => {
   const manifestPaths = new Set(loadManifest().assets.map((asset) => asset.path));
 
-  for (const recipe of CURATED_RECIPE_RECORDS.filter((item) => item.id.startsWith("beginner-recipe-"))) {
-    assert.ok(recipe.thumbnailUrl, recipe.id);
-    assert.ok(
-      recipe.thumbnailUrl.startsWith("/images/recipes/beginner-posters/"),
-      `${recipe.id} uses ${recipe.thumbnailUrl}`,
-    );
-    assert.ok(manifestPaths.has(recipe.thumbnailUrl), `${recipe.id} missing manifest path`);
+  for (const recipe of BEGINNER_RECIPE_LIBRARY) {
+    const expectedPath = `/images/recipes/beginner-posters/recipe-poster__${recipe.slug}__v001__16x9__ko-KR.svg`;
+    assert.ok(manifestPaths.has(expectedPath), `${recipe.id} missing fallback poster`);
   }
 });
 

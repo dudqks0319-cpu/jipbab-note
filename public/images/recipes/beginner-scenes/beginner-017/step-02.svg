@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">김치덮밥 2단계. 팬 데우기</title>
+  <desc id="desc">김치덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 팬 데우기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <defs>
+    <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
+      <stop offset="0%" stop-color="#fffdf8"/>
+      <stop offset="100%" stop-color="#fff0e7"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#5b3219" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#warmBg)"/>
+  <rect x="14" y="14" width="1172" height="872" rx="20" fill="#fffdf8" opacity="0.88" stroke="#e6cda8"/>
+  
+  <g>
+    <rect x="42" y="34" width="108" height="66" rx="20" fill="#df321c"/>
+    <path d="M143 68 L171 52 L171 84 Z" fill="#df321c"/>
+    <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">5/7</text>
+  </g>
+
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 팬 데우기</text>
+  <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#e85027">김치덮밥 조리순서입니다.</text>
+  <g fill="#5b1d10" opacity="0.96">
+    <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
+    <g transform="translate(290 380) scale(0.9)">
+      
+    <g transform="translate(0 0) scale(0.88)" filter="url(#softShadow)">
+      <ellipse cx="0" cy="118" rx="250" ry="58" fill="#4b2b1e" opacity="0.16"/>
+      <ellipse cx="0" cy="20" rx="255" ry="155" fill="#1e1b19"/>
+      <ellipse cx="0" cy="5" rx="218" ry="124" fill="#fff4d9"/>
+      <ellipse cx="0" cy="8" rx="196" ry="103" fill="#e85027" opacity="0.78"/>
+      <ellipse cx="-12" cy="2" rx="158" ry="80" fill="#fff6de" opacity="0.98"/>
+      
+      <circle cx="55.0" cy="0.0" r="10" fill="#f7f0dc" opacity="0.76"/><circle cx="71.1" cy="15.7" r="13" fill="#5b1d10" opacity="0.76"/><circle cx="70.0" cy="38.2" r="16" fill="#d33b21" opacity="0.76"/><circle cx="46.3" cy="25.9" r="19" fill="#7cbf62" opacity="0.76"/><circle cx="0.0" cy="41.0" r="10" fill="#d33b21" opacity="0.76"/><circle cx="-29.5" cy="49.9" r="13" fill="#f7f0dc" opacity="0.76"/><circle cx="-70.0" cy="19.8" r="16" fill="#7cbf62" opacity="0.76"/><circle cx="-111.8" cy="15.7" r="19" fill="#5b1d10" opacity="0.76"/><circle cx="-55.0" cy="0.0" r="10" fill="#d33b21" opacity="0.76"/><circle cx="-71.1" cy="-10.7" r="13" fill="#7cbf62" opacity="0.76"/><circle cx="-70.0" cy="-29.0" r="16" fill="#f7f0dc" opacity="0.76"/><circle cx="-46.3" cy="-49.9" r="19" fill="#5b1d10" opacity="0.76"/><circle cx="-0.0" cy="-28.0" r="10" fill="#7cbf62" opacity="0.76"/><circle cx="29.5" cy="-37.9" r="13" fill="#5b1d10" opacity="0.76"/><circle cx="70.0" cy="-38.2" r="16" fill="#d33b21" opacity="0.76"/><circle cx="111.8" cy="-10.7" r="19" fill="#f7f0dc" opacity="0.76"/>
+      
+    </g>
+  
+      <path d="M-190 -132 C-120 -190, -26 -176, 64 -148 C126 -128, 164 -126, 200 -150" fill="none" stroke="#fff3cf" stroke-width="16" opacity="0.38" stroke-linecap="round"/>
+    </g>
+    <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
+    <circle cx="630" cy="218" r="33" fill="#e85027"/>
+    <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">2</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#5b1d10">팬 데우기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">팬에 식용유를 두르고 중불에서 30초만 </text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">데웁니다.</text>
+    <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
+    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">중불 · 1분</text>
+    <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
+    <text x="963" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#4d7a37">초보 확인</text>
+
+    <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
+    <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">기름이 팬 바닥에 얇게 퍼지고 천천히 움직이면 시작해도 됩니다.</text>
+    <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
+    <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">팬을 오래 비워 두면 재료를 넣자마자 탈 수 있습니다.</text>
+    <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
+    <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">연기가 나면 불을 끄고 1분 식힌 뒤 다시 시작하세요.</text>
+  </g>
+</svg>
