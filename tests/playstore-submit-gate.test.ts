@@ -9,6 +9,7 @@ const playStoreGateSource = readFileSync("scripts/check-playstore-submit-readine
 const playStoreExternalSource = readFileSync("scripts/check-playstore-external-status.mjs", "utf8");
 const appStoreGateSource = readFileSync("scripts/check-appstore-submit-readiness.mjs", "utf8");
 const appStoreExternalSource = readFileSync("scripts/check-appstore-external-status.mjs", "utf8");
+const releaseReadinessSource = readFileSync("scripts/release-readiness-check.mjs", "utf8");
 
 test("Play Store submission gates are wired into package scripts", () => {
   assert.equal(
@@ -24,7 +25,7 @@ test("Play Store submission gates are wired into package scripts", () => {
 test("Play Store submission gate checks Android release readiness without the full App Store goal gate", () => {
   assert.match(playStoreGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(playStoreGateSource, /scripts\/check-local-mode-release\.mjs/);
-  assert.match(playStoreGateSource, /scripts\/release-readiness-check\.mjs/);
+  assert.match(playStoreGateSource, /scripts\/release-readiness-check\.mjs", "--platform=playstore"/);
   assert.match(playStoreGateSource, /scripts\/check-supabase-release\.mjs/);
   assert.match(playStoreGateSource, /scripts\/check-store-assets\.mjs/);
   assert.match(playStoreGateSource, /scripts\/check-android-release-artifact\.mjs/);
@@ -34,6 +35,14 @@ test("Play Store submission gate checks Android release readiness without the fu
   assert.match(playStoreGateSource, /does not validate App Store review readiness/);
   assert.doesNotMatch(playStoreGateSource, /scripts\/verify-goal-completion\.mjs/);
   assert.doesNotMatch(playStoreGateSource, /scripts\/check-ios-release-artifact\.mjs/);
+});
+
+test("Play Store release readiness scope excludes App Store-only native checks", () => {
+  assert.match(releaseReadinessSource, /releasePlatformAliases/);
+  assert.match(releaseReadinessSource, /if \(checksAppStore && existsSync\(iosCapacitorConfigPath\)\)/);
+  assert.match(releaseReadinessSource, /if \(checksPlayStore && existsSync\(androidCapacitorConfigPath\)\)/);
+  assert.match(releaseReadinessSource, /iOS Info\.plist/);
+  assert.match(releaseReadinessSource, /Android manifest/);
 });
 
 test("Play Store external gate excludes iOS device and App Store Connect blockers", () => {

@@ -11,7 +11,7 @@ const checks = [
   },
   {
     label: "Release readiness gate",
-    args: ["scripts/release-readiness-check.mjs"],
+    args: ["scripts/release-readiness-check.mjs", "--platform=appstore"],
   },
   {
     label: "Supabase local RLS/schema gate",

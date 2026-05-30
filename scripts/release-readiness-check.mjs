@@ -6,6 +6,37 @@ const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
 const androidSigningEnvFilePath = path.join(cwd, ".env.android-signing.local");
 
+const releasePlatformAliases = {
+  all: "all",
+  ios: "appstore",
+  appstore: "appstore",
+  "app-store": "appstore",
+  android: "playstore",
+  play: "playstore",
+  playstore: "playstore",
+  "play-store": "playstore",
+};
+
+function targetReleasePlatform() {
+  const cliArg = process.argv.find((item) => item.startsWith("--platform="));
+  const rawValue = (cliArg ? cliArg.slice("--platform=".length) : process.env.RELEASE_READINESS_PLATFORM ?? "all")
+    .trim()
+    .toLowerCase();
+  const platform = releasePlatformAliases[rawValue];
+
+  if (!platform) {
+    console.error(`Unknown release readiness platform: ${rawValue}`);
+    console.error("Use --platform=appstore, --platform=playstore, or --platform=all.");
+    process.exit(1);
+  }
+
+  return platform;
+}
+
+const releasePlatform = targetReleasePlatform();
+const checksAppStore = releasePlatform === "all" || releasePlatform === "appstore";
+const checksPlayStore = releasePlatform === "all" || releasePlatform === "playstore";
+
 const REQUIRED_ENV_KEYS = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -46,11 +77,11 @@ const REQUIRED_ROUTE_FILES = [
 ];
 
 const REQUIRED_STORE_FILES = [
-  ["App Store metadata", "docs/app-store-connect-metadata-ko.md"],
-  ["Play Store metadata", "docs/play-store-metadata-ko.md"],
-  ["Release checklist", "docs/release-readiness-checklist.md"],
-  ["Ingredient image sources", "public/images/ingredients/SOURCES.md"],
-  ["Recipe image sources", "public/images/recipes/SOURCES.md"],
+  ["App Store metadata", "docs/app-store-connect-metadata-ko.md", "appstore"],
+  ["Play Store metadata", "docs/play-store-metadata-ko.md", "playstore"],
+  ["Release checklist", "docs/release-readiness-checklist.md", "all"],
+  ["Ingredient image sources", "public/images/ingredients/SOURCES.md", "all"],
+  ["Recipe image sources", "public/images/recipes/SOURCES.md", "all"],
 ];
 
 const MIN_CURATED_RECIPE_COUNT = 20;
@@ -327,7 +358,14 @@ if (!existsSync(path.join(cwd, "capacitor.config.ts"))) {
   addResult(results, "fail", "capacitor.config.ts", "Capacitor config is missing");
 }
 
-for (const [label, relativePath] of REQUIRED_STORE_FILES) {
+for (const [label, relativePath, platform] of REQUIRED_STORE_FILES) {
+  if (platform === "appstore" && !checksAppStore) {
+    continue;
+  }
+  if (platform === "playstore" && !checksPlayStore) {
+    continue;
+  }
+
   if (existsSync(path.join(cwd, relativePath))) {
     addResult(results, "pass", relativePath, `${label} file exists`);
   } else {
@@ -420,7 +458,7 @@ if (existsSync(path.join(cwd, accountDeletePagePath))) {
 }
 
 const appStoreMetadataPath = "docs/app-store-connect-metadata-ko.md";
-if (existsSync(path.join(cwd, appStoreMetadataPath))) {
+if (checksAppStore && existsSync(path.join(cwd, appStoreMetadataPath))) {
   const appStoreMetadata = readProjectFile(appStoreMetadataPath);
   const missingAppStoreTerms = missingTerms(appStoreMetadata, [
     "집밥노트",
@@ -443,7 +481,7 @@ if (existsSync(path.join(cwd, appStoreMetadataPath))) {
 }
 
 const playStoreMetadataPath = "docs/play-store-metadata-ko.md";
-if (existsSync(path.join(cwd, playStoreMetadataPath))) {
+if (checksPlayStore && existsSync(path.join(cwd, playStoreMetadataPath))) {
   const playStoreMetadata = readProjectFile(playStoreMetadataPath);
   const missingPlayStoreTerms = missingTerms(playStoreMetadata, [
     "com.jipbab.note",
@@ -611,7 +649,7 @@ if (existsSync(path.join(cwd, ingredientCatalogPath))) {
 }
 
 const androidStringsPath = path.join(cwd, "android/app/src/main/res/values/strings.xml");
-if (existsSync(androidStringsPath)) {
+if (checksPlayStore && existsSync(androidStringsPath)) {
   const androidStrings = readFileSync(androidStringsPath, "utf8");
   if (
     androidStrings.includes('<string name="app_name">집밥노트</string>') &&
@@ -621,12 +659,12 @@ if (existsSync(androidStringsPath)) {
   } else {
     addResult(results, "fail", "Android app label", "android strings.xml must use 집밥노트 for app_name and title_activity_main");
   }
-} else {
+} else if (checksPlayStore) {
   addResult(results, "fail", "android/app/src/main/res/values/strings.xml", "Android strings file is missing");
 }
 
 const androidGradlePath = path.join(cwd, "android/app/build.gradle");
-if (existsSync(androidGradlePath)) {
+if (checksPlayStore && existsSync(androidGradlePath)) {
   const androidGradle = readFileSync(androidGradlePath, "utf8");
   const hasReleaseIdentity =
     /applicationId\s+"com\.jipbab\.note"/.test(androidGradle) &&
@@ -638,7 +676,7 @@ if (existsSync(androidGradlePath)) {
   } else {
     addResult(results, "fail", "Android release identity", "expected applicationId com.jipbab.note, versionName 1.0, versionCode 1");
   }
-} else {
+} else if (checksPlayStore) {
   addResult(results, "fail", "android/app/build.gradle", "Android app Gradle file is missing");
 }
 
@@ -648,23 +686,25 @@ const androidSigningKeys = [
   "ANDROID_UPLOAD_KEY_ALIAS",
   "ANDROID_UPLOAD_KEY_PASSWORD",
 ];
-const missingAndroidSigningKeys = androidSigningKeys.filter((key) => !isPresent(env[key]) || isPlaceholder(env[key]));
-const androidKeystorePath = resolveProjectPath(env.ANDROID_UPLOAD_KEYSTORE_PATH ?? "");
-if (missingAndroidSigningKeys.length > 0) {
-  addResult(
-    results,
-    "fail",
-    "Android upload signing",
-    `missing release upload signing value(s): ${missingAndroidSigningKeys.join(", ")}`,
-  );
-} else if (!existsSync(androidKeystorePath)) {
-  addResult(results, "fail", "Android upload keystore", "ANDROID_UPLOAD_KEYSTORE_PATH does not point to an existing file");
-} else {
-  addResult(results, "pass", "Android upload signing", "upload keystore path and signing values are configured");
+if (checksPlayStore) {
+  const missingAndroidSigningKeys = androidSigningKeys.filter((key) => !isPresent(env[key]) || isPlaceholder(env[key]));
+  const androidKeystorePath = resolveProjectPath(env.ANDROID_UPLOAD_KEYSTORE_PATH ?? "");
+  if (missingAndroidSigningKeys.length > 0) {
+    addResult(
+      results,
+      "fail",
+      "Android upload signing",
+      `missing release upload signing value(s): ${missingAndroidSigningKeys.join(", ")}`,
+    );
+  } else if (!existsSync(androidKeystorePath)) {
+    addResult(results, "fail", "Android upload keystore", "ANDROID_UPLOAD_KEYSTORE_PATH does not point to an existing file");
+  } else {
+    addResult(results, "pass", "Android upload signing", "upload keystore path and signing values are configured");
+  }
 }
 
 const androidManifestPath = path.join(cwd, "android/app/src/main/AndroidManifest.xml");
-if (existsSync(androidManifestPath)) {
+if (checksPlayStore && existsSync(androidManifestPath)) {
   const androidManifest = readFileSync(androidManifestPath, "utf8");
   const hasInternet = androidManifest.includes('android.permission.INTERNET');
   const hasCamera = androidManifest.includes('android.permission.CAMERA');
@@ -681,12 +721,12 @@ if (existsSync(androidManifestPath)) {
       "must include internet permission, optional camera feature, camera permission, and exported launcher activity",
     );
   }
-} else {
+} else if (checksPlayStore) {
   addResult(results, "fail", "android/app/src/main/AndroidManifest.xml", "Android manifest is missing");
 }
 
 const androidCapacitorConfigPath = path.join(cwd, "android/app/src/main/assets/capacitor.config.json");
-if (existsSync(androidCapacitorConfigPath)) {
+if (checksPlayStore && existsSync(androidCapacitorConfigPath)) {
   const androidCapacitorConfig = JSON.parse(readFileSync(androidCapacitorConfigPath, "utf8"));
   const serverUrl = androidCapacitorConfig.server?.url ?? "";
   if (
@@ -700,12 +740,12 @@ if (existsSync(androidCapacitorConfigPath)) {
   } else {
     addResult(results, "fail", "Android Capacitor config", "must use com.jipbab.note, 집밥노트, HTTPS server URL, and cleartext=false");
   }
-} else {
+} else if (checksPlayStore) {
   addResult(results, "fail", "android/app/src/main/assets/capacitor.config.json", "Android Capacitor config is missing");
 }
 
 const iosCapacitorConfigPath = path.join(cwd, "ios/App/App/capacitor.config.json");
-if (existsSync(iosCapacitorConfigPath)) {
+if (checksAppStore && existsSync(iosCapacitorConfigPath)) {
   const iosCapacitorConfig = JSON.parse(readFileSync(iosCapacitorConfigPath, "utf8"));
   const serverUrl = iosCapacitorConfig.server?.url ?? "";
   const packageClassList = Array.isArray(iosCapacitorConfig.packageClassList)
@@ -730,12 +770,12 @@ if (existsSync(iosCapacitorConfigPath)) {
       "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, cleartext=false, and LocalNotificationsPlugin",
     );
   }
-} else {
+} else if (checksAppStore) {
   addResult(results, "fail", "ios/App/App/capacitor.config.json", "iOS Capacitor config is missing");
 }
 
 const iosInfoPlistPath = path.join(cwd, "ios/App/App/Info.plist");
-if (existsSync(iosInfoPlistPath)) {
+if (checksAppStore && existsSync(iosInfoPlistPath)) {
   const iosInfoPlist = readFileSync(iosInfoPlistPath, "utf8");
   const hasDisplayName = /<key>CFBundleDisplayName<\/key>\s*<string>집밥노트<\/string>/.test(iosInfoPlist);
   const hasCameraUsage =
@@ -744,23 +784,76 @@ if (existsSync(iosInfoPlistPath)) {
   const hasPortraitOrientation =
     iosInfoPlist.includes("<string>UIInterfaceOrientationPortrait</string>") &&
     !iosInfoPlist.includes("<string>UIInterfaceOrientationLandscape");
+  const hasNoIpadSpecificOrientation = !iosInfoPlist.includes("UISupportedInterfaceOrientations~ipad");
 
-  if (hasDisplayName && hasCameraUsage && hasEncryptionDeclaration && hasPortraitOrientation) {
-    addResult(results, "pass", "iOS Info.plist", "display name, camera purpose, encryption declaration, and portrait orientation are configured");
+  if (hasDisplayName && hasCameraUsage && hasEncryptionDeclaration && hasPortraitOrientation && hasNoIpadSpecificOrientation) {
+    addResult(
+      results,
+      "pass",
+      "iOS Info.plist",
+      "display name, camera purpose, encryption declaration, iPhone portrait orientation, and no iPad-only orientation override are configured",
+    );
   } else {
     addResult(
       results,
       "fail",
       "iOS Info.plist",
-      "must define 집밥노트 display name, barcode camera purpose text, ITSAppUsesNonExemptEncryption=false, and portrait-only orientation",
+      "must define 집밥노트 display name, barcode camera purpose text, ITSAppUsesNonExemptEncryption=false, portrait-only orientation, and no iPad-only orientation override",
     );
   }
-} else {
+} else if (checksAppStore) {
   addResult(results, "fail", "ios/App/App/Info.plist", "iOS Info.plist is missing");
 }
 
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+if (checksAppStore && existsSync(iosProjectPath)) {
+  const iosProject = readFileSync(iosProjectPath, "utf8");
+  const targetedDeviceFamilies = [...iosProject.matchAll(/TARGETED_DEVICE_FAMILY\s*=\s*([^;]+);/g)].map((match) =>
+    match[1].trim().replace(/^"|"$/g, ""),
+  );
+
+  if (targetedDeviceFamilies.length > 0 && targetedDeviceFamilies.every((value) => value === "1")) {
+    addResult(results, "pass", "iOS targeted device family", "iPhone-only release target is configured");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "iOS targeted device family",
+      "App Store release target must stay iPhone-only until iPad screenshots and real-device QA are complete",
+    );
+  }
+} else if (checksAppStore) {
+  addResult(results, "fail", "ios/App/App.xcodeproj/project.pbxproj", "iOS project file is missing");
+}
+
+const iosAppIconContentsPath = path.join(cwd, "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json");
+if (checksAppStore && existsSync(iosAppIconContentsPath)) {
+  const appIconContents = readFileSync(iosAppIconContentsPath, "utf8");
+  const unusedIpadIcons = ["AppIcon-76@1x.png", "AppIcon-76@2x.png", "AppIcon-83.5@2x.png"].filter((fileName) =>
+    existsSync(path.join(cwd, "ios/App/App/Assets.xcassets/AppIcon.appiconset", fileName)),
+  );
+  if (
+    !appIconContents.includes('"idiom" : "ipad"') &&
+    appIconContents.includes('"idiom" : "ios-marketing"') &&
+    unusedIpadIcons.length === 0
+  ) {
+    addResult(results, "pass", "iOS app icon catalog", "iPhone and iOS marketing icon slots are configured without iPad-only slots");
+  } else {
+    addResult(
+      results,
+      "fail",
+      "iOS app icon catalog",
+      unusedIpadIcons.length > 0
+        ? `remove unused iPad icon file(s): ${unusedIpadIcons.join(", ")}`
+        : "iPhone-only App Store release must not keep iPad icon slots until iPad QA is complete",
+    );
+  }
+} else if (checksAppStore) {
+  addResult(results, "fail", "iOS app icon catalog", "AppIcon Contents.json is missing");
+}
+
 const iosSpmPackagePath = path.join(cwd, "ios/App/CapApp-SPM/Package.swift");
-if (existsSync(iosSpmPackagePath)) {
+if (checksAppStore && existsSync(iosSpmPackagePath)) {
   const iosSpmPackage = readFileSync(iosSpmPackagePath, "utf8");
   if (
     iosSpmPackage.includes('platforms: [.iOS(.v15)]') &&
@@ -777,7 +870,7 @@ if (existsSync(iosSpmPackagePath)) {
       "must pin Capacitor 8.3.1, target iOS 15, and include CapacitorLocalNotifications",
     );
   }
-} else {
+} else if (checksAppStore) {
   addResult(results, "fail", "ios/App/CapApp-SPM/Package.swift", "iOS SPM package is missing");
 }
 
@@ -839,6 +932,7 @@ const warnings = results.filter((item) => item.level === "warn");
 const failures = results.filter((item) => item.level === "fail");
 
 console.log("Release readiness check");
+console.log(`Release platform: ${releasePlatform}`);
 const envSources = [
   existsSync(envFilePath) ? ".env.local" : null,
   existsSync(androidSigningEnvFilePath) ? ".env.android-signing.local" : null,
