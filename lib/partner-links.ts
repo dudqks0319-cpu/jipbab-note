@@ -1,4 +1,5 @@
 import type { IngredientCategory } from "../types/index.ts";
+import { canonicalizeIngredientName } from "./ingredient-aliases.ts";
 
 type PartnerLinkKind = "item" | "category" | "search";
 
@@ -20,6 +21,30 @@ type PartnerLinkResult = {
 const coupangSearchBase = "https://www.coupang.com/np/search?component=&q=";
 const coupangPartnerUrlPattern = /^https:\/\/link\.coupang\.com\/a\/[A-Za-z0-9_-]+(?:[/?#].*)?$/;
 
+const coupangSearchKeywords: Record<string, string> = {
+  계란: "신선란 계란 30구",
+  두부: "찌개용 두부",
+  대파: "국내산 대파",
+  쪽파: "국내산 쪽파",
+  양파: "국내산 양파",
+  감자: "국내산 감자",
+  애호박: "국내산 애호박",
+  닭고기: "냉장 닭가슴살",
+  닭가슴살: "냉장 닭가슴살",
+  돼지고기: "돼지고기 앞다리살",
+  소고기: "국거리 소고기",
+  김치: "국산 배추김치",
+  고춧가루: "국산 고춧가루",
+  고추장: "고추장",
+  된장: "재래식 된장",
+  간장: "양조간장",
+  마늘: "깐마늘",
+  고추: "청양고추",
+  버섯: "국내산 버섯",
+  우유: "우유 1L",
+  치즈: "슬라이스 치즈",
+};
+
 const itemKeyByName: Array<[string, string[]]> = [
   ["egg", ["계란", "달걀"]],
   ["milk", ["우유"]],
@@ -33,6 +58,19 @@ const itemKeyByName: Array<[string, string[]]> = [
 
 function searchHref(keyword: string): string {
   return `${coupangSearchBase}${encodeURIComponent(keyword)}`;
+}
+
+export function getCoupangSearchKeyword(name: string): string {
+  const compactName = normalizeLinkKey(name);
+  const directEntry = Object.entries(coupangSearchKeywords).find(
+    ([key]) => normalizeLinkKey(key) === compactName,
+  );
+  if (directEntry) {
+    return directEntry[1];
+  }
+
+  const canonical = canonicalizeIngredientName(name);
+  return coupangSearchKeywords[canonical] ?? name.trim();
 }
 
 export function normalizeLinkKey(value: string): string {
@@ -109,7 +147,7 @@ export function resolvePartnerLink(
   }
 
   return {
-    href: searchHref(normalizedName),
+    href: searchHref(getCoupangSearchKeyword(normalizedName)),
     kind: "search",
   };
 }

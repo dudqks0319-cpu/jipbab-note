@@ -13,6 +13,7 @@ import {
   Utensils,
 } from 'lucide-react'
 
+import FridgeIllustration from '@/components/fridge/FridgeIllustration'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useRecipeCatalog } from '@/hooks/useRecipes'
@@ -103,6 +104,21 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pt-5">
+        <div className="mb-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h2 className="text-[17px] font-black text-[#2f2117]">내 냉장고</h2>
+              <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">
+                재료를 담으면 추천 레시피가 바로 갱신됩니다.
+              </p>
+            </div>
+            <Link href="/fridge" className="text-[12px] font-bold text-[#8f7f70]">
+              전체보기
+            </Link>
+          </div>
+          <FridgeIllustration ingredients={activeDisplayIngredients} loading={isLoading} maxPerZone={5} />
+        </div>
+
         {topRecipe ? (
           <div className="mb-4 rounded-[20px] bg-[#2f2117] px-4 py-4 text-white shadow-[0_14px_28px_rgba(47,33,23,0.18)]">
             <div className="flex items-start justify-between gap-3">
@@ -130,7 +146,7 @@ export default function HomePage() {
                 요리 시작
               </Link>
               <Link
-                href="/shopping"
+                href={`/recipe/${topRecipe.id}#shopping-assistant`}
                 className="flex min-h-11 items-center justify-center rounded-[13px] bg-[#ea5a1f] text-[13px] font-black text-white"
               >
                 부족 재료 담기

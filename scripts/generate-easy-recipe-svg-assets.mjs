@@ -1,0 +1,85 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+
+const moduleUrl = new URL("../lib/easy-recipe-expansion.ts", import.meta.url);
+const { EASY_RECIPE_EXPANSION } = await import(moduleUrl.href);
+
+const outDir = new URL("../public/images/recipes/jipbab-curated/easy/", import.meta.url);
+const sourcePath = new URL("../public/images/recipes/SOURCES.md", import.meta.url);
+const palette = [
+  ["#fff7ed", "#dff3e0", "#ea5a1f"],
+  ["#f7fee7", "#fee2e2", "#22c55e"],
+  ["#fffaf3", "#e0f2fe", "#d94d19"],
+  ["#fef3c7", "#dcfce7", "#6e431d"],
+];
+
+function escapeXml(value) {
+  return String(value).replace(/[&<>"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+  })[character]);
+}
+
+function buildSvg(recipe, index) {
+  const [startColor, endColor, accentColor] = palette[index % palette.length];
+  const ingredients = recipe.ingredientList.slice(0, 4).join(" · ");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">${escapeXml(recipe.name)} finished dish</title>
+  <desc id="desc">A warm Korean home-cooking finished dish illustration for ${escapeXml(recipe.name)}.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${startColor}"/>
+      <stop offset="1" stop-color="${endColor}"/>
+    </linearGradient>
+    <radialGradient id="dish" cx="48%" cy="40%" r="65%">
+      <stop offset="0" stop-color="#fffdf5"/>
+      <stop offset="1" stop-color="#f0c99e"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="26" stdDeviation="20" flood-color="#6e431d" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="190" cy="155" r="70" fill="#ffffff" opacity=".48"/>
+  <circle cx="1010" cy="190" r="82" fill="#ffffff" opacity=".38"/>
+  <ellipse cx="600" cy="704" rx="430" ry="74" fill="#8a5a2a" opacity=".16"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="600" cy="490" rx="390" ry="272" fill="#fffaf3"/>
+    <ellipse cx="600" cy="456" rx="316" ry="196" fill="url(#dish)"/>
+    <path d="M250 492c46 176 194 286 350 286s304-110 350-286c-82 92-209 144-350 144s-268-52-350-144Z" fill="#f2dcc6"/>
+    <path d="M304 522c70 90 176 136 296 136s226-46 296-136" fill="none" stroke="#d7af88" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="500" cy="428" r="24" fill="${accentColor}" opacity=".72"/>
+    <circle cx="655" cy="382" r="20" fill="#facc15" opacity=".76"/>
+    <circle cx="704" cy="506" r="27" fill="#22c55e" opacity=".62"/>
+    <ellipse cx="570" cy="536" rx="45" ry="18" fill="#8a5a2a" opacity=".42"/>
+  </g>
+  <rect x="140" y="86" width="920" height="120" rx="34" fill="#fffaf3" opacity=".92"/>
+  <text x="600" y="138" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="44" font-weight="800" fill="#2f2117">${escapeXml(recipe.name)}</text>
+  <text x="600" y="178" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="24" font-weight="700" fill="#7d6d5f">${escapeXml(ingredients)}</text>
+  <rect x="380" y="760" width="440" height="54" rx="27" fill="${accentColor}" opacity=".94"/>
+  <text x="600" y="795" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="24" font-weight="800" fill="#ffffff">집밥노트 쉬운 레시피</text>
+</svg>
+`;
+}
+
+await mkdir(outDir, { recursive: true });
+
+for (const [index, recipe] of EASY_RECIPE_EXPANSION.entries()) {
+  await writeFile(new URL(`${recipe.id}.svg`, outDir), buildSvg(recipe, index));
+}
+
+let sourceLedger = await readFile(sourcePath, "utf8");
+const marker = "## Easy recipe expansion assets";
+
+if (!sourceLedger.includes(marker)) {
+  const lines = EASY_RECIPE_EXPANSION
+    .map((recipe) => `- \`jipbab-curated/easy/${recipe.id}.svg\`: in-house generated SVG finished-dish placeholder for ${recipe.name}, added 2026-06-06`)
+    .join("\n");
+
+  sourceLedger += `\n${marker}\n\nThese per-recipe SVG assets were generated in-house from 집밥노트 recipe metadata. They are not copied from Instagram, blogs, recipe sites, shopping malls, or restaurant photos. They can be replaced one by one with /imagen PNG assets while keeping the same recipe id mapping.\n\n${lines}\n`;
+  await writeFile(sourcePath, sourceLedger);
+}
+
+console.log(`generated ${EASY_RECIPE_EXPANSION.length} easy recipe SVGs`);

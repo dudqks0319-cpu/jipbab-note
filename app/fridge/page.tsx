@@ -1,13 +1,15 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
+import FridgeIllustration from '@/components/fridge/FridgeIllustration'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useAppSettings } from '@/hooks/useAppSettings'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import {
   INGREDIENT_CATEGORIES,
+  INGREDIENT_STORAGE_TYPES,
   type IngredientCategory,
   type IngredientRecord,
   type IngredientStorageType,
@@ -15,6 +17,7 @@ import {
 } from '@/types'
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { parseBulkIngredientInput } from '@/lib/bulk-ingredient-input'
+import { canonicalizeIngredientName } from '@/lib/ingredient-aliases'
 import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
 import {
@@ -51,7 +54,7 @@ const initialFormState: IngredientFormState = {
   memo: '',
 }
 
-const normalizeIngredientName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '')
+const normalizeIngredientIdentity = (name: string) => canonicalizeIngredientName(name).replace(/\s+/g, '')
 
 const expiryQuickOptions = [
   { label: '3일', days: 3 },
@@ -68,6 +71,23 @@ function shouldOpenAddFromUrl(): boolean {
   }
 
   return new URLSearchParams(window.location.search).get('add') === '1'
+}
+
+function getUrlParam(name: string): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const value = new URLSearchParams(window.location.search).get(name)
+  return value?.trim() || null
+}
+
+function isIngredientCategory(value: string | null): value is IngredientCategory {
+  return Boolean(value && INGREDIENT_CATEGORIES.includes(value as IngredientCategory))
+}
+
+function isIngredientStorageType(value: string | null): value is IngredientStorageType {
+  return Boolean(value && INGREDIENT_STORAGE_TYPES.includes(value as IngredientStorageType))
 }
 
 function buildFutureDate(days: number): string {
@@ -88,6 +108,9 @@ export default function FridgePage() {
   const [saveMessage, setSaveMessage] = useState('')
   const [swipeStartX, setSwipeStartX] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'fridge' | 'list'>('fridge')
+  const [highlightedIngredientId, setHighlightedIngredientId] = useState<string | null>(null)
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -98,6 +121,19 @@ export default function FridgePage() {
     () => getUnitOptionsForSystem(settings.unitSystem),
     [settings.unitSystem],
   )
+
+  const highlightIngredient = useCallback((ingredientId: string | null) => {
+    if (!ingredientId) return
+
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current)
+    }
+    setHighlightedIngredientId(ingredientId)
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedIngredientId(null)
+      highlightTimerRef.current = null
+    }, 2400)
+  }, [])
 
   const suggestedIngredients = useMemo(
     () =>
@@ -110,13 +146,51 @@ export default function FridgePage() {
   )
 
   useEffect(() => {
-    if (shouldOpenAddFromUrl()) {
+    const prefillName = getUrlParam('name')
+    const prefillQuantity = getUrlParam('quantity')
+    const prefillCategory = getUrlParam('category')
+    const prefillStorage = getUrlParam('storage')
+    const prefillSource = getUrlParam('source')
+
+    if (shouldOpenAddFromUrl() || prefillName) {
       const frame = window.requestAnimationFrame(() => {
+        if (prefillName) {
+          const normalizedName = normalizeIngredientInput(prefillName)
+          const parsedQuantity = parseQuantityDisplay(prefillQuantity)
+          const nextCategory = isIngredientCategory(prefillCategory)
+            ? prefillCategory
+            : suggestIngredientCategory(normalizedName, initialFormState.category)
+
+          setForm({
+            name: normalizedName,
+            category: nextCategory,
+            storage_type: isIngredientStorageType(prefillStorage)
+              ? prefillStorage
+              : nextCategory === '조미료' || nextCategory === '곡물/면/빵' || nextCategory === '통조림/가공식품'
+                ? '실온'
+                : nextCategory === '냉동식품'
+                  ? '냉동'
+                  : '냉장',
+            amount_value: parsedQuantity.amountValue,
+            amount_unit: parsedQuantity.amountUnit ?? unitOptions[0]?.value ?? 'g',
+            expiry_date: '',
+            memo: prefillSource ? `${prefillSource} 구매 후 냉장고 반영` : '',
+          })
+          setCategoryTouched(isIngredientCategory(prefillCategory))
+        }
         setShowAddModal(true)
       })
       return () => window.cancelAnimationFrame(frame)
     }
     return undefined
+  }, [unitOptions])
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current)
+      }
+    }
   }, [])
 
   const resetForm = useCallback(() => {
@@ -268,28 +342,34 @@ export default function FridgePage() {
     }
 
     if (editingId) {
-      await updateIngredient(editingId, payload)
+      const updated = await updateIngredient(editingId, payload)
+      highlightIngredient(updated?.id ?? editingId)
+      setViewMode('fridge')
       setSaveMessage('수정했어요.')
       resetForm()
       setShowAddModal(false)
     } else {
       const duplicate = ingredients.find(
-        (item) => normalizeIngredientName(item.name) === normalizeIngredientName(payload.name),
+        (item) => normalizeIngredientIdentity(item.name) === normalizeIngredientIdentity(payload.name),
       )
       if (duplicate) {
         const shouldMerge = window.confirm(`${duplicate.name}이 이미 있어요. 기존 재료에 합칠까요?`)
         if (!shouldMerge) return
 
-        await updateIngredient(duplicate.id, buildIngredientPayloadFromRecord(duplicate, {
+        const updated = await updateIngredient(duplicate.id, buildIngredientPayloadFromRecord(duplicate, {
           category: payload.category ?? duplicate.category,
           storageType: payload.storageType,
           quantity: mergeQuantityDisplay(duplicate.quantity, payload.quantity),
           expiryDate: payload.expiryDate ?? duplicate.expiryDate,
           memo: mergeMemoDisplay(duplicate.memo, payload.memo),
         }))
+        highlightIngredient(updated?.id ?? duplicate.id)
+        setViewMode('fridge')
         setSaveMessage(`${duplicate.name}에 합쳤어요. 다음 재료를 바로 추가할 수 있어요.`)
       } else {
-        await addIngredient(payload)
+        const created = await addIngredient(payload)
+        highlightIngredient(created.id)
+        setViewMode('fridge')
         setSaveMessage(`${payload.name} 저장 완료. 이어서 다음 재료를 추가하세요.`)
       }
       setForm((prev) => ({
@@ -310,7 +390,9 @@ export default function FridgePage() {
       return
     }
 
-    await Promise.all(payloads.map((payload) => addIngredient(payload)))
+    const created = await Promise.all(payloads.map((payload) => addIngredient(payload)))
+    highlightIngredient(created[0]?.id ?? null)
+    setViewMode('fridge')
     setSaveMessage(`국민 재료 ${payloads.length}개를 냉장고에 담았어요.`)
   }
 
@@ -322,13 +404,13 @@ export default function FridgePage() {
     }
 
     const knownIngredients = new Map(
-      ingredients.map((item) => [normalizeIngredientName(item.name), item]),
+      ingredients.map((item) => [normalizeIngredientIdentity(item.name), item]),
     )
     let addedCount = 0
     let mergedCount = 0
 
     for (const payload of parsed.payloads) {
-      const key = normalizeIngredientName(payload.name)
+      const key = normalizeIngredientIdentity(payload.name)
       const duplicate = knownIngredients.get(key)
       if (duplicate) {
         const updated = await updateIngredient(duplicate.id, buildIngredientPayloadFromRecord(duplicate, {
@@ -342,11 +424,13 @@ export default function FridgePage() {
         }))
         if (updated) {
           knownIngredients.set(key, updated)
+          highlightIngredient(updated.id)
         }
         mergedCount += 1
       } else {
         const created = await addIngredient(payload)
         knownIngredients.set(key, created)
+        highlightIngredient(created.id)
         addedCount += 1
       }
     }
@@ -357,6 +441,7 @@ export default function FridgePage() {
         parsed.skippedLines.length > 0 ? `, ${parsed.skippedLines.length}줄 건너뜀` : ''
       }.`,
     )
+    setViewMode('fridge')
   }
 
   const handleMarkConsumed = async (item: IngredientRecord) => {
@@ -536,6 +621,26 @@ export default function FridgePage() {
             </button>
           ))}
         </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] p-1">
+          {([
+            ['fridge', '냉장고 보기'],
+            ['list', '리스트 보기'],
+          ] as const).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setViewMode(mode)}
+              className={`min-h-10 rounded-[11px] text-[12px] font-black transition-colors ${
+                viewMode === mode
+                  ? 'bg-[#2f2117] text-white'
+                  : 'text-[#7d6d5f]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="px-5 pb-6 pt-4">
@@ -556,12 +661,79 @@ export default function FridgePage() {
         </div>
 
         {!isAppStoreDemo && loading ? (
-          <div className="flex flex-col items-center py-16">
-            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-mint-300 border-t-transparent" />
-            <p className="mt-3 text-sm text-gray-400">불러오는 중...</p>
+          <div className="space-y-3">
+            <FridgeIllustration ingredients={sortedIngredients} loading highlightedIngredientId={highlightedIngredientId} />
+            <p className="rounded-[14px] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-bold text-[#8f7f70]">
+              냉장고 칸을 유지한 채 재료를 동기화하고 있어요.
+            </p>
           </div>
-        ) : error && !isAppStoreDemo ? (
+        ) : error && !isAppStoreDemo && source !== 'local' ? (
           <div className="rounded-3xl bg-rose-50 p-4 text-center text-sm text-rose-500">{error.message}</div>
+        ) : viewMode === 'fridge' ? (
+          <div className="space-y-3">
+            <FridgeIllustration
+              ingredients={sortedIngredients}
+              highlightedIngredientId={highlightedIngredientId}
+              onViewAll={() => setViewMode('list')}
+            />
+            {sortedIngredients.length === 0 ? (
+              <div className="rounded-[18px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-5 text-center">
+                {activeIngredients.length === 0 ? (
+                  <>
+                    <p className="text-[14px] font-black text-[#4b3929]">첫 재료를 담으면 추천이 바로 살아납니다.</p>
+                    <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+                      계란, 두부, 대파부터 넣어 오늘 만들 수 있는 집밥을 확인하세요.
+                    </p>
+                    <div className="mt-4 grid grid-cols-1 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleAddStarterIngredients()
+                        }}
+                        className="rounded-full bg-[#ea5a1f] px-5 py-3 text-[13px] font-black text-white"
+                      >
+                        국민 재료 5개 바로 담기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openAddModal}
+                        className="rounded-full border border-[#eadcc9] bg-white px-5 py-3 text-[13px] font-black text-[#4b3929]"
+                      >
+                        직접 재료 추가
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[14px] font-black text-[#4b3929]">현재 조건에 맞는 재료가 없습니다.</p>
+                    <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+                      검색어를 줄이거나 보관 탭을 전체로 바꿔보세요.
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="rounded-full border border-[#eadcc9] bg-white px-4 py-3 text-[12px] font-black text-[#4b3929]"
+                      >
+                        검색어 지우기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('전체')}
+                        className="rounded-full bg-[#ea5a1f] px-4 py-3 text-[12px] font-black text-white"
+                      >
+                        전체 보기
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <p className="rounded-[14px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#8a5a2a]">
+                재료가 많으면 각 칸에는 임박 재료부터 보여주고, 전체 확인은 리스트 보기에서 이어집니다.
+              </p>
+            )}
+          </div>
         ) : sortedIngredients.length === 0 ? (
           <div className="flex flex-col items-center py-16">
             {activeIngredients.length === 0 ? (
@@ -640,11 +812,14 @@ export default function FridgePage() {
                     const dday = getDday(item.expiryDate)
                     const statusLabel = item.expiryDate ? getStatusLabel(dday) : '나중에 확인'
                     const statusBg = item.expiryDate ? getStatusBg(dday) : 'bg-[#f1e4d7] text-[#7d6d5f]'
+                    const isHighlighted = item.id === highlightedIngredientId
 
                     return (
                       <div
                         key={item.id}
-                        className="jipbab-panel relative flex items-center gap-3 rounded-[16px] px-3 py-2.5"
+                        className={`jipbab-panel relative flex items-center gap-3 rounded-[16px] px-3 py-2.5 transition-colors ${
+                          isHighlighted ? 'ring-2 ring-[#ea5a1f]' : ''
+                        }`}
                         onTouchStart={(event) => setSwipeStartX(event.changedTouches[0]?.clientX ?? null)}
                         onTouchEnd={(event) => {
                           void handleSwipeDelete(item, event.changedTouches[0]?.clientX ?? 0)

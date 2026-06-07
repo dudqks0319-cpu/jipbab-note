@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+  <title id="title">비빔국수 레시피 이미지</title>
+  <desc id="desc">비빔국수 재료와 조리 순서를 요약한 집밥노트 레시피 카드</desc>
+  <defs>
+    <clipPath id="photoClip"><rect x="60" y="70" width="460" height="460" rx="34"/></clipPath>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#6e431d" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <rect width="1080" height="1350" fill="#fbf6ee"/>
+  <rect x="38" y="42" width="1004" height="1266" rx="42" fill="#fffaf3" stroke="#eadcc9" stroke-width="3" filter="url(#softShadow)"/>
+  <image href="/images/recipes/jipbab-curated/bibim-guksu.png" x="60" y="70" width="460" height="460" preserveAspectRatio="xMidYMid slice" clip-path="url(#photoClip)"/>
+  <rect x="60" y="70" width="460" height="460" rx="34" fill="none" stroke="#eadcc9" stroke-width="3"/>
+
+  <text x="565" y="112" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="26" font-weight="900" fill="#d94d19">집밥노트 레시피</text>
+  <text x="565" y="174" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="62" font-weight="900" fill="#2f2117">비빔국수</text>
+  <rect x="565" y="320" width="112" height="42" rx="21" fill="#fff0e4"/>
+  <text x="621" y="349" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">분식</text>
+  <rect x="692" y="320" width="112" height="42" rx="21" fill="#eef4ff"/>
+  <text x="748" y="349" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#2f6fec">비비기</text>
+  <rect x="819" y="320" width="128" height="42" rx="21" fill="#eef6df"/>
+  <text x="883" y="349" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#3d7b38">12분</text>
+  <text x="565" y="414" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="25" font-weight="700" fill="#6e5a49">면은 삶은 뒤 찬물에 충분히 헹궈야 끈적이지 않고</text>
+<text x="565" y="448" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="25" font-weight="700" fill="#6e5a49">양념이 깔끔하게 묻습니다.</text>
+
+  <text x="78" y="615" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="34" font-weight="900" fill="#2f2117">재료</text>
+  <rect x="78" y="636" width="420" height="46" rx="23" fill="#fff7ed"/>
+    <text x="102" y="667" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">국수</text>
+    <text x="474" y="667" text-anchor="end" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">100g</text>
+<rect x="78" y="694" width="420" height="46" rx="23" fill="#fff7ed"/>
+    <text x="102" y="725" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">고추장</text>
+    <text x="474" y="725" text-anchor="end" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">1큰술</text>
+<rect x="78" y="752" width="420" height="46" rx="23" fill="#fff7ed"/>
+    <text x="102" y="783" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">식초</text>
+    <text x="474" y="783" text-anchor="end" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">1큰술</text>
+<rect x="78" y="810" width="420" height="46" rx="23" fill="#fff7ed"/>
+    <text x="102" y="841" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">설탕</text>
+    <text x="474" y="841" text-anchor="end" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">1큰술</text>
+<rect x="78" y="868" width="420" height="46" rx="23" fill="#fff7ed"/>
+    <text x="102" y="899" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">참기름</text>
+    <text x="474" y="899" text-anchor="end" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#d94d19">1작은술</text>
+
+  <text x="555" y="615" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="34" font-weight="900" fill="#2f2117">순서</text>
+  <circle cx="586" cy="656" r="24" fill="#6e431d"/>
+    <text x="586" y="664" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#ffffff">1</text>
+    <text x="630" y="654" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">재료를 비슷한 크기로 손질해 익는 속도를</text>
+<text x="630" y="685" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">맞춥니다.</text>
+<circle cx="586" cy="788" r="24" fill="#6e431d"/>
+    <text x="586" y="796" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#ffffff">2</text>
+    <text x="630" y="786" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">팬이나 냄비를 중약불로 달군 뒤 천천히</text>
+<text x="630" y="817" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">조리합니다.</text>
+<circle cx="586" cy="920" r="24" fill="#6e431d"/>
+    <text x="586" y="928" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#ffffff">3</text>
+    <text x="630" y="918" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">양념은 절반부터 넣고 마지막에 간을</text>
+<text x="630" y="949" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">확인합니다.</text>
+<circle cx="586" cy="1052" r="24" fill="#6e431d"/>
+    <text x="586" y="1060" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="900" fill="#ffffff">4</text>
+    <text x="630" y="1050" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">불을 끄고 한 김 식힌 뒤 먹기 좋게</text>
+<text x="630" y="1081" text-anchor="start" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="23" font-weight="800" fill="#4b3929">담습니다.</text>
+
+  <rect x="78" y="1185" width="924" height="72" rx="28" fill="#2f2117"/>
+  <text x="540" y="1231" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="25" font-weight="900" fill="#ffe7c9">국수와 기본 양념만 있으면 바로 만드는 매콤한 한 끼</text>
+</svg>

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { canonicalizeIngredientName } from "@/lib/ingredient-aliases";
 import { INGREDIENT_SYNC_TIMEOUT_MS, mergeIngredientRecords, withTimeout } from "@/lib/ingredient-sync";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toDateOnlyString } from "@/lib/utils";
@@ -260,7 +261,7 @@ export interface UseIngredientsResult {
 }
 
 function normalizeIngredientKey(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, "");
+  return canonicalizeIngredientName(name).replace(/\s+/g, "");
 }
 
 export function useIngredients(): UseIngredientsResult {

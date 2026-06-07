@@ -12,6 +12,7 @@ import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { findCuratedRecipe } from "@/lib/curated-recipes";
+import { resolveRecipeThumbnailUrl } from "@/lib/recipe-image-overrides";
 import { normalizeHttpUrl } from "@/lib/request-security";
 import type { RecipeDetailRecord, RecipeDetailStep, RecipeIngredientDetail } from "@/types";
 
@@ -428,14 +429,16 @@ async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDe
     const fallbackExternalId = row.source?.startsWith("mfds:") ? row.source.replace(/^mfds:/, "") : null;
     const fallbackAttribution = row.source?.startsWith("mfds:") ? "식품의약품안전처 식품안전나라" : null;
     const fallbackLicense = row.source?.startsWith("mfds:") ? "공공데이터 OpenAPI" : null;
+    const name = row.title?.trim() || "레시피 이름 없음";
+    const thumbnailUrl = normalizeRecipeImageUrl(row.thumbnail_url || null);
 
     return {
       id: row.id,
-      name: row.title?.trim() || "레시피 이름 없음",
+      name,
       category: row.category?.trim() || "기타",
       method: parsedMeta.method,
       calories: parsedMeta.calories,
-      thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
+      thumbnailUrl: resolveRecipeThumbnailUrl(name, thumbnailUrl),
       ingredients: ingredientList.join(", "),
       hashTag: "",
       ingredientList,
@@ -496,13 +499,16 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
     return null;
   }
 
+  const name = target.RCP_NM?.trim() ?? "레시피 이름 없음";
+  const thumbnailUrl = normalizeRecipeImageUrl(target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null);
+
   return {
     id: target.RCP_SEQ ?? recipeId,
-    name: target.RCP_NM?.trim() ?? "레시피 이름 없음",
+    name,
     category: target.RCP_PAT2?.trim() ?? "기타",
     method: target.RCP_WAY2?.trim() ?? "정보 없음",
     calories: target.INFO_ENG?.trim() ?? "-",
-    thumbnailUrl: normalizeRecipeImageUrl(target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null),
+    thumbnailUrl: resolveRecipeThumbnailUrl(name, thumbnailUrl),
     ingredients: target.RCP_PARTS_DTLS?.trim() ?? "",
     hashTag: target.HASH_TAG?.trim() ?? "",
     ingredientList: parseIngredientDisplayList(target.RCP_PARTS_DTLS?.trim() ?? ""),
@@ -587,7 +593,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   }[recipe.contentOrigin ?? (recipe.id.startsWith("curated-") ? "original" : "licensed")];
 
   return (
-    <div className="min-h-full bg-[#fbf6ee] pb-8">
+    <div className="min-h-full bg-[#fbf6ee] pb-44">
       <section className="relative overflow-hidden bg-[#f8eddf] pb-4">
         <div className="mobile-safe-top absolute left-4 top-0 z-20">
           <Link
@@ -658,6 +664,18 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             <p className="text-[13px] font-black text-[#2f2117]">처음 만들 때 핵심</p>
             <p className="mt-2 text-[13px] font-semibold leading-6 text-[#5f4b3a]">{recipe.beginnerSummary}</p>
           </div>
+        </section>
+      ) : null}
+
+      {recipe.guideImageUrl ? (
+        <section className="px-5 pt-5">
+          <h2 className="text-[17px] font-black text-[#2f2117]">레시피 이미지</h2>
+          <RecipeImage
+            src={recipe.guideImageUrl}
+            alt={`${recipe.name} 레시피 이미지`}
+            className="jipbab-panel relative mt-3 aspect-[4/5] w-full overflow-hidden rounded-[16px]"
+            imageClassName="h-full w-full object-cover"
+          />
         </section>
       ) : null}
 
@@ -763,7 +781,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[430px] border-t border-[#eadcc9] bg-[#fffaf3]/95 px-5 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <nav className="fixed inset-x-0 bottom-[calc(5.25rem_+_env(safe-area-inset-bottom))] z-40 mx-auto max-w-[430px] border-t border-[#eadcc9] bg-[#fffaf3]/95 px-5 py-3 backdrop-blur">
         <div className="grid grid-cols-2 gap-2">
           <a
             href="#cook-mode"

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Baby rice porridge in a small bowl</title>
+  <desc id="desc">A warm illustration of plain rice porridge for early baby food.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#e8f7e8"/>
+    </linearGradient>
+    <radialGradient id="porridge" cx="48%" cy="40%" r="64%">
+      <stop offset="0" stop-color="#fffdf5"/>
+      <stop offset="1" stop-color="#f2dcc1"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="28" stdDeviation="22" flood-color="#7c5a3b" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="206" cy="170" r="58" fill="#f8cf8d" opacity=".55"/>
+  <circle cx="1010" cy="210" r="84" fill="#b7dec1" opacity=".5"/>
+  <ellipse cx="600" cy="704" rx="420" ry="70" fill="#cfae88" opacity=".22"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="600" cy="485" rx="380" ry="270" fill="#fffaf3"/>
+    <ellipse cx="600" cy="455" rx="314" ry="204" fill="url(#porridge)"/>
+    <path d="M256 486c43 182 190 292 344 292s301-110 344-292c-76 94-203 150-344 150s-268-56-344-150Z" fill="#f6e2cc"/>
+    <path d="M295 518c72 96 182 145 305 145s233-49 305-145" fill="none" stroke="#d7af88" stroke-width="18" stroke-linecap="round"/>
+    <ellipse cx="505" cy="405" rx="52" ry="22" fill="#fff8e8" opacity=".85"/>
+    <ellipse cx="650" cy="486" rx="76" ry="28" fill="#fff7e1" opacity=".7"/>
+    <ellipse cx="575" cy="540" rx="40" ry="16" fill="#ead1b2" opacity=".7"/>
+  </g>
+  <path d="M804 277c105-38 201-25 230 32 24 47-5 107-75 152" fill="none" stroke="#d6b08a" stroke-width="24" stroke-linecap="round"/>
+  <path d="M837 293c80-20 146-7 166 31" fill="none" stroke="#fff5e9" stroke-width="12" stroke-linecap="round" opacity=".85"/>
+</svg>

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { canonicalizeIngredientName } from "@/lib/ingredient-aliases";
 import { mergeShoppingItems } from "@/lib/shopping-sync";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { IngredientCategory, ShoppingItem, ShoppingItemDraft } from "@/types";
@@ -40,6 +41,10 @@ function normalizeDraft(draft: ShoppingItemDraft): ShoppingItemDraft {
     sourceRecipeId: draft.sourceRecipeId?.trim() || null,
     sourceRecipeName: draft.sourceRecipeName?.trim() || null,
   };
+}
+
+function normalizeShoppingNameKey(name: string): string {
+  return canonicalizeIngredientName(name).replace(/\s+/g, "");
 }
 
 function rowToItem(row: RawShoppingRow): ShoppingItem {
@@ -251,8 +256,8 @@ export function useShopping(): UseShoppingResult {
         const { data: authData } = await client.auth.getUser();
         userId = authData.user?.id ?? null;
 
-        const existingNames = new Set(items.map((item) => item.name.trim().toLowerCase()));
-        const insertDrafts = cleanedDrafts.filter((draft) => !existingNames.has(draft.name.toLowerCase()));
+        const existingNames = new Set(items.map((item) => normalizeShoppingNameKey(item.name)));
+        const insertDrafts = cleanedDrafts.filter((draft) => !existingNames.has(normalizeShoppingNameKey(draft.name)));
         if (insertDrafts.length === 0) {
           setLoading(false);
           return;
@@ -281,7 +286,9 @@ export function useShopping(): UseShoppingResult {
         setItems((prev) => {
           const nextItems = upsertLocalItems(
             nextLocalItems.filter(
-              (draft) => !prev.some((item) => item.name.trim().toLowerCase() === draft.name.trim().toLowerCase()),
+              (draft) => !prev.some(
+                (item) => normalizeShoppingNameKey(item.name) === normalizeShoppingNameKey(draft.name),
+              ),
             ),
             deviceId,
           );

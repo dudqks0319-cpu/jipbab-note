@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  getCoupangSearchKeyword,
   isCoupangPartnerUrl,
   parsePartnerItemLinksJson,
   resolvePartnerLink,
@@ -90,7 +91,7 @@ test("ignores malformed item-specific partner link JSON", () => {
   );
 
   assert.equal(result.kind, "search");
-  assert.match(result.href, /%EC%96%91%ED%8C%8C/);
+  assert.match(result.href, /%EA%B5%AD%EB%82%B4%EC%82%B0%20%EC%96%91%ED%8C%8C/);
 });
 
 test("falls back to category link when no specific item link exists", () => {
@@ -129,7 +130,7 @@ test("falls back to search when configured partner URLs are not allowlisted", ()
   );
 
   assert.equal(result.kind, "search");
-  assert.match(result.href, /%EA%B3%84%EB%9E%80/);
+  assert.match(result.href, /%EC%8B%A0%EC%84%A0%EB%9E%80%20%EA%B3%84%EB%9E%80%2030%EA%B5%AC/);
 });
 
 test("falls back to Coupang search when no partner links exist", () => {
@@ -146,6 +147,25 @@ test("falls back to Coupang search when no partner links exist", () => {
 
   assert.match(result.href, /coupang\.com/);
   assert.equal(result.kind, "search");
+});
+
+test("fallback Coupang search uses purchase-intent keywords", () => {
+  assert.equal(getCoupangSearchKeyword("두부"), "찌개용 두부");
+  assert.equal(getCoupangSearchKeyword("달걀"), "신선란 계란 30구");
+
+  const result = resolvePartnerLink(
+    {
+      category: "유제품",
+      name: "두부",
+    },
+    {
+      itemLinks: {},
+      categoryLinks: {},
+    },
+  );
+
+  assert.equal(result.kind, "search");
+  assert.match(result.href, /%EC%B0%8C%EA%B0%9C%EC%9A%A9%20%EB%91%90%EB%B6%80/);
 });
 
 test("partner link hook keeps validated fallback links when database loading fails", () => {

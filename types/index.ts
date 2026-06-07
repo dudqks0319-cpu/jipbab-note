@@ -258,6 +258,8 @@ export interface CommunityQueryError {
 // 레시피 페이지에서 공통으로 사용하는 카테고리/응답/매칭 타입 정의입니다.
 export const RECIPE_CATEGORIES = [
   "전체",
+  "이유식",
+  "아이반찬",
   "반찬",
   "국·찌개",
   "밥",
@@ -336,6 +338,7 @@ export interface RecipeDetailRecord extends RecipeRecord {
   measurementTips?: string[];
   imageAlt?: string | null;
   imageCaption?: string | null;
+  guideImageUrl?: string | null;
   sourceProvider?: string | null;
   sourceExternalId?: string | null;
   sourceUrl?: string | null;

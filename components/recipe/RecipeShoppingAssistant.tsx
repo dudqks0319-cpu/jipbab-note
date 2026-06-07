@@ -1,13 +1,14 @@
 // 이 파일은 레시피 재료와 내 냉장고/장보기 상태를 연결하는 보조 UI입니다.
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CheckCircle2, ShoppingCart } from "lucide-react";
 
 import { useIngredients } from "@/hooks/useIngredients";
 import { useShopping } from "@/hooks/useShopping";
+import { canonicalizeIngredientName } from "@/lib/ingredient-aliases";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
-import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import { calculateRecipeIngredientMatch, isIngredientNameMatch } from "@/lib/matching";
 import type { IngredientCategory } from "@/types";
 
 type RecipeShoppingAssistantProps = {
@@ -20,7 +21,7 @@ function inferCategory(
   ingredientName: string,
   categories: Map<string, IngredientCategory | null>,
 ): IngredientCategory | null {
-  return categories.get(ingredientName.trim().toLowerCase())
+  return categories.get(canonicalizeIngredientName(ingredientName))
     ?? suggestIngredientCategory(ingredientName, "채소");
 }
 
@@ -29,6 +30,7 @@ export default function RecipeShoppingAssistant({
   recipeName,
   ingredientList,
 }: RecipeShoppingAssistantProps) {
+  const [statusMessage, setStatusMessage] = useState("");
   const { ingredients, loading, updateIngredient } = useIngredients();
   const { items, addItems } = useShopping();
   const activeIngredients = useMemo(
@@ -37,11 +39,11 @@ export default function RecipeShoppingAssistant({
   );
 
   const ownedCategories = useMemo(
-    () => new Map(activeIngredients.map((item) => [item.name.trim().toLowerCase(), item.category])),
+    () => new Map(activeIngredients.map((item) => [canonicalizeIngredientName(item.name), item.category])),
     [activeIngredients],
   );
   const shoppingNames = useMemo(
-    () => new Set(items.map((item) => item.name.trim().toLowerCase())),
+    () => new Set(items.map((item) => canonicalizeIngredientName(item.name))),
     [items],
   );
 
@@ -57,7 +59,7 @@ export default function RecipeShoppingAssistant({
   const missingDrafts = useMemo(
     () =>
       match.missingIngredients
-        .filter((ingredient) => !shoppingNames.has(ingredient.trim().toLowerCase()))
+        .filter((ingredient) => !shoppingNames.has(canonicalizeIngredientName(ingredient)))
         .map((ingredient) => ({
           name: ingredient,
           category: inferCategory(ingredient, ownedCategories),
@@ -70,12 +72,20 @@ export default function RecipeShoppingAssistant({
   const matchedInventoryItems = useMemo(
     () =>
       activeIngredients.filter((item) =>
-        match.matchedIngredients.some(
-          (ingredient) => ingredient.trim().toLowerCase() === item.name.trim().toLowerCase(),
-        ),
+        match.matchedIngredients.some((ingredient) => isIngredientNameMatch(item.name, ingredient)),
       ),
     [activeIngredients, match.matchedIngredients],
   );
+
+  const addMissingIngredientsToShopping = async () => {
+    if (missingDrafts.length === 0) {
+      setStatusMessage("부족 재료가 이미 장보기 목록에 있습니다.");
+      return;
+    }
+
+    await addItems(missingDrafts);
+    setStatusMessage(`${recipeName} 부족 재료 ${missingDrafts.length}개를 장보기에 담았어요.`);
+  };
 
   const removeCookedIngredients = async () => {
     if (matchedInventoryItems.length === 0) return;
@@ -128,17 +138,24 @@ export default function RecipeShoppingAssistant({
               부족 재료 {match.missingIngredients.length}개를 장보기에 추가할 수 있어요.
             </p>
             <p className="mt-1 text-xs text-[#8f7f70]">
-              이미 담긴 항목은 제외하고 추가합니다.
+              이미 담긴 항목은 별칭까지 확인해 제외합니다.
             </p>
             <button
               type="button"
-              onClick={() => addItems(missingDrafts)}
+              onClick={() => {
+                void addMissingIngredientsToShopping();
+              }}
               disabled={missingDrafts.length === 0}
               className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 py-3 text-sm font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)] disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
             >
               <ShoppingCart size={16} />
-              {missingDrafts.length === 0 ? "이미 장보기에 있음" : "장보기에 추가"}
+              {missingDrafts.length === 0 ? "이미 장보기에 있음" : `${recipeName} 부족 재료 장보기`}
             </button>
+            {statusMessage ? (
+              <p className="mt-2 rounded-[12px] bg-white px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
+                {statusMessage}
+              </p>
+            ) : null}
           </div>
         ) : null}
 

@@ -92,4 +92,6 @@ test("merges purchased shopping items into existing fridge ingredients", () => {
 
 test("normalizes ingredient names before duplicate checks", () => {
   assert.equal(normalizeShoppingIngredientName(" 대 파 "), normalizeShoppingIngredientName("대파"));
+  assert.equal(normalizeShoppingIngredientName("달걀"), normalizeShoppingIngredientName("계란"));
+  assert.equal(normalizeShoppingIngredientName("고추가루"), normalizeShoppingIngredientName("고춧가루"));
 });

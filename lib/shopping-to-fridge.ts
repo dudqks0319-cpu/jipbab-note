@@ -5,9 +5,10 @@ import type {
   IngredientStorageType,
   ShoppingItem,
 } from "../types/index.ts";
+import { canonicalizeIngredientName } from "./ingredient-aliases.ts";
 
 export function normalizeShoppingIngredientName(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, "");
+  return canonicalizeIngredientName(name).replace(/\s+/g, "");
 }
 
 export function getStorageTypeForShoppingCategory(

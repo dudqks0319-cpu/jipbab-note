@@ -1,6 +1,7 @@
 // 이 파일은 장보기 리스트 화면을 담당하며 참고 이미지의 체크리스트 UI를 구현합니다.
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
@@ -15,6 +16,7 @@ import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingre
 import {
   buildIngredientPayloadFromShoppingItem,
   buildMergedIngredientPayloadFromShoppingItem,
+  getStorageTypeForShoppingCategory,
   normalizeShoppingIngredientName,
 } from '@/lib/shopping-to-fridge'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
@@ -25,8 +27,26 @@ import type { PartnerLinkConfig } from '@/lib/partner-links'
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
 const PARTNERS_DISCLOSURE = '일부 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
 
-function externalLinkRel(isPartnerLink: boolean) {
-  return isPartnerLink ? 'sponsored noopener noreferrer' : 'noopener noreferrer'
+function externalLinkRel() {
+  return 'sponsored noopener noreferrer'
+}
+
+function buildFridgePrefillHref(item: Pick<ShoppingItem, 'name' | 'quantity' | 'category' | 'sourceRecipeName'>): string {
+  const params = new URLSearchParams({
+    add: '1',
+    name: item.name,
+    storage: getStorageTypeForShoppingCategory(item.category),
+  })
+  if (item.quantity) {
+    params.set('quantity', item.quantity)
+  }
+  if (item.category) {
+    params.set('category', item.category)
+  }
+  if (item.sourceRecipeName) {
+    params.set('source', `${item.sourceRecipeName} 부족 재료`)
+  }
+  return `/fridge?${params.toString()}`
 }
 
 export default function ShoppingPage() {
@@ -230,7 +250,7 @@ export default function ShoppingPage() {
                     key={item.name}
                     href={purchaseLink.href}
                     target="_blank"
-                    rel={externalLinkRel(purchaseLink.isPartnerLink)}
+                    rel={externalLinkRel()}
                     className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
                   >
                     {item.name} 바로 사기
@@ -251,10 +271,11 @@ export default function ShoppingPage() {
                       name={item.name}
                       category={item.category}
                       quantity={item.quantity || '수량 미정'}
+                      sourceRecipeName={item.sourceRecipeName}
                       checked={false}
                       onToggle={() => toggleItem(item.id)}
                       onRemove={() => removeItem(item.id)}
-                      onAddToFridge={() => addShoppingItemToFridge(item)}
+                      fridgePrefillHref={buildFridgePrefillHref(item)}
                       partnerLinks={partnerLinks}
                     />
                   ))}
@@ -282,10 +303,11 @@ export default function ShoppingPage() {
                     name={item.name}
                     category={item.category}
                     quantity={item.quantity || '수량 미정'}
+                    sourceRecipeName={item.sourceRecipeName}
                     checked
                     onToggle={() => toggleItem(item.id)}
                     onRemove={() => removeItem(item.id)}
-                    onAddToFridge={() => addShoppingItemToFridge(item)}
+                    fridgePrefillHref={buildFridgePrefillHref(item)}
                     partnerLinks={partnerLinks}
                     addToFridgeLabel="냉장고 반영"
                   />
@@ -333,20 +355,22 @@ function ShoppingRow({
   name,
   category,
   quantity,
+  sourceRecipeName,
   checked,
   onToggle,
   onRemove,
-  onAddToFridge,
+  fridgePrefillHref,
   partnerLinks,
   addToFridgeLabel = '냉장고 반영',
 }: {
   name: string
   category: IngredientCategory | null
   quantity: string
+  sourceRecipeName: string | null
   checked: boolean
   onToggle: () => void
   onRemove: () => void
-  onAddToFridge: () => void
+  fridgePrefillHref: string
   partnerLinks: PartnerLinkConfig
   addToFridgeLabel?: string
 }) {
@@ -367,6 +391,11 @@ function ShoppingRow({
       <div className="min-w-0 flex-1">
         <p className={`truncate text-[14px] font-bold ${checked ? 'text-[#9f9388] line-through' : 'text-[#2f2117]'}`}>{name}</p>
         <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{quantity}</p>
+        {sourceRecipeName ? (
+          <p className="mt-0.5 text-[10px] font-black leading-4 text-[#8a5a2a]">
+            {sourceRecipeName} 부족 재료
+          </p>
+        ) : null}
         {!checked && purchaseLink.isPartnerLink ? (
           <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#b45309]">
             제휴 링크이며 구매 시 수수료를 받을 수 있어요.
@@ -374,26 +403,32 @@ function ShoppingRow({
         ) : null}
       </div>
       {!checked ? (
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 flex-col gap-1">
           <a
             href={purchaseLink.href}
             target="_blank"
-            rel={externalLinkRel(purchaseLink.isPartnerLink)}
-            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+            rel={externalLinkRel()}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
             aria-label={`${name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
           >
             <ExternalLink size={12} />
             구매
           </a>
+          <Link
+            href={fridgePrefillHref}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
+          >
+            <Refrigerator size={12} />
+            추가
+          </Link>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={onAddToFridge}
+        <Link
+          href={fridgePrefillHref}
           className="inline-flex h-8 shrink-0 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
         >
           {addToFridgeLabel}
-        </button>
+        </Link>
       )}
       <button type="button" onClick={onRemove} className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />

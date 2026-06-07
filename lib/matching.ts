@@ -1,4 +1,5 @@
 // 이 파일은 레시피 재료 문자열을 정규화하고 내 재료와의 매칭률을 계산합니다.
+import { canonicalizeIngredientName } from "./ingredient-aliases.ts";
 import type { RecipeMatchResult } from "@/types";
 
 const SPLIT_PATTERN = /[\n,;|/]+/g;
@@ -26,24 +27,9 @@ export const PANTRY_STAPLES = new Set([
   "다진마늘",
 ]);
 
-const INGREDIENT_ALIAS_GROUPS: Record<string, string[]> = {
-  계란: ["달걀"],
-  파: ["대파", "쪽파", "실파", "다진파"],
-  김치: ["배추김치", "묵은지", "신김치", "익은김치"],
-  돼지고기: ["앞다리살", "뒷다리살", "목살", "삼겹살", "돼지", "제육용"],
-  닭고기: ["닭다리살", "닭가슴살", "닭안심", "닭봉", "닭날개"],
-  두부: ["부침두부", "찌개두부", "순두부"],
-  멸치육수: ["육수팩", "코인육수", "다시팩", "멸치다시마육수"],
-  간장: ["국간장", "진간장", "양조간장", "맛간장"],
-  마늘: ["다진마늘", "간마늘"],
-  고추: ["청양고추", "홍고추", "풋고추"],
-};
-
 const ALIAS_RULES: Array<[RegExp, string]> = [
   [/다진\s*마늘/g, "마늘"],
-  [/다진\s*파/g, "파"],
-  [/대파/g, "파"],
-  [/쪽파/g, "파"],
+  [/다진\s*파/g, "대파"],
   [/(청양|홍)\s*고추/g, "고추"],
   [/(진|국|양조)\s*간장/g, "간장"],
   [/설탕\s*대체/g, "설탕"],
@@ -71,14 +57,7 @@ export function normalizeKoreanIngredient(value: string): string {
     .replace(/^\d+\s*/, "")
     .replace(/\s+\d+$/, "");
 
-  const compact = normalized.replace(/\s+/g, "");
-  for (const [canonical, aliases] of Object.entries(INGREDIENT_ALIAS_GROUPS)) {
-    if (compact === canonical || aliases.some((alias) => compact === alias || compact.includes(alias))) {
-      return canonical;
-    }
-  }
-
-  return normalized;
+  return canonicalizeIngredientName(normalized);
 }
 
 function normalizeIngredientName(value: string): string {
@@ -96,6 +75,10 @@ function isSameIngredient(base: string, target: string): boolean {
     return false;
   }
   return base.includes(target) || target.includes(base);
+}
+
+export function isIngredientNameMatch(base: string, target: string): boolean {
+  return isSameIngredient(normalizeIngredientName(base), normalizeIngredientName(target));
 }
 
 export function extractRecipeIngredients(rawIngredients: string): string[] {

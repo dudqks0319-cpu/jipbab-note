@@ -10,7 +10,9 @@ import {
   getEssentialMissingIngredients,
   rankRecipeRecommendations,
 } from "../lib/matching.ts";
+import { canonicalizeIngredientName, getIngredientAliasCount } from "../lib/ingredient-aliases.ts";
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
+import { RECIPE_CATEGORIES } from "../types/index.ts";
 import {
   getReadinessBadge,
   isBeginnerVerifiedRecipe,
@@ -28,7 +30,7 @@ test("calculateRecipeIngredientMatch keeps the existing match result shape", () 
     "totalRecipeIngredients",
   ]);
   assert.equal(match.matchRate, 67);
-  assert.deepEqual(match.matchedIngredients, ["계란", "파"]);
+  assert.deepEqual(match.matchedIngredients, ["계란", "대파"]);
   assert.deepEqual(match.missingIngredients, ["간장"]);
 });
 
@@ -98,7 +100,7 @@ test("curated beginner recipes keep structured amounts and visual cues", () => {
 });
 
 test("curated recipe batch has competitive beginner coverage", () => {
-  assert.ok(CURATED_JIPBAB_RECIPES.length >= 20);
+  assert.ok(CURATED_JIPBAB_RECIPES.length >= 70);
 
   for (const recipe of CURATED_JIPBAB_RECIPES) {
     assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 4, recipe.id);
@@ -110,6 +112,23 @@ test("curated recipe batch has competitive beginner coverage", () => {
       recipe.ingredientDetails.some((ingredient) => /[0-9]/.test(ingredient.display)),
       recipe.id,
     );
+  }
+});
+
+test("easy recipe expansion adds student-friendly child and home recipes", () => {
+  const easyRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) => recipe.id.startsWith("easy-"));
+  const childRecipes = easyRecipes.filter((recipe) =>
+    recipe.category === "아이반찬" || recipe.trustLabel.includes("아이"),
+  );
+
+  assert.ok(RECIPE_CATEGORIES.includes("아이반찬"));
+  assert.equal(easyRecipes.length, 40);
+  assert.ok(childRecipes.length >= 15);
+
+  for (const recipe of easyRecipes) {
+    assert.ok(recipe.beginnerSummary?.includes("초등학생이나 중학생"), recipe.id);
+    assert.ok(recipe.steps.every((step) => step.beginnerTip && step.visualCue), recipe.id);
+    assert.ok(recipe.sourceAttribution?.includes("만개의레시피식"), recipe.id);
   }
 });
 
@@ -140,6 +159,47 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
 
     const ledgerPath = thumbnailUrl.replace(/^\/images\/recipes\//, "");
     assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
+  }
+});
+
+test("curated recipe guide images are local release-safe assets", () => {
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    assert.ok(recipe.guideImageUrl, recipe.id);
+    assert.ok(recipe.guideImageUrl.startsWith("/images/recipes/"), recipe.id);
+    assert.ok(
+      existsSync(join(process.cwd(), "public", recipe.guideImageUrl)),
+      `${recipe.id} missing ${recipe.guideImageUrl}`,
+    );
+  }
+});
+
+test("curated recipe guide images are documented in the recipe source ledger", () => {
+  const sourceLedger = readFileSync(
+    join(process.cwd(), "public/images/recipes/SOURCES.md"),
+    "utf8",
+  );
+
+  assert.match(sourceLedger, /Generated curated recipe card assets/i);
+  assert.match(sourceLedger, /jipbab-curated\/guides\/\{recipe\.id\}-recipe-card\.svg/);
+
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    assert.ok(recipe.guideImageUrl, recipe.id);
+  }
+});
+
+test("baby food category has stage-safe curated recipes", () => {
+  const babyRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) => recipe.category === "이유식");
+
+  assert.ok(RECIPE_CATEGORIES.includes("이유식"));
+  assert.ok(babyRecipes.length >= 8);
+
+  for (const recipe of babyRecipes) {
+    assert.match(recipe.name, /초기|중기|후기|완료기/);
+    assert.ok(recipe.reviewedForBeginner, recipe.id);
+    assert.ok(recipe.sourceAttribution?.includes("질병관리청"), recipe.id);
+    assert.ok(recipe.beginnerSummary?.includes("소금") || recipe.measurementTips?.some((tip) => tip.includes("소금")), recipe.id);
+    assert.ok(!recipe.ingredientList.some((item) => /꿀|소금|설탕|간장|고추장/.test(item)), recipe.id);
+    assert.ok(recipe.steps.every((step) => step.beginnerTip && step.visualCue), recipe.id);
   }
 });
 
@@ -177,6 +237,20 @@ test("Korean ingredient aliases cover common home-cooking variants", () => {
 
   assert.deepEqual(match.matchedIngredients, ["돼지고기", "김치", "멸치육수"]);
   assert.deepEqual(getEssentialMissingIngredients(match.missingIngredients), []);
+});
+
+test("ingredient alias dictionary normalizes beginner input variants", () => {
+  assert.ok(getIngredientAliasCount() >= 100);
+  assert.equal(canonicalizeIngredientName("달걀 10구"), "계란");
+  assert.equal(canonicalizeIngredientName("고추가루"), "고춧가루");
+
+  const match = calculateRecipeIngredientMatch(
+    ["달걀", "고추가루"],
+    "계란, 고춧가루",
+  );
+
+  assert.deepEqual(match.matchedIngredients, ["계란", "고춧가루"]);
+  assert.deepEqual(match.missingIngredients, []);
 });
 
 test("recommendation reason explains ready and expiring contexts in Korean", () => {
