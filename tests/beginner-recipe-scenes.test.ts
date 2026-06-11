@@ -8,6 +8,7 @@ import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
 
 const SCENE_DIR = join(process.cwd(), "public/images/recipes/beginner-scenes");
 const MANIFEST_PATH = join(SCENE_DIR, "manifest.json");
+const FOOD_PHOTO_PREFIX = "/images/recipes/beginner-food-photos/";
 
 type BeginnerSceneManifest = {
   count: number;
@@ -81,15 +82,19 @@ test("beginner recipe scene assets exist and keep release-safe rights metadata",
   }
 });
 
-test("curated beginner recipes use scene cover and step images", () => {
+test("curated beginner recipes keep scene step images and may use food-photo thumbnails", () => {
   const manifest = loadManifest();
   const coverPaths = new Set(manifest.assets.map((asset) => asset.coverPath));
   const stepPaths = new Set(manifest.assets.flatMap((asset) => asset.scenes.filter((scene) => scene.kind === "step").map((scene) => scene.path)));
 
   for (const recipe of CURATED_JIPBAB_RECIPES.filter((item) => item.id.startsWith("beginner-recipe-"))) {
     assert.ok(recipe.thumbnailUrl, recipe.id);
-    assert.ok(recipe.thumbnailUrl.startsWith("/images/recipes/beginner-scenes/"), `${recipe.id} uses ${recipe.thumbnailUrl}`);
-    assert.ok(coverPaths.has(recipe.thumbnailUrl), `${recipe.id} missing cover path`);
+    if (recipe.thumbnailUrl.startsWith(FOOD_PHOTO_PREFIX)) {
+      assert.ok(existsSync(join(process.cwd(), "public", recipe.thumbnailUrl)), `${recipe.id} missing ${recipe.thumbnailUrl}`);
+    } else {
+      assert.ok(recipe.thumbnailUrl.startsWith("/images/recipes/beginner-scenes/"), `${recipe.id} uses ${recipe.thumbnailUrl}`);
+      assert.ok(coverPaths.has(recipe.thumbnailUrl), `${recipe.id} missing cover path`);
+    }
     assert.ok(recipe.steps.length >= 4, recipe.id);
     for (const step of recipe.steps) {
       assert.ok(step.imageUrl, `${recipe.id} step ${step.index} missing imageUrl`);

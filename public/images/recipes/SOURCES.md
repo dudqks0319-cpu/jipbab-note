@@ -31,6 +31,7 @@ These images were generated in-house for Korean home-cooking recipe cards. They 
 - `jipbab-curated/spinach-namul.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
 - `jipbab-curated/kimchi-jeon.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
 - `jipbab-curated/tomato-egg-stirfry.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `beginner-food-photos/*.png`: generated in-house with the installed image generation skill for core beginner recipe thumbnails, added 2026-06-10. These are finished-dish food photos only; they are not recipe cards, posters, UI screenshots, SVG stand-ins, marketplace images, restaurant photos, blog images, or competitor assets.
 
 Contact-sheet source for the 2026-05-06 batch:
 `/Users/jyb-m3max/.codex/generated_images/019df2bf-9026-7b63-a35b-0c6f3014de26/ig_0f255b6fbfd4f4910169fb0dd6e19c8191a307ed8c93f8db98.png`.

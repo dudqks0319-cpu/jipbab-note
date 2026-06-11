@@ -175,6 +175,11 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
       assert.ok(sourceLedger.includes("beginner-scenes/{recipeSlug}/"), recipe.id);
       continue;
     }
+    if (ledgerPath.startsWith("beginner-food-photos/")) {
+      assert.ok(sourceLedger.includes("beginner-food-photos/*.png"), recipe.id);
+      assert.match(sourceLedger, /finished-dish food photos only/i);
+      continue;
+    }
     assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
   }
 });
