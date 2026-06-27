@@ -55,6 +55,9 @@ test("ingredient photos avoid misleading generic fallbacks for common confusing 
   assert.equal(getIngredientPhotoUrl("밥", "냉동식품"), "/images/ingredients/cooked-rice-shop.png");
   assert.equal(getIngredientPhotoUrl("즉석밥", "냉동식품"), "/images/ingredients/cooked-rice-shop.png");
   assert.equal(getIngredientPhotoUrl("쌀", "곡물/면/빵"), "/images/ingredients/rice-bag-shop.png");
+  assert.equal(getIngredientPhotoUrl("파", "채소"), "/images/ingredients/green-onion-shop.png");
+  assert.equal(getIngredientPhotoUrl("양파", "채소"), "/images/ingredients/onion-shop.png");
+  assert.equal(getIngredientPhotoUrl("파프리카", "채소"), "/images/ingredients/paprika-shop.png");
   assert.equal(getIngredientPhotoUrl("닭고기", "육류"), "/images/ingredients/chicken-raw-photo.png");
   assert.equal(getIngredientPhotoUrl("참치", "수산물"), "/images/ingredients/tuna-raw-photo.png");
   assert.equal(getIngredientPhotoUrl("문어", "수산물"), "/images/ingredients/octopus-photo.png");

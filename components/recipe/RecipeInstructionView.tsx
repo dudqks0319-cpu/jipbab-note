@@ -42,6 +42,7 @@ function getHeatLabel(step: RecipeDetailStep): string | null {
 
 export default function RecipeInstructionView({ recipeName, steps }: RecipeInstructionViewProps) {
   const [mode, setMode] = useState<InstructionMode>("list");
+  const hasAnyStepImage = steps.some((step) => Boolean(step.imageUrl));
 
   if (steps.length === 0) {
     return null;
@@ -73,30 +74,53 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
         </div>
       </div>
 
-      <ol className={mode === "compact" ? "mt-7 grid gap-4" : "mt-7 space-y-12"}>
+      <ol className={mode === "compact" ? "mt-6 grid gap-3" : hasAnyStepImage ? "mt-7 space-y-12" : "mt-6 space-y-8"}>
         {steps.map((step) => {
           const tools = getStepTools(step);
           const heatLabel = getHeatLabel(step);
           const showMediaColumn = mode !== "text" && Boolean(step.imageUrl);
           const gridClassName = showMediaColumn
             ? "grid grid-cols-[38px_minmax(0,1fr)_112px] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)_128px]"
-            : "grid grid-cols-[38px_minmax(0,1fr)] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)]";
+            : "grid grid-cols-[34px_minmax(0,1fr)] gap-3 min-[390px]:grid-cols-[38px_minmax(0,1fr)]";
+          const textClassName = showMediaColumn
+            ? "break-keep text-[21px] font-medium leading-[1.58] tracking-normal text-[#2d2d2d] min-[390px]:text-[23px] [overflow-wrap:anywhere]"
+            : "break-keep text-[18px] font-semibold leading-[1.62] tracking-normal text-[#2d2d2d] min-[390px]:text-[19px] [overflow-wrap:anywhere]";
+          const metaClassName = showMediaColumn
+            ? "mt-5 space-y-1.5 text-[16px] font-semibold leading-6 text-[#79a967]"
+            : "mt-4 flex flex-wrap gap-1.5 text-[11px] font-black leading-4 text-[#5f8f4f]";
+          const noteClassName = showMediaColumn
+            ? "ml-[54px] mt-4 space-y-2 rounded-[8px] bg-[#f8f5f0] px-3 py-3 text-[13px] font-semibold leading-5 text-[#6f655b] min-[390px]:ml-[58px]"
+            : "mt-3 space-y-2 rounded-[8px] bg-[#f8f5f0] px-3 py-3 text-[12px] font-semibold leading-5 text-[#6f655b] min-[390px]:text-[13px]";
 
           return (
             <li key={step.index} className={mode === "compact" ? "rounded-[8px] border border-[#ece8e2] p-4" : ""}>
               <div className={gridClassName}>
-                <span className="pt-0.5 text-[30px] font-black leading-none text-[#2b2b2b]">{step.index}</span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#f3eadf] text-[18px] font-black leading-none text-[#2b2b2b] min-[390px]:h-9 min-[390px]:w-9">
+                  {step.index}
+                </span>
                 <div className="min-w-0">
                   {step.title ? (
                     <p className="mb-1 text-[13px] font-black text-[#6b9d53]">{step.title}</p>
                   ) : null}
-                  <p className="break-keep text-[21px] font-medium leading-[1.58] tracking-normal text-[#2d2d2d] min-[390px]:text-[23px]">
+                  <p className={textClassName}>
                     {mode === "compact" ? step.action || step.description.split(".")[0] : step.action || step.description}
                   </p>
-                  <div className="mt-5 space-y-1.5 text-[16px] font-semibold leading-6 text-[#79a967]">
-                    {tools.length > 0 ? <p className="break-keep">• {tools.join(" , ")}</p> : null}
-                    {heatLabel ? <p className="break-keep">• {heatLabel}</p> : null}
-                    {step.minutes ? <p className="break-keep">• {step.minutes}분</p> : null}
+                  <div className={metaClassName}>
+                    {tools.length > 0 ? (
+                      <p className={showMediaColumn ? "break-keep" : "rounded-full bg-[#eef6df] px-2 py-1"}>
+                        {showMediaColumn ? `• ${tools.join(" · ")}` : tools.join(" · ")}
+                      </p>
+                    ) : null}
+                    {heatLabel ? (
+                      <p className={showMediaColumn ? "break-keep" : "rounded-full bg-[#eef6df] px-2 py-1"}>
+                        {showMediaColumn ? `• ${heatLabel}` : heatLabel}
+                      </p>
+                    ) : null}
+                    {step.minutes ? (
+                      <p className={showMediaColumn ? "break-keep" : "rounded-full bg-[#eef6df] px-2 py-1"}>
+                        {showMediaColumn ? `• ${step.minutes}분` : `${step.minutes}분`}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 {showMediaColumn && step.imageUrl ? (
@@ -109,7 +133,7 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                 ) : null}
               </div>
               {mode !== "compact" && (step.visualCue || step.beginnerTip) ? (
-                <div className="ml-[54px] mt-4 space-y-2 rounded-[8px] bg-[#f8f5f0] px-3 py-3 text-[13px] font-semibold leading-5 text-[#6f655b] min-[390px]:ml-[58px]">
+                <div className={noteClassName}>
                   {step.visualCue ? <p>눈으로 확인: {step.visualCue}</p> : null}
                   {step.beginnerTip ? <p>초보 팁: {step.beginnerTip}</p> : null}
                 </div>

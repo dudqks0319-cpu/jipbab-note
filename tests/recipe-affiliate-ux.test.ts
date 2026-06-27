@@ -27,8 +27,11 @@ test("recipe shopping assistant only shows partner cards for missing ingredients
 test("recipe instruction view only renders media when a step image exists", () => {
   const instructionView = readFileSync("components/recipe/RecipeInstructionView.tsx", "utf8");
 
+  assert.match(instructionView, /hasAnyStepImage/);
   assert.match(instructionView, /Boolean\(step\.imageUrl\)/);
   assert.doesNotMatch(instructionView, /사진 준비중/);
+  assert.match(instructionView, /\[overflow-wrap:anywhere\]/);
+  assert.match(instructionView, /rounded-full bg-\[#eef6df\]/);
   assert.match(instructionView, /step\.imageAlt/);
   assert.match(instructionView, /RecipeImage/);
 });

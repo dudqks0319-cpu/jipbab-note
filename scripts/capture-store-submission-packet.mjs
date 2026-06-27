@@ -104,7 +104,7 @@ function manifestFor(copiedFiles, assetCheckOutput) {
     `- Output directory: ${outDir}`,
     "- Upload behavior: this command does not upload to App Store Connect or Google Play.",
     "- Source asset gate: `node scripts/check-store-assets.mjs` passed before copying files.",
-    `- App Store target: bundle ID \`com.jipbab.note\`, build \`${iosBuild}\`.`,
+    "- App Store target: bundle ID `com.jipbab.note`, build `" + iosBuild + "`.",
     "- Google Play target: package `com.jipbab.note`, internal testing track before production.",
     "",
     "## Store Asset Check",

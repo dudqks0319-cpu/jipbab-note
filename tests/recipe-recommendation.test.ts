@@ -20,6 +20,8 @@ import {
   matchesRecipeListFilters,
   sortRecipeListRecipes,
 } from "../lib/recipe-list-filters.ts";
+import { suggestIngredientCategory } from "../lib/ingredient-category.ts";
+import { getIngredientPhotoUrl } from "../lib/utils.ts";
 
 const DISALLOWED_STEP_IMAGE_PATTERNS = [
   /\/beginner-scenes\//,
@@ -179,6 +181,49 @@ test("curated recipe instruction steps do not require unverified images", () => 
         `${recipe.id} step ${step.index} missing ${step.imageUrl}`,
       );
     }
+  }
+});
+
+test("all curated recipe and ingredient image references resolve to local assets", () => {
+  const imageRefs: Array<{ owner: string; url: string }> = [];
+
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    for (const [field, url] of Object.entries({
+      thumbnailUrl: recipe.thumbnailUrl,
+      recipePosterImageUrl: recipe.recipePosterImageUrl,
+      recipeGuideImageUrl: recipe.recipeGuideImageUrl,
+      recipePrepImageUrl: recipe.recipePrepImageUrl,
+      recipeStepsImageUrl: recipe.recipeStepsImageUrl,
+    })) {
+      if (url) {
+        imageRefs.push({ owner: `${recipe.id}.${field}`, url });
+      }
+    }
+
+    for (const step of recipe.steps) {
+      if (step.imageUrl) {
+        imageRefs.push({ owner: `${recipe.id}.step.${step.index}`, url: step.imageUrl });
+      }
+    }
+
+    const ingredients = recipe.ingredientDetails?.length
+      ? recipe.ingredientDetails.map((ingredient) => ingredient.name)
+      : recipe.ingredientList;
+    for (const ingredientName of ingredients) {
+      const category = suggestIngredientCategory(ingredientName, "채소");
+      const url = getIngredientPhotoUrl(ingredientName, category);
+      imageRefs.push({ owner: `${recipe.id}.ingredient.${ingredientName}`, url });
+
+      if (url.includes("dumpling-shop")) {
+        assert.match(ingredientName, /만두/, `${recipe.id} maps ${ingredientName} to dumpling image`);
+      }
+    }
+  }
+
+  assert.ok(imageRefs.length > 700, "expected broad recipe and ingredient image coverage");
+  for (const { owner, url } of imageRefs) {
+    assert.ok(url.startsWith("/images/"), `${owner} uses non-local image ${url}`);
+    assert.ok(existsSync(join(process.cwd(), "public", url)), `${owner} missing ${url}`);
   }
 });
 

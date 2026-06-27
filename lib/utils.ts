@@ -22,7 +22,7 @@ const mapIngredientPhotos = (
 // 재료명과 별칭을 같은 쇼핑형 썸네일로 연결합니다.
 const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos([
   [['양파', '흰양파', '적양파'], 'onion-shop.png'],
-  [['대파', '쪽파'], 'green-onion-shop.png'],
+  [['파', '대파', '쪽파'], 'green-onion-shop.png'],
   [['계란', '달걀'], 'egg-shop.png'],
   [['두부', '연두부', '순두부'], 'tofu-shop.png'],
   [['마늘', '통마늘', '깐마늘', '다진마늘', '다진 마늘'], 'garlic-shop.png'],
