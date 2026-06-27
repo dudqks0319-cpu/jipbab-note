@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import test from "node:test";
 
@@ -32,29 +32,20 @@ function getMappedImagegenPosterSlugs(): string[] {
   return slugs.sort((left, right) => left.localeCompare(right, "en"));
 }
 
-test("every generated imagegen poster on disk is mapped into curated recipes", () => {
-  const mappedSlugs = new Set(getMappedImagegenPosterSlugs());
+test("generated imagegen poster assets stay unexposed until instruction imagery is verified", () => {
+  const diskSlugs = getImagegenPosterSlugsOnDisk();
 
-  for (const slug of getImagegenPosterSlugsOnDisk()) {
-    assert.ok(mappedSlugs.has(slug), `${slug}.png exists but is not exposed through recipePosterImageUrl`);
-  }
+  assert.ok(diskSlugs.length > 0, "expected generated poster assets to remain archived on disk");
+  assert.deepEqual(getMappedImagegenPosterSlugs(), []);
 });
 
-test("mapped imagegen poster paths point to local png assets", () => {
+test("beginner recipes do not expose imagegen poster paths while step visuals are disabled", () => {
   for (const recipe of CURATED_JIPBAB_RECIPES) {
     const slug = recipe.slug;
-    if (
-      typeof slug !== "string" ||
-      !slug.startsWith("beginner-") ||
-      !recipe.recipePosterImageUrl?.startsWith(IMAGEGEN_POSTER_PUBLIC_PREFIX)
-    ) {
+    if (typeof slug !== "string" || !slug.startsWith("beginner-")) {
       continue;
     }
 
-    assert.equal(recipe.recipePosterImageUrl, `${IMAGEGEN_POSTER_PUBLIC_PREFIX}${slug}.png`);
-    assert.ok(
-      existsSync(join(process.cwd(), "public", recipe.recipePosterImageUrl)),
-      `${slug} is mapped to a missing imagegen poster`,
-    );
+    assert.equal(recipe.recipePosterImageUrl, null, `${slug} should not expose an unverified imagegen poster`);
   }
 });

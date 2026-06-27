@@ -53,6 +53,8 @@ const JIPBAB_ORIGINAL_SAFETY: BeginnerRecipeSafety = {
   adaptedByJipbabNote: true,
 };
 
+const BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED = false;
+
 const IMAGEGEN_RECIPE_POSTER_SLUGS = new Set([
   "beginner-001",
   "beginner-002",
@@ -1022,22 +1024,28 @@ function getBeginnerRecipeThumbnail(recipe: BeginnerRecipe): string {
   return BEGINNER_FOOD_PHOTO_THUMBNAILS.get(recipe.slug) ?? `/images/recipes/beginner-scenes/${recipe.slug}/cover.svg`;
 }
 
-function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string {
-  return `/images/recipes/beginner-recipe-guides/${recipe.slug}.png`;
+function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string | null {
+  return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED
+    ? `/images/recipes/beginner-recipe-guides/${recipe.slug}.png`
+    : null;
 }
 
 function getBeginnerRecipePosterImage(recipe: BeginnerRecipe): string | null {
-  return IMAGEGEN_RECIPE_POSTER_SLUGS.has(recipe.slug)
+  return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED && IMAGEGEN_RECIPE_POSTER_SLUGS.has(recipe.slug)
     ? `/images/recipes/beginner-imagegen-posters/${recipe.slug}.png`
     : null;
 }
 
-function getBeginnerRecipePrepImage(recipe: BeginnerRecipe): string {
-  return `/images/recipes/beginner-recipe-guides/prep/${recipe.slug}.png`;
+function getBeginnerRecipePrepImage(recipe: BeginnerRecipe): string | null {
+  return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED
+    ? `/images/recipes/beginner-recipe-guides/prep/${recipe.slug}.png`
+    : null;
 }
 
-function getBeginnerRecipeStepsImage(recipe: BeginnerRecipe): string {
-  return `/images/recipes/beginner-recipe-guides/steps/${recipe.slug}.png`;
+function getBeginnerRecipeStepsImage(recipe: BeginnerRecipe): string | null {
+  return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED
+    ? `/images/recipes/beginner-recipe-guides/steps/${recipe.slug}.png`
+    : null;
 }
 
 function getBeginnerRecipeMethod(recipe: BeginnerRecipe): string {

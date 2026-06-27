@@ -182,7 +182,7 @@ test("curated recipe instruction steps do not require unverified images", () => 
   }
 });
 
-test("curated beginner recipes expose local recipe guide images", () => {
+test("curated beginner recipes keep unverified visual guide images disabled", () => {
   const beginnerRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) =>
     recipe.slug?.startsWith("beginner-"),
   );
@@ -197,37 +197,9 @@ test("curated beginner recipes expose local recipe guide images", () => {
   assert.ok(sourceLedger.includes("beginner-recipe-guides/steps/*.png"));
 
   for (const recipe of beginnerRecipes) {
-    const guideImageUrl = recipe.recipeGuideImageUrl;
-    const prepImageUrl = recipe.recipePrepImageUrl;
-    const stepsImageUrl = recipe.recipeStepsImageUrl;
-
-    assert.ok(guideImageUrl, recipe.id);
-    assert.ok(prepImageUrl, recipe.id);
-    assert.ok(stepsImageUrl, recipe.id);
-    assert.ok(
-      guideImageUrl.startsWith("/images/recipes/beginner-recipe-guides/"),
-      recipe.id,
-    );
-    assert.ok(
-      prepImageUrl.startsWith("/images/recipes/beginner-recipe-guides/prep/"),
-      recipe.id,
-    );
-    assert.ok(
-      stepsImageUrl.startsWith("/images/recipes/beginner-recipe-guides/steps/"),
-      recipe.id,
-    );
-    assert.ok(
-      existsSync(join(process.cwd(), "public", guideImageUrl)),
-      `${recipe.id} missing ${guideImageUrl}`,
-    );
-    assert.ok(
-      existsSync(join(process.cwd(), "public", prepImageUrl)),
-      `${recipe.id} missing ${prepImageUrl}`,
-    );
-    assert.ok(
-      existsSync(join(process.cwd(), "public", stepsImageUrl)),
-      `${recipe.id} missing ${stepsImageUrl}`,
-    );
+    assert.equal(recipe.recipeGuideImageUrl, null, `${recipe.id} should not expose an unverified guide image`);
+    assert.equal(recipe.recipePrepImageUrl, null, `${recipe.id} should not expose an unverified prep image`);
+    assert.equal(recipe.recipeStepsImageUrl, null, `${recipe.id} should not expose an unverified steps image`);
   }
 });
 

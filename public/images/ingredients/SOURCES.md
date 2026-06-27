@@ -28,6 +28,7 @@ This folder contains two asset groups:
 - `soy-sauce-shop.png`: generated for a Korean shopping thumbnail style, white background, unbranded soy sauce bottle
 - `tuna-can-shop.png`: generated for a Korean shopping thumbnail style, white background, unbranded tuna can
 - `rice-bag-shop.png`: generated for a Korean shopping thumbnail style, white background, plain rice bag
+- `cooked-rice-shop.png`: generated for a Korean shopping thumbnail style, white background, plain cooked white rice in a ceramic bowl
 - `kimchi-shop.png`: generated for a Korean shopping thumbnail style, white background, plain kimchi package/container
 - `water-bottle-shop.png`: generated for a Korean shopping thumbnail style, white background, plain bottled water
 

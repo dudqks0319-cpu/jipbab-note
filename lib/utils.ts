@@ -130,6 +130,7 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
   [['잼', '딸기잼', '블루베리잼'], 'jam-shop.png'],
   [['토마토소스', '파스타소스'], 'pasta-sauce-shop.png'],
 
+  [['밥', '즉석밥', '공기밥', '흰밥', '쌀밥', '찬밥'], 'cooked-rice-shop.png'],
   [['쌀', '현미'], 'rice-bag-shop.png'],
   [['밀가루'], 'flour-shop.png'],
   [['전분', '감자전분', '옥수수전분'], 'starch-powder-photo.png'],
