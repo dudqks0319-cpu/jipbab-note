@@ -9,6 +9,26 @@ let clientCache: SupabaseClient | null = null;
 let latestDeviceId: string | null = null;
 const PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const LEGACY_SUPABASE_AUTH_KEYS = ["supabase.auth.token"];
+
+function isSupabaseAuthStorageKey(key: string): boolean {
+  return key.startsWith("sb-") && key.includes("-auth-token");
+}
+
+function removeSupabaseAuthKeys(storage: Storage): void {
+  const keysToRemove = new Set<string>(LEGACY_SUPABASE_AUTH_KEYS);
+
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (key && isSupabaseAuthStorageKey(key)) {
+      keysToRemove.add(key);
+    }
+  }
+
+  for (const key of keysToRemove) {
+    storage.removeItem(key);
+  }
+}
 
 function getRequiredSupabaseEnv() {
   if (!PUBLIC_SUPABASE_URL) {
@@ -66,4 +86,20 @@ export function getSupabaseClient(options?: SupabaseClientOptions): SupabaseClie
 
   clientCache = client;
   return client;
+}
+
+export function clearSupabaseAuthStorage(storageTargets?: Storage[]): void {
+  const targets = storageTargets ?? (
+    typeof window !== "undefined"
+      ? [window.localStorage, window.sessionStorage]
+      : []
+  );
+
+  for (const storage of targets) {
+    try {
+      removeSupabaseAuthKeys(storage);
+    } catch {
+      continue;
+    }
+  }
 }

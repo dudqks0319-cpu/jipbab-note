@@ -53,15 +53,15 @@
 
 최신 로컬 브라우저 확인:
 
-- `/Users/jyb-m3max/Desktop/codex/jipbab-home-360-beginner-family.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-home-390-beginner-family.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-home-430-beginner-family.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-cook-360.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-cook-390.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-cook-430.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-shopping-360.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-shopping-390.png`
-- `/Users/jyb-m3max/Desktop/codex/jipbab-recipe-detail-shopping-430.png`
+- `<workspace>/jipbab-home-360-beginner-family.png`
+- `<workspace>/jipbab-home-390-beginner-family.png`
+- `<workspace>/jipbab-home-430-beginner-family.png`
+- `<workspace>/jipbab-recipe-detail-cook-360.png`
+- `<workspace>/jipbab-recipe-detail-cook-390.png`
+- `<workspace>/jipbab-recipe-detail-cook-430.png`
+- `<workspace>/jipbab-recipe-detail-shopping-360.png`
+- `<workspace>/jipbab-recipe-detail-shopping-390.png`
+- `<workspace>/jipbab-recipe-detail-shopping-430.png`
 
 확인 화면:
 

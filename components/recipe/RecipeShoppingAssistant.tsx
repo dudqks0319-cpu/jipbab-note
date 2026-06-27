@@ -118,6 +118,10 @@ export default function RecipeShoppingAssistant({
     () => match.missingIngredients.filter((ingredient) => !shoppingNames.has(ingredient.trim().toLowerCase())),
     [match.missingIngredients, shoppingNames],
   );
+  const selectableMissingIngredientKey = useMemo(
+    () => selectableMissingIngredients.join("\u001f"),
+    [selectableMissingIngredients],
+  );
   const affiliateSuggestions = useMemo(
     () =>
       match.missingIngredients
@@ -179,10 +183,21 @@ export default function RecipeShoppingAssistant({
   };
 
   useEffect(() => {
-    setSelectedMissingNames(new Set(selectableMissingIngredients));
+    const nextNames = selectableMissingIngredientKey
+      ? selectableMissingIngredientKey.split("\u001f")
+      : [];
+    setSelectedMissingNames((prev) => {
+      if (
+        prev.size === nextNames.length
+        && nextNames.every((ingredient) => prev.has(ingredient))
+      ) {
+        return prev;
+      }
+      return new Set(nextNames);
+    });
     setStatusMessage("");
     setActionError("");
-  }, [activeScope, selectableMissingIngredients]);
+  }, [activeScope, selectableMissingIngredientKey]);
 
   const toggleMissingIngredient = (ingredient: string) => {
     setSelectedMissingNames((prev) => {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:mobile": "next dev --webpack --port 3002",
+    "prebuild": "node --experimental-strip-types scripts/build-ingredients-catalog.mjs",
     "build": "next build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -25,6 +26,8 @@
     "check:core-loop-release": "node scripts/check-core-loop-release.mjs",
     "check:local-mode-release": "node scripts/check-local-mode-release.mjs",
     "check:real-device-availability": "node scripts/check-real-device-availability.mjs",
+    "check:ios-cable-qa": "node scripts/check-ios-cable-qa-evidence.mjs",
+    "check:ios-xcuitest-smoke": "node scripts/check-ios-xcuitest-smoke-evidence.mjs",
     "check:real-device-qa-evidence": "node scripts/check-real-device-qa-evidence.mjs",
     "check:store-console-confirmation": "node scripts/check-store-console-confirmation.mjs",
     "check:cloudflare-config": "node scripts/check-cloudflare-config.mjs",
@@ -120,7 +123,7 @@
       "postcss": "8.5.10",
       "uuid": "14.0.0",
       "tar": "7.5.11",
-      "ws": "8.20.1"
+      "ws": "8.21.0"
     }
   }
 }

@@ -42,6 +42,13 @@ export type IngredientUnitSystem = (typeof INGREDIENT_UNIT_SYSTEMS)[number];
 
 export type IngredientUnit = (typeof INGREDIENT_UNITS)[number];
 
+export type LocalSyncStatus =
+  | "synced"
+  | "pending_create"
+  | "pending_update"
+  | "pending_delete"
+  | "conflict";
+
 export interface IngredientCatalogItem {
   id: string;
   category: IngredientCategory;
@@ -74,6 +81,9 @@ export interface IngredientRecord {
   memo: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
+  syncStatus?: LocalSyncStatus;
+  lastSyncedAt?: string | null;
 }
 
 export interface IngredientFormPayload {
@@ -156,6 +166,9 @@ export interface ShoppingItem {
   sourceRecipeName: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
+  syncStatus?: LocalSyncStatus;
+  lastSyncedAt?: string | null;
 }
 
 export interface ShoppingItemDraft {
@@ -463,6 +476,10 @@ export interface RecipeDetailRecord extends RecipeRecord {
   safety?: BeginnerRecipeSafety | null;
   imageAlt?: string | null;
   imageCaption?: string | null;
+  recipePosterImageUrl?: string | null;
+  recipeGuideImageUrl?: string | null;
+  recipePrepImageUrl?: string | null;
+  recipeStepsImageUrl?: string | null;
   sourceProvider?: string | null;
   sourceExternalId?: string | null;
   sourceUrl?: string | null;

@@ -53,6 +53,129 @@ const JIPBAB_ORIGINAL_SAFETY: BeginnerRecipeSafety = {
   adaptedByJipbabNote: true,
 };
 
+const IMAGEGEN_RECIPE_POSTER_SLUGS = new Set([
+  "beginner-001",
+  "beginner-002",
+  "beginner-003",
+  "beginner-004",
+  "beginner-005",
+  "beginner-006",
+  "beginner-007",
+  "beginner-008",
+  "beginner-009",
+  "beginner-010",
+  "beginner-011",
+  "beginner-012",
+  "beginner-013",
+  "beginner-014",
+  "beginner-015",
+  "beginner-016",
+  "beginner-017",
+  "beginner-018",
+  "beginner-019",
+  "beginner-020",
+  "beginner-021",
+  "beginner-022",
+  "beginner-023",
+  "beginner-024",
+  "beginner-025",
+  "beginner-026",
+  "beginner-027",
+  "beginner-028",
+  "beginner-029",
+  "beginner-030",
+  "beginner-031",
+  "beginner-032",
+  "beginner-033",
+  "beginner-034",
+  "beginner-035",
+  "beginner-036",
+  "beginner-037",
+  "beginner-038",
+  "beginner-039",
+  "beginner-040",
+  "beginner-041",
+  "beginner-042",
+  "beginner-043",
+  "beginner-044",
+  "beginner-045",
+  "beginner-046",
+  "beginner-047",
+  "beginner-048",
+  "beginner-049",
+  "beginner-050",
+  "beginner-051",
+  "beginner-052",
+  "beginner-053",
+  "beginner-054",
+  "beginner-055",
+  "beginner-056",
+  "beginner-057",
+  "beginner-058",
+  "beginner-059",
+  "beginner-060",
+  "beginner-061",
+  "beginner-062",
+  "beginner-063",
+  "beginner-064",
+  "beginner-065",
+  "beginner-066",
+  "beginner-067",
+  "beginner-068",
+  "beginner-069",
+  "beginner-070",
+  "beginner-071",
+  "beginner-072",
+  "beginner-073",
+  "beginner-074",
+  "beginner-075",
+  "beginner-076",
+  "beginner-077",
+  "beginner-078",
+  "beginner-079",
+  "beginner-080",
+  "beginner-081",
+  "beginner-082",
+  "beginner-083",
+  "beginner-084",
+  "beginner-085",
+  "beginner-086",
+  "beginner-087",
+  "beginner-088",
+  "beginner-089",
+  "beginner-090",
+  "beginner-091",
+  "beginner-092",
+  "beginner-093",
+  "beginner-094",
+  "beginner-095",
+  "beginner-096",
+  "beginner-097",
+  "beginner-098",
+  "beginner-099",
+  "beginner-100",
+  "beginner-101",
+  "beginner-102",
+  "beginner-103",
+  "beginner-104",
+  "beginner-105",
+  "beginner-106",
+  "beginner-107",
+  "beginner-108",
+  "beginner-109",
+  "beginner-110",
+  "beginner-111",
+  "beginner-112",
+  "beginner-113",
+  "beginner-114",
+  "beginner-115",
+  "beginner-116",
+  "beginner-117",
+  "beginner-118",
+  "beginner-119",
+  "beginner-120",
+]);
+
 const NO_FIRE_METHODS = new Set(["비비기", "무치기"]);
 
 const inferRequiredTools = (recipe: CuratedRecipe): string[] => {
@@ -901,6 +1024,24 @@ function getBeginnerRecipeStepImage(recipe: BeginnerRecipe, order: number): stri
   return `/images/recipes/beginner-scenes/${recipe.slug}/step-${String(order).padStart(2, "0")}.svg`;
 }
 
+function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string {
+  return `/images/recipes/beginner-recipe-guides/${recipe.slug}.png`;
+}
+
+function getBeginnerRecipePosterImage(recipe: BeginnerRecipe): string | null {
+  return IMAGEGEN_RECIPE_POSTER_SLUGS.has(recipe.slug)
+    ? `/images/recipes/beginner-imagegen-posters/${recipe.slug}.png`
+    : null;
+}
+
+function getBeginnerRecipePrepImage(recipe: BeginnerRecipe): string {
+  return `/images/recipes/beginner-recipe-guides/prep/${recipe.slug}.png`;
+}
+
+function getBeginnerRecipeStepsImage(recipe: BeginnerRecipe): string {
+  return `/images/recipes/beginner-recipe-guides/steps/${recipe.slug}.png`;
+}
+
 function getBeginnerRecipeMethod(recipe: BeginnerRecipe): string {
   if (recipe.requiredTools.includes("전자레인지")) return "전자레인지";
   if (recipe.requiredTools.includes("냄비")) return "끓이기";
@@ -925,6 +1066,10 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
     method: getBeginnerRecipeMethod(recipe),
     calories: "-",
     thumbnailUrl: getBeginnerRecipeThumbnail(recipe),
+    recipePosterImageUrl: getBeginnerRecipePosterImage(recipe),
+    recipeGuideImageUrl: getBeginnerRecipeGuideImage(recipe),
+    recipePrepImageUrl: getBeginnerRecipePrepImage(recipe),
+    recipeStepsImageUrl: getBeginnerRecipeStepsImage(recipe),
     ingredients: requiredIngredients.map((ingredientItem) => ingredientItem.name).join(", "),
     hashTag: "#초보가능 #집밥노트 #냉장고추천",
     ingredientList: requiredIngredients.map((ingredientItem) => ingredientItem.name),
@@ -2332,6 +2477,10 @@ function mergeBeginnerContractIntoLegacyRecipe(recipe: BeginnerRecipe, legacy: C
     slug: recipe.slug,
     title: recipe.title,
     thumbnailUrl: getBeginnerRecipeThumbnail(recipe),
+    recipePosterImageUrl: getBeginnerRecipePosterImage(recipe),
+    recipeGuideImageUrl: getBeginnerRecipeGuideImage(recipe),
+    recipePrepImageUrl: getBeginnerRecipePrepImage(recipe),
+    recipeStepsImageUrl: getBeginnerRecipeStepsImage(recipe),
     steps: legacy.steps.map((step, index) => ({
       ...step,
       imageUrl: getBeginnerRecipeStepImage(recipe, step.order ?? step.index ?? index + 1),

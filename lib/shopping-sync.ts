@@ -1,5 +1,6 @@
 // 이 파일은 장보기 목록의 로컬/원격 동기화 병합 규칙을 관리합니다.
 import type { ShoppingItem } from "../types/index.ts";
+import { shouldKeepLocalRecord } from "./sync/conflict-policy.ts";
 
 function toTime(value: string): number {
   const time = Date.parse(value);
@@ -32,7 +33,14 @@ export function mergeShoppingItems(
 
   for (const item of remoteItems) {
     const current = byId.get(item.id);
-    if (!current || toTime(item.updatedAt) >= toTime(current.updatedAt)) {
+    if (
+      !current ||
+      !shouldKeepLocalRecord({
+        localStatus: current.syncStatus,
+        localUpdatedAt: current.updatedAt,
+        remoteUpdatedAt: item.updatedAt,
+      })
+    ) {
       byId.set(item.id, item);
     }
   }

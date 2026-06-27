@@ -3,7 +3,7 @@
 이 문서는 코드/백엔드 게이트가 통과한 뒤에도 남는 외부 차단을 해제하는 순서입니다.
 아래 항목은 실제 콘솔, 실제 기기, 실제 계정 상태를 봐야 하므로 확인 전에는 `confirmed`로 바꾸지 않습니다.
 
-Latest evidence packet: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/release-evidence/2026-05-27T03-46-27-019Z` captured on 2026-05-27 12:46 KST. It preserves the current external-status, real-device availability, real-device QA evidence, and store-console confirmation outputs; review it for screenshots, account names, device identifiers, and other sensitive details before sharing.
+Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z` captured on 2026-05-27 12:46 KST. It preserves the current external-status, real-device availability, real-device QA evidence, and store-console confirmation outputs; review it for screenshots, account names, device identifiers, and other sensitive details before sharing.
 
 ## 현재 차단
 
@@ -11,9 +11,9 @@ Latest evidence packet: `/Users/jyb-m3max/Desktop/codex/jipbab-note/output/relea
 - Supabase Storage path policy: production Storage에서 `community-images` guest cross-prefix upload가 아직 성공합니다. `20260526093000_harden_community_image_storage.sql` 적용과 Storage policy cache 반영 확인이 필요합니다.
 - 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
 - Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
-- App Store Connect/TestFlight: 최신 `pnpm release:external-status`에서는 PASS입니다. 다만 제출 직전에는 `pnpm check:store-console-confirmation` 또는 App Store Connect API로 build `2026052001`과 내부 TestFlight 그룹을 다시 확인합니다.
+- App Store Connect/TestFlight: 최신 `pnpm check:store-console-confirmation -- --platform=appstore`에서는 build `2026060803`이 PASS입니다. 다만 제출 직전에는 같은 명령 또는 App Store Connect API로 현재 build와 내부 TestFlight 그룹을 다시 확인합니다.
 
-브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
+브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](<repo>/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
 
 ## 0. Supabase live schema/RLS 해제
 
@@ -86,7 +86,7 @@ pnpm release:capture-ios-real-device-qa
 - 계정 삭제 요청 화면 접근
 - 오류 화면에 raw error, stack trace, env 이름 미노출
 
-완료 후 [real-device-qa.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/real-device-qa.md)에 `confirmed`, evidence date, evidence artifacts를 실제 증거 기준으로만 갱신합니다.
+완료 후 [real-device-qa.md](<repo>/docs/real-device-qa.md)에 `confirmed`, evidence date, evidence artifacts를 실제 증거 기준으로만 갱신합니다.
 
 ## 2. App Store Connect/TestFlight 재확인
 
@@ -97,10 +97,10 @@ pnpm release:capture-ios-real-device-qa
 - JipbabNote 앱 레코드를 엽니다.
 - 직접 URL: `https://appstoreconnect.apple.com/teams/d0f73d2e-b3a6-49ef-938f-4639fea25fee/apps/6762567054/testflight/ios`
 - 앱 메뉴가 `jipbab-note`인지 확인합니다.
-- iOS build `2026052001` 처리 완료 상태를 확인합니다.
+- iOS build `2026060803` 처리 완료 상태를 확인합니다.
 - 내부 테스터 그룹이 이 빌드를 설치할 수 있는지 확인합니다.
 
-완료 후 [store-console-confirmation.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
+완료 후 [store-console-confirmation.md](<repo>/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
 
 - `App Store Connect/TestFlight: confirmed`
 - `TestFlight processing: confirmed`
@@ -119,7 +119,7 @@ pnpm release:capture-ios-real-device-qa
 - 서명된 `android/app/build/outputs/bundle/release/app-release.aab`를 내부 테스트 트랙에 업로드합니다.
 - 내부 테스트 트랙이 생성되고 처리/사용 가능한 상태인지 확인합니다.
 
-완료 후 [store-console-confirmation.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
+완료 후 [store-console-confirmation.md](<repo>/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
 
 - `Play Console internal testing: confirmed`
 - `AAB upload: confirmed`

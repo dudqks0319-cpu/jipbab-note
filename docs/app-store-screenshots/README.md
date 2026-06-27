@@ -2,26 +2,26 @@
 
 기본 캡처 세트와 제출 규격 변환본은 아래 폴더에 있습니다.
 
-- [`2026-04-21-iphone17`](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-04-21-iphone17)
-- [`2026-05-19-iphone69`](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69) - App Store 6.9형 portrait 규격 변환본, 1290x2796
+- [`2026-04-21-iphone17`](<repo>/docs/app-store-screenshots/2026-04-21-iphone17)
+- [`2026-05-19-iphone69`](<repo>/docs/app-store-screenshots/2026-05-19-iphone69) - App Store 6.9형 portrait 규격 변환본, 1290x2796
 
 ## 권장 업로드 순서
 
-1. [01-home.png](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69/01-home.png)
+1. [01-home.png](<repo>/docs/app-store-screenshots/2026-05-19-iphone69/01-home.png)
    - 메시지: 냉장고 재료로 오늘의 집밥을 바로 찾으세요
-2. [02-fridge.png](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69/02-fridge.png)
+2. [02-fridge.png](<repo>/docs/app-store-screenshots/2026-05-19-iphone69/02-fridge.png)
    - 메시지: 재료를 카테고리별로 한눈에 관리
-3. [03-recipe.png](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69/03-recipe.png)
+3. [03-recipe.png](<repo>/docs/app-store-screenshots/2026-05-19-iphone69/03-recipe.png)
    - 메시지: 내 냉장고 재료로 먼저 추천
-4. [04-recipe-detail.png](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69/04-recipe-detail.png)
+4. [04-recipe-detail.png](<repo>/docs/app-store-screenshots/2026-05-19-iphone69/04-recipe-detail.png)
    - 메시지: 부족한 재료까지 바로 확인
-5. [05-shopping.png](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/app-store-screenshots/2026-05-19-iphone69/05-shopping.png)
+5. [05-shopping.png](<repo>/docs/app-store-screenshots/2026-05-19-iphone69/05-shopping.png)
    - 메시지: 장보기 목록으로 이어서 관리
 
 ## Google Play 자산
 
-- 휴대전화 스크린샷: [`docs/play-store-assets/phone`](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/play-store-assets/phone), 1080x1920 JPG 5장
-- 기능 그래픽: [`feature-graphic.png`](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/play-store-assets/feature-graphic.png), 1024x500 RGB PNG
+- 휴대전화 스크린샷: [`docs/play-store-assets/phone`](<repo>/docs/play-store-assets/phone), 1080x1920 JPG 5장
+- 기능 그래픽: [`feature-graphic.png`](<repo>/docs/play-store-assets/feature-graphic.png), 1024x500 RGB PNG
 
 ## 생성 / 검증 명령
 

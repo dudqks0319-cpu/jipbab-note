@@ -148,7 +148,7 @@ export default function MyPage() {
           ))}
           <MenuLink href="/community" icon={MessageCircle} label="커뮤니티 안내" />
           <MenuLink href="/support" icon={MessageCircle} label="고객센터" />
-          {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제 요청" danger /> : null}
+          {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제" danger /> : null}
         </div>
       </section>
 

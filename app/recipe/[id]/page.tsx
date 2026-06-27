@@ -633,6 +633,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
   const isGeneratedHeroImage = isBeginnerRecipeGeneratedImage(heroImage);
+  const hasRecipeVisualGuide = Boolean(recipe.recipePosterImageUrl || recipe.recipePrepImageUrl || recipe.recipeStepsImageUrl);
   const tags = parseHashTags(recipe.hashTag);
   const cookingMinutes = recipe.cookingTime ?? Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
   const servingLabel = `${recipe.servings ?? 2}인분`;
@@ -725,7 +726,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
       <section className="bg-white px-5 pb-7 pt-2">
         <div className="grid grid-cols-4 gap-3">
-          <QuickAction href="#ingredients" icon={<Search size={30} />} label="재료검색" tone="orange" />
+          <QuickAction
+            href={hasRecipeVisualGuide ? "#recipe-guide" : "#ingredients"}
+            icon={hasRecipeVisualGuide ? <BookOpenText size={30} /> : <Search size={30} />}
+            label={hasRecipeVisualGuide ? "사진레시피" : "재료검색"}
+            tone="orange"
+          />
           <QuickAction href="#shopping-assistant" icon={<ShoppingBag size={30} />} label="장보기" tone="violet" />
           <QuickAction href="#recipe-qna" icon={<HelpCircle size={30} />} label="Q&A" tone="mint" />
           <QuickAction href="#recipe-notes" icon={<NotebookText size={30} />} label="노트" tone="blue" />
@@ -737,6 +743,53 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <div className="jipbab-panel rounded-[16px] px-4 py-4">
             <p className="text-[13px] font-black text-[#2f2117]">처음 만들 때 핵심</p>
             <p className="mt-2 text-[13px] font-semibold leading-6 text-[#5f4b3a]">{recipe.beginnerSummary}</p>
+          </div>
+        </section>
+      ) : null}
+
+      {recipe.recipePosterImageUrl || recipe.recipePrepImageUrl || recipe.recipeStepsImageUrl || recipe.recipeGuideImageUrl ? (
+        <section id="recipe-guide" className="scroll-mt-24 bg-white px-5 pt-5">
+          <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] p-3">
+            <div className="flex items-center gap-2 px-1 pb-3">
+              <BookOpenText size={18} className="text-[#ef8a3a]" />
+              <h2 className="text-[19px] font-black text-[#242424]">사진으로 보는 레시피</h2>
+            </div>
+            <div className="space-y-3">
+              {recipe.recipePosterImageUrl ? (
+                <RecipeImage
+                  src={recipe.recipePosterImageUrl}
+                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
+                  alt={`${recipe.name} 재료와 조리 순서 포스터`}
+                  className="aspect-[9/16] overflow-hidden rounded-[8px] bg-[#fff8ef]"
+                  imageClassName="h-full w-full object-contain"
+                />
+              ) : recipe.recipePrepImageUrl ? (
+                <RecipeImage
+                  src={recipe.recipePrepImageUrl}
+                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
+                  alt={`${recipe.name} 도구와 재료 안내`}
+                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
+                  imageClassName="h-full w-full object-cover"
+                />
+              ) : null}
+              {!recipe.recipePosterImageUrl && recipe.recipeStepsImageUrl ? (
+                <RecipeImage
+                  src={recipe.recipeStepsImageUrl}
+                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
+                  alt={`${recipe.name} 조리 순서 안내`}
+                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
+                  imageClassName="h-full w-full object-cover"
+                />
+              ) : recipe.recipeGuideImageUrl ? (
+                <RecipeImage
+                  src={recipe.recipeGuideImageUrl}
+                  fallbackSrc={recipe.thumbnailUrl || FALLBACK_IMAGE}
+                  alt={`${recipe.name} 재료와 조리 순서 안내`}
+                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
+                  imageClassName="h-full w-full object-cover"
+                />
+              ) : null}
+            </div>
           </div>
         </section>
       ) : null}

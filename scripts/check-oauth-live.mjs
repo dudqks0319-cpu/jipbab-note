@@ -5,7 +5,6 @@ import path from "node:path";
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
 const PROVIDERS = ["google", "apple", "kakao"];
-const NATIVE_REDIRECT_TO = "com.jipbab.note://auth/callback";
 
 const PROVIDER_ENV_KEYS = {
   google: "NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED",
@@ -113,6 +112,25 @@ function resolveRedirectTo(env) {
   const vercelProductionUrl = env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
   if (vercelProductionUrl) {
     return new URL("/auth/callback", `https://${vercelProductionUrl}`).toString();
+  }
+
+  return null;
+}
+
+function resolveNativeRedirectTo(env) {
+  const explicitSiteUrl = env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicitSiteUrl) {
+    return new URL("/auth/native-callback", explicitSiteUrl).toString();
+  }
+
+  const capacitorServerUrl = env.CAPACITOR_SERVER_URL?.trim();
+  if (capacitorServerUrl) {
+    return new URL("/auth/native-callback", capacitorServerUrl).toString();
+  }
+
+  const vercelProductionUrl = env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelProductionUrl) {
+    return new URL("/auth/native-callback", `https://${vercelProductionUrl}`).toString();
   }
 
   return null;
@@ -262,6 +280,7 @@ async function run() {
   const enabledProviders = resolveEnabledProviders(env);
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const redirectTo = resolveRedirectTo(env);
+  const nativeRedirectTo = resolveNativeRedirectTo(env);
   const usesNonAppleThirdParty = enabledProviders.some((provider) => provider === "google" || provider === "kakao");
 
   if (enabledProviders.length === 0) {
@@ -295,13 +314,13 @@ async function run() {
     }
   }
 
-  if (supabaseUrl) {
+  if (supabaseUrl && nativeRedirectTo) {
     for (const provider of enabledProviders) {
       await checkProvider({
         env,
         provider,
         supabaseUrl,
-        redirectTo: NATIVE_REDIRECT_TO,
+        redirectTo: nativeRedirectTo,
         results,
         labelPrefix: "native",
         includeConsentCheck: false,

@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   buildAuthCallbackUrl,
   buildEmailConfirmationRedirectUrl,
+  buildNativeAuthBridgeUrl,
   buildNativeAuthCallbackUrl,
   buildPasswordResetRedirectUrl,
   isNativeAuthCallbackUrl,
@@ -44,6 +45,18 @@ test("builds native OAuth callback URLs with normalized app-local next paths", (
   assert.equal(
     buildNativeAuthCallbackUrl("https://evil.example/phish"),
     "com.jipbab.note://auth/callback?next=%2Fmypage",
+  );
+});
+
+test("builds native OAuth bridge URLs on the production web origin", () => {
+  assert.equal(
+    buildNativeAuthBridgeUrl("https://jipbab-note-app.vercel.app", "/fridge?add=1"),
+    "https://jipbab-note-app.vercel.app/auth/native-callback?next=%2Ffridge%3Fadd%3D1",
+  );
+
+  assert.equal(
+    buildNativeAuthBridgeUrl("https://jipbab-note-app.vercel.app", "https://evil.example/phish"),
+    "https://jipbab-note-app.vercel.app/auth/native-callback?next=%2Fmypage",
   );
 });
 

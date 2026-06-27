@@ -17,6 +17,7 @@ import {
   Utensils,
 } from 'lucide-react'
 
+import FridgeIllustration from '@/components/fridge/FridgeIllustration'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFamilyShare } from '@/hooks/useFamilyShare'
 import { useIngredients } from '@/hooks/useIngredients'
@@ -110,8 +111,12 @@ export default function HomePage() {
     [familyIngredients],
   )
 
-  const expiringCount = useMemo(
-    () => activeDisplayIngredients.filter((item) => getDday(item.expiryDate) <= 3).length,
+  const expiringIngredients = useMemo(
+    () =>
+      activeDisplayIngredients
+        .filter((item) => getDday(item.expiryDate) <= 3)
+        .sort((left, right) => getDday(left.expiryDate) - getDday(right.expiryDate))
+        .slice(0, 3),
     [activeDisplayIngredients],
   )
 
@@ -231,6 +236,30 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pt-5">
+        <div className="mb-4">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-black text-[#9b8979]">있는 재료로 먼저 결정해요</p>
+              <h2 className="mt-1 text-[20px] font-black text-[#2f2117]">냉장고부터 볼게요</h2>
+            </div>
+            <span className="rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
+              {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개`}
+            </span>
+          </div>
+          <FridgeIllustration ingredients={activeDisplayIngredients} compact maxItemsPerZone={4} />
+          {expiringIngredients.length > 0 ? (
+            <div className="mt-3 rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3">
+              <p className="text-[12px] font-black text-[#7d3f18]">오늘 먼저 쓰기</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {expiringIngredients.map((item) => (
+                  <span key={item.id} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
+                    {item.name} {getDday(item.expiryDate) <= 0 ? '오늘까지' : `D-${getDday(item.expiryDate)}`}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
         {topRecipe ? (
           <div className="mb-4 rounded-[20px] bg-[#2f2117] px-4 py-4 text-white shadow-[0_14px_28px_rgba(47,33,23,0.18)]">
             <div className="flex items-start justify-between gap-3">
@@ -266,25 +295,6 @@ export default function HomePage() {
             </div>
           </div>
         ) : null}
-        <div className="flex items-center justify-between">
-          <h2 className="text-[17px] font-black text-[#2f2117]">냉장고 요약</h2>
-          <span className="text-[11px] font-semibold text-[#8f7f70]">
-            {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개`}
-          </span>
-        </div>
-        {isLoading && activeDisplayIngredients.length === 0 ? (
-          <div className="mt-3 grid grid-cols-3 gap-2" aria-label="냉장고 요약 불러오는 중">
-            <SummaryBoxSkeleton />
-            <SummaryBoxSkeleton />
-            <SummaryBoxSkeleton />
-          </div>
-        ) : (
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            <SummaryBox label="보관" value={`${activeDisplayIngredients.length}개`} tone="bg-[#fff3d8] text-[#a66a17]" />
-            <SummaryBox label="신선" value={`${Math.max(activeDisplayIngredients.length - expiringCount, 0)}개`} tone="bg-[#eef6df] text-[#3d7b38]" />
-            <SummaryBox label="소진임박" value={`${expiringCount}개`} tone="bg-[#ffede4] text-[#d64b25]" />
-          </div>
-        )}
         {syncErrorMessage ? (
           <div className="mt-3 flex items-start gap-3 rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3" role="status">
             <AlertTriangle size={18} className="mt-0.5 shrink-0 text-[#d94d19]" />
@@ -570,24 +580,6 @@ function getBeginnerRecipeBadge(recipe: {
     return `${recipe.totalMinutes}분 완성`
   }
   return '초보 가능'
-}
-
-function SummaryBox({ label, value, tone }: { label: string; value: string; tone: string }) {
-  return (
-    <div className={`rounded-[12px] px-3 py-3 ${tone}`}>
-      <p className="text-[11px] font-bold">{label}</p>
-      <p className="mt-1 text-[14px] font-black">{value}</p>
-    </div>
-  )
-}
-
-function SummaryBoxSkeleton() {
-  return (
-    <div className="rounded-[12px] bg-[#fff3d8] px-3 py-3">
-      <div className="h-3 w-9 animate-pulse rounded-full bg-[#eadcc9]" />
-      <div className="mt-2 h-4 w-12 animate-pulse rounded-full bg-[#eadcc9]" />
-    </div>
-  )
 }
 
 function RecipeCardSkeleton() {

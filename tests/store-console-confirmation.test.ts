@@ -65,7 +65,7 @@ test("store console confirmation can verify store dashboards through official AP
 test("store console confirmation evidence keeps Play Console blocked after App Store confirmation", () => {
   assert.match(evidence, /App Store Connect\/TestFlight: confirmed/);
   assert.match(evidence, /TestFlight processing: confirmed/);
-  assert.match(evidence, /App Store Connect evidence artifacts: \/Users\/jyb-m3max\/Desktop\/codex\/jipbab-note\/output\/release-evidence\//);
+  assert.match(evidence, /App Store Connect evidence artifacts: <repo>\/output\/release-evidence\//);
   assert.match(evidence, /Play Console internal testing: not confirmed/);
   assert.match(evidence, /AAB upload: not confirmed/);
   assert.match(evidence, /Play Console evidence artifacts: pending/);

@@ -7,13 +7,24 @@ const cwd = process.cwd();
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(cwd, "output", "release-evidence", `${stamp}-store-console`);
 const bundleId = "com.jipbab.note";
-const iosBuild = "2026052001";
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const androidPackage = "com.jipbab.note";
 const androidVersionCode = "1";
 const nativeArtifacts = [
   ["iOS App Store IPA", `ios/build/export-${iosBuild}/App.ipa`],
   ["Android signed AAB", "android/app/build/outputs/bundle/release/app-release.aab"],
 ];
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 function redact(value) {
   return value

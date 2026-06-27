@@ -5,6 +5,8 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileS
 import path from "node:path";
 
 const cwd = process.cwd();
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(cwd, "output", "release-evidence", `${stamp}-appstore-review-packet`);
 const appStoreScreenshotDir = "docs/app-store-screenshots/2026-05-19-iphone69";
@@ -38,6 +40,16 @@ const files = [
     target: "store-console-confirmation.md",
   },
 ];
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 function redact(value) {
   return value
@@ -164,7 +176,7 @@ function manifestFor({ assetCheck, iosArtifact, submitGate, copiedFiles }) {
     `- Output directory: ${outDir}`,
     "- Upload behavior: this command does not upload to App Store Connect and does not submit for review.",
     "- Target bundle ID: `com.jipbab.note`.",
-    "- Target build: `2026052001`.",
+    `- Target build: \`${iosBuild}\`.`,
     `- App Store asset subset check: ${assetCheck.status}`,
     `- iOS release artifact check: ${iosArtifact.status}`,
     `- App Store submission readiness gate: ${submitGate.status}`,

@@ -74,8 +74,8 @@ pnpm release:check
 - [ ] 부족 재료 → 장보기 추가
 - [ ] 쿠팡 검색 링크 이동
 
-### 삭제 요청
-- [ ] 사용자 계정으로 `/account-delete` 요청 생성
+### 계정 삭제
+- [ ] 사용자 계정으로 `/account-delete` 직접 삭제 완료
 - [ ] 운영자 계정으로 `/admin/account-deletions` 목록 확인
 - [ ] 상태 변경 (`requested -> reviewing -> completed`)
 
@@ -124,7 +124,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] 개인정보 처리방침 URL 및 지원 URL 입력
 - [ ] 콘텐츠 등급 설문 완료
 - [ ] 내부 테스트 트랙에 AAB 업로드
-- [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 삭제 요청 QA
+- [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 직접 삭제 QA
 - [ ] Android emulator가 흰 화면이면 DNS 문제 여부 확인: `adb shell ping -c 1 jipbab-note-app.vercel.app`
 - [ ] emulator DNS 실패 시 `-dns-server 8.8.8.8,1.1.1.1` 옵션으로 재부팅 후 Home/장보기 화면 캡처
 
@@ -142,7 +142,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] `.env.local` 커밋 금지
 - [ ] DB 비밀번호 새 값 운영 문서 저장
 - [ ] 운영자 이메일 allowlist 확인
-- [ ] 삭제 요청 실제 처리 절차 문서화
+- [ ] 계정 직접 삭제 처리 절차 문서화
 - [ ] 운영 로그/텔레메트리에서 이메일, 토큰, 세션, 서비스 키 등 민감정보 redaction 확인
 - [ ] analytics 이벤트는 개인정보 최소 수집 원칙과 사용자 식별자 정책 확인 후 활성화
 - [ ] crash reporting 도입 전 수집 항목, 보관 기간, 사용자 고지 문구 확인

@@ -94,6 +94,10 @@ export default function ShoppingPage() {
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
   const checkedItems = useMemo(() => displayItems.filter((item) => item.checked), [displayItems])
+  const pendingSyncCount = useMemo(
+    () => displayItems.filter((item) => item.syncStatus && item.syncStatus !== 'synced').length,
+    [displayItems],
+  )
   const isLocalMode = !isAppStoreDemo && (shoppingSource === 'local' || ingredientSource === 'local')
   const groupedUncheckedItems = useMemo(() => {
     const groups = new Map<string, typeof uncheckedItems>()
@@ -277,9 +281,11 @@ export default function ShoppingPage() {
             {statusMessage}
           </p>
         ) : null}
-        {isLocalMode ? (
+        {isLocalMode || pendingSyncCount > 0 ? (
           <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
-            현재 일부 데이터가 이 기기에만 저장되는 로컬 모드입니다. 로그인/네트워크 복구 후 새로고침해 클라우드 동기화 상태를 확인하세요.
+            {pendingSyncCount > 0
+              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 네트워크가 복구되면 자동으로 다시 업로드합니다.`
+              : '장보기 데이터는 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
           </p>
         ) : null}
         <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">

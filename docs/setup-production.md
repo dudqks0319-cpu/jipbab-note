@@ -137,9 +137,9 @@ set url = excluded.url, active = true, display_order = excluded.display_order, m
 6. Android emulator smoke에서 흰 화면이 나오면 원격 WebView URL DNS 문제를 먼저 확인합니다.
 7. DNS가 실패하면 `emulator -avd Medium_Phone_API_36.1 -no-snapshot -no-audio -no-boot-anim -dns-server 8.8.8.8,1.1.1.1`로 재부팅한 뒤 앱을 다시 실행합니다.
 
-## 7. 운영자 삭제 요청 처리
+## 7. 계정 삭제 처리
 
-- 앱 사용자는 `/account-delete` 에서 삭제 요청을 접수합니다.
+- 앱 사용자는 `/account-delete`에서 직접 계정 삭제를 완료합니다.
 - 운영자는 로그인 후 `/admin/account-deletions` 에서 요청 목록을 확인하고 상태를 바꿉니다.
 - 이 기능은 `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS` 가 반드시 설정되어야 동작합니다.
 

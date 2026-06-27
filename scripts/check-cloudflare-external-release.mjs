@@ -1,6 +1,12 @@
 import { spawnSync } from "node:child_process";
 
-const CLOUDFLARE_APP_URL = "https://jipbab-note-app.dudqks0319.workers.dev";
+const CLOUDFLARE_APP_URL =
+  process.env.PRODUCTION_APP_URL || process.env.CAPACITOR_SERVER_URL || "";
+
+if (!CLOUDFLARE_APP_URL) {
+  console.error("Set PRODUCTION_APP_URL or CAPACITOR_SERVER_URL to the Cloudflare app URL.");
+  process.exit(2);
+}
 
 const sharedEnv = {
   SUPABASE_LIVE_WRITE_TEST: "1",

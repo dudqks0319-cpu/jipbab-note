@@ -74,7 +74,7 @@ Cloudflare 배포 URL이 정해지면 Supabase Auth URL Configuration에 아래�
 
 QA용 workers.dev를 계속 확인할 때는 아래 exact callback도 추가합니다.
 
-- `https://jipbab-note-app.dudqks0319.workers.dev/auth/callback`
+- `<cloudflare-worker-url>/auth/callback`
 
 Production에서는 wildcard `/**`보다 exact callback path를 우선 사용합니다. Vercel을 종료하기로 결정한 뒤에는 Supabase redirect URL, 앱 메타데이터, 문서, Capacitor sync 값에서 Vercel URL 제거 여부를 별도 cutover checklist로 처리합니다.
 
@@ -93,7 +93,7 @@ CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm mobile:sync:ios
 CAPACITOR_SERVER_URL=https://<cloudflare-domain> pnpm mobile:sync:android
 ```
 
-Workers 후보 도메인을 모바일 QA에 사용할 때는 `capacitor.config.ts`의 app-only `allowNavigation`에 `jipbab-note-app.dudqks0319.workers.dev`가 포함되어 있어야 합니다. Google/Apple/Kakao provider host는 계속 WebView allowNavigation에 넣지 않습니다.
+Workers 후보 도메인을 모바일 QA에 사용할 때는 `capacitor.config.ts`의 app-only `allowNavigation`에 `<cloudflare-worker-host>`가 포함되어 있어야 합니다. Google/Apple/Kakao provider host는 계속 WebView allowNavigation에 넣지 않습니다.
 
 그 뒤 iOS/Android 실기기에서 Google/Apple/Kakao 로그인 완료, 알림 권한/예약, 장보기 링크, 계정삭제 요청을 다시 확인합니다.
 
@@ -148,7 +148,7 @@ curl -sS -D output/release-evidence/cloudflare/live-root-bare-headers.txt \
   -H 'Cache-Control: no-cache' \
   -H 'Pragma: no-cache' \
   -H 'Accept: text/html' \
-  'https://jipbab-note-app.dudqks0319.workers.dev/' \
+  '<cloudflare-worker-url>/' \
   -o output/release-evidence/cloudflare/live-root-bare.html
 ```
 

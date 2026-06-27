@@ -21,9 +21,9 @@ const REQUIRED_ENV_KEYS = [
 ];
 const REQUIRED_OAUTH_WEBVIEW_HOSTS = [
   "jipbab-note-app.vercel.app",
-  "jipbab-note-app.dudqks0319.workers.dev",
+  process.env.CAPACITOR_CLOUDFLARE_HOST,
   "xqelabiwtjntwrjqcteo.supabase.co",
-];
+].filter(Boolean);
 const FORBIDDEN_OAUTH_WEBVIEW_HOSTS = [
   "accounts.google.com",
   "appleid.apple.com",
@@ -45,6 +45,7 @@ const RECIPE_SOURCES_MIGRATION = "supabase/migrations/20260508133157_add_recipe_
 const REQUIRED_ROUTE_FILES = [
   ["login", "app/login/page.tsx"],
   ["oauth callback", "app/auth/callback/page.tsx"],
+  ["native oauth callback bridge", "app/auth/native-callback/page.tsx"],
   ["fridge", "app/fridge/page.tsx"],
   ["recipe list", "app/recipe/page.tsx"],
   ["recipe detail", "app/recipe/[id]/page.tsx"],
@@ -501,7 +502,7 @@ if (existsSync(path.join(cwd, playStoreMetadataPath))) {
     "앱 활동",
     "기기 또는 기타 ID",
     "HTTPS",
-    "계정 삭제 요청",
+    "계정 직접 삭제",
     "개인정보 처리방침 URL",
     "지원 URL",
     "내부 테스트 트랙",
@@ -762,6 +763,9 @@ if (existsSync(iosCapacitorConfigPath)) {
   const packageClassList = Array.isArray(iosCapacitorConfig.packageClassList)
     ? iosCapacitorConfig.packageClassList
     : [];
+  const hasBrowserPlugin =
+    packageClassList.includes("CAPBrowserPlugin") ||
+    packageClassList.includes("BrowserPlugin");
 
   if (
     iosCapacitorConfig.appId === "com.jipbab.note" &&
@@ -772,7 +776,7 @@ if (existsSync(iosCapacitorConfigPath)) {
     iosCapacitorConfig.server?.cleartext === false &&
     hasRequiredOAuthNavigationHosts(iosCapacitorConfig) &&
     packageClassList.includes("AppPlugin") &&
-    packageClassList.includes("BrowserPlugin") &&
+    hasBrowserPlugin &&
     packageClassList.includes("LocalNotificationsPlugin")
   ) {
     addResult(results, "pass", "iOS Capacitor config", "release WebView URL, app-only allowNavigation, native OAuth plugins, cleartext, app identity, and local notifications plugin are configured");
@@ -781,7 +785,7 @@ if (existsSync(iosCapacitorConfigPath)) {
       results,
       "fail",
       "iOS Capacitor config",
-      "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, app-only allowNavigation hosts, cleartext=false, AppPlugin, BrowserPlugin, and LocalNotificationsPlugin",
+      "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, app-only allowNavigation hosts, cleartext=false, AppPlugin, CAPBrowserPlugin or BrowserPlugin, and LocalNotificationsPlugin",
     );
   }
 } else {

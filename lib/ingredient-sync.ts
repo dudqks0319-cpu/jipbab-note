@@ -1,5 +1,6 @@
 // 재료 동기화 충돌 해결 규칙을 한 곳에 모아 훅을 단순하게 유지합니다.
 import type { IngredientRecord } from "../types/index.ts";
+import { shouldKeepLocalRecord } from "./sync/conflict-policy.ts";
 
 export const INGREDIENT_SYNC_TIMEOUT_MS = 3500;
 
@@ -34,7 +35,14 @@ export function mergeIngredientRecords(
 
   for (const record of remoteRecords) {
     const current = byId.get(record.id);
-    if (!current || toTime(record.updatedAt) > toTime(current.updatedAt)) {
+    if (
+      !current ||
+      !shouldKeepLocalRecord({
+        localStatus: current.syncStatus,
+        localUpdatedAt: current.updatedAt,
+        remoteUpdatedAt: record.updatedAt,
+      })
+    ) {
       byId.set(record.id, record);
     }
   }

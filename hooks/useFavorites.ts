@@ -1,57 +1,19 @@
-// 이 파일은 레시피 즐겨찾기 토글/목록 상태를 localStorage로 관리합니다.
+// 이 파일은 레시피 즐겨찾기 토글/목록 상태를 IndexedDB local-first 저장소로 관리합니다.
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { subscribeLocalDb } from "@/lib/local-db";
+import {
+  clearFavoriteRecipes,
+  listFavoriteRecipes,
+  removeFavoriteRecipe,
+  upsertFavoriteRecipe,
+} from "@/lib/local-db/favorites-repository";
+import { LOCAL_DB_STORES } from "@/lib/local-db/schema";
 import type { FavoriteRecipeSummary } from "@/types";
 
-const STORAGE_KEY = "jipbab-note-favorite-recipes";
-
 type FavoriteSeed = Omit<FavoriteRecipeSummary, "savedAt">;
-
-function safeReadFavorites(): FavoriteRecipeSummary[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .filter((item): item is FavoriteRecipeSummary => {
-        return (
-          typeof item === "object" &&
-          item !== null &&
-          "id" in item &&
-          "name" in item &&
-          "category" in item &&
-          "savedAt" in item &&
-          typeof item.id === "string" &&
-          typeof item.name === "string" &&
-          typeof item.category === "string" &&
-          typeof item.savedAt === "string"
-        );
-      })
-      .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  } catch {
-    return [];
-  }
-}
-
-function safeWriteFavorites(nextItems: FavoriteRecipeSummary[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextItems));
-}
 
 export interface UseFavoritesResult {
   favorites: FavoriteRecipeSummary[];
@@ -63,7 +25,18 @@ export interface UseFavoritesResult {
 }
 
 export function useFavorites(): UseFavoritesResult {
-  const [favorites, setFavorites] = useState<FavoriteRecipeSummary[]>(() => safeReadFavorites());
+  const [favorites, setFavorites] = useState<FavoriteRecipeSummary[]>([]);
+
+  const refreshFavorites = useCallback(async (): Promise<void> => {
+    setFavorites(await listFavoriteRecipes());
+  }, []);
+
+  useEffect(() => {
+    void refreshFavorites();
+    return subscribeLocalDb(LOCAL_DB_STORES.favoriteRecipes, () => {
+      void refreshFavorites();
+    });
+  }, [refreshFavorites]);
 
   const favoriteIds = useMemo(() => new Set(favorites.map((item) => item.id)), [favorites]);
 
@@ -81,7 +54,7 @@ export function useFavorites(): UseFavoritesResult {
       if (exists) {
         const nextItems = favorites.filter((item) => item.id !== recipe.id);
         setFavorites(nextItems);
-        safeWriteFavorites(nextItems);
+        void removeFavoriteRecipe(recipe.id);
         return false;
       }
 
@@ -93,7 +66,12 @@ export function useFavorites(): UseFavoritesResult {
         (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime(),
       );
       setFavorites(nextItems);
-      safeWriteFavorites(nextItems);
+      void upsertFavoriteRecipe({
+        ...nextFavorite,
+        deletedAt: null,
+        syncStatus: "pending_update",
+        lastSyncedAt: null,
+      });
       return true;
     },
     [favoriteIds, favorites],
@@ -103,14 +81,14 @@ export function useFavorites(): UseFavoritesResult {
     (recipeId: string): void => {
       const nextItems = favorites.filter((item) => item.id !== recipeId);
       setFavorites(nextItems);
-      safeWriteFavorites(nextItems);
+      void removeFavoriteRecipe(recipeId);
     },
     [favorites],
   );
 
   const clearFavorites = useCallback((): void => {
     setFavorites([]);
-    safeWriteFavorites([]);
+    void clearFavoriteRecipes();
   }, []);
 
   return {

@@ -144,6 +144,15 @@ function fileText(relativePath) {
   return readFileSync(path.join(cwd, relativePath), "utf8");
 }
 
+function sourceCheckText(check) {
+  const paths = Array.isArray(check.path) ? check.path : [check.path];
+  return paths.map((relativePath) => fileText(relativePath)).join("\n");
+}
+
+function sourceCheckLabel(check) {
+  return Array.isArray(check.path) ? check.path.join(", ") : check.path;
+}
+
 function collectText(value, output = []) {
   if (typeof value === "string") {
     output.push(value);
@@ -394,7 +403,7 @@ const sourceChecks = [
   },
   {
     label: "개인/가족 냉장고 scope hook",
-    path: "hooks/useIngredients.ts",
+    path: ["hooks/useIngredients.ts", "lib/sync/ingredient-sync-service.ts"],
     terms: [
       "familyGroupId?: string | null",
       "enabled?: boolean",
@@ -405,7 +414,7 @@ const sourceChecks = [
   },
   {
     label: "개인/가족 장보기 scope hook",
-    path: "hooks/useShopping.ts",
+    path: ["hooks/useShopping.ts", "lib/sync/shopping-sync-service.ts"],
     terms: [
       "familyGroupId?: string | null",
       "applyShoppingScope",
@@ -429,12 +438,12 @@ const sourceChecks = [
 ];
 
 for (const check of sourceChecks) {
-  const source = fileText(check.path);
+  const source = sourceCheckText(check);
   const missing = missingTerms(source, check.terms);
   addCheck(
     check.label,
     missing.length === 0,
-    missing.length === 0 ? check.path : `${check.path} missing: ${missing.join(", ")}`,
+    missing.length === 0 ? sourceCheckLabel(check) : `${sourceCheckLabel(check)} missing: ${missing.join(", ")}`,
   );
 }
 

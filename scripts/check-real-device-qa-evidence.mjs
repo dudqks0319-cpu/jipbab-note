@@ -2,7 +2,96 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const evidencePath = path.join(process.cwd(), "docs/real-device-qa.md");
+const iosProjectPath = path.join(process.cwd(), "ios/App/App.xcodeproj/project.pbxproj");
+const envFilePath = path.join(process.cwd(), ".env.local");
 const allowedPlatforms = new Set(["all", "ios", "android"]);
+const providerEnvKeys = {
+  google: "NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_ENABLED",
+  apple: "NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED",
+  kakao: "NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED",
+};
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
+
+const expectedIosBuild = readIosProjectBuildNumber() ?? "2026052001";
+
+function readEnvFile(filePath) {
+  if (!existsSync(filePath)) {
+    return {};
+  }
+
+  const pairs = {};
+  const content = readFileSync(filePath, "utf8");
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf("=");
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    let value = line.slice(separatorIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    pairs[key] = value;
+  }
+  return pairs;
+}
+
+function parseBooleanFlag(value) {
+  if (!value || !value.trim()) {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true" || normalized === "1") {
+    return true;
+  }
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+  return null;
+}
+
+function resolveEnabledProviders() {
+  const env = {
+    ...readEnvFile(envFilePath),
+    ...process.env,
+  };
+  const explicitList = new Set(
+    (env.NEXT_PUBLIC_SUPABASE_OAUTH_PROVIDERS ?? "")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const hasExplicitList = explicitList.size > 0;
+
+  return Object.entries(providerEnvKeys)
+    .filter(([provider, envKey]) => {
+      const flagValue = parseBooleanFlag(env[envKey]);
+      if (flagValue !== null) {
+        return flagValue;
+      }
+      return hasExplicitList ? explicitList.has(provider) : false;
+    })
+    .map(([provider]) => provider);
+}
 
 function targetPlatform() {
   const arg = process.argv.find((item) => item.startsWith("--platform="));
@@ -15,6 +104,25 @@ function targetPlatform() {
   return rawValue;
 }
 
+const enabledProviders = resolveEnabledProviders();
+
+function providerTerms(platform) {
+  const terms = [];
+  if (enabledProviders.includes("google")) {
+    terms.push(`${platform} Google login: confirmed`);
+  }
+  if (platform === "iOS" && enabledProviders.includes("apple")) {
+    terms.push("iOS Apple login: confirmed");
+  }
+  if (platform === "Android" && enabledProviders.includes("apple")) {
+    terms.push("Android Apple login/provider behavior: confirmed");
+  }
+  if (enabledProviders.includes("kakao")) {
+    terms.push(`${platform} Kakao login: confirmed`);
+  }
+  return terms;
+}
+
 const requiredEvidence = [
   {
     platform: "ios",
@@ -22,15 +130,13 @@ const requiredEvidence = [
     terms: [
       "iOS real-device QA: confirmed",
       "Device: iPhone",
-      "iOS build: 2026052001",
+      `iOS build: ${expectedIosBuild}`,
       "Bundle ID: com.jipbab.note",
       "iOS core loop: confirmed",
-      "iOS Google login: confirmed",
-      "iOS Apple login: confirmed",
-      "iOS Kakao login: confirmed",
+      ...providerTerms("iOS"),
       "iOS local notification permission and scheduling: confirmed",
       "iOS shopping external link: confirmed",
-      "iOS account deletion request: confirmed",
+      "iOS account deletion: confirmed",
       "iOS raw error disclosure: not observed",
     ],
     patterns: [
@@ -49,12 +155,10 @@ const requiredEvidence = [
       "Device: Android",
       "Android package: com.jipbab.note",
       "Android core loop: confirmed",
-      "Android Google login: confirmed",
-      "Android Kakao login: confirmed",
-      "Android Apple login/provider behavior: confirmed",
+      ...providerTerms("Android"),
       "Android local notification permission and scheduling: confirmed",
       "Android shopping external link: confirmed",
-      "Android account deletion request: confirmed",
+      "Android account deletion: confirmed",
       "Android back navigation: confirmed",
       "Android raw error disclosure: not observed",
     ],
@@ -68,8 +172,16 @@ const requiredEvidence = [
   },
 ];
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasEvidenceTerm(source, term) {
+  return new RegExp(`^\\s*-\\s*${escapeRegExp(term)}\\s*$`, "m").test(source);
+}
+
 function includesAll(source, terms) {
-  return terms.every((term) => source.includes(term));
+  return terms.every((term) => hasEvidenceTerm(source, term));
 }
 
 function lineValue(source, label) {
@@ -121,7 +233,7 @@ function run() {
         failures.push({ label: item.label, missing: missingExtra });
       }
     } else {
-      const missing = item.terms.filter((term) => !evidence.includes(term));
+      const missing = item.terms.filter((term) => !hasEvidenceTerm(evidence, term));
       failures.push({ label: item.label, missing });
     }
   }

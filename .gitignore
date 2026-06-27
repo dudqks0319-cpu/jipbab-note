@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+*.bak
 
 # debug
 npm-debug.log*
@@ -53,12 +54,14 @@ android/.gradle/
 android/build/
 android/app/build/
 ios/build/
+ios/Packages/
 
 # local debug captures
 output/
 android-*.png
 uidump*.xml
 .tmp/
+tmp/
 .release-secrets/
 
 # local agent/orchestration state

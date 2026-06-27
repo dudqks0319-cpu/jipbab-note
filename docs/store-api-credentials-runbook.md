@@ -40,7 +40,7 @@ APP_STORE_CONNECT_API_KEY_ID=<KEY_ID>
 APP_STORE_CONNECT_API_ISSUER_ID=<ISSUER_ID>
 APP_STORE_CONNECT_API_PRIVATE_KEY_PATH=.release-secrets/AuthKey_<KEY_ID>.p8
 APP_STORE_CONNECT_BUNDLE_ID=com.jipbab.note
-APP_STORE_CONNECT_BUILD_VERSION=2026052001
+APP_STORE_CONNECT_BUILD_VERSION=2026060803
 ```
 
 확인 명령:
@@ -50,7 +50,7 @@ pnpm release:store-api-credential-status
 pnpm check:store-console-confirmation
 ```
 
-이 명령은 App Store Connect API에서 bundle `com.jipbab.note`, build `2026052001`, processed build state, internal TestFlight beta group 존재 여부를 확인합니다.
+이 명령은 App Store Connect API에서 bundle `com.jipbab.note`, 현재 iOS build `2026060803`, processed build state, internal TestFlight beta group 존재 여부를 확인합니다.
 credential 값은 출력하지 않습니다.
 
 ## 2. Google Play Developer API 서비스 계정
@@ -114,7 +114,7 @@ pnpm release:goal-check
 - `private key file mode is readable by group/other`: `chmod 600`으로 파일 권한을 좁혀야 합니다.
 - `private key filename does not include the configured App Store Connect key id`: 파일 이름과 Key ID가 맞는지 확인하고 Apple OAuth 키와 혼동하지 않았는지 봐야 합니다.
 - `service account path is not ignored by git`: Google service-account JSON 경로가 `.gitignore` 보호 밖에 있습니다.
-- `target build not found`: App Store Connect에 build `2026052001`이 없거나 다른 앱 레코드를 보고 있습니다.
+- `target build not found`: App Store Connect에 현재 iOS build `2026060803`이 없거나 다른 앱 레코드를 보고 있습니다.
 - `target build is not processed`: TestFlight processing이 아직 끝나지 않았습니다.
 - `no internal TestFlight beta group was found`: 내부 테스터 그룹 접근 설정이 필요합니다.
 - `track internal does not include versionCode 1`: Play Console internal track에 현재 AAB가 올라가지 않았습니다.

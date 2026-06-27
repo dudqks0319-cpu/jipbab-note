@@ -26,6 +26,12 @@ export function buildNativeAuthCallbackUrl(nextPath = "/mypage"): string {
   return callbackUrl.toString();
 }
 
+export function buildNativeAuthBridgeUrl(origin: string, nextPath = "/mypage"): string {
+  const bridgeUrl = new URL("/auth/native-callback", origin);
+  bridgeUrl.searchParams.set("next", normalizeAuthNextPath(nextPath));
+  return bridgeUrl.toString();
+}
+
 export function isNativeAuthCallbackUrl(value: string): boolean {
   try {
     const parsed = new URL(value);

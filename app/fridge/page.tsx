@@ -146,6 +146,7 @@ export default function FridgePage() {
   const displayIngredients = isAppStoreDemo ? APPSTORE_DEMO_INGREDIENTS : ingredients
   const activeIngredients = displayIngredients.filter((item) => !item.consumedAt && !item.discardedAt)
   const consumedIngredients = displayIngredients.filter((item) => item.consumedAt || item.discardedAt)
+  const pendingSyncCount = displayIngredients.filter((item) => item.syncStatus && item.syncStatus !== 'synced').length
 
   const normalizedSearchQuery = searchQuery.trim().toLowerCase()
 
@@ -515,9 +516,11 @@ export default function FridgePage() {
             {saveMessage}
           </p>
         ) : null}
-        {!isAppStoreDemo && source === 'local' ? (
+        {!isAppStoreDemo && (source === 'local' || pendingSyncCount > 0) ? (
           <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
-            현재 냉장고 데이터가 이 기기에만 저장되는 로컬 모드입니다. 로그인/네트워크 복구 후 새로고침해 클라우드 동기화 상태를 확인하세요.
+            {pendingSyncCount > 0
+              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 네트워크가 복구되면 자동으로 다시 업로드합니다.`
+              : '현재 냉장고 데이터가 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
           </p>
         ) : null}
 
@@ -665,6 +668,15 @@ export default function FridgePage() {
                             <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${statusBg}`}>
                               {statusLabel}
                             </span>
+                            {item.syncStatus === 'conflict' ? (
+                              <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
+                                동기화 확인 필요
+                              </span>
+                            ) : item.syncStatus && item.syncStatus !== 'synced' ? (
+                              <span className="rounded-full bg-[#fff7ed] px-2 py-0.5 text-[10px] font-black text-[#9a4f14]">
+                                동기화 대기
+                              </span>
+                            ) : null}
                           </div>
                           <p className="mt-1 text-[12px] font-semibold text-[#7d6d5f]">
                             {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}

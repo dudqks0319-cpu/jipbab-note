@@ -7,11 +7,24 @@ const cwd = process.cwd();
 const ledgerPath = path.join(cwd, "docs/current-release-state.md");
 const realDeviceQaPath = path.join(cwd, "docs/real-device-qa.md");
 const storeConsolePath = path.join(cwd, "docs/store-console-confirmation.md");
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
+
+const expectedIosBuild = readIosProjectBuildNumber() ?? "2026052001";
 
 const requiredRealDeviceQaTerms = [
   "iOS real-device QA: confirmed",
   "Device: iPhone",
-  "iOS build: 2026052001",
+  `iOS build: ${expectedIosBuild}`,
   "Bundle ID: com.jipbab.note",
   "iOS core loop: confirmed",
   "iOS Google login: confirmed",
@@ -19,7 +32,7 @@ const requiredRealDeviceQaTerms = [
   "iOS Kakao login: confirmed",
   "iOS local notification permission and scheduling: confirmed",
   "iOS shopping external link: confirmed",
-  "iOS account deletion request: confirmed",
+  "iOS account deletion: confirmed",
   "iOS raw error disclosure: not observed",
   "Android real-device QA: confirmed",
   "Device: Android",
@@ -30,7 +43,7 @@ const requiredRealDeviceQaTerms = [
   "Android Apple login/provider behavior: confirmed",
   "Android local notification permission and scheduling: confirmed",
   "Android shopping external link: confirmed",
-  "Android account deletion request: confirmed",
+  "Android account deletion: confirmed",
   "Android back navigation: confirmed",
   "Android raw error disclosure: not observed",
 ];
@@ -52,7 +65,7 @@ const realDeviceQaExtraEvidence = {
 const requiredAppStoreTerms = [
   "App Store Connect/TestFlight: confirmed",
   "Bundle ID: com.jipbab.note",
-  "iOS build: 2026052001",
+  `iOS build: ${expectedIosBuild}`,
   "TestFlight processing: confirmed",
   "Internal tester availability: confirmed",
 ];
@@ -343,7 +356,7 @@ addResult(
   ], realDeviceQaExtraEvidence),
   "실기기 QA",
   "docs/real-device-qa.md evidence for real iPhone/Android OAuth, local notification, link-flow, account deletion, and raw-error checks",
-  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 요청 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
+  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 완료 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
 );
 
 addResult(

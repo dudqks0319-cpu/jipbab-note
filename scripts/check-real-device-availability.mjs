@@ -1,7 +1,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import path from "node:path";
 
-const adbPath = process.env.ADB_PATH || "/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb";
+const defaultAndroidSdk =
+  process.env.ANDROID_HOME ||
+  process.env.ANDROID_SDK_ROOT ||
+  (process.env.HOME ? path.join(process.env.HOME, "Library/Android/sdk") : "");
+const adbPath = process.env.ADB_PATH || path.join(defaultAndroidSdk, "platform-tools/adb");
 const allowedPlatforms = new Set(["all", "ios", "android"]);
 
 function targetPlatform() {
@@ -136,11 +141,28 @@ function redactAndroidDeviceLine(line) {
   return line.replace(/^\S+/, "[redacted-android-device]");
 }
 
+function isAndroidConnectedDevice(line) {
+  return /^\S+\s+device\b/.test(line);
+}
+
+function looksLikeAndroidEmulator(line) {
+  return (
+    /^emulator-\d+\s/.test(line) ||
+    /\b(model|device|product):(?:sdk_|emu)/i.test(line) ||
+    /\bdevice:emu/i.test(line)
+  );
+}
+
+function looksLikeAndroidPhysicalDevice(line) {
+  return isAndroidConnectedDevice(line) && !looksLikeAndroidEmulator(line);
+}
+
 function listAndroidDevices() {
   if (!existsSync(adbPath)) {
     return {
       available: [],
       unavailable: [],
+      emulators: [],
       error: `adb not found at ${adbPath}`,
     };
   }
@@ -154,6 +176,7 @@ function listAndroidDevices() {
     return {
       available: [],
       unavailable: [],
+      emulators: [],
       error: result.error.message,
     };
   }
@@ -163,6 +186,7 @@ function listAndroidDevices() {
     return {
       available: [],
       unavailable: [],
+      emulators: [],
       error: "adb devices -l failed",
     };
   }
@@ -173,8 +197,11 @@ function listAndroidDevices() {
     .filter((line) => line && !line.startsWith("List of devices attached"));
 
   return {
-    available: deviceLines.filter((line) => /^\S+\s+device\b/.test(line)).map(redactAndroidDeviceLine),
-    unavailable: deviceLines.filter((line) => !/^\S+\s+device\b/.test(line)).map(redactAndroidDeviceLine),
+    available: deviceLines.filter(looksLikeAndroidPhysicalDevice).map(redactAndroidDeviceLine),
+    unavailable: deviceLines
+      .filter((line) => !isAndroidConnectedDevice(line) && !looksLikeAndroidEmulator(line))
+      .map(redactAndroidDeviceLine),
+    emulators: deviceLines.filter(looksLikeAndroidEmulator).map(redactAndroidDeviceLine),
     error: "",
   };
 }
@@ -253,6 +280,10 @@ function run() {
       failures.push(`Android physical device unavailable: ${summarizeDevice(android.unavailable[0])}`);
     } else {
       failures.push("Android physical device: none attached");
+    }
+
+    if (android.emulators.length > 0) {
+      warnings.push(`Android emulator ignored for physical-device gate: ${summarizeDevice(android.emulators[0])}`);
     }
   }
 

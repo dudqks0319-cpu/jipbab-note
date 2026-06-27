@@ -152,6 +152,55 @@ test("curated recipe thumbnails are local release-safe assets", () => {
   }
 });
 
+test("curated beginner recipes expose local recipe guide images", () => {
+  const beginnerRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) =>
+    recipe.slug?.startsWith("beginner-"),
+  );
+  const sourceLedger = readFileSync(
+    join(process.cwd(), "public/images/recipes/SOURCES.md"),
+    "utf8",
+  );
+
+  assert.equal(beginnerRecipes.length, 120);
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/*.png"));
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/prep/*.png"));
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/steps/*.png"));
+
+  for (const recipe of beginnerRecipes) {
+    const guideImageUrl = recipe.recipeGuideImageUrl;
+    const prepImageUrl = recipe.recipePrepImageUrl;
+    const stepsImageUrl = recipe.recipeStepsImageUrl;
+
+    assert.ok(guideImageUrl, recipe.id);
+    assert.ok(prepImageUrl, recipe.id);
+    assert.ok(stepsImageUrl, recipe.id);
+    assert.ok(
+      guideImageUrl.startsWith("/images/recipes/beginner-recipe-guides/"),
+      recipe.id,
+    );
+    assert.ok(
+      prepImageUrl.startsWith("/images/recipes/beginner-recipe-guides/prep/"),
+      recipe.id,
+    );
+    assert.ok(
+      stepsImageUrl.startsWith("/images/recipes/beginner-recipe-guides/steps/"),
+      recipe.id,
+    );
+    assert.ok(
+      existsSync(join(process.cwd(), "public", guideImageUrl)),
+      `${recipe.id} missing ${guideImageUrl}`,
+    );
+    assert.ok(
+      existsSync(join(process.cwd(), "public", prepImageUrl)),
+      `${recipe.id} missing ${prepImageUrl}`,
+    );
+    assert.ok(
+      existsSync(join(process.cwd(), "public", stepsImageUrl)),
+      `${recipe.id} missing ${stepsImageUrl}`,
+    );
+  }
+});
+
 test("curated recipe thumbnails are documented in the recipe source ledger", () => {
   const sourceLedger = readFileSync(
     join(process.cwd(), "public/images/recipes/SOURCES.md"),

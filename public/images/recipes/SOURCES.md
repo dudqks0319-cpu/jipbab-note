@@ -48,6 +48,10 @@ These poster/detail assets were generated locally from project scripts and in-ho
 - `beginner-scenes/{recipeSlug}/ingredients.svg`: code-generated ingredient preparation image for each BeginnerRecipe, added 2026-05-29
 - `beginner-scenes/{recipeSlug}/tools.svg`: code-generated cooking-tool image for each BeginnerRecipe, added 2026-05-29
 - `beginner-scenes/{recipeSlug}/step-*.svg`: code-generated step-by-step cooking scene images built from `lib/beginner-recipes.ts`, added 2026-05-29. These are original 집밥노트 layout assets and do not use external photos, blog screenshots, marketplace images, brand logos, or character references.
+- `beginner-recipe-guides/*.png`: in-house recipe guide images generated from the installed image generation workflow's local food photos plus app-owned Korean recipe copy, added 2026-06-12. These show beginner ingredients, tools, and cooking order for each BeginnerRecipe; they are not copied from recipe cards, blog images, marketplace images, restaurant photos, or competitor assets.
+- `beginner-recipe-guides/prep/*.png`: in-house tool-and-ingredient guide photos generated from local food-photo assets plus app-owned Korean ingredient/tool copy, added 2026-06-12.
+- `beginner-recipe-guides/steps/*.png`: in-house cooking-order guide photos generated from local food-photo assets plus app-owned Korean step copy, added 2026-06-12.
+- `beginner-imagegen-posters/*.png`: in-house Korean recipe infographic poster images generated with the installed image generation skill from app-owned recipe copy, added 2026-06-13. These show tools, ingredients, and step-by-step cooking order in the reference style requested by the user; they are not copied from recipe cards, blog images, marketplace images, restaurant photos, or competitor assets.
 - `*-recipe-poster.svg`
 - `*-recipe-poster.png`
 - `*-photo-recipe-poster.png`

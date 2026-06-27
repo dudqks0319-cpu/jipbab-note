@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIngredients } from "@/hooks/useIngredients";
 import { CURATED_JIPBAB_RECIPES, CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
 import { getDeviceId } from "@/lib/device-id";
+import { cacheRecipes, listCachedRecipePage } from "@/lib/local-db/recipe-cache-repository";
 import {
   buildRecipeRecommendationReason,
   findExpiringMatchedIngredients,
@@ -197,11 +198,25 @@ export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalog
       requestIdRef.current = requestId;
       const controller = new AbortController();
       requestAbortRef.current = controller;
+      let cachedPage: { recipes: RecipeRecord[]; totalCount: number } | null = null;
 
       setLoading(true);
       setError(null);
 
       try {
+        cachedPage = await listCachedRecipePage({
+          page: targetPage,
+          size: pageSize,
+          searchQuery: targetQuery,
+          selectedCategory: targetCategory,
+        });
+        if (cachedPage.recipes.length > 0 && requestId === requestIdRef.current) {
+          setRawRecipes(cachedPage.recipes);
+          setTotalCount(cachedPage.totalCount);
+          setCategoryCounts(getCuratedFallbackCategoryCounts(targetQuery));
+          setLoading(false);
+        }
+
         const params = buildQueryParams(targetPage, pageSize, targetQuery, targetCategory);
         const response = await fetch(resolveApiUrl(`/api/recipes?${params.toString()}`), {
           cache: "no-store",
@@ -230,6 +245,7 @@ export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalog
               ? normalizeCategoryCounts(payload.categoryCounts)
               : getCuratedFallbackCategoryCounts(targetQuery),
           );
+          void cacheRecipes(recipesFromApi);
           return;
         }
 
@@ -239,6 +255,13 @@ export function useRecipeCatalog(pageSize = DEFAULT_PAGE_SIZE): UseRecipeCatalog
         setCategoryCounts(getCuratedFallbackCategoryCounts(targetQuery));
       } catch {
         if (controller.signal.aborted || requestId !== requestIdRef.current) {
+          return;
+        }
+        if (cachedPage && cachedPage.recipes.length > 0) {
+          setRawRecipes(cachedPage.recipes);
+          setTotalCount(cachedPage.totalCount);
+          setCategoryCounts(getCuratedFallbackCategoryCounts(targetQuery));
+          setError(null);
           return;
         }
         const fallback = getCuratedFallbackPage(targetPage, pageSize, targetQuery, targetCategory);

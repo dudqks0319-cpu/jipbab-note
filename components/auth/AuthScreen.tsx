@@ -35,8 +35,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   const [formError, setFormError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>({})
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const quickProviders = providers
-  const quickEnabledProviders = quickProviders.filter((item) => item.enabled)
+  const quickProviders = providers.filter((item) => item.enabled)
 
   if (mode === 'welcome') {
     return (
@@ -159,26 +158,17 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
       </section>
 
       <section className="space-y-2 pt-6">
-        {quickProviders.map((provider) =>
-          provider.enabled ? (
-            <AuthProviderButton
-              key={provider.provider}
-              disabled={signingIn}
-              provider={provider.provider}
-              onClick={() => {
-                void signInWithProvider(provider.provider)
-              }}
-            />
-          ) : (
-            <div
-              key={provider.provider}
-              className="rounded-[12px] border border-dashed border-[#d8c6b3] bg-[#fffaf3] px-4 py-3 text-center text-sm font-bold text-[#8f7f70]"
-            >
-              {provider.userDisabledReason ?? '지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.'}
-            </div>
-          ),
-        )}
-        {quickEnabledProviders.length === 0 ? (
+        {quickProviders.map((provider) => (
+          <AuthProviderButton
+            key={provider.provider}
+            disabled={signingIn}
+            provider={provider.provider}
+            onClick={() => {
+              void signInWithProvider(provider.provider)
+            }}
+          />
+        ))}
+        {quickProviders.length === 0 ? (
           <p className="rounded-[12px] bg-[#fff0e4] px-4 py-3 text-center text-sm font-bold text-[#d94d19]">
             지금은 소셜 로그인을 사용할 수 없습니다. 아래 이메일로 계속해주세요.
           </p>

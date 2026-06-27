@@ -200,12 +200,10 @@ export async function migrateDeviceData(options: MigrateDeviceDataOptions): Prom
     };
   }
 
-  const tableResults: DeviceDataMigrationTableResult[] = [];
-  for (const table of TABLES_TO_MIGRATE) {
-    // 병렬보다 순차 이전이 충돌 분석에 유리해 순차로 처리합니다.
-    const result = await migrateSingleTable(options.client, table, resolvedDeviceId, options.userId);
-    tableResults.push(result);
-  }
+  const tablePromises = TABLES_TO_MIGRATE.map((table) =>
+    migrateSingleTable(options.client, table, resolvedDeviceId, options.userId)
+  );
+  const tableResults = await Promise.all(tablePromises);
 
   let localMigratedCount = 0;
   for (const key of LOCAL_STORAGE_KEYS) {

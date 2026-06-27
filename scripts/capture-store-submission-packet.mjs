@@ -5,6 +5,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const cwd = process.cwd();
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(cwd, "output", "release-evidence", `${stamp}-store-submission-packet`);
 const screenshotNames = [
@@ -54,6 +56,12 @@ const files = [
   },
 ];
 
+function readIosProjectBuildNumber() {
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
+
 function runStoreAssetCheck() {
   const result = spawnSync(process.execPath, ["scripts/check-store-assets.mjs"], {
     cwd,
@@ -96,7 +104,7 @@ function manifestFor(copiedFiles, assetCheckOutput) {
     `- Output directory: ${outDir}`,
     "- Upload behavior: this command does not upload to App Store Connect or Google Play.",
     "- Source asset gate: `node scripts/check-store-assets.mjs` passed before copying files.",
-    "- App Store target: bundle ID `com.jipbab.note`, build `2026052001`.",
+    `- App Store target: bundle ID \`com.jipbab.note\`, build \`${iosBuild}\`.`,
     "- Google Play target: package `com.jipbab.note`, internal testing track before production.",
     "",
     "## Store Asset Check",

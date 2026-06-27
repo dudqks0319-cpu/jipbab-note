@@ -26,6 +26,11 @@ type RecipeCommentRow = {
   updated_at: string;
 };
 
+type SupabaseQueryError = {
+  code?: string;
+  message?: string;
+};
+
 function jsonError(message: string, status: number) {
   return NextResponse.json({ message }, { status, headers: noStoreHeaders() });
 }
@@ -153,6 +158,18 @@ function rowToComment(row: RecipeCommentRow): RecipeCommentRecord {
   };
 }
 
+function isCommentTableUnavailable(error: SupabaseQueryError | null): boolean {
+  const message = error?.message?.toLowerCase() ?? "";
+  return (
+    error?.code === "PGRST205"
+    || error?.code === "42P01"
+    || (
+      message.includes("recipe_comments")
+      && (message.includes("could not find") || message.includes("does not exist"))
+    )
+  );
+}
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -181,6 +198,9 @@ export async function GET(
     .limit(50);
 
   if (error) {
+    if (isCommentTableUnavailable(error)) {
+      return NextResponse.json({ comments: [] }, { headers: noStoreHeaders() });
+    }
     return jsonError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.", 500);
   }
 

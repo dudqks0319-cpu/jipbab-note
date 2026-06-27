@@ -1,15 +1,29 @@
-// 이 파일은 장보기 목록 CRUD를 Supabase 우선 + localStorage 폴백으로 제공합니다.
+// 이 파일은 장보기 목록 CRUD를 IndexedDB local-first 저장소와 Supabase 백그라운드 동기화로 제공합니다.
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
-import { mergeShoppingItems } from "@/lib/shopping-sync";
-import { getSupabaseClient } from "@/lib/supabase";
-import type { IngredientCategory, ShoppingItem, ShoppingItemDraft } from "@/types";
+import { subscribeLocalDb } from "@/lib/local-db";
+import {
+  getLocalShoppingItem,
+  listLocalShoppingItems,
+  markLocalShoppingItemDeleted,
+  nextShoppingSyncStatus,
+  upsertLocalShoppingItem,
+  upsertLocalShoppingItems,
+} from "@/lib/local-db/shopping-repository";
+import {
+  LOCAL_DB_STORES,
+  type LocalDataScopeContext,
+  type LocalShoppingItem,
+  type PendingSyncAction,
+} from "@/lib/local-db/schema";
+import { syncShoppingWithSupabase } from "@/lib/sync/shopping-sync-service";
+import { enqueuePendingSync } from "@/lib/sync/sync-engine";
+import type { ShoppingItem, ShoppingItemDraft } from "@/types";
 
-const STORAGE_KEY = "jipbab-note-shopping-items";
 const SHOPPING_SYNC_UNAVAILABLE_MESSAGE = "장보기 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
 
 type ShoppingQuerySource = "supabase" | "local";
@@ -20,19 +34,7 @@ type ShoppingScopeOptions = {
   familyGroupId?: string | null;
 };
 
-type ShoppingScopeContext = {
-  scope: ShoppingScope;
-  familyGroupId: string | null;
-};
-
-type ScopedSupabaseQuery = PromiseLike<{
-  data: unknown;
-  error: unknown;
-}> & {
-  eq: (column: string, value: string) => ScopedSupabaseQuery;
-  is: (column: string, value: null) => ScopedSupabaseQuery;
-  maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
-};
+type ShoppingScopeContext = LocalDataScopeContext;
 
 type ShoppingQueryError = {
   message: string;
@@ -50,20 +52,20 @@ type ShoppingAddResult = {
   source: ShoppingQuerySource;
 };
 
-type RawShoppingRow = {
-  id: string;
-  device_id: string;
-  user_id: string | null;
-  family_group_id?: string | null;
-  name: string;
-  quantity: string | null;
-  category: IngredientCategory | null;
-  checked: boolean;
-  source_recipe_id: string | null;
-  source_recipe_name: string | null;
-  created_at: string;
-  updated_at: string;
-};
+export interface UseShoppingResult {
+  items: ShoppingItem[];
+  uncheckedCount: number;
+  checkedCount: number;
+  loading: boolean;
+  error: ShoppingQueryError | null;
+  source: ShoppingQuerySource;
+  addItem: (draft: ShoppingItemDraft, options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
+  addItems: (drafts: ShoppingItemDraft[], options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
+  toggleItem: (itemId: string) => Promise<void>;
+  removeItem: (itemId: string) => Promise<void>;
+  clearCheckedItems: () => Promise<void>;
+  listItems: () => Promise<ShoppingItem[]>;
+}
 
 function normalizeDraft(draft: ShoppingItemDraft): ShoppingItemDraft {
   return {
@@ -75,23 +77,6 @@ function normalizeDraft(draft: ShoppingItemDraft): ShoppingItemDraft {
   };
 }
 
-function rowToItem(row: RawShoppingRow): ShoppingItem {
-  return {
-    id: row.id,
-    deviceId: row.device_id,
-    userId: row.user_id,
-    familyGroupId: row.family_group_id ?? null,
-    name: row.name,
-    quantity: row.quantity,
-    category: row.category,
-    checked: row.checked,
-    sourceRecipeId: row.source_recipe_id,
-    sourceRecipeName: row.source_recipe_name,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
 function buildScopeContext(options?: ShoppingScopeOptions): ShoppingScopeContext {
   const familyGroupId = options?.familyGroupId?.trim() || null;
   return {
@@ -100,100 +85,18 @@ function buildScopeContext(options?: ShoppingScopeOptions): ShoppingScopeContext
   };
 }
 
-function belongsToScope(item: ShoppingItem, deviceId: string, scopeContext: ShoppingScopeContext): boolean {
-  if (scopeContext.scope === "family") {
-    return item.familyGroupId === scopeContext.familyGroupId;
-  }
-
-  return item.deviceId === deviceId && !item.familyGroupId;
-}
-
-function safeReadAllLocalItems(): ShoppingItem[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .filter((item): item is ShoppingItem => {
-        if (typeof item !== "object" || item === null) {
-          return false;
-        }
-
-        const record = item as Record<string, unknown>;
-        return (
-          typeof record.id === "string" &&
-          typeof record.name === "string" &&
-          typeof record.checked === "boolean" &&
-          typeof record.createdAt === "string"
-        );
-      });
-  } catch {
-    return [];
-  }
-}
-
-function safeReadLocalItems(deviceId: string, scopeContext: ShoppingScopeContext): ShoppingItem[] {
-  return safeReadAllLocalItems().filter((item) => belongsToScope(item, deviceId, scopeContext));
-}
-
-function safeWriteLocalItems(nextItems: ShoppingItem[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextItems));
-}
-
-function replaceScopedLocalItems(
-  deviceId: string,
-  scopeContext: ShoppingScopeContext,
-  nextScopedItems: ShoppingItem[],
-): ShoppingItem[] {
-  const nextItems = [
-    ...nextScopedItems,
-    ...safeReadAllLocalItems().filter((item) => !belongsToScope(item, deviceId, scopeContext)),
-  ];
-  safeWriteLocalItems(nextItems);
-  return nextScopedItems;
-}
-
-function removeLocalItem(deviceId: string, scopeContext: ShoppingScopeContext, itemId: string): ShoppingItem[] {
-  const nextItems = safeReadAllLocalItems().filter((item) => item.id !== itemId);
-  safeWriteLocalItems(nextItems);
-  return nextItems.filter((item) => belongsToScope(item, deviceId, scopeContext));
-}
-
-function removeLocalCheckedItems(deviceId: string, scopeContext: ShoppingScopeContext): ShoppingItem[] {
-  const nextItems = safeReadAllLocalItems().filter(
-    (item) => !belongsToScope(item, deviceId, scopeContext) || !item.checked,
-  );
-  safeWriteLocalItems(nextItems);
-  return nextItems.filter((item) => belongsToScope(item, deviceId, scopeContext));
-}
-
 function makeLocalItem(
   deviceId: string,
-  userId: string | null,
   draft: ShoppingItemDraft,
   familyGroupId: string | null,
-): ShoppingItem {
+): LocalShoppingItem {
   const normalized = normalizeDraft(draft);
   const now = new Date().toISOString();
 
   return {
     id: uuidv4(),
     deviceId,
-    userId,
+    userId: null,
     familyGroupId,
     name: normalized.name,
     quantity: normalized.quantity ?? null,
@@ -203,46 +106,14 @@ function makeLocalItem(
     sourceRecipeName: normalized.sourceRecipeName ?? null,
     createdAt: now,
     updatedAt: now,
-  };
-}
-
-function toInsertPayload(
-  deviceId: string,
-  userId: string | null,
-  draft: ShoppingItemDraft,
-  familyGroupId: string | null,
-) {
-  const normalized = normalizeDraft(draft);
-
-  return {
-    device_id: deviceId,
-    user_id: userId,
-    ...(familyGroupId ? { family_group_id: familyGroupId } : {}),
-    name: normalized.name,
-    quantity: normalized.quantity,
-    category: normalized.category,
-    checked: false,
-    source_recipe_id: normalized.sourceRecipeId,
-    source_recipe_name: normalized.sourceRecipeName,
+    deletedAt: null,
+    syncStatus: "pending_create",
+    lastSyncedAt: null,
   };
 }
 
 function makeError(message: string, source: ShoppingQuerySource): ShoppingQueryError {
   return { message, source };
-}
-
-function hasMissingFamilyScopeColumnError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.includes("family_group_id") && /column|schema cache|does not exist/i.test(message);
-}
-
-function applyShoppingScope(
-  query: ScopedSupabaseQuery,
-  scopeContext: ShoppingScopeContext,
-): ScopedSupabaseQuery {
-  return scopeContext.scope === "family" && scopeContext.familyGroupId
-    ? query.eq("family_group_id", scopeContext.familyGroupId)
-    : query.is("family_group_id", null);
 }
 
 function normalizeShoppingName(name: string): string {
@@ -278,40 +149,27 @@ function mergeSourceDisplay(currentValue: string | null, nextValue: string | nul
   return Array.from(new Set(parts)).join(" · ") || null;
 }
 
-function mergeItemWithDraft(item: ShoppingItem, draft: ShoppingItemDraft): ShoppingItem {
+function mergeItemWithDraft(item: LocalShoppingItem, draft: ShoppingItemDraft): LocalShoppingItem {
   const normalized = normalizeDraft(draft);
+  const syncAction: PendingSyncAction = item.syncStatus === "pending_create" ? "create" : "update";
   return {
     ...item,
     quantity: mergeQuantityDisplay(item.quantity, normalized.quantity ?? null),
     category: item.category ?? normalized.category ?? null,
     sourceRecipeId: mergeSourceDisplay(item.sourceRecipeId, normalized.sourceRecipeId ?? null),
     sourceRecipeName: mergeSourceDisplay(item.sourceRecipeName, normalized.sourceRecipeName ?? null),
+    deletedAt: null,
+    syncStatus: nextShoppingSyncStatus(item.syncStatus, syncAction),
     updatedAt: new Date().toISOString(),
   };
 }
 
-function toUpdatePayload(item: ShoppingItem) {
+function applyItemSyncStatus(item: LocalShoppingItem, action: PendingSyncAction): LocalShoppingItem {
   return {
-    quantity: item.quantity,
-    category: item.category,
-    source_recipe_id: item.sourceRecipeId,
-    source_recipe_name: item.sourceRecipeName,
+    ...item,
+    syncStatus: nextShoppingSyncStatus(item.syncStatus, action),
+    updatedAt: new Date().toISOString(),
   };
-}
-
-export interface UseShoppingResult {
-  items: ShoppingItem[];
-  uncheckedCount: number;
-  checkedCount: number;
-  loading: boolean;
-  error: ShoppingQueryError | null;
-  source: ShoppingQuerySource;
-  addItem: (draft: ShoppingItemDraft, options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
-  addItems: (drafts: ShoppingItemDraft[], options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
-  toggleItem: (itemId: string) => Promise<void>;
-  removeItem: (itemId: string) => Promise<void>;
-  clearCheckedItems: () => Promise<void>;
-  listItems: () => Promise<ShoppingItem[]>;
 }
 
 export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
@@ -327,70 +185,58 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
   const [error, setError] = useState<ShoppingQueryError | null>(null);
   const [source, setSource] = useState<ShoppingQuerySource>("local");
 
+  const loadLocalItems = useCallback(async (): Promise<LocalShoppingItem[]> => {
+    const localItems = await listLocalShoppingItems(deviceId, scopeContext);
+    setItems(localItems);
+    setSource("local");
+    return localItems;
+  }, [deviceId, scopeContext]);
+
+  const syncInBackground = useCallback(async (): Promise<LocalShoppingItem[]> => {
+    const synced = await syncShoppingWithSupabase(deviceId, scopeContext);
+    setItems(synced);
+    setSource("supabase");
+    setError(null);
+    return synced;
+  }, [deviceId, scopeContext]);
+
+  const queueRecordsAndSync = useCallback(
+    async (records: Array<{ record: LocalShoppingItem; action: PendingSyncAction }>): Promise<void> => {
+      for (const item of records) {
+        await enqueuePendingSync({
+          tableName: LOCAL_DB_STORES.shoppingItems,
+          recordId: item.record.id,
+          action: item.action,
+          payload: item.record,
+        });
+      }
+
+      void syncInBackground().catch(() => {
+        setSource("local");
+      });
+    },
+    [syncInBackground],
+  );
+
   const listItems = useCallback(async (): Promise<ShoppingItem[]> => {
     setLoading(true);
     setError(null);
 
+    const localItems = await loadLocalItems();
+    setLoading(localItems.length === 0);
+
     try {
-      const client = getSupabaseClient({ deviceId });
-      const scopedQuery = applyShoppingScope(
-        client
-          .from("shopping_items")
-          .select("*")
-          .order("created_at", { ascending: false }) as unknown as ScopedSupabaseQuery,
-        scopeContext,
-      );
-      const { data, error: queryError } = await scopedQuery;
-
-      if (queryError) {
-        throw queryError;
-      }
-
-      const localFallback = safeReadLocalItems(deviceId, scopeContext);
-      const mapped = (Array.isArray(data) ? data : []).map((row: unknown) => rowToItem(row as RawShoppingRow));
-      const merged = mergeShoppingItems(localFallback, mapped);
-      setItems(merged);
-      setSource("supabase");
-      replaceScopedLocalItems(deviceId, scopeContext, merged);
-      return merged;
-    } catch (caught) {
-      if (scopeContext.scope === "personal" && hasMissingFamilyScopeColumnError(caught)) {
-        try {
-          const client = getSupabaseClient({ deviceId });
-          const { data, error: legacyQueryError } = await client
-            .from("shopping_items")
-            .select("*")
-            .order("created_at", { ascending: false });
-          if (legacyQueryError) {
-            throw legacyQueryError;
-          }
-
-          const localFallback = safeReadLocalItems(deviceId, scopeContext);
-          const mapped = (data ?? []).map((row) => rowToItem(row as RawShoppingRow));
-          const merged = mergeShoppingItems(localFallback, mapped.filter((item) => !item.familyGroupId));
-          setItems(merged);
-          setSource("supabase");
-          replaceScopedLocalItems(deviceId, scopeContext, merged);
-          return merged;
-        } catch (legacyCaught) {
-          console.warn("장보기 목록 legacy 동기화도 실패", legacyCaught);
-        }
-      }
-
-      const fallback = safeReadLocalItems(deviceId, scopeContext);
-      setItems(fallback);
+      return await syncInBackground();
+    } catch {
       setSource("local");
-      if (fallback.length > 0) {
-        console.warn("장보기 목록 로컬 표시로 전환", caught);
-        setError(null);
-      } else {
+      if (localItems.length === 0) {
         setError(makeError(SHOPPING_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
       }
-      return fallback;
+      return localItems;
     } finally {
       setLoading(false);
     }
-  }, [deviceId, scopeContext]);
+  }, [loadLocalItems, syncInBackground]);
 
   const addItems = useCallback(
     async (drafts: ShoppingItemDraft[], options: ShoppingAddOptions = {}): Promise<ShoppingAddResult> => {
@@ -403,113 +249,63 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
 
       setLoading(true);
       setError(null);
-      let userId: string | null = null;
-      const existingByName = new Map(items.map((item) => [normalizeShoppingName(item.name), item]));
-      const mergePairs = cleanedDrafts
-        .map((draft) => ({ draft, existing: existingByName.get(normalizeShoppingName(draft.name)) }))
-        .filter((pair): pair is { draft: ShoppingItemDraft; existing: ShoppingItem } => Boolean(pair.existing));
-      const skippedDuplicates = options.mergeDuplicates
-        ? []
-        : mergePairs.map((pair) => pair.draft.name);
-      const mergeTargets = options.mergeDuplicates ? mergePairs : [];
-      const insertDrafts = cleanedDrafts.filter((draft) => !existingByName.has(normalizeShoppingName(draft.name)));
 
-      if (insertDrafts.length === 0 && mergeTargets.length === 0) {
+      const nextItems = await listLocalShoppingItems(deviceId, scopeContext);
+      const skippedDuplicates: string[] = [];
+      const changed: Array<{ record: LocalShoppingItem; action: PendingSyncAction }> = [];
+      let addedCount = 0;
+      let mergedCount = 0;
+
+      for (const draft of cleanedDrafts) {
+        const existingIndex = nextItems.findIndex(
+          (item) => normalizeShoppingName(item.name) === normalizeShoppingName(draft.name),
+        );
+
+        if (existingIndex >= 0) {
+          if (!options.mergeDuplicates) {
+            skippedDuplicates.push(draft.name);
+            continue;
+          }
+
+          const existing = nextItems[existingIndex];
+          if (!existing) {
+            continue;
+          }
+          const merged = mergeItemWithDraft(existing, draft);
+          nextItems[existingIndex] = merged;
+          changed.push({
+            record: merged,
+            action: existing.syncStatus === "pending_create" ? "create" : "update",
+          });
+          mergedCount += 1;
+          continue;
+        }
+
+        const created = makeLocalItem(
+          deviceId,
+          draft,
+          scopeContext.scope === "family" ? scopeContext.familyGroupId : null,
+        );
+        nextItems.unshift(created);
+        changed.push({ record: created, action: "create" });
+        addedCount += 1;
+      }
+
+      if (changed.length === 0) {
         setLoading(false);
         return { addedCount: 0, mergedCount: 0, skippedDuplicates, source };
       }
 
-      try {
-        const client = getSupabaseClient({ deviceId });
-        const { data: authData } = await client.auth.getUser();
-        userId = authData.user?.id ?? null;
-
-        const mergedRows: ShoppingItem[] = [];
-        for (const { existing, draft } of mergeTargets) {
-          const mergedItem = mergeItemWithDraft(existing, draft);
-          const updateQuery = client
-            .from("shopping_items")
-            .update(toUpdatePayload(mergedItem))
-            .eq("id", existing.id)
-            .select("*") as unknown as ScopedSupabaseQuery;
-          const scopedUpdateQuery = applyShoppingScope(updateQuery, scopeContext);
-          const { data, error: updateError } = await scopedUpdateQuery.maybeSingle();
-          if (updateError) throw updateError;
-          if (data) {
-            mergedRows.push(rowToItem(data as RawShoppingRow));
-          }
-        }
-
-        let inserted: ShoppingItem[] = [];
-        if (insertDrafts.length > 0) {
-          const { data, error: queryError } = await client
-            .from("shopping_items")
-            .insert(insertDrafts.map((draft) => toInsertPayload(
-              deviceId,
-              userId,
-              draft,
-              scopeContext.scope === "family" ? scopeContext.familyGroupId : null,
-            )))
-            .select("*");
-
-          if (queryError) {
-            throw queryError;
-          }
-          inserted = (data ?? []).map((row) => rowToItem(row as RawShoppingRow));
-        }
-
-        setItems((prev) => {
-          const mergedById = new Map([...mergedRows, ...inserted].map((item) => [item.id, item]));
-          const nextItems = [
-            ...prev.map((item) => mergedById.get(item.id) ?? item),
-            ...inserted.filter((item) => !prev.some((prevItem) => prevItem.id === item.id)),
-          ].sort(
-            (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-          );
-          replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-          return nextItems;
-        });
-        setSource("supabase");
-        return {
-          addedCount: inserted.length,
-          mergedCount: mergedRows.length,
-          skippedDuplicates,
-          source: "supabase",
-        };
-      } catch (caught) {
-        let addedCount = 0;
-        let mergedCount = 0;
-        const nextItems = [...items];
-        for (const draft of cleanedDrafts) {
-          const existingIndex = nextItems.findIndex((item) => normalizeShoppingName(item.name) === normalizeShoppingName(draft.name));
-          if (existingIndex >= 0) {
-            if (options.mergeDuplicates) {
-              nextItems[existingIndex] = mergeItemWithDraft(nextItems[existingIndex], draft);
-              mergedCount += 1;
-            }
-            continue;
-          }
-
-          nextItems.unshift(makeLocalItem(
-            deviceId,
-            userId,
-            draft,
-            scopeContext.scope === "family" ? scopeContext.familyGroupId : null,
-          ));
-          addedCount += 1;
-        }
-        nextItems.sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
-        replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-        setItems(nextItems);
-        setSource("local");
-        console.warn("장보기 항목 로컬 저장으로 전환", caught);
-        setError(null);
-        return { addedCount, mergedCount, skippedDuplicates, source: "local" };
-      } finally {
-        setLoading(false);
-      }
+      nextItems.sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+      await upsertLocalShoppingItems(changed.map((item) => item.record));
+      const latestItems = await loadLocalItems();
+      setItems(latestItems);
+      setSource("local");
+      setLoading(false);
+      await queueRecordsAndSync(changed);
+      return { addedCount, mergedCount, skippedDuplicates, source: "local" };
     },
-    [deviceId, items, scopeContext, source],
+    [deviceId, loadLocalItems, queueRecordsAndSync, scopeContext, source],
   );
 
   const addItem = useCallback(
@@ -524,57 +320,25 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
       setLoading(true);
       setError(null);
 
-      try {
-        const client = getSupabaseClient({ deviceId });
-        const target = items.find((item) => item.id === itemId);
-        if (!target) {
-          setLoading(false);
-          return;
-        }
-
-        const updateQuery = client
-          .from("shopping_items")
-          .update({ checked: !target.checked })
-          .eq("id", itemId)
-          .select("*") as unknown as ScopedSupabaseQuery;
-        const scopedQuery = applyShoppingScope(updateQuery, scopeContext);
-        const { data, error: queryError } = await scopedQuery.maybeSingle();
-        if (queryError) throw queryError;
-
-        if (!data) {
-          setLoading(false);
-          return;
-        }
-
-        const nextItem = rowToItem(data as RawShoppingRow);
-        setItems((prev) => {
-          const nextItems = prev.map((item) => (item.id === itemId ? nextItem : item));
-          replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-          return nextItems;
-        });
-        setSource("supabase");
-      } catch (caught) {
-        setItems((prev) => {
-          const nextItems = prev.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  checked: !item.checked,
-                  updatedAt: new Date().toISOString(),
-                }
-              : item,
-          );
-          replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-          return nextItems;
-        });
-        setSource("local");
-        console.warn("장보기 항목 업데이트 로컬 저장으로 전환", caught);
-        setError(null);
-      } finally {
+      const target = await getLocalShoppingItem(itemId);
+      if (!target || target.deletedAt) {
         setLoading(false);
+        return;
       }
+
+      const action: PendingSyncAction = target.syncStatus === "pending_create" ? "create" : "update";
+      const nextItem = applyItemSyncStatus({
+        ...target,
+        checked: !target.checked,
+      }, action);
+      await upsertLocalShoppingItem(nextItem);
+      const nextItems = await loadLocalItems();
+      setItems(nextItems);
+      setSource("local");
+      setLoading(false);
+      await queueRecordsAndSync([{ record: nextItem, action }]);
     },
-    [deviceId, items, scopeContext],
+    [loadLocalItems, queueRecordsAndSync],
   );
 
   const removeItem = useCallback(
@@ -582,73 +346,52 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
       setLoading(true);
       setError(null);
 
-      try {
-        const client = getSupabaseClient({ deviceId });
-        const scopedQuery = applyShoppingScope(
-          client.from("shopping_items").delete().eq("id", itemId) as unknown as ScopedSupabaseQuery,
-          scopeContext,
-        );
-        const { error: queryError } = await scopedQuery;
-        if (queryError) {
-          throw queryError;
-        }
-
-        setItems((prev) => {
-          const nextItems = prev.filter((item) => item.id !== itemId);
-          replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-          return nextItems;
-        });
-        setSource("supabase");
-      } catch (caught) {
-        const nextItems = removeLocalItem(deviceId, scopeContext, itemId);
-        setItems(nextItems);
-        setSource("local");
-        console.warn("장보기 항목 삭제 로컬 저장으로 전환", caught);
-        setError(null);
-      } finally {
+      const nextItem = await markLocalShoppingItemDeleted(itemId, "pending_delete");
+      if (!nextItem) {
         setLoading(false);
+        return;
       }
+
+      const nextItems = await loadLocalItems();
+      setItems(nextItems);
+      setSource("local");
+      setLoading(false);
+      await queueRecordsAndSync([{ record: nextItem, action: "delete" }]);
     },
-    [deviceId, scopeContext],
+    [loadLocalItems, queueRecordsAndSync],
   );
 
   const clearCheckedItems = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
 
-    try {
-      const client = getSupabaseClient({ deviceId });
-      const checkedIds = items.filter((item) => item.checked).map((item) => item.id);
-      if (checkedIds.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const scopedQuery = applyShoppingScope(
-        client.from("shopping_items").delete().in("id", checkedIds) as unknown as ScopedSupabaseQuery,
-        scopeContext,
-      );
-      const { error: queryError } = await scopedQuery;
-      if (queryError) {
-        throw queryError;
-      }
-
-      setItems((prev) => {
-        const nextItems = prev.filter((item) => !item.checked);
-        replaceScopedLocalItems(deviceId, scopeContext, nextItems);
-        return nextItems;
-      });
-      setSource("supabase");
-    } catch (caught) {
-      const nextItems = removeLocalCheckedItems(deviceId, scopeContext);
-      setItems(nextItems);
-      setSource("local");
-      console.warn("완료 항목 정리 로컬 저장으로 전환", caught);
-      setError(null);
-    } finally {
+    const currentItems = await listLocalShoppingItems(deviceId, scopeContext);
+    const checkedItems = currentItems.filter((item) => item.checked);
+    if (checkedItems.length === 0) {
       setLoading(false);
+      return;
     }
-  }, [deviceId, items, scopeContext]);
+
+    const now = new Date().toISOString();
+    const deletedItems = checkedItems.map((item): LocalShoppingItem => ({
+      ...item,
+      deletedAt: now,
+      syncStatus: "pending_delete",
+      updatedAt: now,
+    }));
+    await upsertLocalShoppingItems(deletedItems);
+    const nextItems = await loadLocalItems();
+    setItems(nextItems);
+    setSource("local");
+    setLoading(false);
+    await queueRecordsAndSync(deletedItems.map((record) => ({ record, action: "delete" })));
+  }, [deviceId, loadLocalItems, queueRecordsAndSync, scopeContext]);
+
+  useEffect(() => {
+    return subscribeLocalDb(LOCAL_DB_STORES.shoppingItems, () => {
+      void loadLocalItems();
+    });
+  }, [loadLocalItems]);
 
   useEffect(() => {
     void listItems();

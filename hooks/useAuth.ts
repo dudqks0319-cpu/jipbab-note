@@ -7,15 +7,17 @@ import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
-import { getSupabaseClient } from "@/lib/supabase";
+import { clearSupabaseAuthStorage, getSupabaseClient } from "@/lib/supabase";
 import {
   buildAuthCallbackUrl,
   buildEmailConfirmationRedirectUrl,
+  buildNativeAuthBridgeUrl,
   buildNativeAuthCallbackUrl,
   isNativeAuthCallbackUrl,
   normalizeAuthNextPath,
 } from "@/lib/auth-redirect";
 import { resolveAuthProviderOptions, type ResolvedAuthProviderOption } from "@/lib/auth-config";
+import { NativeOAuth } from "@/lib/native-oauth";
 import type {
   AuthQueryError,
   DeviceDataMigrationResult,
@@ -30,6 +32,8 @@ const PUBLIC_KAKAO_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_
 const PUBLIC_APPLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED;
 
 const AUTH_UNAVAILABLE_MESSAGE = "지금은 로그인 기능을 사용할 수 없습니다. 잠시 후 다시 시도해주세요.";
+const NATIVE_AUTH_CALLBACK_SCHEME = "com.jipbab.note";
+const NATIVE_AUTH_CALLBACK_TIMEOUT_MS = 90_000;
 
 type EmailSignInResult = {
   ok: boolean;
@@ -69,12 +73,31 @@ function getAuthUserMessage(
     return "요청이 많습니다. 잠시 후 다시 시도해주세요.";
   }
 
+  if (rawMessage.includes("native oauth app update required")) {
+    return "앱 업데이트가 필요합니다. TestFlight에서 최신 집밥노트로 업데이트한 뒤 다시 로그인해주세요.";
+  }
+
+  if (rawMessage.includes("native oauth callback timed out")) {
+    return "로그인 결과가 앱으로 돌아오지 않았습니다. 앱을 완전히 종료한 뒤 다시 시도해주세요.";
+  }
+
   return fallbackMessage;
 }
 
 function isIgnorableMissingSessionError(error: { message?: string } | null | undefined): boolean {
   const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
   return message.includes("auth session missing");
+}
+
+function shouldClearStoredSession(error: { message?: string } | null | undefined): boolean {
+  const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+  return (
+    isIgnorableMissingSessionError(error) ||
+    message.includes("invalid refresh token") ||
+    message.includes("refresh token not found") ||
+    message.includes("user not found") ||
+    message.includes("jwt malformed")
+  );
 }
 
 function buildProviderOptions(): ResolvedAuthProviderOption[] {
@@ -177,7 +200,147 @@ function shouldUseNativeOAuth(): boolean {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
 }
 
+function enforceNativeOAuthRedirect(providerUrl: string, nextPath: string): string {
+  const url = new URL(providerUrl);
+  url.searchParams.set("redirect_to", buildNativeAuthBridgeUrl(window.location.origin, nextPath));
+  return url.toString();
+}
+
+function hasRequiredIosNativeOAuthPlugins(): boolean {
+  return Capacitor.isPluginAvailable("JipbabOAuth") && Capacitor.isPluginAvailable("App");
+}
+
+async function createNativeAuthCallbackUrlWaiter(): Promise<{
+  promise: Promise<string>;
+  cleanup: () => Promise<void>;
+}> {
+  const { App } = await import("@capacitor/app");
+  let appUrlListener: PluginListenerHandle | null = null;
+  let shouldRemoveOnAttach = false;
+  let settled = false;
+
+  const cleanup = async () => {
+    shouldRemoveOnAttach = true;
+    await appUrlListener?.remove();
+    appUrlListener = null;
+  };
+
+  const promise = new Promise<string>((resolve, reject) => {
+    const finish = (callback: () => void) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      void cleanup().finally(callback);
+    };
+
+    App.addListener("appUrlOpen", ({ url }) => {
+      if (!isNativeAuthCallbackUrl(url)) {
+        return;
+      }
+
+      finish(() => resolve(url));
+    })
+      .then((nextAppUrlListener) => {
+        if (shouldRemoveOnAttach) {
+          void nextAppUrlListener.remove();
+          return;
+        }
+
+        appUrlListener = nextAppUrlListener;
+      })
+      .catch((caught) => {
+        finish(() => reject(caught instanceof Error ? caught : new Error("Native OAuth callback listener failed.")));
+      });
+  });
+
+  return {
+    promise,
+    cleanup,
+  };
+}
+
+async function waitForNativeAuthCallbackUrl(
+  nativeAuthPromise: Promise<string>,
+  appUrlPromise: Promise<string>,
+): Promise<string> {
+  let hasSettled = false;
+  const failures: unknown[] = [];
+
+  return await new Promise<string>((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      if (hasSettled) {
+        return;
+      }
+
+      hasSettled = true;
+      reject(failures[0] ?? new Error("Native OAuth callback timed out."));
+    }, NATIVE_AUTH_CALLBACK_TIMEOUT_MS);
+
+    const resolveOnce = (url: string) => {
+      if (hasSettled) {
+        return;
+      }
+
+      hasSettled = true;
+      window.clearTimeout(timer);
+      resolve(url);
+    };
+
+    const recordFailure = (caught: unknown) => {
+      failures.push(caught);
+    };
+
+    nativeAuthPromise.then(resolveOnce).catch(recordFailure);
+    appUrlPromise.then(resolveOnce).catch(recordFailure);
+  });
+}
+
 async function openNativeOAuthSession(
+  client: SupabaseClient,
+  providerUrl: string,
+  fallbackNextPath: string,
+): Promise<void> {
+  const nativeProviderUrl = enforceNativeOAuthRedirect(providerUrl, fallbackNextPath);
+
+  if (Capacitor.getPlatform() === "ios") {
+    if (!hasRequiredIosNativeOAuthPlugins()) {
+      throw new Error("Native OAuth app update required.");
+    }
+
+    const appUrlCallbackWaiter = await createNativeAuthCallbackUrlWaiter();
+
+    try {
+      const callbackUrl = await waitForNativeAuthCallbackUrl(
+        NativeOAuth.authenticate({
+          url: nativeProviderUrl,
+          callbackScheme: NATIVE_AUTH_CALLBACK_SCHEME,
+        }).then(({ url }) => url),
+        appUrlCallbackWaiter.promise,
+      );
+      await appUrlCallbackWaiter.cleanup();
+      const nextPath = await exchangeNativeOAuthCallbackUrl(client, callbackUrl, fallbackNextPath);
+      window.location.assign(nextPath);
+      return;
+    } catch {
+      await appUrlCallbackWaiter.cleanup();
+      try {
+        await openBrowserOAuthSession(client, nativeProviderUrl, fallbackNextPath);
+      } catch {
+        window.location.assign(nativeProviderUrl);
+      }
+      return;
+    }
+  }
+
+  try {
+    await openBrowserOAuthSession(client, providerUrl, fallbackNextPath);
+  } catch {
+    window.location.assign(providerUrl);
+  }
+}
+
+async function openBrowserOAuthSession(
   client: SupabaseClient,
   providerUrl: string,
   fallbackNextPath: string,
@@ -189,10 +352,20 @@ async function openNativeOAuthSession(
 
   let appUrlListener: PluginListenerHandle | null = null;
   let browserFinishedListener: PluginListenerHandle | null = null;
+  let browserFinishedGraceTimer: ReturnType<typeof setTimeout> | null = null;
+  let browserSessionTimer: ReturnType<typeof setTimeout> | null = null;
   let settled = false;
 
   await new Promise<void>((resolve, reject) => {
     const cleanup = async () => {
+      if (browserFinishedGraceTimer) {
+        clearTimeout(browserFinishedGraceTimer);
+        browserFinishedGraceTimer = null;
+      }
+      if (browserSessionTimer) {
+        clearTimeout(browserSessionTimer);
+        browserSessionTimer = null;
+      }
       await appUrlListener?.remove();
       await browserFinishedListener?.remove();
       appUrlListener = null;
@@ -223,23 +396,12 @@ async function openNativeOAuthSession(
         }
 
         try {
-          const callbackUrl = new URL(url);
-          const providerError = callbackUrl.searchParams.get("error") ?? callbackUrl.searchParams.get("error_description");
-          if (providerError) {
-            throw new Error(providerError);
+          if (browserFinishedGraceTimer) {
+            clearTimeout(browserFinishedGraceTimer);
+            browserFinishedGraceTimer = null;
           }
 
-          const code = callbackUrl.searchParams.get("code");
-          if (!code) {
-            throw new Error("OAuth callback code was not returned.");
-          }
-
-          const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
-          if (exchangeError) {
-            throw exchangeError;
-          }
-
-          const nextPath = normalizeAuthNextPath(callbackUrl.searchParams.get("next") ?? fallbackNextPath);
+          const nextPath = await exchangeNativeOAuthCallbackUrl(client, url, fallbackNextPath);
           window.location.assign(nextPath);
           complete();
         } catch (caught) {
@@ -247,12 +409,17 @@ async function openNativeOAuthSession(
         }
       }),
       Browser.addListener("browserFinished", () => {
-        fail(new Error("OAuth browser was closed before login completed."));
+        browserFinishedGraceTimer = setTimeout(() => {
+          fail(new Error("OAuth browser was closed before login completed."));
+        }, 2500);
       }),
     ])
       .then(([nextAppUrlListener, nextBrowserFinishedListener]) => {
         appUrlListener = nextAppUrlListener;
         browserFinishedListener = nextBrowserFinishedListener;
+        browserSessionTimer = setTimeout(() => {
+          fail(new Error("Native OAuth callback timed out."));
+        }, NATIVE_AUTH_CALLBACK_TIMEOUT_MS);
         return Browser.open({
           url: providerUrl,
           presentationStyle: "fullscreen",
@@ -261,6 +428,34 @@ async function openNativeOAuthSession(
       })
       .catch(fail);
   });
+}
+
+async function exchangeNativeOAuthCallbackUrl(
+  client: SupabaseClient,
+  value: string,
+  fallbackNextPath: string,
+): Promise<string> {
+  if (!isNativeAuthCallbackUrl(value)) {
+    throw new Error("OAuth callback URL did not match the app callback scheme.");
+  }
+
+  const callbackUrl = new URL(value);
+  const providerError = callbackUrl.searchParams.get("error") ?? callbackUrl.searchParams.get("error_description");
+  if (providerError) {
+    throw new Error(providerError);
+  }
+
+  const code = callbackUrl.searchParams.get("code");
+  if (!code) {
+    throw new Error("OAuth callback code was not returned.");
+  }
+
+  const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
+  if (exchangeError) {
+    throw exchangeError;
+  }
+
+  return normalizeAuthNextPath(callbackUrl.searchParams.get("next") ?? fallbackNextPath);
 }
 
 export interface UseAuthResult {
@@ -373,7 +568,7 @@ export function useAuth(): UseAuthResult {
       try {
         const nextPath = "/mypage";
         const redirectTo = shouldUseNativeOAuth()
-          ? buildNativeAuthCallbackUrl(nextPath)
+          ? buildNativeAuthBridgeUrl(window.location.origin, nextPath)
           : buildBrowserAuthCallbackUrl(nextPath);
         const { data, error: signInError } = await client.auth.signInWithOAuth({
           provider,
@@ -513,6 +708,7 @@ export function useAuth(): UseAuthResult {
       return;
     }
 
+    clearSupabaseAuthStorage();
     migratedKeyRef.current.clear();
     setMigrationResult(null);
     setUser(null);
@@ -537,8 +733,14 @@ export function useAuth(): UseAuthResult {
         return;
       }
 
-      if (authError && !isIgnorableMissingSessionError(authError)) {
-        setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "supabase"));
+      if (authError) {
+        if (shouldClearStoredSession(authError)) {
+          clearSupabaseAuthStorage();
+        }
+
+        if (!isIgnorableMissingSessionError(authError)) {
+          setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "supabase"));
+        }
       }
 
       setUser(data.user ?? null);

@@ -109,6 +109,15 @@ test("Cloudflare build artifacts are ignored by lint and git", () => {
   assert.match(gitignore, /\.wrangler\//);
 });
 
+test("Vercel deploy input excludes local code intelligence artifacts", () => {
+  const vercelIgnore = readFileSync(".vercelignore", "utf8");
+
+  assert.match(vercelIgnore, /^\.codegraph$/m);
+  assert.match(vercelIgnore, /^\.vercel$/m);
+  assert.match(vercelIgnore, /^output$/m);
+  assert.match(vercelIgnore, /^\.release-secrets$/m);
+});
+
 test("Capacitor bootstrap shell is separated from Next public assets", () => {
   const capacitorConfig = readFileSync("capacitor.config.ts", "utf8");
   const syncScript = readFileSync("scripts/sync-capacitor.mjs", "utf8");

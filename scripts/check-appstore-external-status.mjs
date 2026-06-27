@@ -33,6 +33,14 @@ const checks = [
     args: ["scripts/check-real-device-availability.mjs", "--platform=ios"],
   },
   {
+    label: "iOS cable QA evidence",
+    args: ["scripts/check-ios-cable-qa-evidence.mjs"],
+  },
+  {
+    label: "iOS XCUITest smoke evidence",
+    args: ["scripts/check-ios-xcuitest-smoke-evidence.mjs"],
+  },
+  {
     label: "iOS real-device QA evidence",
     args: ["scripts/check-real-device-qa-evidence.mjs", "--platform=ios"],
   },

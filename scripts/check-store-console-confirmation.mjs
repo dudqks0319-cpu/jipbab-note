@@ -8,12 +8,13 @@ const envPaths = [
   path.join(process.cwd(), ".env.android-signing.local"),
   path.join(process.cwd(), ".env.store-api.local"),
 ];
+const iosProjectPath = path.join(process.cwd(), "ios/App/App.xcodeproj/project.pbxproj");
 const appStoreConnectApiBaseUrl = "https://api.appstoreconnect.apple.com";
 const googleTokenUrl = "https://oauth2.googleapis.com/token";
 const googleAndroidPublisherBaseUrl = "https://androidpublisher.googleapis.com/androidpublisher/v3";
 const androidPublisherScope = "https://www.googleapis.com/auth/androidpublisher";
 const defaultBundleId = "com.jipbab.note";
-const defaultIosBuild = "2026052001";
+const defaultIosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const defaultAndroidVersionCode = "1";
 const defaultPlayTrack = "internal";
 const storePlatformAliases = {
@@ -26,6 +27,16 @@ const storePlatformAliases = {
   "play-store": "play",
   android: "play",
 };
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 function targetStorePlatform() {
   const arg = process.argv.find((item) => item.startsWith("--platform="));
@@ -64,7 +75,7 @@ const requiredEvidence = [
     terms: [
       "App Store Connect/TestFlight: confirmed",
       "Bundle ID: com.jipbab.note",
-      "iOS build: 2026052001",
+      `iOS build: ${defaultIosBuild}`,
       "TestFlight processing: confirmed",
       "Internal tester availability: confirmed",
     ],

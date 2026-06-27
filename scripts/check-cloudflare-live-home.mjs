@@ -1,7 +1,8 @@
-const DEFAULT_CLOUDFLARE_URL = "https://jipbab-note-app.dudqks0319.workers.dev";
-
 function normalizeBaseUrl(value) {
-  const raw = value?.trim() || DEFAULT_CLOUDFLARE_URL;
+  const raw = value?.trim();
+  if (!raw) {
+    throw new Error("Set PRODUCTION_APP_URL or CAPACITOR_SERVER_URL to the Cloudflare app URL");
+  }
   const url = new URL(raw);
   if (url.protocol !== "https:") {
     throw new Error("Cloudflare app URL must use HTTPS");
