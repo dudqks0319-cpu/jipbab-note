@@ -242,6 +242,8 @@ const inferStepHeat = (recipe: CuratedRecipe, description: string): string => {
 
 const enrichStepForBeginner = (recipe: CuratedRecipe, step: RecipeDetailStep): RecipeDetailStep => ({
   ...step,
+  imageUrl: step.imageUrl ?? recipe.thumbnailUrl,
+  imageAlt: step.imageAlt ?? `${recipe.name} 실제 음식 사진`,
   heat: step.heat ?? inferStepHeat(recipe, step.description),
   minutes: step.minutes ?? inferStepMinutes(step.description) ?? 1,
   commonMistake: step.commonMistake ?? "불을 너무 세게 하거나 한 번에 많이 섞으면 기준을 놓치기 쉽습니다.",
@@ -1020,8 +1022,8 @@ function getBeginnerRecipeThumbnail(recipe: BeginnerRecipe): string {
   return BEGINNER_FOOD_PHOTO_THUMBNAILS.get(recipe.slug) ?? `/images/recipes/beginner-scenes/${recipe.slug}/cover.svg`;
 }
 
-function getBeginnerRecipeStepImage(recipe: BeginnerRecipe, order: number): string {
-  return `/images/recipes/beginner-scenes/${recipe.slug}/step-${String(order).padStart(2, "0")}.svg`;
+function getBeginnerRecipeStepImage(recipe: BeginnerRecipe): string {
+  return getBeginnerRecipeThumbnail(recipe);
 }
 
 function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string {
@@ -1118,8 +1120,8 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
       title: step.title,
       action: step.action,
       description: step.action,
-      imageUrl: getBeginnerRecipeStepImage(recipe, step.order),
-      imageAlt: `${recipe.title} ${step.order}단계 ${step.title}`,
+      imageUrl: getBeginnerRecipeStepImage(recipe),
+      imageAlt: `${recipe.title} 실제 음식 사진`,
       heat: step.heat,
       minutes: step.minutes,
       beginnerTip: step.commonMistake,
@@ -2481,10 +2483,10 @@ function mergeBeginnerContractIntoLegacyRecipe(recipe: BeginnerRecipe, legacy: C
     recipeGuideImageUrl: getBeginnerRecipeGuideImage(recipe),
     recipePrepImageUrl: getBeginnerRecipePrepImage(recipe),
     recipeStepsImageUrl: getBeginnerRecipeStepsImage(recipe),
-    steps: legacy.steps.map((step, index) => ({
+    steps: legacy.steps.map((step) => ({
       ...step,
-      imageUrl: getBeginnerRecipeStepImage(recipe, step.order ?? step.index ?? index + 1),
-      imageAlt: `${recipe.title} ${step.order ?? step.index ?? index + 1}단계`,
+      imageUrl: getBeginnerRecipeStepImage(recipe),
+      imageAlt: `${recipe.title} 실제 음식 사진`,
     })),
     difficultyLevel: legacy.difficultyLevel ?? recipe.difficultyLevel,
     beginnerScore: Math.max(legacy.beginnerScore ?? 0, recipe.beginnerScore),

@@ -21,6 +21,14 @@ import {
   sortRecipeListRecipes,
 } from "../lib/recipe-list-filters.ts";
 
+const DISALLOWED_STEP_IMAGE_PATTERNS = [
+  /\/beginner-scenes\//,
+  /\/beginner-recipe-guides\//,
+  /\/beginner-imagegen-posters\//,
+  /-recipe-poster\.(png|svg)$/i,
+  /\.svg$/i,
+];
+
 test("calculateRecipeIngredientMatch keeps the existing match result shape", () => {
   const match = calculateRecipeIngredientMatch(["계란", "대파"], "계란 2개, 대파 1줄기, 간장 1큰술");
 
@@ -149,6 +157,25 @@ test("curated recipe thumbnails are local release-safe assets", () => {
       existsSync(join(process.cwd(), "public", thumbnailUrl)),
       `${recipe.id} missing ${thumbnailUrl}`,
     );
+  }
+});
+
+test("curated recipe instruction steps use local real-food images", () => {
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    assert.ok(recipe.steps.length > 0, recipe.id);
+    for (const step of recipe.steps) {
+      assert.ok(step.imageUrl, `${recipe.id} step ${step.index} missing imageUrl`);
+      assert.ok(step.imageUrl.startsWith("/images/recipes/"), `${recipe.id} step ${step.index} uses ${step.imageUrl}`);
+      assert.equal(
+        DISALLOWED_STEP_IMAGE_PATTERNS.some((pattern) => pattern.test(step.imageUrl ?? "")),
+        false,
+        `${recipe.id} step ${step.index} still uses old/card image ${step.imageUrl}`,
+      );
+      assert.ok(
+        existsSync(join(process.cwd(), "public", step.imageUrl)),
+        `${recipe.id} step ${step.index} missing ${step.imageUrl}`,
+      );
+    }
   }
 });
 

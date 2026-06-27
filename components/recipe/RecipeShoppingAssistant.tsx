@@ -12,6 +12,7 @@ import CoupangAffiliateCard from "@/components/affiliate/CoupangAffiliateCard";
 import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import { getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
 
 type RecipeShoppingAssistantProps = {
@@ -136,12 +137,13 @@ export default function RecipeShoppingAssistant({
           return {
             name: ingredient,
             href: purchaseLink.href,
+            imageUrl: getIngredientPhotoUrl(ingredient, category),
             reason: detail?.display
               ? `${recipeName}에 필요한 ${detail.display} 기준으로 확인해 보세요.`
               : `${recipeName}에 부족한 재료예요.`,
           };
         })
-        .filter((item): item is { name: string; href: string; reason: string } => Boolean(item))
+        .filter((item): item is { name: string; href: string; imageUrl: string; reason: string } => Boolean(item))
         .slice(0, 3),
     [detailByName, match.missingIngredients, ownedCategories, partnerLinks, recipeName],
   );
@@ -386,6 +388,7 @@ export default function RecipeShoppingAssistant({
                     key={`${item.name}-${item.href}`}
                     productName={item.name}
                     affiliateUrl={item.href}
+                    imageUrl={item.imageUrl}
                     reason={item.reason}
                   />
                 ))}

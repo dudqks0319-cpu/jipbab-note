@@ -17,8 +17,10 @@ test("recipe shopping assistant only shows partner cards for missing ingredients
 
   assert.match(assistant, /usePartnerLinks/);
   assert.match(assistant, /getCoupangPurchaseLink/);
+  assert.match(assistant, /getIngredientPhotoUrl/);
   assert.match(assistant, /purchaseLink\.isPartnerLink/);
   assert.match(assistant, /CoupangAffiliateCard/);
+  assert.match(assistant, /imageUrl=\{item\.imageUrl\}/);
   assert.match(assistant, /검증된 쿠팡 파트너스 링크가 있는 재료만 보여줍니다/);
 });
 
