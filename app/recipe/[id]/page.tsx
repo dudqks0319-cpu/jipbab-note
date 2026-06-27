@@ -780,7 +780,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
                   className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
                   imageClassName="h-full w-full object-cover"
                 />
-              ) : recipe.recipeGuideImageUrl ? (
+              ) : !recipe.recipePosterImageUrl && recipe.recipeGuideImageUrl ? (
                 <RecipeImage
                   src={recipe.recipeGuideImageUrl}
                   fallbackSrc={recipe.thumbnailUrl || FALLBACK_IMAGE}

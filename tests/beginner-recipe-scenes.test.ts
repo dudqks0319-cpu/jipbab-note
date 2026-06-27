@@ -87,7 +87,7 @@ test("beginner recipe scene assets exist and keep release-safe rights metadata",
   }
 });
 
-test("curated beginner recipes use real food photos for instruction thumbnails", () => {
+test("curated beginner recipes do not attach unverified instruction step images", () => {
   for (const recipe of CURATED_JIPBAB_RECIPES.filter((item) => item.slug?.startsWith("beginner-"))) {
     assert.ok(recipe.thumbnailUrl, recipe.id);
     assert.ok(recipe.thumbnailUrl.startsWith("/images/recipes/"), `${recipe.id} uses ${recipe.thumbnailUrl}`);
@@ -99,14 +99,8 @@ test("curated beginner recipes use real food photos for instruction thumbnails",
     assert.ok(existsSync(join(process.cwd(), "public", recipe.thumbnailUrl)), `${recipe.id} missing ${recipe.thumbnailUrl}`);
     assert.ok(recipe.steps.length >= 4, recipe.id);
     for (const step of recipe.steps) {
-      assert.ok(step.imageUrl, `${recipe.id} step ${step.index} missing imageUrl`);
-      assert.equal(step.imageUrl, recipe.thumbnailUrl, `${recipe.id} step ${step.index} should reuse the real food photo`);
-      assert.equal(
-        DISALLOWED_INSTRUCTION_IMAGE_PATTERNS.some((pattern) => pattern.test(step.imageUrl ?? "")),
-        false,
-        `${recipe.id} still uses old/card image ${step.imageUrl}`,
-      );
-      assert.ok(existsSync(join(process.cwd(), "public", step.imageUrl)), `${recipe.id} missing ${step.imageUrl}`);
+      assert.equal(step.imageUrl, null, `${recipe.id} step ${step.index} should stay text-only until a matching step photo exists`);
+      assert.equal(step.imageAlt, null, `${recipe.id} step ${step.index} should not describe a missing image`);
     }
   }
 });

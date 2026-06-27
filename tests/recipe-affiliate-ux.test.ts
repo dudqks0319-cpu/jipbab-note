@@ -24,10 +24,11 @@ test("recipe shopping assistant only shows partner cards for missing ingredients
   assert.match(assistant, /검증된 쿠팡 파트너스 링크가 있는 재료만 보여줍니다/);
 });
 
-test("recipe instruction photo mode has an image-less placeholder", () => {
+test("recipe instruction view only renders media when a step image exists", () => {
   const instructionView = readFileSync("components/recipe/RecipeInstructionView.tsx", "utf8");
 
-  assert.match(instructionView, /사진 준비중/);
+  assert.match(instructionView, /Boolean\(step\.imageUrl\)/);
+  assert.doesNotMatch(instructionView, /사진 준비중/);
   assert.match(instructionView, /step\.imageAlt/);
   assert.match(instructionView, /RecipeImage/);
 });

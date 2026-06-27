@@ -160,11 +160,14 @@ test("curated recipe thumbnails are local release-safe assets", () => {
   }
 });
 
-test("curated recipe instruction steps use local real-food images", () => {
+test("curated recipe instruction steps do not require unverified images", () => {
   for (const recipe of CURATED_JIPBAB_RECIPES) {
     assert.ok(recipe.steps.length > 0, recipe.id);
     for (const step of recipe.steps) {
-      assert.ok(step.imageUrl, `${recipe.id} step ${step.index} missing imageUrl`);
+      if (!step.imageUrl) {
+        assert.equal(step.imageUrl, null, `${recipe.id} step ${step.index} uses an empty imageUrl`);
+        continue;
+      }
       assert.ok(step.imageUrl.startsWith("/images/recipes/"), `${recipe.id} step ${step.index} uses ${step.imageUrl}`);
       assert.equal(
         DISALLOWED_STEP_IMAGE_PATTERNS.some((pattern) => pattern.test(step.imageUrl ?? "")),

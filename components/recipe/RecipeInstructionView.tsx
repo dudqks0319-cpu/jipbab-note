@@ -16,7 +16,7 @@ type InstructionMode = "compact" | "list" | "text";
 
 const modeOptions: Array<{ id: InstructionMode; label: string; icon: typeof Grid2X2 }> = [
   { id: "compact", label: "요약", icon: Grid2X2 },
-  { id: "list", label: "사진", icon: Rows3 },
+  { id: "list", label: "상세", icon: Rows3 },
   { id: "text", label: "전체", icon: List },
 ];
 
@@ -77,11 +77,14 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
         {steps.map((step) => {
           const tools = getStepTools(step);
           const heatLabel = getHeatLabel(step);
-          const showMediaColumn = mode !== "text";
+          const showMediaColumn = mode !== "text" && Boolean(step.imageUrl);
+          const gridClassName = showMediaColumn
+            ? "grid grid-cols-[38px_minmax(0,1fr)_112px] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)_128px]"
+            : "grid grid-cols-[38px_minmax(0,1fr)] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)]";
 
           return (
             <li key={step.index} className={mode === "compact" ? "rounded-[8px] border border-[#ece8e2] p-4" : ""}>
-              <div className="grid grid-cols-[38px_minmax(0,1fr)_112px] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)_128px]">
+              <div className={gridClassName}>
                 <span className="pt-0.5 text-[30px] font-black leading-none text-[#2b2b2b]">{step.index}</span>
                 <div className="min-w-0">
                   {step.title ? (
@@ -103,10 +106,6 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                     className="relative mt-1 h-[74px] w-full overflow-hidden rounded-[8px] bg-[#f2eee8] min-[390px]:h-[82px]"
                     imageClassName="h-full w-full object-cover"
                   />
-                ) : showMediaColumn ? (
-                  <div className="mt-1 flex h-[74px] items-center justify-center rounded-[8px] bg-[#f2eee8] px-2 text-center text-[11px] font-black leading-4 text-[#9f9388] min-[390px]:h-[82px]">
-                    사진 준비중
-                  </div>
                 ) : null}
               </div>
               {mode !== "compact" && (step.visualCue || step.beginnerTip) ? (

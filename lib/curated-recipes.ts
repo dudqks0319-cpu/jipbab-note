@@ -242,7 +242,7 @@ const inferStepHeat = (recipe: CuratedRecipe, description: string): string => {
 
 const enrichStepForBeginner = (recipe: CuratedRecipe, step: RecipeDetailStep): RecipeDetailStep => ({
   ...step,
-  imageUrl: step.imageUrl ?? recipe.thumbnailUrl,
+  imageUrl: step.imageUrl ?? null,
   imageAlt: step.imageAlt ?? `${recipe.name} 실제 음식 사진`,
   heat: step.heat ?? inferStepHeat(recipe, step.description),
   minutes: step.minutes ?? inferStepMinutes(step.description) ?? 1,
@@ -1022,10 +1022,6 @@ function getBeginnerRecipeThumbnail(recipe: BeginnerRecipe): string {
   return BEGINNER_FOOD_PHOTO_THUMBNAILS.get(recipe.slug) ?? `/images/recipes/beginner-scenes/${recipe.slug}/cover.svg`;
 }
 
-function getBeginnerRecipeStepImage(recipe: BeginnerRecipe): string {
-  return getBeginnerRecipeThumbnail(recipe);
-}
-
 function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string {
   return `/images/recipes/beginner-recipe-guides/${recipe.slug}.png`;
 }
@@ -1120,8 +1116,8 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
       title: step.title,
       action: step.action,
       description: step.action,
-      imageUrl: getBeginnerRecipeStepImage(recipe),
-      imageAlt: `${recipe.title} 실제 음식 사진`,
+      imageUrl: null,
+      imageAlt: null,
       heat: step.heat,
       minutes: step.minutes,
       beginnerTip: step.commonMistake,
@@ -2485,8 +2481,8 @@ function mergeBeginnerContractIntoLegacyRecipe(recipe: BeginnerRecipe, legacy: C
     recipeStepsImageUrl: getBeginnerRecipeStepsImage(recipe),
     steps: legacy.steps.map((step) => ({
       ...step,
-      imageUrl: getBeginnerRecipeStepImage(recipe),
-      imageAlt: `${recipe.title} 실제 음식 사진`,
+      imageUrl: null,
+      imageAlt: null,
     })),
     difficultyLevel: legacy.difficultyLevel ?? recipe.difficultyLevel,
     beginnerScore: Math.max(legacy.beginnerScore ?? 0, recipe.beginnerScore),
