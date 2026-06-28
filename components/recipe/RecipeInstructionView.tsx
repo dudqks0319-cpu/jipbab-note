@@ -63,11 +63,12 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                 onClick={() => setMode(option.id)}
                 aria-label={`조리순서 ${option.label} 보기`}
                 aria-pressed={active}
-                className={`flex h-11 w-12 items-center justify-center border-l border-[#dedbd6] first:border-l-0 ${
+                className={`flex h-11 min-w-[58px] items-center justify-center gap-1.5 border-l border-[#dedbd6] px-2 first:border-l-0 ${
                   active ? "bg-[#242424] text-white" : "text-[#bdb8b1]"
                 }`}
               >
-                <Icon size={20} />
+                <Icon size={17} />
+                <span className="text-[11px] font-black">{option.label}</span>
               </button>
             );
           })}

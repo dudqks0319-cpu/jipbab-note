@@ -12,6 +12,25 @@ export const BEGINNER_HOME_CONTRACT = {
   allowedSourceTypes: ["original", "original-general-principle", "public-data", "licensed-kogl"] as const,
 } as const;
 
+export const BEGINNER_HOME_QA_EXCLUDED_RECIPE_NAMES = new Set([
+  "양배추달걀전",
+  "참치계란말이",
+  "콩나물밥",
+  "감자채전",
+  "감자달걀샐러드",
+  "라면계란죽",
+  "볶음우동",
+  "어묵우동볶음",
+  "토마토파스타",
+  "참치파스타",
+  "냉국수",
+  "비빔우동",
+  "들기름계란국수",
+  "김치콩나물밥",
+  "오이간장비빔국수",
+  "두부계란부침",
+]);
+
 export type BeginnerRecipeContractIssue = {
   field: string;
   message: string;
@@ -62,6 +81,10 @@ export function validateBeginnerRecipeContract(
   recipe: BeginnerContractCandidate,
 ): BeginnerRecipeContractIssue[] {
   const issues: BeginnerRecipeContractIssue[] = [];
+
+  if (BEGINNER_HOME_QA_EXCLUDED_RECIPE_NAMES.has(recipe.name)) {
+    issues.push({ field: "qaReview", message: "메뉴별 조리 검수 전까지 홈 추천에서 제외합니다." });
+  }
 
   if (typeof recipe.beginnerScore !== "number") {
     issues.push({ field: "beginnerScore", message: "beginnerScore가 없습니다." });

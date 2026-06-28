@@ -729,7 +729,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <QuickAction
             href={hasRecipeVisualGuide ? "#recipe-guide" : "#ingredients"}
             icon={hasRecipeVisualGuide ? <BookOpenText size={30} /> : <Search size={30} />}
-            label={hasRecipeVisualGuide ? "사진레시피" : "재료검색"}
+            label={hasRecipeVisualGuide ? "사진레시피" : "재료 확인"}
             tone="orange"
           />
           <QuickAction href="#shopping-assistant" icon={<ShoppingBag size={30} />} label="장보기" tone="violet" />

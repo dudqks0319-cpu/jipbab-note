@@ -4,6 +4,7 @@ import test from "node:test";
 
 import {
   BEGINNER_HOME_CONTRACT,
+  BEGINNER_HOME_QA_EXCLUDED_RECIPE_NAMES,
   filterBeginnerHomeRecipes,
   isBeginnerHomeRecommendation,
   validateBeginnerRecipeContract,
@@ -112,6 +113,21 @@ test("home recommendation candidates are beginner-safe and rights-safe", () => {
     assert.ok(recipe.requiredTools && recipe.requiredTools.length <= 3, recipe.id);
     assert.ok(recipe.source?.sourceType !== "reference-link", recipe.id);
     assert.ok(recipe.safety?.safetyLevel === "A" || recipe.safety?.safetyLevel === "B", recipe.id);
+  }
+});
+
+test("QA high-risk generated recipes stay out of home recommendations until menu review", () => {
+  const byName = new Map(CURATED_RECIPE_RECORDS.map((recipe) => [recipe.name, recipe]));
+
+  assert.ok(BEGINNER_HOME_QA_EXCLUDED_RECIPE_NAMES.size >= 10);
+  for (const recipeName of BEGINNER_HOME_QA_EXCLUDED_RECIPE_NAMES) {
+    const recipe = byName.get(recipeName);
+    assert.ok(recipe, recipeName);
+    assert.equal(isBeginnerHomeRecommendation(recipe), false, recipeName);
+    assert.ok(
+      validateBeginnerRecipeContract(recipe).some((issue) => issue.field === "qaReview"),
+      recipeName,
+    );
   }
 });
 

@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users } from 'lucide-react'
 
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
@@ -82,9 +82,18 @@ export default function RecipePage() {
   const [toolFilter, setToolFilter] = useState<RecipeToolListFilter>('all')
   const [fridgeFilter, setFridgeFilter] = useState<RecipeFridgeListFilter>('all')
   const [sortMode, setSortMode] = useState<RecipeListSortMode>('recommended')
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const baseRecipes = isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipes
   const visibleTotalCount = isAppStoreDemo ? baseRecipes.length : Math.max(totalCount, baseRecipes.length)
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const linkedQuery = params.get('q') ?? params.get('ingredient')
+    if (linkedQuery?.trim()) {
+      setSearchQuery(linkedQuery.trim())
+    }
+  }, [setSearchQuery])
 
   const filteredRecipes = useMemo(() => {
     const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
@@ -225,50 +234,62 @@ export default function RecipePage() {
 
       <section className="px-5 pt-3">
         <div className="jipbab-panel rounded-[16px] px-3 py-3">
-          <div className="flex items-center gap-2 text-[12px] font-black text-[#4b3929]">
-            <SlidersHorizontal size={14} className="text-[#d94d19]" />
-            목록 필터
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <FilterSelect
-              label="난이도"
-              value={difficultyFilter}
-              options={RECIPE_DIFFICULTY_FILTERS}
-              onChange={(value) => setDifficultyFilter(value as RecipeDifficultyListFilter)}
-            />
-            <FilterSelect
-              label="조리시간"
-              value={timeFilter}
-              options={RECIPE_TIME_FILTERS}
-              onChange={(value) => setTimeFilter(value as RecipeTimeListFilter)}
-            />
-            <FilterSelect
-              label="도구"
-              value={toolFilter}
-              options={RECIPE_TOOL_FILTERS}
-              onChange={(value) => setToolFilter(value as RecipeToolListFilter)}
-            />
-            <FilterSelect
-              label="냉장고"
-              value={fridgeFilter}
-              options={RECIPE_FRIDGE_FILTERS}
-              onChange={(value) => setFridgeFilter(value as RecipeFridgeListFilter)}
-            />
-            <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#7d6d5f]">
-              정렬
-              <select
-                value={sortMode}
-                onChange={(event) => setSortMode(event.target.value as RecipeListSortMode)}
-                className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
-              >
-                {RECIPE_LIST_SORT_OPTIONS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <button
+            type="button"
+            aria-expanded={showAdvancedFilters}
+            onClick={() => setShowAdvancedFilters((current) => !current)}
+            className="flex min-h-10 w-full items-center justify-between gap-3 text-left text-[12px] font-black text-[#4b3929]"
+          >
+            <span className="inline-flex items-center gap-2">
+              <SlidersHorizontal size={14} className="text-[#d94d19]" />
+              목록 필터
+            </span>
+            <span className="rounded-full bg-[#fff0e4] px-2.5 py-1 text-[11px] text-[#d94d19]">
+              {showAdvancedFilters ? '접기' : '상세'}
+            </span>
+          </button>
+          {showAdvancedFilters ? (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <FilterSelect
+                label="난이도"
+                value={difficultyFilter}
+                options={RECIPE_DIFFICULTY_FILTERS}
+                onChange={(value) => setDifficultyFilter(value as RecipeDifficultyListFilter)}
+              />
+              <FilterSelect
+                label="조리시간"
+                value={timeFilter}
+                options={RECIPE_TIME_FILTERS}
+                onChange={(value) => setTimeFilter(value as RecipeTimeListFilter)}
+              />
+              <FilterSelect
+                label="도구"
+                value={toolFilter}
+                options={RECIPE_TOOL_FILTERS}
+                onChange={(value) => setToolFilter(value as RecipeToolListFilter)}
+              />
+              <FilterSelect
+                label="냉장고"
+                value={fridgeFilter}
+                options={RECIPE_FRIDGE_FILTERS}
+                onChange={(value) => setFridgeFilter(value as RecipeFridgeListFilter)}
+              />
+              <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+                정렬
+                <select
+                  value={sortMode}
+                  onChange={(event) => setSortMode(event.target.value as RecipeListSortMode)}
+                  className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
+                >
+                  {RECIPE_LIST_SORT_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : null}
         </div>
       </section>
 

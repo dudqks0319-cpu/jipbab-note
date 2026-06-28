@@ -162,6 +162,24 @@ test("curated recipe thumbnails are local release-safe assets", () => {
   }
 });
 
+test("App Store QA thumbnail fixes use menu-specific food photos", () => {
+  const expectedThumbnails = new Map([
+    ["달걀국", "/images/recipes/beginner-food-photos/beginner-004-egg-drop-soup.png"],
+    ["햄야채볶음밥", "/images/recipes/beginner-food-photos/beginner-016-ham-vegetable-fried-rice.png"],
+    ["감자국", "/images/recipes/beginner-food-photos/beginner-034-gamja-guk.png"],
+    ["참치김치찌개", "/images/recipes/beginner-food-photos/beginner-047-tuna-kimchi-jjigae.png"],
+    ["스팸김치볶음", "/images/recipes/beginner-food-photos/beginner-049-spam-kimchi-bokkeum.png"],
+    ["어묵탕", "/images/recipes/beginner-food-photos/beginner-052-eomuk-tang.png"],
+  ]);
+
+  for (const [recipeName, thumbnailUrl] of expectedThumbnails) {
+    const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.name === recipeName);
+    assert.ok(recipe, recipeName);
+    assert.equal(recipe.thumbnailUrl, thumbnailUrl, recipeName);
+    assert.ok(existsSync(join(process.cwd(), "public", thumbnailUrl)), `${recipeName} missing ${thumbnailUrl}`);
+  }
+});
+
 test("curated recipe instruction steps do not require unverified images", () => {
   for (const recipe of CURATED_JIPBAB_RECIPES) {
     assert.ok(recipe.steps.length > 0, recipe.id);

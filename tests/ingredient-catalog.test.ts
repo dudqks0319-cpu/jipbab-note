@@ -66,6 +66,29 @@ test("ingredient photos avoid misleading generic fallbacks for common confusing 
   assert.equal(getIngredientPhotoUrl("쌈장", "조미료"), "/images/ingredients/ssamjang-photo.png");
 });
 
+test("ingredient photo matching uses exact and explicit alias matches without substring fallback", () => {
+  assert.equal(getIngredientPhotoUrl("파", "채소"), "/images/ingredients/green-onion-shop.png");
+  assert.equal(getIngredientPhotoUrl("대파", "채소"), "/images/ingredients/green-onion-shop.png");
+  assert.equal(getIngredientPhotoUrl("파스타", "곡물/면/빵"), "/images/ingredients/spaghetti-shop.png");
+  assert.equal(getIngredientPhotoUrl("파스타면", "곡물/면/빵"), "/images/ingredients/spaghetti-shop.png");
+  assert.equal(getIngredientPhotoUrl("파인애플", "과일"), "/images/ingredients/pineapple-shop.png");
+  assert.notEqual(getIngredientPhotoUrl("파스타샐러드", "곡물/면/빵"), "/images/ingredients/green-onion-shop.png");
+});
+
+test("ingredient photos cover App Store QA aliases without dumpling or water fallbacks", () => {
+  assert.equal(getIngredientPhotoUrl("옥수수캔", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
+  assert.equal(getIngredientPhotoUrl("통조림 옥수수", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
+  assert.equal(getIngredientPhotoUrl("옥수수", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
+  assert.equal(getIngredientPhotoUrl("냉동볶음밥", "냉동식품"), "/images/ingredients/cooked-rice-shop.png");
+  assert.equal(getIngredientPhotoUrl("냉동피자", "냉동식품"), "/images/ingredients/frozen-pizza-photo.png");
+  assert.equal(getIngredientPhotoUrl("냉동돈까스", "냉동식품"), "/images/ingredients/frozen-donkatsu-photo.png");
+  assert.equal(getIngredientPhotoUrl("냉동감자튀김", "냉동식품"), "/images/ingredients/frozen-fries-photo.png");
+  assert.equal(getIngredientPhotoUrl("커피", "음료/기타"), "/images/ingredients/coffee-beans-photo.png");
+  assert.equal(getIngredientPhotoUrl("원두커피", "음료/기타"), "/images/ingredients/coffee-beans-photo.png");
+  assert.equal(getIngredientPhotoUrl("코코아가루", "음료/기타"), "/images/ingredients/cocoa-powder-photo.png");
+  assert.equal(getIngredientPhotoUrl("올리고당", "음료/기타"), "/images/ingredients/oligosaccharide-syrup-photo.png");
+});
+
 test("ingredient category suggestion uses catalog names and aliases", () => {
   assert.equal(suggestIngredientCategory("사과", "채소"), "과일");
   assert.equal(suggestIngredientCategory("양조간장", "채소"), "조미료");

@@ -361,7 +361,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "국·찌개",
     method: "끓이기",
     calories: "170",
-    thumbnailUrl: "/images/recipes/jipbab-curated/steamed-egg.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-004-egg-drop-soup.png",
     ingredients: [
       ["계란", "2개", "국물에 풀면 부드럽게 익습니다."],
       ["물", "500ml", "종이컵 약 2컵 반입니다."],
@@ -415,7 +415,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "밥",
     method: "볶기",
     calories: "560",
-    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-016-ham-vegetable-fried-rice.png",
     ingredients: [
       ["밥", "1공기", "찬밥이면 더 고슬고슬합니다."],
       ["햄", "1/3캔", "스팸이나 슬라이스햄 모두 가능합니다."],
@@ -604,7 +604,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "반찬",
     method: "볶기",
     calories: "250",
-    thumbnailUrl: "/images/recipes/jipbab-curated/gamja-jorim-basic.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-034-gamja-guk.png",
     ingredients: [
       ["감자", "2개", "얇게 썰수록 빨리 익습니다."],
       ["양파", "1/4개", "단맛을 더합니다."],
@@ -658,7 +658,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "국·찌개",
     method: "끓이기",
     calories: "360",
-    thumbnailUrl: "/images/recipes/jipbab-curated/pork-kimchi-jjigae-basic.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-047-tuna-kimchi-jjigae.png",
     ingredients: [
       ["김치", "1컵", "신김치면 더 맛이 납니다."],
       ["참치캔", "1캔", "기름은 절반만 사용합니다."],
@@ -685,7 +685,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "반찬",
     method: "볶기",
     calories: "420",
-    thumbnailUrl: "/images/recipes/kimchi-fried-rice.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-049-spam-kimchi-bokkeum.png",
     ingredients: [
       ["스팸", "1/2캔", "작은 깍둑 모양으로 자릅니다."],
       ["김치", "1컵", "잘게 자르면 먹기 쉽습니다."],
@@ -712,7 +712,7 @@ const RELEASE_RECIPE_30_ADDITIONS: CuratedRecipe[] = [
     category: "국·찌개",
     method: "끓이기",
     calories: "260",
-    thumbnailUrl: "/images/recipes/jipbab-curated/fishcake-bokkeum.png",
+    thumbnailUrl: "/images/recipes/beginner-food-photos/beginner-052-eomuk-tang.png",
     ingredients: [
       ["어묵", "4장", "한입 크기로 자릅니다."],
       ["물", "700ml", "종이컵 약 3컵 반입니다."],

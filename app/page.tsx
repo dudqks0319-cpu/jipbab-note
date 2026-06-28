@@ -26,6 +26,7 @@ import { useShopping } from '@/hooks/useShopping'
 import {
   buildRecipeRecommendationReason,
   findExpiringMatchedIngredients,
+  getEssentialMissingIngredients,
   rankRecipeRecommendations,
 } from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
@@ -196,11 +197,10 @@ export default function HomePage() {
   }, [group, rankedFamilyRecipes])
 
   const topRecipe = recommendedRecipes[0]
-  const topExpiringIngredient = useMemo(() => {
-    return activeDisplayIngredients
-      .filter((item) => getDday(item.expiryDate) <= 3)
-      .sort((left, right) => getDday(left.expiryDate) - getDday(right.expiryDate))[0]
-  }, [activeDisplayIngredients])
+  const topMatchedExpiringIngredient = topRecipe?.expiringIngredients?.[0] ?? null
+  const topEssentialMissingCount = topRecipe
+    ? getEssentialMissingIngredients(topRecipe.missingIngredients).length
+    : 0
 
   const isLoading = ingredientsLoading || recipesLoading
   const syncErrorMessage = !isAppStoreDemo ? ingredientsError?.message ?? recipesError : null
@@ -271,12 +271,12 @@ export default function HomePage() {
                 </p>
               </div>
               <span className="shrink-0 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-black text-[#ffe0b7]">
-                부족 {topRecipe.missingIngredients.length}개
+                {topEssentialMissingCount === 0 ? '지금 가능' : `부족 ${topEssentialMissingCount}개`}
               </span>
             </div>
-            {topExpiringIngredient ? (
+            {topMatchedExpiringIngredient ? (
               <p className="mt-3 rounded-[13px] bg-white/10 px-3 py-2 text-[12px] font-bold text-[#ffe7c9]">
-                {topExpiringIngredient.name} {getDday(topExpiringIngredient.expiryDate) <= 0 ? '오늘까지' : `D-${getDday(topExpiringIngredient.expiryDate)}`}라 먼저 쓰면 좋아요.
+                {topMatchedExpiringIngredient} 먼저 쓰기 좋아요.
               </p>
             ) : null}
             <div className="mt-3 grid grid-cols-[1.15fr_0.85fr] gap-2">
@@ -395,7 +395,7 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-5 px-5 pt-5">
-        {homeRecipeSections.slice(1).map((section) => (
+        {homeRecipeSections.slice(1, 3).map((section) => (
           <div key={section.title}>
             <div className="flex items-end justify-between gap-3">
               <div className="min-w-0">
@@ -499,7 +499,7 @@ function RecipeHomeCard({
   compact?: boolean
   scope?: 'personal' | 'family'
 }) {
-  const missingCount = recipe.missingIngredients.length
+  const missingCount = getEssentialMissingIngredients(recipe.missingIngredients).length
   const recipeHref = `/recipe/${recipe.id}${scope === 'family' ? '?scope=family' : ''}`
   const shoppingHref = `/recipe/${recipe.id}${scope === 'family' ? '?scope=family' : ''}#shopping-assistant`
   const thumbnailUrl = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE

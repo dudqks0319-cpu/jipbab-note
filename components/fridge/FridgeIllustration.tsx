@@ -80,7 +80,7 @@ const ROOM_TEMP_ZONE: FridgeZone = {
   fullLimit: 8,
 };
 
-const STORAGE_SELECTOR_ITEMS = ["전체", "냉장", "냉동"] as const;
+const STORAGE_SELECTOR_ITEMS = ["전체", "냉장", "냉동", "실온"] as const;
 
 function getRoomTempGridClassName(itemCount: number): string {
   if (itemCount >= 5) {
@@ -349,7 +349,7 @@ export default function FridgeIllustration({
       </div>
 
       {onSelectStorage ? (
-        <div className="mb-3 grid grid-cols-3 gap-1.5 rounded-[14px] bg-[#f7eee3] p-1">
+        <div className="mb-3 grid grid-cols-4 gap-1.5 rounded-[14px] bg-[#f7eee3] p-1">
           {STORAGE_SELECTOR_ITEMS.map((storageType) => (
             <button
               key={storageType}

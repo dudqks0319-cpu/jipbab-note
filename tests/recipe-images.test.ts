@@ -44,3 +44,25 @@ test("beginner generated images render contained instead of cropped on mobile re
   assert.match(detailSource, /isBeginnerRecipeGeneratedImage/);
   assert.match(detailSource, /object-contain p-2/);
 });
+
+test("QA UX links and labels keep fridge to recipe flow explicit", () => {
+  const fridgeSource = readFileSync(new URL("../app/fridge/page.tsx", import.meta.url), "utf8");
+  const listSource = readFileSync(new URL("../app/recipe/page.tsx", import.meta.url), "utf8");
+  const detailSource = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
+  const instructionSource = readFileSync(new URL("../components/recipe/RecipeInstructionView.tsx", import.meta.url), "utf8");
+
+  assert.match(fridgeSource, /\/recipe\?q=/);
+  assert.match(fridgeSource, /이 재료로 요리/);
+  assert.match(listSource, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(listSource, /showAdvancedFilters/);
+  assert.match(detailSource, /재료 확인/);
+  assert.match(instructionSource, /option\.label/);
+});
+
+test("app store demo mode avoids first-render hydration mismatch", () => {
+  const demoModeSource = readFileSync(new URL("../hooks/useDemoMode.ts", import.meta.url), "utf8");
+
+  assert.match(demoModeSource, /useState\(false\)/);
+  assert.match(demoModeSource, /useEffect/);
+  assert.doesNotMatch(demoModeSource, /useMemo/);
+});

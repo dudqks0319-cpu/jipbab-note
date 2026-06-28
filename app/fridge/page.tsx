@@ -1,6 +1,7 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
@@ -15,7 +16,7 @@ import {
 } from '@/types'
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { parseBulkIngredientInput } from '@/lib/bulk-ingredient-input'
-import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
+import { getIngredientCatalog, searchIngredientCatalog } from '@/lib/ingredient-catalog'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
 import {
   STARTER_INGREDIENT_TEMPLATES,
@@ -61,6 +62,20 @@ const expiryQuickOptions = [
 ] as const
 
 const frequentIngredientPresets = ['계란', '두부', '대파', '양파', '김치', '돼지고기', '우유'] as const
+
+const findCatalogItemByName = (name: string) => {
+  const target = normalizeIngredientName(name)
+  if (!target) {
+    return null
+  }
+
+  return getIngredientCatalog().find((item) => {
+    if (normalizeIngredientName(item.name) === target) {
+      return true
+    }
+    return item.aliases?.some((alias) => normalizeIngredientName(alias) === target) ?? false
+  }) ?? null
+}
 
 function shouldOpenAddFromUrl(): boolean {
   if (typeof window === 'undefined') {
@@ -430,10 +445,13 @@ export default function FridgePage() {
   }
 
   const handleIngredientNameChange = (value: string) => {
+    const catalogItem = findCatalogItemByName(value)
     setForm((prev) => ({
       ...prev,
       name: value,
-      category: categoryTouched ? prev.category : suggestIngredientCategory(value, prev.category),
+      category: categoryTouched ? prev.category : catalogItem?.category ?? suggestIngredientCategory(value, prev.category),
+      storage_type: catalogItem?.defaultStorageType ?? prev.storage_type,
+      amount_unit: catalogItem?.defaultUnit ?? prev.amount_unit,
     }))
   }
 
@@ -682,6 +700,12 @@ export default function FridgePage() {
                             {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
                           </p>
                           <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
+                          <Link
+                            href={`/recipe?q=${encodeURIComponent(item.name)}`}
+                            className="mt-2 inline-flex min-h-8 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19]"
+                          >
+                            이 재료로 요리
+                          </Link>
                         </div>
 
                         <div className="flex items-center gap-2">
