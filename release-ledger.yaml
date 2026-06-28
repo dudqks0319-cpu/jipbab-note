@@ -12,7 +12,7 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "appstore_waiting_for_review"
+  phase: "appstore_pending_developer_release"
   version: "1.0"
   build_number: "2026062602"
   git_sha: "587b993"
@@ -35,8 +35,8 @@ local_checks:
     evidence: "docs/current-release-state.md"
   - name: "App Store review packet"
     command: "pnpm release:capture-appstore-review-packet"
-    status: "submitted_waiting_for_review"
-    evidence: "output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md"
+    status: "approved_pending_developer_release"
+    evidence: "output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md"
 
 runtime_checks:
   - name: "iOS real-device QA"
@@ -115,8 +115,8 @@ runtime_checks:
 external_checks:
   - name: "App Store Connect and TestFlight"
     target: "appstore"
-    status: "submitted_waiting_for_review"
-    evidence: "output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md"
+    status: "approved_pending_developer_release"
+    evidence: "output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md"
   - name: "Google Play Console"
     target: "play"
     status: "blocked"
@@ -151,9 +151,9 @@ blockers:
   - id: "P0-JIPBAB-APPSTORE-BUILD-MISMATCH"
     severity: "P0"
     status: "resolved"
-    title: "Old App Store pending release was canceled; build 2026062602 is attached to iOS 1.0 and submitted for App Review with status WAITING_FOR_REVIEW."
+    title: "Old App Store pending release was canceled; build 2026062602 is attached to iOS 1.0, approved by Apple review, and pending developer release."
     owner: "me"
-    evidence: "output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md"
+    evidence: "output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md"
     due: "done"
   - id: "P0-JIPBAB-ANDROID-FULL-QA"
     severity: "P0"
@@ -165,10 +165,10 @@ blockers:
   - id: "P0-JIPBAB-STORE-CONSOLE"
     severity: "P0"
     status: "open"
-    title: "Play Console submission evidence is still blocked; App Store iOS 1.0 build 2026062602 is submitted and waiting for Apple review."
+    title: "Play Console submission evidence is still blocked; App Store iOS 1.0 build 2026062602 is approved and only pending manual developer release."
     owner: "me"
-    evidence: "output/release-evidence/2026-06-26T14-10-appstore-ui-build-mismatch/summary.md"
-    due: "before_public_release"
+    evidence: "output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md"
+    due: "before_play_public_release"
   - id: "P1-JIPBAB-CLOUDFLARE-CUTOVER"
     severity: "P1"
     status: "open"
@@ -179,5 +179,5 @@ blockers:
 
 next_action:
   owner: "operator"
-  command: "Wait for Apple App Review result for submission a549c625-233f-40b9-aa4c-2f8638ed6d0b."
-  description: "Manual release remains selected, so approval will require a separate App Store Connect release action before the app becomes public."
+  command: "After explicit final approval, create the App Store developer release request for iOS 1.0 build 2026062602."
+  description: "Apple review approved the version. Manual release remains selected, so the app becomes public only after the developer release action is executed."

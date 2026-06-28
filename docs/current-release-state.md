@@ -1,6 +1,12 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-06-27 KST
+Updated: 2026-06-28 KST
+
+## 2026-06-28 iOS 1.0 build 2026062602 App Store 승인 확인
+
+- 2026-06-28 10:00 KST App Store Connect API preflight confirmed iOS `1.0 (2026062602)` is now `PENDING_DEVELOPER_RELEASE`. This means Apple review approved the version and manual developer release is pending.
+- The approved version is still attached to build `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`, and the build processing state is `VALID`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md`.
+- No new binary upload is required. The remaining App Store action is the manual/public release request. This is a publish action and should be performed only after explicit final operator confirmation.
 
 ## 2026-06-27 iOS 1.0 build 2026062602 App Store 심사 제출 완료
 
@@ -8,7 +14,7 @@ Updated: 2026-06-27 KST
 - App Store Connect API preflight after submit confirmed App Store version state `WAITING_FOR_REVIEW`, build `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`, and build processing state `VALID`. Evidence: `<repo>/output/release-evidence/2026-06-27T01-16-29-117Z-appstore-review-preflight/summary.md`.
 - The old pending App Store version attached to build `2026060802` was canceled before submission. Build `2026062602` was archived, exported, uploaded, attached to iOS version `1.0`, then submitted.
 - App Store screenshots were refreshed before submission. The old five screenshots were deleted only after the new five iPhone screenshots reached `COMPLETE`; final set is `01-home.png`, `02-fridge.png`, `03-recipe.png`, `04-shopping.png`, and `05-mypage.png`, each `1290x2796`. Evidence: `<repo>/output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`.
-- Current App Store status: waiting for Apple review. No further App Store action is required unless Apple requests changes or rejects the submission. Manual release remains selected, so approval will not automatically publish the app.
+- Current App Store status: approved and pending developer release. Manual release remains selected, so the app will not become public until the developer release action is executed.
 
 ## 2026-06-25 이미지 포함 iOS 2026060803 App Store/TestFlight 진행
 
