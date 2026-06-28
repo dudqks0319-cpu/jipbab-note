@@ -2,11 +2,18 @@
 
 Updated: 2026-06-28 KST
 
+## 2026-06-28 iOS 1.0 build 2026062602 App Store 공개 출시 완료
+
+- 2026-06-28 10:07 KST App Store Connect API created the developer release request for iOS `1.0 (2026062602)`. Release request id: `a49b3ba6-b9f5-4d55-97ea-7665ee7e747e`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-07-50-978Z-appstore-developer-release/summary.md`.
+- The API response after the release request reported `READY_FOR_SALE`, and a second App Store Connect API preflight reconfirmed iOS `1.0 (2026062602)` is `READY_FOR_SALE`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md`.
+- No new binary was uploaded during the release action. The released build remains `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`.
+- Public iTunes Lookup by bundle id returned `resultCount: 0` immediately after release for KR, US, and default storefronts, so public search/listing propagation may still be delayed even though App Store Connect reports `READY_FOR_SALE`.
+
 ## 2026-06-28 iOS 1.0 build 2026062602 App Store 승인 확인
 
 - 2026-06-28 10:00 KST App Store Connect API preflight confirmed iOS `1.0 (2026062602)` is now `PENDING_DEVELOPER_RELEASE`. This means Apple review approved the version and manual developer release is pending.
 - The approved version is still attached to build `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`, and the build processing state is `VALID`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-00-56-653Z-appstore-review-preflight/summary.md`.
-- No new binary upload is required. The remaining App Store action is the manual/public release request. This is a publish action and should be performed only after explicit final operator confirmation.
+- No new binary upload was required. This pending state was superseded by the 2026-06-28 10:07 KST developer release request above.
 
 ## 2026-06-27 iOS 1.0 build 2026062602 App Store 심사 제출 완료
 
@@ -14,7 +21,7 @@ Updated: 2026-06-28 KST
 - App Store Connect API preflight after submit confirmed App Store version state `WAITING_FOR_REVIEW`, build `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`, and build processing state `VALID`. Evidence: `<repo>/output/release-evidence/2026-06-27T01-16-29-117Z-appstore-review-preflight/summary.md`.
 - The old pending App Store version attached to build `2026060802` was canceled before submission. Build `2026062602` was archived, exported, uploaded, attached to iOS version `1.0`, then submitted.
 - App Store screenshots were refreshed before submission. The old five screenshots were deleted only after the new five iPhone screenshots reached `COMPLETE`; final set is `01-home.png`, `02-fridge.png`, `03-recipe.png`, `04-shopping.png`, and `05-mypage.png`, each `1290x2796`. Evidence: `<repo>/output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`.
-- Current App Store status: approved and pending developer release. Manual release remains selected, so the app will not become public until the developer release action is executed.
+- Current App Store status: released. The later 2026-06-28 API check reports `READY_FOR_SALE`.
 
 ## 2026-06-25 이미지 포함 iOS 2026060803 App Store/TestFlight 진행
 
@@ -43,7 +50,7 @@ Updated: 2026-06-28 KST
 - Cable XCUITest smoke: added an `AppReleaseSmokeUITests` target and shared `App` scheme wiring so smoke paths run through `xcodebuild test` on the cable-connected iPhone. The primary-tab run passed on iPhone 12 Pro iOS 17.6.1: `Executed 1 test, with 0 failures` and `** TEST SUCCEEDED **`. It launched `com.jipbab.note`, waited for the production Capacitor WebView, tapped home/fridge/recipe/shopping/mypage, and exported five screenshots under `primary-tabs-all-attachments/`. Additional cable XCUITest runs passed recipe-to-shopping core loop, shopping external-link Safari handoff, and local notification preparation; the notification success screen showed `iOS 로컬 알림으로 3개 알림을 준비했어요.` Google/Apple/Kakao OAuth completion probes were attempted on the same phone and saved under the same evidence packet, but none returned an authenticated mypage session. Evidence: `<repo>/output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke/summary.md`.
 - Image QA evidence: an iPhone 17 simulator run showed the home screen with the fridge image visible. Screenshot: `<repo>/output/release-evidence/2026-06-25-ios-sim-image-qa-home.png`. Production image URLs returned HTTP 200. Physical iPhone screenshot capture was not available through current tools.
 - Latest App Store submit gate context: Kakao is now enabled again in production, and the operator confirmed Kakao login completion in TestFlight after build `2026062601`. Google and Apple OAuth completion are confirmed on the cable-connected iPhone. Direct account deletion completion is confirmed by operator screenshots at `<repo>/output/release-evidence/2026-06-26T13-56-ios-account-delete-completed`.
-- Historical App Store submission blocker: no QA blocker remained after the 2026-06-26 13:56 KST account-deletion evidence, but App Store Connect still had iOS `1.0` in `개발자 출시 대기 중` with old build `2026060802` attached. This is superseded by the 2026-06-27 submission of build `2026062602`, now `심사 대기 중`.
+- Historical App Store submission blocker: no QA blocker remained after the 2026-06-26 13:56 KST account-deletion evidence, but App Store Connect still had iOS `1.0` in `개발자 출시 대기 중` with old build `2026060802` attached. This was superseded by the 2026-06-27 submission of build `2026062602` and the 2026-06-28 `READY_FOR_SALE` release.
 
 ## 2026-05-31 Android 실기기 게이트 보강 및 에뮬레이터 보조 QA
 
