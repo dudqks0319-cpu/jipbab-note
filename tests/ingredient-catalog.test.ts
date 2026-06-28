@@ -79,7 +79,7 @@ test("ingredient photos cover App Store QA aliases without dumpling or water fal
   assert.equal(getIngredientPhotoUrl("옥수수캔", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
   assert.equal(getIngredientPhotoUrl("통조림 옥수수", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
   assert.equal(getIngredientPhotoUrl("옥수수", "통조림/가공식품"), "/images/ingredients/corn-can-shop.png");
-  assert.equal(getIngredientPhotoUrl("냉동볶음밥", "냉동식품"), "/images/ingredients/cooked-rice-shop.png");
+  assert.equal(getIngredientPhotoUrl("냉동볶음밥", "냉동식품"), "/images/ingredients/frozen-fried-rice-photo.png");
   assert.equal(getIngredientPhotoUrl("냉동피자", "냉동식품"), "/images/ingredients/frozen-pizza-photo.png");
   assert.equal(getIngredientPhotoUrl("냉동돈까스", "냉동식품"), "/images/ingredients/frozen-donkatsu-photo.png");
   assert.equal(getIngredientPhotoUrl("냉동감자튀김", "냉동식품"), "/images/ingredients/frozen-fries-photo.png");
@@ -87,6 +87,15 @@ test("ingredient photos cover App Store QA aliases without dumpling or water fal
   assert.equal(getIngredientPhotoUrl("원두커피", "음료/기타"), "/images/ingredients/coffee-beans-photo.png");
   assert.equal(getIngredientPhotoUrl("코코아가루", "음료/기타"), "/images/ingredients/cocoa-powder-photo.png");
   assert.equal(getIngredientPhotoUrl("올리고당", "음료/기타"), "/images/ingredients/oligosaccharide-syrup-photo.png");
+});
+
+test("ingredient photos tolerate amounts and harmless descriptors without substring matching", () => {
+  assert.equal(getIngredientPhotoUrl("대파 조금", "채소"), "/images/ingredients/green-onion-shop.png");
+  assert.equal(getIngredientPhotoUrl("냉동피자 1판", "냉동식품"), "/images/ingredients/frozen-pizza-photo.png");
+  assert.equal(getIngredientPhotoUrl("사과 2개", "과일"), "/images/ingredients/apple-shop.png");
+  assert.equal(getIngredientPhotoUrl("돼지고기 목살", "육류"), "/images/ingredients/pork-shop.png");
+  assert.equal(getIngredientPhotoUrl("코코아가루 작은 봉지", "음료/기타"), "/images/ingredients/cocoa-powder-photo.png");
+  assert.notEqual(getIngredientPhotoUrl("파스타샐러드", "곡물/면/빵"), "/images/ingredients/green-onion-shop.png");
 });
 
 test("ingredient category suggestion uses catalog names and aliases", () => {

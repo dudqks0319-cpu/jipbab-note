@@ -97,7 +97,7 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
 
   [['냉동만두'], 'dumpling-shop.png'],
   [['냉동야채믹스'], 'frozen-vegetable-mix-photo.png'],
-  [['냉동볶음밥'], 'cooked-rice-shop.png'],
+  [['냉동볶음밥'], 'frozen-fried-rice-photo.png'],
   [['냉동피자'], 'frozen-pizza-photo.png'],
   [['냉동우동면'], 'udon-shop.png'],
   [['냉동돈까스'], 'frozen-donkatsu-photo.png'],
@@ -175,17 +175,80 @@ export function getIngredientPhotoUrl(
   name: string | null | undefined,
   category: string | null | undefined,
 ): string {
-  const normalizedName = normalizeIngredientPhotoKey(name ?? '')
-  if (normalizedName) {
-    const exactHit = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD)
-      .find((keyword) => normalizeIngredientPhotoKey(keyword) === normalizedName)
-    if (exactHit) {
-      return INGREDIENT_PHOTO_BY_KEYWORD[exactHit]
-    }
+  const lookupKeys = getIngredientPhotoLookupKeys(name ?? '')
+  if (lookupKeys.length > 0) {
+    const photoKeywords = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD)
 
+    for (const lookupKey of lookupKeys) {
+      const exactHit = photoKeywords.find((keyword) => normalizeIngredientPhotoKey(keyword) === lookupKey)
+      if (exactHit) {
+        return INGREDIENT_PHOTO_BY_KEYWORD[exactHit]
+      }
+    }
   }
 
   return INGREDIENT_PHOTO_BY_CATEGORY[category ?? ''] || INGREDIENT_PHOTO_BY_CATEGORY['음료/기타']
+}
+
+const INGREDIENT_PHOTO_NOISE_TOKENS = new Set([
+  '개',
+  '장',
+  '봉',
+  '봉지',
+  '팩',
+  '컵',
+  '모',
+  '캔',
+  '통',
+  '판',
+  '줄',
+  '단',
+  '알',
+  '마리',
+  '공기',
+  '조금',
+  '약간',
+  '소량',
+  '작은',
+  '큰',
+  '남은',
+  '냉장',
+  '실온',
+  '신선한',
+  '손질한',
+  '자른',
+  '썬',
+])
+
+function getIngredientPhotoLookupKeys(value: string): string[] {
+  const trimmed = value.normalize('NFC').trim().toLowerCase()
+  if (!trimmed) {
+    return []
+  }
+
+  const stripped = stripIngredientPhotoInputModifiers(trimmed)
+  const tokenKeys = stripped
+    .split(/[\s,./·]+/g)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .filter((token) => !INGREDIENT_PHOTO_NOISE_TOKENS.has(normalizeIngredientPhotoKey(token)))
+    .map(normalizeIngredientPhotoKey)
+    .sort((left, right) => right.length - left.length)
+
+  return Array.from(new Set([
+    normalizeIngredientPhotoKey(trimmed),
+    normalizeIngredientPhotoKey(stripped),
+    ...tokenKeys,
+  ])).filter(Boolean)
+}
+
+function stripIngredientPhotoInputModifiers(value: string): string {
+  return value
+    .replace(/\d+\/\d+\s*(?:개|장|봉지|봉|팩|g|kg|ml|l|큰술|작은술|컵|모|캔|통|판|줄|단|알|마리|인분|공기)?/gi, ' ')
+    .replace(/\d+(?:\.\d+)?\s*(?:개|장|봉지|봉|팩|g|kg|ml|l|큰술|작은술|컵|모|캔|통|판|줄|단|알|마리|인분|공기)?/gi, ' ')
+    .replace(/(?:한|두|세|네|반)\s*(?:개|장|봉지|봉|팩|컵|모|캔|통|판|줄|단|알|마리|공기)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function normalizeIngredientPhotoKey(value: string): string {
