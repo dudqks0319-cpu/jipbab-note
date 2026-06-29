@@ -66,4 +66,5 @@ tmp/
 
 # local agent/orchestration state
 .omx/
+.omo/
 .worktrees/

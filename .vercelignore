@@ -21,6 +21,7 @@ docs/play-store-assets
 .git
 .vercel
 .codegraph
+.omo
 .env*
 !.env.example
 output
