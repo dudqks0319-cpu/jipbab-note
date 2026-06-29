@@ -35,10 +35,17 @@ test("beginner goal readiness audits the user-visible completion surfaces", () =
   assert.match(source, /RecipeCookMode/);
   assert.match(source, /RecipeShoppingAssistant/);
   assert.match(source, /부서졌을 때/);
+  assert.match(source, /TodayActionCard/);
+  assert.match(source, /StarterActionCard/);
+  assert.match(source, /buildHomeHref/);
+  assert.match(source, /지금 바로 가능/);
+  assert.match(source, /1개만 사면 가능/);
+  assert.match(source, /재료 확인하고 만들기/);
+  assert.match(source, /부족 재료 보기/);
+  assert.match(source, /필터 열기/);
   assert.match(source, /레시피 목록\/검색\/필터\/정렬 연결/);
   assert.match(source, /matchesRecipeListFilters/);
   assert.match(source, /sortRecipeListRecipes/);
-  assert.match(source, /가족 냉장고로 만들 수 있는 메뉴/);
   assert.match(source, /Supabase 가족 scope\/RLS migration/);
   assert.match(source, /docs\/recipe-content-rights\.md/);
 });

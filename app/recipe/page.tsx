@@ -49,9 +49,20 @@ const DISPLAY_CATEGORY_QUICK_FILTERS: Partial<Record<DisplayRecipeCategory, Reci
   초보가능: 'beginner',
   '10분요리': 'quick',
 }
+const DISPLAY_CATEGORY_LABEL_LINES: Partial<Record<DisplayRecipeCategory, string[]>> = {
+  '김치/밥 요리': ['김치/밥', '요리'],
+  '두부/저렴 재료': ['두부/저렴', '재료'],
+  '참치캔/스팸/햄/어묵': ['참치캔/', '스팸/햄/', '어묵'],
+  '전자레인지/노불': ['전자레인지', '노불'],
+  '도시락/반찬': ['도시락', '반찬'],
+}
 
 function toRealRecipeCategory(category: DisplayRecipeCategory): RecipeCategory {
   return category as RecipeCategory
+}
+
+function getDisplayCategoryLabelLines(category: DisplayRecipeCategory): string[] {
+  return DISPLAY_CATEGORY_LABEL_LINES[category] ?? [category]
 }
 
 export default function RecipePage() {
@@ -188,27 +199,32 @@ export default function RecipePage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-4 gap-2 px-5 pt-3 min-[380px]:grid-cols-5">
+      <section className="grid grid-cols-3 gap-2 px-5 pt-3">
         {visibleCategories.map((category) => {
           const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
           const active = quickFilterForCategory
             ? quickFilter === quickFilterForCategory
             : quickFilter === 'all' && selectedCategory === category
+          const labelLines = getDisplayCategoryLabelLines(category)
 
           return (
             <button
               key={category}
               type="button"
               onClick={() => handleDisplayCategoryClick(category)}
-              className={`min-h-9 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
+              className={`flex min-h-[58px] flex-col items-center justify-center rounded-[18px] border px-2 py-2 text-center text-[12px] font-black leading-[1.15] transition-all ${
                 active
                   ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                   : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
               }`}
             >
-              {category}
+              <span className="flex min-h-7 flex-col items-center justify-center">
+                {labelLines.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </span>
               {category !== '전체' && typeof categoryCounts[category] === 'number' ? (
-                <span className="ml-1 text-[10px] opacity-70">{categoryCounts[category]}</span>
+                <span className="mt-0.5 text-[10px] opacity-70">{categoryCounts[category]}</span>
               ) : null}
             </button>
           )

@@ -11,6 +11,7 @@ const connectSrc = isProduction
   : "connect-src 'self' ws: wss: http://localhost:* http://127.0.0.1:* https://*.supabase.co https://openapi.foodsafetykorea.go.kr https://world.openfoodfacts.org";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   devIndicators: false,
   outputFileTracingRoot: path.dirname(new URL(import.meta.url).pathname),
   async headers() {

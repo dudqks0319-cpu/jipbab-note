@@ -1,13 +1,32 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-06-28 KST
+Updated: 2026-06-29 KST
 
-## 2026-06-28 iOS 1.0 build 2026062602 App Store 공개 출시 완료
+## 2026-06-29 App Store 공개 스크린샷 최신 자산 확인
+
+- 2026-06-29 17:38 KST public App Store HTML for `https://apps.apple.com/kr/app/id6762567054` returned HTTP 200 and referenced the refreshed 2026-06-27 Apple CDN screenshot paths for `01-home.png` and `02-fridge.png`.
+- The public HTML did not contain the stale screenshot text markers checked from the operator screenshot (`TODAY`, `4월 21일`).
+- Apple CDN served the current `01-home.png` as a 1290x2796 refreshed orange fridge UI screenshot, matching screenshot id `822f6e89-8df0-4b98-adf1-a1cbc2f640ad` / md5 `a1fef9c8629e3b1cbe1ab0f90e2d7a54`.
+- Computer Use inspection of Chrome showed the public App Store page displaying the refreshed screenshot row. The stale image seen by the operator is therefore most consistent with browser/App Store cache or an already-open stale page, not an App Store Connect asset rollback.
+- Evidence: `<repo>/output/release-evidence/2026-06-29T17-38-appstore-public-screenshot-check/summary.md`.
+
+## 2026-06-29 iOS 1.0 build 2026062602 App Store 국가 가용성 생성 및 공개 URL live
+
+- 2026-06-29 17:02 KST App Store Connect API created the missing `appAvailabilityV2` resource for app `6762567054` after public App Store lookup still returned `resultCount: 0` and the direct App Store URL returned 404.
+- The availability create request enumerated all 175 App Store territories as required by Apple, with only `KOR` and `USA` set to `available: true`; the other 173 territories were explicitly unavailable and `availableInNewTerritories` is `false`.
+- App Store Connect API now returns `appAvailabilityV2` status 200 for the app, while iOS `1.0 (2026062602)` remains `READY_FOR_SALE` and `downloadable: true`.
+- Price schedule is present and effective: base territory `KOR`, one manual price, 174 automatic prices, and no start/end date restriction in the returned price records.
+- After Apple CDN cache propagation, the public App Store direct URL now redirects to `/kr/app/집밥노트/id6762567054` and returns HTTP 200. The US direct URL also redirects to `/us/app/집밥노트/id6762567054` and returns HTTP 200.
+- Browser proof via Computer Use loaded the public `집밥노트 앱 - App Store` page in Chrome with title `집밥노트`, subtitle `냉장고 재료로 오늘 뭐 먹지`, free price, screenshots, privacy section, and developer `Youngbeen Jung`.
+- iTunes Lookup by app id and bundle id for KR still returns `resultCount: 0`, so the Lookup API/search index is lagging behind the live App Store web listing.
+- Evidence: `<repo>/output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`.
+
+## 2026-06-28 iOS 1.0 build 2026062602 App Store Connect developer release 완료
 
 - 2026-06-28 10:07 KST App Store Connect API created the developer release request for iOS `1.0 (2026062602)`. Release request id: `a49b3ba6-b9f5-4d55-97ea-7665ee7e747e`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-07-50-978Z-appstore-developer-release/summary.md`.
 - The API response after the release request reported `READY_FOR_SALE`, and a second App Store Connect API preflight reconfirmed iOS `1.0 (2026062602)` is `READY_FOR_SALE`. Evidence: `<repo>/output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md`.
 - No new binary was uploaded during the release action. The released build remains `2026062602`, build id `9006b306-e08c-4091-829c-2934615be184`.
-- Public iTunes Lookup by bundle id returned `resultCount: 0` immediately after release for KR, US, and default storefronts, so public search/listing propagation may still be delayed even though App Store Connect reports `READY_FOR_SALE`.
+- Public iTunes Lookup by bundle id returned `resultCount: 0` immediately after release for KR, US, and default storefronts. On 2026-06-29 this was narrowed to a missing `appAvailabilityV2` resource, which was then created for KOR/USA; the direct App Store web listing is now live, while iTunes Lookup remains delayed.
 
 ## 2026-06-28 iOS 1.0 build 2026062602 App Store 승인 확인
 
