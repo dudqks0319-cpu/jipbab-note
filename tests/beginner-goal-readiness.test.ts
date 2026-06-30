@@ -42,7 +42,8 @@ test("beginner goal readiness audits the user-visible completion surfaces", () =
   assert.match(source, /1개만 사면 가능/);
   assert.match(source, /재료 확인하고 만들기/);
   assert.match(source, /부족 재료 보기/);
-  assert.match(source, /필터 열기/);
+  assert.match(source, /냉장고 열고 고민 끝/);
+  assert.match(source, /메뉴 더 찾기/);
   assert.match(source, /레시피 목록\/검색\/필터\/정렬 연결/);
   assert.match(source, /matchesRecipeListFilters/);
   assert.match(source, /sortRecipeListRecipes/);

@@ -192,12 +192,12 @@ export default function HomePage() {
     return [
       buildSection(
         '지금 바로 가능',
-        '물, 소금, 간장 같은 기본 재료를 빼고 부족한 재료가 없는 메뉴',
+        '기본 양념 빼고 바로 만들 수 있는 오늘 메뉴',
         possibleNow,
       ),
       buildSection(
         '1개만 사면 가능',
-        '집에 있는 재료는 맞고 핵심 재료 1개만 더 필요한 메뉴',
+        '핵심 재료 1개만 더 있으면 오늘 만들 수 있어요',
         oneMissing,
       ),
     ].filter((section) => section.recipes.length > 0)
@@ -241,14 +241,14 @@ export default function HomePage() {
     <div className="min-h-full bg-[#fbf6ee] pb-5">
       <section className="mobile-safe-top px-5">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-[#9b8979]">오늘 집밥 바로 시작</p>
-            <h1 className="mt-1 text-[22px] font-black text-[#2f2117]">냉장고에 있는 걸로 만들어요</h1>
+          <div className="min-w-0 flex-1 pr-3">
+            <p className="text-[11px] font-semibold text-[#9b8979]">냉장고 열고 고민 끝</p>
+            <h1 className="mt-1 break-keep text-[21px] font-black leading-tight text-[#2f2117]">있는 재료로 오늘 메뉴 정해요</h1>
           </div>
           <Link
             href={buildHomeHref('/settings#notifications', { demoMode: isAppStoreDemo })}
             aria-label="알림 설정으로 이동"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3]"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3]"
           >
             <Bell size={18} className="text-[#3c2b1e]" />
           </Link>
@@ -299,7 +299,7 @@ export default function HomePage() {
         <div className="jipbab-panel rounded-[18px] px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[12px] font-black text-[#2f2117]">냉장고 현황</p>
+              <p className="text-[12px] font-black text-[#2f2117]">냉장고에 있는 재료</p>
               <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
                 {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개 · 소진임박 ${expiringIngredients.length}개`}
               </p>
@@ -324,14 +324,14 @@ export default function HomePage() {
               className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] text-[13px] font-black text-white"
             >
               <Refrigerator size={16} />
-              냉장고 전체
+              내 냉장고 보기
             </Link>
             <Link
               href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })}
               className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#fff0e4] text-[13px] font-black text-[#d94d19]"
             >
               <Search size={16} />
-              레시피 필터
+              메뉴 더 찾기
             </Link>
           </div>
         </div>
@@ -343,7 +343,7 @@ export default function HomePage() {
         {isLoading && recommendedRecipes.length === 0 ? (
           <div>
             <div className="flex items-center justify-between">
-              <h2 className="text-[17px] font-black text-[#2f2117]">오늘 추천 메뉴</h2>
+              <h2 className="text-[17px] font-black text-[#2f2117]">오늘 만들 메뉴</h2>
               <span className="text-[11px] font-black text-[#9b8979]">불러오는 중</span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-3">
@@ -377,16 +377,16 @@ export default function HomePage() {
         <div className="rounded-[18px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[12px] font-black text-[#2f2117]">더 고르고 싶다면</p>
+              <p className="text-[12px] font-black text-[#2f2117]">다른 메뉴도 보고 싶다면</p>
               <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#8f7f70]">
-                시간, 도구, 난이도는 레시피 목록의 상세 필터에서 좁혀보세요.
+                시간, 도구, 부족 재료로 지금 할 수 있는 메뉴만 좁혀보세요.
               </p>
             </div>
             <Link
               href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })}
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#2f2117] px-3 text-[12px] font-black text-white"
             >
-              필터 열기
+              메뉴 더 찾기
             </Link>
           </div>
         </div>
@@ -453,7 +453,7 @@ export default function HomePage() {
       {!shouldShowEmptyHome ? (
       <section className="grid grid-cols-3 gap-2 px-5 pt-5">
         <QuickLink href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })} icon={<Refrigerator size={18} />} label="냉장고" value={`${activeDisplayIngredients.length}개`} />
-        <QuickLink href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} icon={<Utensils size={18} />} label="레시피" value={`${displayRecipeCatalog.length}개`} />
+        <QuickLink href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} icon={<Utensils size={18} />} label="메뉴" value={`${displayRecipeCatalog.length}개`} />
         <QuickLink href={buildHomeHref('/shopping', { demoMode: isAppStoreDemo })} icon={<Search size={18} />} label="장보기" value={`${displayUncheckedCount}개`} />
       </section>
       ) : null}
@@ -655,7 +655,7 @@ function RecipeHomeCard({
           </span>
         </div>
         <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
-          {missingCount === 0 ? '지금 가능' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
+          {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
         </p>
         <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
           {getBeginnerRecipeBadge(recipe)}
@@ -689,18 +689,18 @@ function getBeginnerRecipeBadge(recipe: {
   totalMinutes?: number | null
 }) {
   if (recipe.noFire) {
-    return '불 없이 가능'
+    return '불 없이'
   }
   if (recipe.microwave) {
-    return '전자레인지 가능'
+    return '전자레인지'
   }
   if (recipe.requiredTools?.some((tool) => tool.includes('프라이팬'))) {
     return '팬 1개'
   }
   if (typeof recipe.totalMinutes === 'number') {
-    return `${recipe.totalMinutes}분 완성`
+    return `${recipe.totalMinutes}분 안심`
   }
-  return '초보 가능'
+  return '초보 검수'
 }
 
 function RecipeCardSkeleton() {
@@ -719,18 +719,18 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
   return (
     <div className="jipbab-panel col-span-full rounded-[16px] px-4 py-4">
       <p className="text-[13px] font-black text-[#2f2117]">
-        {hasIngredients ? '조건에 맞는 추천이 아직 없어요.' : '재료를 담으면 추천이 열려요.'}
+        {hasIngredients ? '오늘 만들 메뉴를 다시 찾을게요.' : '재료만 골라도 추천이 열려요.'}
       </p>
       <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#8f7f70]">
         {hasIngredients
-          ? '레시피를 새로 불러오거나 재료를 더 추가해 보세요.'
-          : '냉장고에 있는 재료를 먼저 등록해 보세요.'}
+          ? '재료를 더 넣거나 조건을 좁히면 바로 가능한 메뉴가 더 잘 나와요.'
+          : '냉장고에 있는 것부터 눌러보세요. 수량은 나중에 정리해도 괜찮아요.'}
       </p>
       <Link
         href={buildHomeHref(hasIngredients ? '/recipe' : '/fridge?add=1', { demoMode })}
         className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-[#ea5a1f] px-4 text-[12px] font-black text-white"
       >
-        {hasIngredients ? '레시피 보기' : '재료 추가'}
+        {hasIngredients ? '메뉴 더 찾기' : '재료 고르기'}
       </Link>
     </div>
   )

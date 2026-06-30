@@ -54,15 +54,15 @@ export default function StarterActionCard({
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
       <p className="text-[12px] font-bold text-[#d94d19]">
-        {hasIngredients ? '추천을 다시 정리해요' : '처음이면 여기서 시작해요'}
+        {hasIngredients ? '오늘 메뉴 다시 고르기' : '냉장고 열고 고민 끝'}
       </p>
       <h2 className="mt-2 break-keep text-[24px] font-black leading-[1.18] text-[#2f2117]">
-        {hasIngredients ? '조건에 맞는 메뉴를 찾아볼게요' : '지금 있는 재료를 눌러주세요'}
+        {hasIngredients ? '지금 만들 메뉴를 찾아볼게요' : '있는 재료만 골라주세요'}
       </h2>
       <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
         {hasIngredients
-          ? '레시피 목록에서 시간, 도구, 부족 재료를 좁혀서 다시 볼 수 있어요.'
-          : '수량과 유통기한은 나중에 정리해도 괜찮아요. 먼저 만들 수 있는 요리부터 볼게요.'}
+          ? '시간, 도구, 부족 재료 기준으로 바로 할 수 있는 메뉴부터 볼게요.'
+          : '계란, 두부, 김치만 있어도 괜찮아요. 먼저 오늘 만들 메뉴부터 찾아볼게요.'}
       </p>
 
       {!hasIngredients ? (
@@ -83,7 +83,7 @@ export default function StarterActionCard({
               <div className="relative z-10 flex h-full flex-col bg-gradient-to-b from-white/10 via-white/8 to-[#2f2117]/8 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#2f2117] shadow-[0_6px_14px_rgba(76,51,28,0.10)]">
-                    냉장고에 담기
+                    오늘 메뉴 찾기
                   </p>
                   <p className="rounded-full bg-[#ea5a1f] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]">
                     {hasSelection ? `${selectedNames.length}개 선택` : '미리보기'}
@@ -134,7 +134,7 @@ export default function StarterActionCard({
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#ea5a1f] px-4 text-[15px] font-black text-white shadow-[0_10px_20px_rgba(234,90,31,0.18)]"
           >
             <Search size={15} />
-            레시피 필터
+            메뉴 더 찾기
           </Link>
         ) : (
           <button
@@ -148,7 +148,7 @@ export default function StarterActionCard({
             }`}
           >
             <Plus size={15} />
-            {hasSelection ? `${selectedNames.length}개 재료로 추천 보기` : '재료를 선택해 주세요'}
+            {hasSelection ? `${selectedNames.length}개 담고 추천 보기` : '있는 재료를 골라주세요'}
           </button>
         )}
         <div className="mt-3 grid grid-cols-2 gap-2">

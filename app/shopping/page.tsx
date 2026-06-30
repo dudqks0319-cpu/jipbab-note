@@ -12,6 +12,7 @@ import { useIngredients } from '@/hooks/useIngredients'
 import { usePartnerLinks } from '@/hooks/usePartnerLinks'
 import { useShopping } from '@/hooks/useShopping'
 import { getCoupangPurchaseLink } from '@/lib/external-links'
+import { getIngredientCatalog } from '@/lib/ingredient-catalog'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
 import {
   buildIngredientPayloadFromShoppingItem,
@@ -19,12 +20,33 @@ import {
   normalizeShoppingIngredientName,
 } from '@/lib/shopping-to-fridge'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
-import { INGREDIENT_CATEGORIES, INGREDIENT_STORAGE_TYPES, type IngredientCategory, type IngredientStorageType } from '@/types'
+import { getIngredientPhotoUrl } from '@/lib/utils'
+import { INGREDIENT_CATEGORIES, INGREDIENT_STORAGE_TYPES, type IngredientCatalogItem, type IngredientCategory, type IngredientStorageType } from '@/types'
 import type { ShoppingItem } from '@/types'
 import type { PartnerLinkConfig } from '@/lib/partner-links'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
 const PARTNERS_DISCLOSURE = '일부 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
+type AddShoppingDraftOptions = {
+  duplicateMode?: 'ask' | 'merge' | 'skip'
+}
+type ShoppingCatalogScope = {
+  categories?: readonly IngredientCategory[]
+  keywords?: readonly string[]
+  excludeKeywords?: readonly string[]
+}
+type ShoppingCatalogSubcategory = ShoppingCatalogScope & {
+  id: string
+  label: string
+  imageName: string
+  imageCategory: IngredientCategory
+}
+type ShoppingCatalogGroup = ShoppingCatalogScope & {
+  id: string
+  label: string
+  subcategories: ShoppingCatalogSubcategory[]
+}
+
 const QUICK_SHOPPING_CHIPS: Array<{ name: string; quantity: string; category: IngredientCategory }> = [
   { name: '두부', quantity: '1모', category: '유제품' },
   { name: '계란', quantity: '10개', category: '유제품' },
@@ -33,6 +55,166 @@ const QUICK_SHOPPING_CHIPS: Array<{ name: string; quantity: string; category: In
   { name: '양파', quantity: '3개', category: '채소' },
   { name: '김치', quantity: '1팩', category: '통조림/가공식품' },
   { name: '돼지고기', quantity: '600g', category: '육류' },
+]
+const SHOPPING_CATALOG_ITEMS = getIngredientCatalog()
+const SHOPPING_CATALOG_QUANTITY_BY_NAME: Partial<Record<string, string>> = {
+  계란: '10개',
+  두부: '1모',
+  우유: '1L',
+  대파: '1단',
+  양파: '3개',
+  감자: '3개',
+  고구마: '3개',
+  당근: '2개',
+  오이: '2개',
+  애호박: '1개',
+  양배추: '1통',
+  콩나물: '1봉',
+  숙주: '1봉',
+  김치: '1팩',
+  돼지고기: '600g',
+  소고기: '600g',
+  닭고기: '1팩',
+  참치캔: '1캔',
+  스팸: '1캔',
+  어묵: '1봉',
+  국수: '1봉',
+  라면: '5개',
+  냉동만두: '1봉',
+  냉동새우: '1봉',
+  생수: '2L',
+}
+const SHOPPING_CATALOG_GROUPS: ShoppingCatalogGroup[] = [
+  {
+    id: 'all',
+    label: '전체',
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '양파', imageCategory: '채소' },
+      { id: 'fresh', label: '채소/과일', categories: ['채소', '과일'], imageName: '상추', imageCategory: '채소' },
+      { id: 'meat-egg', label: '정육/계란', categories: ['육류'], keywords: ['계란', '달걀', '두부'], imageName: '계란', imageCategory: '유제품' },
+      { id: 'seafood', label: '수산/건어물', categories: ['수산물'], imageName: '고등어', imageCategory: '수산물' },
+      { id: 'dairy', label: '우유/유제품', categories: ['유제품'], imageName: '우유', imageCategory: '유제품' },
+      { id: 'rice-noodle', label: '쌀/면/빵', categories: ['곡물/면/빵'], imageName: '쌀', imageCategory: '곡물/면/빵' },
+      { id: 'kimchi-processed', label: '김치/가공', categories: ['통조림/가공식품'], keywords: ['어묵'], imageName: '김치', imageCategory: '통조림/가공식품' },
+      { id: 'frozen', label: '냉동/간편', categories: ['냉동식품'], imageName: '냉동만두', imageCategory: '냉동식품' },
+      { id: 'seasoning', label: '장/양념', categories: ['조미료'], imageName: '간장', imageCategory: '조미료' },
+      { id: 'drink-etc', label: '커피/음료', categories: ['음료/기타'], imageName: '커피', imageCategory: '음료/기타' },
+    ],
+  },
+  {
+    id: 'fresh',
+    label: '채소/과일',
+    categories: ['채소', '과일'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '애호박', imageCategory: '채소' },
+      { id: 'leaf', label: '상추/쌈채소', keywords: ['상추', '깻잎', '양상추'], imageName: '상추', imageCategory: '채소' },
+      { id: 'namul', label: '시금치/나물', keywords: ['시금치', '콩나물', '숙주', '고사리', '미나리', '도라지', '부추'], imageName: '시금치', imageCategory: '채소' },
+      { id: 'pumpkin', label: '호박/가지', keywords: ['애호박', '가지', '단호박', '오이'], imageName: '애호박', imageCategory: '채소' },
+      { id: 'root', label: '감자/고구마', keywords: ['감자', '고구마', '당근', '무', '연근', '우엉'], imageName: '감자', imageCategory: '채소' },
+      { id: 'fruit', label: '과일', categories: ['과일'], imageName: '사과', imageCategory: '과일' },
+    ],
+  },
+  {
+    id: 'meat-egg',
+    label: '정육/계란',
+    categories: ['육류'],
+    keywords: ['계란', '달걀', '두부'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '계란', imageCategory: '유제품' },
+      { id: 'pork', label: '돼지고기', keywords: ['돼지고기', '삼겹살', '목살', '돼지갈비'], imageName: '돼지고기', imageCategory: '육류' },
+      { id: 'beef', label: '소고기', keywords: ['소고기', '불고기', '국거리'], imageName: '소고기', imageCategory: '육류' },
+      { id: 'chicken', label: '닭/오리', keywords: ['닭고기', '닭가슴살', '닭다리', '닭안심', '오리고기'], imageName: '닭고기', imageCategory: '육류' },
+      { id: 'egg-tofu', label: '계란/두부', keywords: ['계란', '달걀', '두부'], imageName: '두부', imageCategory: '유제품' },
+      { id: 'ham', label: '햄/소시지', keywords: ['햄', '소시지', '베이컨'], imageName: '소시지', imageCategory: '육류' },
+    ],
+  },
+  {
+    id: 'seafood',
+    label: '수산/건어물',
+    categories: ['수산물'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '연어', imageCategory: '수산물' },
+      { id: 'fish', label: '생선', keywords: ['고등어', '연어', '갈치', '대구', '동태'], imageName: '고등어', imageCategory: '수산물' },
+      { id: 'seafood', label: '새우/오징어', keywords: ['새우', '오징어', '문어', '바지락'], imageName: '새우', imageCategory: '수산물' },
+      { id: 'dried', label: '건어물/해조', keywords: ['멸치', '다시마', '미역', '김', '황태채'], imageName: '멸치', imageCategory: '수산물' },
+      { id: 'fishcake', label: '어묵/명란', keywords: ['어묵', '명란'], imageName: '어묵', imageCategory: '수산물' },
+    ],
+  },
+  {
+    id: 'dairy',
+    label: '우유/유제품',
+    categories: ['유제품'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '우유', imageCategory: '유제품' },
+      { id: 'milk', label: '우유/두유', keywords: ['우유', '두유'], imageName: '우유', imageCategory: '유제품' },
+      { id: 'cheese', label: '치즈/버터', keywords: ['치즈', '모짜렐라', '파마산', '버터'], imageName: '치즈', imageCategory: '유제품' },
+      { id: 'yogurt', label: '요거트/크림', keywords: ['요거트', '생크림', '크림치즈'], imageName: '요거트', imageCategory: '유제품' },
+      { id: 'sauce', label: '마요네즈', keywords: ['마요네즈'], imageName: '마요네즈', imageCategory: '유제품' },
+    ],
+  },
+  {
+    id: 'rice-noodle',
+    label: '쌀/면/빵',
+    categories: ['곡물/면/빵'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '쌀', imageCategory: '곡물/면/빵' },
+      { id: 'rice', label: '쌀/잡곡', keywords: ['쌀', '현미'], imageName: '쌀', imageCategory: '곡물/면/빵' },
+      { id: 'noodle', label: '면/라면', keywords: ['국수', '소면', '라면', '우동', '파스타', '당면'], imageName: '국수', imageCategory: '곡물/면/빵' },
+      { id: 'bread', label: '빵/또띠아', keywords: ['식빵', '바게트', '빵가루', '또띠아', '라이스페이퍼'], imageName: '식빵', imageCategory: '곡물/면/빵' },
+      { id: 'rice-cake', label: '떡', keywords: ['떡', '떡국떡', '떡볶이떡'], imageName: '떡', imageCategory: '곡물/면/빵' },
+      { id: 'powder', label: '밀가루/전분', keywords: ['밀가루', '전분', '오트밀'], imageName: '밀가루', imageCategory: '곡물/면/빵' },
+    ],
+  },
+  {
+    id: 'kimchi-processed',
+    label: '김치/가공',
+    categories: ['통조림/가공식품'],
+    keywords: ['어묵'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '김치', imageCategory: '통조림/가공식품' },
+      { id: 'kimchi', label: '김치/절임', keywords: ['김치', '피클', '올리브'], imageName: '김치', imageCategory: '통조림/가공식품' },
+      { id: 'can', label: '통조림', keywords: ['참치캔', '옥수수캔', '콩통조림', '토마토캔', '골뱅이캔', '꽁치캔', '고등어캔'], imageName: '참치캔', imageCategory: '통조림/가공식품' },
+      { id: 'ham', label: '햄/어묵', keywords: ['스팸', '햄통조림', '어묵', '닭가슴살캔'], imageName: '스팸', imageCategory: '통조림/가공식품' },
+      { id: 'sauce', label: '소스/잼', keywords: ['토마토소스', '파스타소스', '잼'], imageName: '토마토소스', imageCategory: '통조림/가공식품' },
+      { id: 'stock', label: '육수팩', keywords: ['육수팩'], imageName: '육수팩', imageCategory: '통조림/가공식품' },
+    ],
+  },
+  {
+    id: 'frozen',
+    label: '냉동/간편',
+    categories: ['냉동식품'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '냉동만두', imageCategory: '냉동식품' },
+      { id: 'meal', label: '볶음밥/면', keywords: ['냉동볶음밥', '냉동우동면'], imageName: '냉동볶음밥', imageCategory: '냉동식품' },
+      { id: 'snack', label: '만두/간식', keywords: ['냉동만두', '냉동피자', '냉동돈까스', '냉동감자튀김', '냉동떡볶이', '냉동핫도그'], imageName: '냉동피자', imageCategory: '냉동식품' },
+      { id: 'protein', label: '새우/닭가슴살', keywords: ['냉동새우', '냉동오징어', '냉동닭가슴살', '냉동어묵'], imageName: '냉동새우', imageCategory: '냉동식품' },
+      { id: 'vegetable', label: '냉동채소/과일', keywords: ['냉동야채믹스', '냉동옥수수', '냉동시금치', '냉동블루베리'], imageName: '냉동야채믹스', imageCategory: '냉동식품' },
+    ],
+  },
+  {
+    id: 'seasoning',
+    label: '장/양념',
+    categories: ['조미료'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '간장', imageCategory: '조미료' },
+      { id: 'jang', label: '간장/장류', keywords: ['간장', '고추장', '된장', '쌈장'], imageName: '간장', imageCategory: '조미료' },
+      { id: 'oil', label: '오일/식초', keywords: ['참기름', '들기름', '식용유', '올리브오일', '식초'], imageName: '참기름', imageCategory: '조미료' },
+      { id: 'powder', label: '가루/향신료', keywords: ['소금', '설탕', '후추', '고춧가루', '카레가루', '깨', '들깨가루'], imageName: '고춧가루', imageCategory: '조미료' },
+      { id: 'sauce', label: '소스/육수', keywords: ['굴소스', '케첩', '맛술', '치킨스톡', '멸치액젓', '까나리액젓', '고추기름', '겨자', '매실청'], imageName: '굴소스', imageCategory: '조미료' },
+    ],
+  },
+  {
+    id: 'drink-etc',
+    label: '커피/음료',
+    categories: ['음료/기타'],
+    subcategories: [
+      { id: 'all', label: '전체', imageName: '커피', imageCategory: '음료/기타' },
+      { id: 'water', label: '물/탄산수', keywords: ['생수', '탄산수'], imageName: '생수', imageCategory: '음료/기타' },
+      { id: 'drink', label: '주스/커피/차', keywords: ['주스', '커피', '티백', '홍차', '녹차'], imageName: '커피', imageCategory: '음료/기타' },
+      { id: 'snack', label: '견과/꿀', keywords: ['견과류', '아몬드', '호두', '꿀'], imageName: '견과류', imageCategory: '음료/기타' },
+      { id: 'baking', label: '시럽/코코아', keywords: ['올리고당', '코코아가루'], imageName: '코코아가루', imageCategory: '음료/기타' },
+    ],
+  },
 ]
 const EXPIRY_PRESETS = [
   { label: '3일', days: 3 },
@@ -64,6 +246,81 @@ function getDateAfterDays(days: number): string {
   return date.toISOString().slice(0, 10)
 }
 
+function getShoppingCatalogQuantity(item: IngredientCatalogItem): string {
+  const preset = SHOPPING_CATALOG_QUANTITY_BY_NAME[item.name]
+  if (preset) {
+    return preset
+  }
+
+  switch (item.defaultUnit) {
+    case 'kg':
+      return '1kg'
+    case 'g':
+      return '300g'
+    case 'ml':
+    case 'l':
+      return '1L'
+    case 'pack':
+      return '1팩'
+    case 'bag':
+      return '1봉'
+    case 'can':
+      return '1캔'
+    case 'bottle':
+      return '1병'
+    case 'block':
+      return '1모'
+    case 'sheet':
+      return '1장'
+    case 'slice':
+      return '1봉'
+    case 'tbsp':
+    case 'tsp':
+      return '1개'
+    case 'piece':
+    default:
+      return '1개'
+  }
+}
+
+function normalizeCatalogKeyword(value: string): string {
+  return value.trim().replace(/\s+/g, '').toLowerCase()
+}
+
+function getCatalogSearchText(item: IngredientCatalogItem): string {
+  return [item.name, item.category, ...(item.aliases ?? [])].map(normalizeCatalogKeyword).join(' ')
+}
+
+function itemMatchesShoppingScope(item: IngredientCatalogItem, scope: ShoppingCatalogScope): boolean {
+  const searchText = getCatalogSearchText(item)
+  const hasCategoryScope = Boolean(scope.categories?.length)
+  const hasKeywordScope = Boolean(scope.keywords?.length)
+  const matchesCategory = hasCategoryScope && Boolean(scope.categories?.includes(item.category))
+  const matchesKeyword = hasKeywordScope && Boolean(scope.keywords?.some((keyword) => searchText.includes(normalizeCatalogKeyword(keyword))))
+
+  if ((hasCategoryScope || hasKeywordScope) && !matchesCategory && !matchesKeyword) {
+    return false
+  }
+
+  return !scope.excludeKeywords?.some((keyword) => searchText.includes(normalizeCatalogKeyword(keyword)))
+}
+
+function getShoppingCatalogGroupItems(group: ShoppingCatalogGroup): IngredientCatalogItem[] {
+  return SHOPPING_CATALOG_ITEMS.filter((item) => itemMatchesShoppingScope(item, group))
+}
+
+function getShoppingCatalogSubcategoryItems(
+  group: ShoppingCatalogGroup,
+  subcategory: ShoppingCatalogSubcategory,
+): IngredientCatalogItem[] {
+  const groupItems = getShoppingCatalogGroupItems(group)
+  if (subcategory.id === 'all') {
+    return groupItems
+  }
+
+  return groupItems.filter((item) => itemMatchesShoppingScope(item, subcategory))
+}
+
 export default function ShoppingPage() {
   const isAppStoreDemo = useDemoMode()
   const { group } = useFamilyShare()
@@ -90,6 +347,8 @@ export default function ShoppingPage() {
   const [fridgeExpiryDays, setFridgeExpiryDays] = useState<number>(7)
   const [purchasePlace, setPurchasePlace] = useState('')
   const [unitPrice, setUnitPrice] = useState('')
+  const [selectedCatalogGroupId, setSelectedCatalogGroupId] = useState(SHOPPING_CATALOG_GROUPS[0]?.id ?? 'all')
+  const [selectedCatalogSubcategoryId, setSelectedCatalogSubcategoryId] = useState('all')
 
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
@@ -107,20 +366,47 @@ export default function ShoppingPage() {
     }
     return Array.from(groups.entries())
   }, [uncheckedItems])
+  const shoppingNameSet = useMemo(
+    () => new Set(displayItems.map((item) => normalizeShoppingIngredientName(item.name))),
+    [displayItems],
+  )
+  const selectedCatalogGroup = useMemo(
+    () => SHOPPING_CATALOG_GROUPS.find((groupItem) => groupItem.id === selectedCatalogGroupId) ?? SHOPPING_CATALOG_GROUPS[0],
+    [selectedCatalogGroupId],
+  )
+  const selectedCatalogSubcategory = useMemo(
+    () =>
+      selectedCatalogGroup?.subcategories.find((subcategory) => subcategory.id === selectedCatalogSubcategoryId) ??
+      selectedCatalogGroup?.subcategories[0],
+    [selectedCatalogGroup, selectedCatalogSubcategoryId],
+  )
+  const selectedCatalogItems = useMemo(() => {
+    if (!selectedCatalogGroup || !selectedCatalogSubcategory) {
+      return SHOPPING_CATALOG_ITEMS
+    }
 
-  const addShoppingDraft = async (draft: { name: string; quantity?: string; category?: IngredientCategory }) => {
+    return getShoppingCatalogSubcategoryItems(selectedCatalogGroup, selectedCatalogSubcategory)
+  }, [selectedCatalogGroup, selectedCatalogSubcategory])
+
+  const addShoppingDraft = async (
+    draft: { name: string; quantity?: string; category?: IngredientCategory },
+    options: AddShoppingDraftOptions = {},
+  ) => {
     const normalizedName = normalizeIngredientInput(draft.name)
     const normalizedQuantity = draft.quantity?.trim() ?? ''
     const safeCategory = draft.category ?? suggestIngredientCategory(normalizedName, DEFAULT_CATEGORY)
+    const duplicateMode = options.duplicateMode ?? 'ask'
 
     if (!normalizedName) {
       return
     }
 
     const duplicate = items.find((item) => normalizeShoppingIngredientName(item.name) === normalizeShoppingIngredientName(normalizedName))
-    const shouldMerge = duplicate
-      ? window.confirm(`이미 장보기 목록에 있어요. ${normalizedName}${normalizedQuantity ? ` ${normalizedQuantity}` : ''} 수량을 합칠까요?`)
-      : false
+    const shouldMerge = duplicate && duplicateMode === 'merge'
+      ? true
+      : duplicate && duplicateMode === 'ask'
+        ? window.confirm(`이미 장보기 목록에 있어요. ${normalizedName}${normalizedQuantity ? ` ${normalizedQuantity}` : ''} 수량을 합칠까요?`)
+        : false
     if (duplicate && !shouldMerge) {
       setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
       return
@@ -139,6 +425,17 @@ export default function ShoppingPage() {
     } else if (result.skippedDuplicates.length > 0) {
       setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
     }
+  }
+
+  const handleCatalogAdd = (item: IngredientCatalogItem) => {
+    void addShoppingDraft(
+      {
+        name: item.name,
+        quantity: getShoppingCatalogQuantity(item),
+        category: item.category,
+      },
+      { duplicateMode: 'merge' },
+    )
   }
 
   const handleAdd = () => {
@@ -226,14 +523,14 @@ export default function ShoppingPage() {
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
               {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex shrink-0 gap-2">
             <button type="button" onClick={shareList} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
               <Share2 size={15} />
             </button>
@@ -330,6 +627,92 @@ export default function ShoppingPage() {
               >
                 {chip.name} {chip.quantity}
               </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="jipbab-panel mt-3 rounded-[18px] p-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-black text-[#d94d19]">로켓프레시식 카테고리</p>
+              <h2 className="mt-1 text-[18px] font-black leading-tight text-[#2f2117]">카테고리 장보기</h2>
+            </div>
+            <p className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
+              {selectedCatalogItems.length}개
+            </p>
+          </div>
+
+          <div className="mt-3 flex gap-4 overflow-x-auto border-b border-[#eadcc9] pb-0">
+            {SHOPPING_CATALOG_GROUPS.map((groupItem) => {
+              const selected = selectedCatalogGroup?.id === groupItem.id
+              return (
+                <button
+                  key={groupItem.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCatalogGroupId(groupItem.id)
+                    setSelectedCatalogSubcategoryId('all')
+                  }}
+                  className={`relative min-h-11 shrink-0 px-0 pb-3 text-[14px] font-black ${
+                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                  }`}
+                >
+                  {groupItem.label}
+                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+            {selectedCatalogGroup?.subcategories.map((subcategory) => {
+              const selected = selectedCatalogSubcategory?.id === subcategory.id
+              const count = selectedCatalogGroup ? getShoppingCatalogSubcategoryItems(selectedCatalogGroup, subcategory).length : 0
+              const photoUrl = getIngredientPhotoUrl(subcategory.imageName, subcategory.imageCategory)
+
+              return (
+                <button
+                  key={subcategory.id}
+                  type="button"
+                  onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
+                  className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
+                >
+                  <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
+                    selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'
+                  }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
+                  </span>
+                  <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
+                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                  }`}
+                  >
+                    {subcategory.label}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#b5a493]">{count}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-[#fff7ed] px-3 py-2">
+            <p className="truncate text-[12px] font-black text-[#4b3929]">
+              {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
+            </p>
+            <p className="shrink-0 text-[11px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {selectedCatalogItems.map((item) => (
+              <ShoppingCatalogCard
+                key={item.id}
+                item={item}
+                quantity={getShoppingCatalogQuantity(item)}
+                isInShoppingList={shoppingNameSet.has(normalizeShoppingIngredientName(item.name))}
+                onAdd={() => handleCatalogAdd(item)}
+                partnerLinks={partnerLinks}
+              />
             ))}
           </div>
         </div>
@@ -533,6 +916,61 @@ export default function ShoppingPage() {
           </div>
         )}
       </section>
+    </div>
+  )
+}
+
+function ShoppingCatalogCard({
+  item,
+  quantity,
+  isInShoppingList,
+  onAdd,
+  partnerLinks,
+}: {
+  item: IngredientCatalogItem
+  quantity: string
+  isInShoppingList: boolean
+  onAdd: () => void
+  partnerLinks: PartnerLinkConfig
+}) {
+  const purchaseLink = getCoupangPurchaseLink({ name: item.name, category: item.category }, partnerLinks)
+  const photoUrl = getIngredientPhotoUrl(item.name, item.category)
+
+  return (
+    <div className="rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] p-2">
+      <button
+        type="button"
+        onClick={onAdd}
+        className="flex min-h-[66px] w-full items-center gap-2 rounded-[11px] text-left"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          alt={item.name}
+          className="h-10 w-10 shrink-0 rounded-[10px] object-contain mix-blend-multiply"
+          loading="lazy"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13px] font-black text-[#2f2117]">{item.name}</span>
+          <span className="mt-0.5 block truncate text-[11px] font-bold text-[#8f7f70]">{quantity}</span>
+        </span>
+        <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
+          isInShoppingList ? 'bg-[#f2f7e7] text-[#3d7b38]' : 'bg-[#fff0e4] text-[#d94d19]'
+        }`}
+        >
+          {isInShoppingList ? '담김' : '담기'}
+        </span>
+      </button>
+      <a
+        href={purchaseLink.href}
+        target="_blank"
+        rel={externalLinkRel(purchaseLink.isPartnerLink)}
+        className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-1 rounded-[10px] bg-white px-2 text-[11px] font-black text-[#d94d19]"
+        aria-label={`${item.name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
+      >
+        <ExternalLink size={12} />
+        {purchaseLink.isPartnerLink ? '쿠팡 링크' : '쿠팡 검색'}
+      </a>
     </div>
   )
 }

@@ -10,6 +10,8 @@
 
 QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFlight에서 Kakao 로그인 완료와 직접 계정삭제 완료를 확인했고, 계정삭제 완료 스크린샷 증거도 보존했습니다. 현재 iOS App Store Connect 상태는 `READY_FOR_SALE`이고, 한국/미국 공개 App Store 직접 URL도 live입니다.
 
+2026-06-30 19:28 KST에는 현재 출시 앱이 로드하는 `https://jipbab-note-app.vercel.app` Vercel production alias를 최신 홈/냉장고/레시피/장보기 UX 수정분으로 재배포했습니다. 출시된 iOS build `1.0 (2026062602)`는 Capacitor remote URL mode로 이 production alias를 로드하므로, App Store Connect 새 바이너리 심사 없이 앱 안 원격 화면에 이번 수정분이 반영됩니다. 배포 URL은 `https://jipbab-note-472i3yg6l-youngbeens-projects.vercel.app`이고, production `/shopping` HTTP 200 및 `로켓프레시식 카테고리`/`쿠팡 링크`/`173개` 렌더링을 확인했습니다.
+
 ## 현재 후보
 
 - Version: `1.0`
@@ -27,6 +29,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - App Store 개발자 출시 요청 생성 및 App Store version `READY_FOR_SALE` 확인: `output/release-evidence/2026-06-28T01-07-50-978Z-appstore-developer-release/summary.md`
 - App Store version `READY_FOR_SALE` 재확인: `output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md`
 - App Store 국가 가용성 생성(KOR/USA only), `appAvailabilityV2` 200 확인, KR/US 공개 App Store 직접 URL HTTP 200 확인, iTunes Lookup API 지연 기록: `output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`
+- App Store 출시 앱 원격 WebView production UX 갱신: `output/ui-evidence/shopping-production-vercel-cdp-390.png`
 - App Store Review 제출 완료 UI 증거: `output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md`
 - App Store 최신 스크린샷 5장 교체 완료 증거: `output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`
 - 케이블 연결 iPhone 12 Pro build `2026062601` install/launch/process/display 증거: `output/release-evidence/2026-06-26T11-10-cable-ios-qa/summary.md`

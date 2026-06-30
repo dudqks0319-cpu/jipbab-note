@@ -167,5 +167,5 @@ test("home page filters recommendations through beginner contract", () => {
   assert.match(homeSource, /filterBeginnerHomeRecipes/);
   assert.match(homeSource, /ONBOARDING_RECIPE_10_NAMES/);
   assert.match(homeSource, /beginnerHomeRecipeCatalog/);
-  assert.match(homeSource, /불 없이 가능|전자레인지 가능|팬 1개/);
+  assert.match(homeSource, /불 없이|전자레인지|팬 1개/);
 });

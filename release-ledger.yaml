@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "appstore_public_url_live_lookup_api_pending"
+  phase: "appstore_remote_webview_production_updated"
   version: "1.0"
   build_number: "2026062602"
   git_sha: "587b993"
-  branch: "cloudflare-workers-setup"
-  dirty_state: "dirty_before_harness_existing_user_or_agent_changes"
+  branch: "ux/home-today-action-v2"
+  dirty_state: "verified_local_changes_deployed_to_vercel_production_pending_commit_push"
   source_of_truth: "docs/current-release-state.md, docs/real-device-qa.md"
 
 local_checks:
@@ -39,6 +39,11 @@ local_checks:
     evidence: "output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md"
 
 runtime_checks:
+  - name: "App Store remote WebView production UX update"
+    target: "https://jipbab-note-app.vercel.app"
+    status: "deployed_verified"
+    command: "vercel deploy --prod --yes"
+    evidence: "output/ui-evidence/shopping-production-vercel-cdp-390.png"
   - name: "iOS real-device QA"
     target: "iPhone"
     status: "confirmed_appstore_scope"

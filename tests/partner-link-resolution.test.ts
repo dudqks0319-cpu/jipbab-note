@@ -7,6 +7,7 @@ import {
   parsePartnerItemLinksJson,
   resolvePartnerLink,
 } from "../lib/partner-links.ts";
+import { INGREDIENT_CATEGORIES } from "../types/index.ts";
 
 test("accepts only Coupang Partners short links as partner URLs", () => {
   assert.equal(isCoupangPartnerUrl("https://link.coupang.com/a/example-egg"), true);
@@ -156,4 +157,16 @@ test("partner link hook keeps validated fallback links when database loading fai
   assert.match(source, /setLinks\(FALLBACK_PARTNER_LINKS\)/);
   assert.match(source, /사과/);
   assert.doesNotMatch(source, /setLinks\(EMPTY_PARTNER_LINKS\)/);
+});
+
+test("fallback partner links cover every shopping catalog category", () => {
+  const source = readFileSync(new URL("../hooks/usePartnerLinks.ts", import.meta.url), "utf8");
+
+  for (const category of INGREDIENT_CATEGORIES) {
+    assert.ok(
+      source.includes(`${category}: 'https://link.coupang.com/a/`) ||
+        source.includes(`'${category}': 'https://link.coupang.com/a/`),
+      `${category} category should have a Coupang Partners fallback link`,
+    );
+  }
 });

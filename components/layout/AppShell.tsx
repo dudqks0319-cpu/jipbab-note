@@ -20,9 +20,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#f4eee5]">
-      <div className="mx-auto flex h-[100dvh] max-w-[430px] flex-col overflow-hidden border-x border-[#ead9c6] bg-[#fbf6ee] shadow-[0_18px_50px_rgba(82,59,35,0.16)]">
+      <div className="mx-auto flex h-[100dvh] w-full min-w-0 max-w-[430px] flex-col overflow-hidden border-x border-[#ead9c6] bg-[#fbf6ee] shadow-[0_18px_50px_rgba(82,59,35,0.16)]">
         <main
-          className="relative flex-1 overflow-y-auto"
+          className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto"
           onTouchStart={(event) => {
             const touch = event.changedTouches[0]
             if (!touch || touch.clientX > 24) {

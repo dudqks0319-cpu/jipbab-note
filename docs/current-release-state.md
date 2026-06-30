@@ -1,6 +1,15 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-06-29 KST
+Updated: 2026-06-30 KST
+
+## 2026-06-30 App Store 출시 앱 원격 WebView production UX 갱신
+
+- 2026-06-30 19:28 KST `vercel deploy --prod --yes`로 현재 홈/냉장고/레시피/장보기 UX 수정분을 `https://jipbab-note-app.vercel.app` production alias에 배포했습니다.
+- 현재 출시된 iOS App Store build `1.0 (2026062602)`는 Capacitor remote URL mode로 `https://jipbab-note-app.vercel.app`를 로드하므로, 이번 변경은 App Store Connect 새 바이너리 심사 없이 출시 앱 안의 원격 화면에 반영됩니다.
+- 배포 URL: `https://jipbab-note-472i3yg6l-youngbeens-projects.vercel.app`; production alias: `https://jipbab-note-app.vercel.app`.
+- 배포 후 production `/shopping`은 HTTP 200을 반환했고, HTML에서 `로켓프레시식 카테고리`, `카테고리 장보기`, `쿠팡 링크`, `173개`가 확인됐습니다. production `/`에서도 새 냉장고 스타터 화면과 `내 냉장고 가기` CTA가 확인됐습니다.
+- CDP 모바일 검증에서 `/shopping`은 `innerWidth`, `docWidth`, `scrollWidth`, `bodyScrollWidth`가 모두 `390`이고, `로켓프레시식 카테고리`와 `쿠팡 링크` 텍스트가 렌더링됐습니다.
+- Evidence: `<repo>/output/ui-evidence/shopping-production-vercel-cdp-390.png`.
 
 ## 2026-06-29 App Store 공개 스크린샷 최신 자산 확인
 
