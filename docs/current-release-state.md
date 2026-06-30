@@ -4,6 +4,10 @@ Updated: 2026-06-30 KST
 
 ## 2026-06-30 App Store 출시 앱 원격 WebView production UX 갱신
 
+- 2026-06-30 21:20 KST follow-up: `fb9cb5c` (`Fix fridge display and partner link fallbacks`)를 `origin/ux/home-today-action-v2`에 푸시했고, `vercel deploy --prod --yes`로 `https://jipbab-note-jdo0qhbzh-youngbeens-projects.vercel.app`를 배포한 뒤 production alias `https://jipbab-note-app.vercel.app`에 연결했습니다.
+- 이번 follow-up은 장보기 개별 재료 링크가 넓은 카테고리 fallback으로 잘못 이동하는 문제를 막습니다. `딸기`는 더 이상 `과일` fallback인 사과 파트너스 링크로 가지 않고, 딸기 전용 파트너스 링크가 없으면 `https://www.coupang.com/np/search?component=&q=%EB%94%B8%EA%B8%B0`로 이동합니다.
+- 냉장고 표시는 일반 `밥`/`rice`가 저장 데이터상 `냉동`이어도 화면에서는 `냉장`으로 보정하고, `냉동볶음밥` 같은 명시 냉동식품은 냉동실에 유지합니다. `egg`, `green onion`, `strawberry` 같은 영어 입력도 홈/냉장고 라벨과 이미지 매칭 전에 한국어 대표명으로 정규화합니다.
+- Verification: `pnpm exec tsc --noEmit --pretty false`, `pnpm test:unit`, `pnpm lint`, sandbox-external `pnpm build`, Vercel remote build, production `/shopping` HTTP 200. Playwright MCP snapshot `/Users/jyb-m3max/Desktop/codex/.playwright-mcp/page-2026-06-30T12-09-25-046Z.yml` shows `딸기 쿠팡 검색 열기` with `q=%EB%94%B8%EA%B8%B0`.
 - 2026-06-30 19:28 KST `vercel deploy --prod --yes`로 현재 홈/냉장고/레시피/장보기 UX 수정분을 `https://jipbab-note-app.vercel.app` production alias에 배포했습니다.
 - 현재 출시된 iOS App Store build `1.0 (2026062602)`는 Capacitor remote URL mode로 `https://jipbab-note-app.vercel.app`를 로드하므로, 이번 변경은 App Store Connect 새 바이너리 심사 없이 출시 앱 안의 원격 화면에 반영됩니다.
 - 배포 URL: `https://jipbab-note-472i3yg6l-youngbeens-projects.vercel.app`; production alias: `https://jipbab-note-app.vercel.app`.
