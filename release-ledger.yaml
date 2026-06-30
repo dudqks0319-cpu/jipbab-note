@@ -17,7 +17,7 @@ candidate:
   build_number: "2026062602"
   git_sha: "ae9bd02"
   branch: "ux/home-today-action-v2"
-  dirty_state: "committed_to_feature_branch"
+  dirty_state: "committed_and_pushed_to_feature_branch"
   source_of_truth: "docs/current-release-state.md, docs/real-device-qa.md"
 
 local_checks:
