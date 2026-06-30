@@ -35,6 +35,8 @@ import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPIN
 import { filterBeginnerHomeRecipes } from '@/lib/beginner-recipe-contract'
 import { CURATED_RECIPE_RECORDS, ONBOARDING_RECIPE_10_NAMES, RELEASE_RECIPE_30_NAMES } from '@/lib/curated-recipes'
 import { buildHomeHref } from '@/lib/home-actions'
+import { getIngredientDisplayName } from '@/lib/ingredient-display'
+import { withNormalizedIngredientStorage } from '@/lib/ingredient-storage'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday, getIngredientPhotoUrl } from '@/lib/utils'
@@ -115,7 +117,10 @@ export default function HomePage() {
   }, [displayRecipeCatalog, isAppStoreDemo, onboardingRecipeCatalog, releaseRecipeCatalog])
 
   const activeDisplayIngredients = useMemo(
-    () => displayIngredients.filter((item) => !item.consumedAt && !item.discardedAt),
+    () =>
+      displayIngredients
+        .filter((item) => !item.consumedAt && !item.discardedAt)
+        .map(withNormalizedIngredientStorage),
     [displayIngredients],
   )
   const activeFamilyIngredients = useMemo(
@@ -507,7 +512,7 @@ function HomeFridgePreview({
       {storageCounts.frozen > 0 ? (
         <div
           className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
-          style={{ bottom: 96, left: 16 }}
+          style={{ left: 16, top: '68%' }}
         >
           냉동 <span className="text-[#8f7f70]">{storageCounts.frozen}개</span>
         </div>
@@ -534,10 +539,10 @@ function HomeFridgePreview({
         <div
           className="absolute grid content-start"
           style={{
-            bottom: 96,
             gap: '5px 2px',
             gridTemplateColumns: 'repeat(6, 32px)',
             left: '50%',
+            top: '73%',
             transform: 'translateX(-50%)',
             width: previewWidth,
           }}
@@ -558,20 +563,22 @@ function getHomeFridgePreviewWidth() {
 
 function HomeFridgeIngredientTile({ ingredient }: { ingredient: IngredientRecord }) {
   const displayName = getHomeFridgeIngredientDisplayName(ingredient.name)
+  const photoName = getIngredientDisplayName(ingredient.name)
 
   return (
     <div className="w-8 min-w-0 px-0 py-0.5 text-center">
       <Image
-        src={getIngredientPhotoUrl(ingredient.name, ingredient.category)}
-        alt={ingredient.name}
+        src={getIngredientPhotoUrl(photoName, ingredient.category)}
+        alt={photoName}
         width={30}
         height={30}
         sizes="30px"
         className="mx-auto h-6 w-6 object-contain mix-blend-multiply drop-shadow-[0_1px_1px_rgba(255,255,255,0.75)]"
       />
       <p
-        className="mt-0.5 text-[8px] font-black text-[#2f2117] drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]"
-        style={{ lineHeight: '9px', overflowWrap: 'anywhere', wordBreak: 'break-all' }}
+        className="mx-auto mt-0.5 max-w-9 overflow-hidden text-ellipsis whitespace-nowrap text-[8px] font-black text-[#2f2117] drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]"
+        style={{ lineHeight: '9px' }}
+        title={photoName}
       >
         {displayName}
       </p>
@@ -580,7 +587,12 @@ function HomeFridgeIngredientTile({ ingredient }: { ingredient: IngredientRecord
 }
 
 function getHomeFridgeIngredientDisplayName(name: string) {
-  return name.replace(/\s+/g, '').slice(0, 4)
+  const displayName = getIngredientDisplayName(name).replace(/\s+/g, '')
+  const compactName = displayName.startsWith('냉동') && displayName.length > 4
+    ? displayName.replace(/^냉동/, '')
+    : displayName
+
+  return compactName.length > 4 ? `${compactName.slice(0, 3)}…` : compactName
 }
 
 function HomeFridgeMoreTile({ count }: { count: number }) {

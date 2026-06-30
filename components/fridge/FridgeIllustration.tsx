@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ChevronDown, Plus } from "lucide-react";
 
 import { getIngredientDisplayName } from "@/lib/ingredient-display";
+import { withNormalizedIngredientStorage } from "@/lib/ingredient-storage";
 import { getDday, getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientRecord, IngredientStorageType } from "@/types";
 
@@ -307,7 +308,9 @@ export default function FridgeIllustration({
   emptyActionHref = "/fridge?add=1",
   showEmptyIntro = true,
 }: FridgeIllustrationProps) {
-  const activeIngredients = ingredients.filter((item) => !item.consumedAt && !item.discardedAt);
+  const activeIngredients = ingredients
+    .filter((item) => !item.consumedAt && !item.discardedAt)
+    .map(withNormalizedIngredientStorage);
   const visibleZones: ZoneWithItems[] = FRIDGE_ZONES.map((zone) => ({
     ...zone,
     items: sortZoneItems(activeIngredients.filter((item) => item.storageType === zone.storageType)),

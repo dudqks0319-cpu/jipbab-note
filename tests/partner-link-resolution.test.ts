@@ -97,6 +97,7 @@ test("ignores malformed item-specific partner link JSON", () => {
 test("falls back to category link when no specific item link exists", () => {
   const result = resolvePartnerLink(
     {
+      allowCategoryFallback: true,
       category: "냉동식품",
       name: "냉동만두",
     },
@@ -110,6 +111,47 @@ test("falls back to category link when no specific item link exists", () => {
 
   assert.equal(result.href, "https://link.coupang.com/a/example-frozen");
   assert.equal(result.kind, "category");
+});
+
+test("unmapped fruit avoids the fruit category fallback unless explicitly allowed", () => {
+  const result = resolvePartnerLink(
+    {
+      category: "과일",
+      name: "딸기",
+    },
+    {
+      itemLinks: {
+        사과: "https://link.coupang.com/a/example-apple",
+      },
+      categoryLinks: {
+        "과일": "https://link.coupang.com/a/example-apple",
+      },
+    },
+  );
+
+  assert.match(result.href, /%EB%94%B8%EA%B8%B0/);
+  assert.equal(result.kind, "search");
+});
+
+test("strawberry item link overrides the fruit category fallback", () => {
+  const result = resolvePartnerLink(
+    {
+      category: "과일",
+      name: "딸기",
+    },
+    {
+      itemLinks: {
+        딸기: "https://link.coupang.com/a/example-strawberry",
+        사과: "https://link.coupang.com/a/example-apple",
+      },
+      categoryLinks: {
+        "과일": "https://link.coupang.com/a/example-apple",
+      },
+    },
+  );
+
+  assert.equal(result.href, "https://link.coupang.com/a/example-strawberry");
+  assert.equal(result.kind, "item");
 });
 
 test("falls back to search when configured partner URLs are not allowlisted", () => {

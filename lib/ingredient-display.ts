@@ -6,8 +6,15 @@ const ENGLISH_INGREDIENT_ALIASES = new Map<string, string>([
   ["tofu", "두부"],
   ["onion", "양파"],
   ["onions", "양파"],
+  ["greenonion", "대파"],
+  ["scallion", "대파"],
+  ["scallions", "대파"],
   ["kimchi", "김치"],
   ["garlic", "마늘"],
+  ["rice", "밥"],
+  ["cookedrice", "밥"],
+  ["strawberry", "딸기"],
+  ["strawberries", "딸기"],
 ]);
 
 const normalizeLookupText = (value: string) => value.normalize("NFC").trim().toLowerCase().replace(/\s+/g, "");
@@ -40,11 +47,14 @@ export function getIngredientDisplayName(name: string): string {
     })
     .map((item) => item.name);
 
-  const englishMatches = normalizedName
-    .toLowerCase()
-    .split(/[^a-z]+/u)
-    .map((token) => ENGLISH_INGREDIENT_ALIASES.get(token) ?? "")
-    .filter(Boolean);
+  const compactEnglishMatch = ENGLISH_INGREDIENT_ALIASES.get(compactName);
+  const englishMatches = compactEnglishMatch
+    ? [compactEnglishMatch]
+    : normalizedName
+      .toLowerCase()
+      .split(/[^a-z]+/u)
+      .map((token) => ENGLISH_INGREDIENT_ALIASES.get(token) ?? "")
+      .filter(Boolean);
 
   const matches = uniqueOrdered([...matchedKoreanNames, ...englishMatches]);
   if (matches.length >= 2) {
