@@ -15,9 +15,9 @@ candidate:
   phase: "appstore_remote_webview_production_updated"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "587b993"
+  git_sha: "ae9bd02"
   branch: "ux/home-today-action-v2"
-  dirty_state: "verified_local_changes_deployed_to_vercel_production_pending_commit_push"
+  dirty_state: "committed_to_feature_branch"
   source_of_truth: "docs/current-release-state.md, docs/real-device-qa.md"
 
 local_checks:
