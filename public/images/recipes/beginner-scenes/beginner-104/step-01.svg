@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-  <title id="title">누룽지 두부 계란죽 1단계. 냄비 시작</title>
-  <desc id="desc">누룽지 두부 계란죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 1단계. 냄비 시작 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <title id="title">누룽지 두부 계란죽 1단계. 누룽지 끓이기</title>
+  <desc id="desc">누룽지 두부 계란죽 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 1단계. 누룽지 끓이기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -20,7 +20,7 @@
     <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">4/7</text>
   </g>
 
-  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">1단계. 냄비 시작</text>
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">1단계. 누룽지 끓이기</text>
   <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#d94324">누룽지 두부 계란죽 조리순서입니다.</text>
   <g fill="#551d12" opacity="0.96">
     <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
@@ -42,22 +42,22 @@
     <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
     <circle cx="630" cy="218" r="33" fill="#d94324"/>
     <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">1</text>
-    <text x="685" y="229" font-size="38" font-weight="950" fill="#551d12">냄비 시작</text>
-    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">냄비에 물과 기본 양념을 넣고 중불로 올</text>
-<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">립니다.</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#551d12">누룽지 끓이기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">냄비에 누룽지 1컵과 물 3컵을 넣고 중</text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">불에서 5분 끓입니다.</text>
     <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
-    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">중불 · 3분</text>
+    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">중불 · 5분</text>
     <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="963" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#4d7a37">초보 확인</text>
 
     <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
-    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">냄비 가장자리에 작은 기포가 올라오면 다음 재료를 넣을 때입니다.</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">누룽지가 물을 머금어 부드러워지고 국물이 살짝 걸쭉해지면 됩니다.</text>
     <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
     <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
-    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">처음부터 강불로 끓이면 넘치거나 바닥이 눌 수 있습니다.</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">물 없이 센불로 끓이면 냄비 바닥에 눌어붙습니다.</text>
     <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
     <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
-    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요.</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">바닥이 붙기 시작하면 물 1/2컵을 넣고 불을 낮추세요.</text>
   </g>
 </svg>

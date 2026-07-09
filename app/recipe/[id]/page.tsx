@@ -633,7 +633,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
   const isGeneratedHeroImage = isBeginnerRecipeGeneratedImage(heroImage);
-  const hasRecipeVisualGuide = Boolean(recipe.recipePosterImageUrl || recipe.recipePrepImageUrl || recipe.recipeStepsImageUrl);
+  const hasGeneratedRecipePhoto = isGeneratedHeroImage || heroImage.includes("/images/recipes/generated/");
+  const visualGuideSteps = recipe.steps.filter((step) => Boolean(step.imageUrl));
+  const visualGuideImage = recipe.recipeGuideImageUrl || recipe.recipeStepsImageUrl || recipe.recipePrepImageUrl || (hasGeneratedRecipePhoto ? heroImage : null);
+  const hasRecipeVisualGuide = Boolean(
+    recipe.recipePosterImageUrl ||
+    visualGuideImage ||
+    visualGuideSteps.length > 0,
+  );
   const tags = parseHashTags(recipe.hashTag);
   const cookingMinutes = recipe.cookingTime ?? Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
   const servingLabel = `${recipe.servings ?? 2}인분`;
@@ -648,13 +655,25 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           beginnerNote: null,
           prepNote: null,
         } satisfies RecipeIngredientDetail));
+  const guideIngredientDetails = ingredientDetails
+    .filter((ingredient) => ingredient.required !== false)
+    .slice(0, 6);
+  const guideToolItems = recipe.requiredTools?.slice(0, 5) ?? [];
+  const guidePrepItems = recipe.beforeStart?.slice(0, 3) ?? [];
   const measurementTips = recipe.measurementTips?.length
     ? recipe.measurementTips
     : DEFAULT_DETAIL_MEASUREMENT_TIPS;
+  const sourceUrl = recipe.sourceUrl ?? normalizeHttpUrl(recipe.source?.sourceUrl);
   const sourceLabel = recipe.sourceAttribution
-    ?? (recipe.id.startsWith("curated-") ? "집밥노트 직접 큐레이션" : "출처 정보 확인 필요");
+    ?? recipe.source?.sourceName
+    ?? (recipe.id.startsWith("curated-") || recipe.id.startsWith("beginner-recipe-")
+      ? "집밥노트 직접 큐레이션"
+      : "출처 정보 확인 필요");
   const sourceLicense = recipe.sourceLicense
-    ?? (recipe.id.startsWith("curated-") ? "직접 작성/제작 콘텐츠" : "원천 데이터 기준 표시");
+    ?? recipe.source?.licenseOrUsageNote
+    ?? (recipe.id.startsWith("curated-") || recipe.id.startsWith("beginner-recipe-")
+      ? "직접 작성/제작 콘텐츠"
+      : "원천 데이터 기준 표시");
   const reviewedForBeginner = recipe.reviewedForBeginner ?? recipe.id.startsWith("curated-");
   const contentOriginLabel = {
     original: "집밥노트 직접 작성",
@@ -729,7 +748,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <QuickAction
             href={hasRecipeVisualGuide ? "#recipe-guide" : "#ingredients"}
             icon={hasRecipeVisualGuide ? <BookOpenText size={30} /> : <Search size={30} />}
-            label={hasRecipeVisualGuide ? "사진레시피" : "재료 확인"}
+            label={hasRecipeVisualGuide ? "사진+순서" : "재료 확인"}
             tone="orange"
           />
           <QuickAction href="#shopping-assistant" icon={<ShoppingBag size={30} />} label="장보기" tone="violet" />
@@ -747,48 +766,151 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </section>
       ) : null}
 
-      {recipe.recipePosterImageUrl || recipe.recipePrepImageUrl || recipe.recipeStepsImageUrl || recipe.recipeGuideImageUrl ? (
+      <section className="px-5 pt-4">
+        <div className="rounded-[14px] border border-[#ece8e2] bg-[#fffaf3] px-4 py-3">
+          <p className="text-[12px] font-black text-[#2f2117]">출처 요약</p>
+          <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#6f655b]">
+            {sourceLabel} · {sourceLicense}
+          </p>
+          <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#81766d]">
+            {reviewedForBeginner
+              ? "초보자용 계량과 실패 방지 문장은 집밥노트 기준으로 정리했습니다."
+              : "원천 정보는 앱 표시 기준으로 정리하고, 초보자 문장은 별도 기준으로 보완합니다."}
+          </p>
+          {sourceUrl ? (
+            <Link
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex text-[12px] font-black text-[#d94d19] underline-offset-2 hover:underline"
+            >
+              원천 페이지 확인
+            </Link>
+          ) : null}
+        </div>
+      </section>
+
+      {hasRecipeVisualGuide ? (
         <section id="recipe-guide" className="scroll-mt-24 bg-white px-5 pt-5">
           <div className="rounded-[8px] border border-[#ece8e2] bg-[#faf8f5] p-3">
             <div className="flex items-center gap-2 px-1 pb-3">
               <BookOpenText size={18} className="text-[#ef8a3a]" />
               <h2 className="text-[19px] font-black text-[#242424]">사진으로 보는 레시피</h2>
             </div>
+            <p className="mb-3 break-keep px-1 text-[12px] font-bold leading-5 text-[#6f655b]">
+              완성 사진은 가리지 않고 보여주고, 재료와 준비물은 아래 카드에서 따로 확인할 수 있게 정리했습니다.
+            </p>
             <div className="space-y-3">
-              {recipe.recipePosterImageUrl ? (
+              <div className="overflow-hidden rounded-[14px] border border-[#ece8e2] bg-white">
                 <RecipeImage
-                  src={recipe.recipePosterImageUrl}
-                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
-                  alt={`${recipe.name} 재료와 조리 순서 포스터`}
-                  className="aspect-[9/16] overflow-hidden rounded-[8px] bg-[#fff8ef]"
-                  imageClassName="h-full w-full object-contain"
+                  src={heroImage}
+                  fallbackSrc={FALLBACK_IMAGE}
+                  alt={`${recipe.name} 완성 사진`}
+                  className="aspect-[4/3] overflow-hidden bg-[#fff8ef]"
+                  imageClassName={`h-full w-full ${isGeneratedHeroImage ? "object-contain p-2" : "object-cover"}`}
                 />
-              ) : recipe.recipePrepImageUrl ? (
-                <RecipeImage
-                  src={recipe.recipePrepImageUrl}
-                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
-                  alt={`${recipe.name} 도구와 재료 안내`}
-                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
-                  imageClassName="h-full w-full object-cover"
-                />
-              ) : null}
-              {!recipe.recipePosterImageUrl && recipe.recipeStepsImageUrl ? (
-                <RecipeImage
-                  src={recipe.recipeStepsImageUrl}
-                  fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
-                  alt={`${recipe.name} 조리 순서 안내`}
-                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
-                  imageClassName="h-full w-full object-cover"
-                />
-              ) : !recipe.recipePosterImageUrl && recipe.recipeGuideImageUrl ? (
-                <RecipeImage
-                  src={recipe.recipeGuideImageUrl}
-                  fallbackSrc={recipe.thumbnailUrl || FALLBACK_IMAGE}
-                  alt={`${recipe.name} 재료와 조리 순서 안내`}
-                  className="aspect-square overflow-hidden rounded-[8px] bg-[#eee7dd]"
-                  imageClassName="h-full w-full object-cover"
-                />
-              ) : null}
+                {recipe.imageCaption ? (
+                  <p className="break-keep px-3 py-2 text-[12px] font-bold leading-5 text-[#6f655b]">
+                    {recipe.imageCaption}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="grid gap-2">
+                <div className="rounded-[14px] border border-[#f0dfcb] bg-[#fff9f0] px-3 py-3">
+                  <p className="text-[12px] font-black text-[#d94d19]">필수 재료</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {guideIngredientDetails.map((ingredient) => (
+                      <div key={`guide-ingredient-${ingredient.name}-${ingredient.display}`} className="rounded-[10px] bg-white px-3 py-2">
+                        <p className="break-keep text-[14px] font-black leading-5 text-[#2f2117]">{ingredient.name}</p>
+                        <p className="mt-0.5 break-keep text-[12px] font-bold leading-5 text-[#7a6552]">{ingredient.display}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {guideToolItems.length > 0 ? (
+                  <div className="rounded-[14px] border border-[#dcebd2] bg-[#f4fbef] px-3 py-3">
+                    <p className="text-[12px] font-black text-[#4f8740]">준비물</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {guideToolItems.map((tool) => (
+                        <span key={`guide-tool-${tool}`} className="rounded-full bg-white px-3 py-1.5 text-[12px] font-black text-[#426e35]">
+                          {tool}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {guidePrepItems.length > 0 ? (
+                  <div className="rounded-[14px] border border-[#ece8e2] bg-white px-3 py-3">
+                    <p className="text-[12px] font-black text-[#2f2117]">시작 전 준비</p>
+                    <ul className="mt-2 space-y-1.5">
+                      {guidePrepItems.map((item) => (
+                        <li key={`guide-prep-${item}`} className="break-keep rounded-[10px] bg-[#faf8f5] px-3 py-2 text-[12px] font-bold leading-5 text-[#6f655b]">
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+
+              {visualGuideSteps.length > 0 ? (
+                <ol className="space-y-4">
+                  {visualGuideSteps.map((step) => (
+                    <li key={`visual-${step.index}`} className="overflow-hidden rounded-[12px] border border-[#ece8e2] bg-white">
+                      <RecipeImage
+                        src={step.imageUrl}
+                        fallbackSrc={recipe.recipeGuideImageUrl || recipe.thumbnailUrl || FALLBACK_IMAGE}
+                        alt={step.imageAlt || `${recipe.name} 조리 순서 ${step.index}`}
+                        className="aspect-square overflow-hidden bg-[#eee7dd]"
+                        imageClassName="h-full w-full object-cover"
+                      />
+                      <div className="px-3 py-3">
+                        <p className="text-[12px] font-black text-[#ef8a3a]">
+                          STEP {step.index}{step.title ? ` · ${step.title}` : ""}
+                        </p>
+                        <p className="mt-1 break-keep text-[16px] font-black leading-6 text-[#2f2117]">
+                          {step.action || step.description}
+                        </p>
+                        {step.visualCue ? (
+                          <p className="mt-2 break-keep rounded-[8px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
+                            눈으로 확인: {step.visualCue}
+                          </p>
+                        ) : null}
+                        {step.beginnerTip ? (
+                          <p className="mt-2 break-keep rounded-[8px] bg-[#eef6df] px-3 py-2 text-[12px] font-bold leading-5 text-[#4f8740]">
+                            초보 팁: {step.beginnerTip}
+                          </p>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <>
+                  {recipe.steps.length > 0 ? (
+                    <ol className="mt-3 space-y-2">
+                      {recipe.steps.slice(0, 5).map((step) => (
+                        <li key={`visual-summary-${step.index}`} className="rounded-[10px] border border-[#ece8e2] bg-white px-3 py-3">
+                          <p className="text-[12px] font-black text-[#ef8a3a]">
+                            STEP {step.index}{step.title ? ` · ${step.title}` : ""}
+                          </p>
+                          <p className="mt-1 break-keep text-[14px] font-bold leading-6 text-[#2f2117]">
+                            {step.action || step.description}
+                          </p>
+                          {step.visualCue ? (
+                            <p className="mt-2 break-keep rounded-[8px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
+                              눈으로 확인: {step.visualCue}
+                            </p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -940,9 +1062,9 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             제공자: {recipe.sourceProvider ?? "집밥노트"} · 콘텐츠 기준: {contentOriginLabel}
             {recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
           </p>
-          {recipe.sourceUrl ? (
+          {sourceUrl ? (
             <Link
-              href={recipe.sourceUrl}
+              href={sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1 inline-flex text-[12px] font-black text-[#d94d19] underline-offset-2 hover:underline"

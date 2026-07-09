@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
   <title id="title">두부조림 재료 준비 (1인분)</title>
-  <desc id="desc">두부조림은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료 준비 (1인분) 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <desc id="desc">두부조림 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료 준비 (1인분) 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -44,7 +44,7 @@
       <ellipse cx="287" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
       <circle cx="269.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
       <circle cx="294.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
-      <text x="287" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">간장</text>
+      <text x="287" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">식용유</text>
       <text x="287" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">1큰술</text>
     </g>
   
@@ -55,11 +55,55 @@
       <ellipse cx="443" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
       <circle cx="425.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
       <circle cx="450.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
-      <text x="443" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">참기름</text>
-      <text x="443" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">1작은술</text>
+      <text x="443" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">간장</text>
+      <text x="443" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">2큰술</text>
+    </g>
+  
+
+    <g>
+      <rect x="538" y="246" width="122" height="184" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="599" cy="298" rx="42.699999999999996" ry="29.279999999999998" fill="hsl(141 75% 54%)" opacity="0.88"/>
+      <ellipse cx="599" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
+      <circle cx="581.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
+      <circle cx="606.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
+      <text x="599" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">물</text>
+      <text x="599" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">1/2컵</text>
+    </g>
+  
+
+    <g>
+      <rect x="694" y="246" width="122" height="184" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="755" cy="298" rx="42.699999999999996" ry="29.279999999999998" fill="hsl(188 75% 54%)" opacity="0.88"/>
+      <ellipse cx="755" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
+      <circle cx="737.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
+      <circle cx="762.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
+      <text x="755" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">설탕</text>
+      <text x="755" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">1작은술</text>
+    </g>
+  
+
+    <g>
+      <rect x="850" y="246" width="122" height="184" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="911" cy="298" rx="42.699999999999996" ry="29.279999999999998" fill="hsl(235 75% 54%)" opacity="0.88"/>
+      <ellipse cx="911" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
+      <circle cx="893.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
+      <circle cx="918.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
+      <text x="911" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">대파</text>
+      <text x="911" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">2큰술</text>
+    </g>
+  
+
+    <g>
+      <rect x="1006" y="246" width="122" height="184" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="1067" cy="298" rx="42.699999999999996" ry="29.279999999999998" fill="hsl(282 75% 54%)" opacity="0.88"/>
+      <ellipse cx="1067" cy="288" rx="45.14" ry="24.400000000000002" fill="#ffffff" opacity="0.62"/>
+      <circle cx="1049.92" cy="296" r="9.76" fill="#fff6d0" opacity="0.78"/>
+      <circle cx="1074.32" cy="309" r="8.540000000000001" fill="#5d8f36" opacity="0.68"/>
+      <text x="1067" y="390" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">고춧가루</text>
+      <text x="1067" y="420" text-anchor="middle" font-size="17" font-weight="800" fill="#6f5a49">1작은술</text>
     </g>
   
     <rect x="150" y="800" width="900" height="52" rx="15" fill="#fff7df" stroke="#e4cba7"/>
-    <text x="600" y="834" text-anchor="middle" font-size="22" font-weight="850" fill="#6a4128">TIP! 두부은 한입 크기나 숟가락에 올라가는 크기로 준비하면 먹기 쉽습니다.</text>
+    <text x="600" y="834" text-anchor="middle" font-size="22" font-weight="850" fill="#6a4128">TIP! 단단한 두부가 조릴 때 덜 부서집니다.</text>
   </g>
 </svg>

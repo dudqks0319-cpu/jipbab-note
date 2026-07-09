@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-  <title id="title">계란간장밥 계란간장밥</title>
-  <desc id="desc">계란간장밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 계란간장밥 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <title id="title">간장계란밥 간장계란밥</title>
+  <desc id="desc">간장계란밥 레시피는 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 간장계란밥 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -20,10 +20,10 @@
     <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">1/7</text>
   </g>
 
-  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">계란간장밥</text>
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">간장계란밥</text>
   <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#e85027">요리 초보도 따라 할 수 있는 집밥노트 대표 이미지입니다.</text>
   <g fill="#5b1d10" opacity="0.96">
-    <text x="600" y="210" text-anchor="middle" font-size="92" font-weight="950" fill="#5b1d10">계란간장밥</text>
+    <text x="600" y="210" text-anchor="middle" font-size="92" font-weight="950" fill="#5b1d10">간장계란밥</text>
     <rect x="390" y="240" width="420" height="48" rx="24" fill="#e85027"/>
     <text x="600" y="272" text-anchor="middle" font-size="23" font-weight="950" fill="#fff">첫 요리 추천 · 10분 · 1인분</text>
     
@@ -39,6 +39,6 @@
     </g>
   
     <rect x="165" y="782" width="870" height="70" rx="22" fill="#fff8ed" stroke="#e4cba7"/>
-    <text x="600" y="826" text-anchor="middle" font-size="25" font-weight="850" fill="#5b3e2f">계란간장밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.</text>
+    <text x="600" y="826" text-anchor="middle" font-size="25" font-weight="850" fill="#5b3e2f">간장계란밥 레시피는 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.</text>
   </g>
 </svg>

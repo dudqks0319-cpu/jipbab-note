@@ -16,6 +16,7 @@ import {
   getOnboardingRecipes,
   getReleaseRecipes,
   matchRecipesByIngredients,
+  resolveBeginnerRecipeTitle,
   sortRecipesForBeginnerHome,
 } from "../lib/beginner-recipes.ts";
 import { filterBeginnerHomeRecipes } from "../lib/beginner-recipe-contract.ts";
@@ -176,7 +177,28 @@ function missingFiles(paths) {
   return paths.filter((relativePath) => !existsSync(path.join(cwd, relativePath)));
 }
 
+function isHttpSourceUrl(value) {
+  return typeof value === "string" && /^https?:\/\/\S+$/u.test(value);
+}
+
+function hasSourceRightsSafeguards(source) {
+  return (
+    source?.adaptedByJipbabNote === true &&
+    typeof source.rightsNote === "string" &&
+    source.rightsNote.includes("집밥노트") &&
+    typeof source.licenseOrUsageNote === "string" &&
+    source.licenseOrUsageNote.includes("원문") &&
+    (source.licenseOrUsageNote.includes("사진") || source.licenseOrUsageNote.includes("이미지"))
+  );
+}
+
+function sourcePolicyAllows(source) {
+  if (!hasSourceRightsSafeguards(source)) return false;
+  return source.sourceUrl === null || isHttpSourceUrl(source.sourceUrl);
+}
+
 const byTitle = new Map(BEGINNER_RECIPE_LIBRARY.map((recipe) => [recipe.title, recipe]));
+const recipeForRequiredName = (name) => byTitle.get(resolveBeginnerRecipeTitle(name));
 const publishedRecipes = BEGINNER_RECIPE_LIBRARY.filter((recipe) => recipe.publishStatus === "published");
 const homeRecipes = filterBeginnerHomeRecipes(CURATED_RECIPE_RECORDS);
 
@@ -185,7 +207,7 @@ addCheck(
   BEGINNER_RECIPE_LIBRARY.length >= 100,
   `${BEGINNER_RECIPE_LIBRARY.length} candidates`,
 );
-const missingRequired100 = REQUIRED_RECIPE_100_NAMES.filter((name) => !byTitle.has(name));
+const missingRequired100 = REQUIRED_RECIPE_100_NAMES.filter((name) => !recipeForRequiredName(name));
 addCheck(
   "사용자 지정 기본 100개 후보 전체 포함",
   missingRequired100.length === 0,
@@ -251,19 +273,14 @@ addCheck(
 );
 
 addCheck(
-  "출처/권리 메타데이터는 자체 작성 원칙",
-  BEGINNER_RECIPE_LIBRARY.every((recipe) =>
-    recipe.source.adaptedByJipbabNote === true &&
-    recipe.source.sourceUrl === null &&
-    recipe.source.rightsNote.includes("집밥노트") &&
-    recipe.source.licenseOrUsageNote.includes("외부 레시피 원문")
-  ),
-  "sourceUrl null, adaptedByJipbabNote true",
+  "출처/권리 메타데이터는 자체 작성 또는 외부 참고 정책 통과",
+  BEGINNER_RECIPE_LIBRARY.every((recipe) => sourcePolicyAllows(recipe.source)),
+  "sourceUrl null or http(s), adaptedByJipbabNote true, rights/license safeguards",
 );
 
 const noFireRecipes = getNoFireRecipes();
 const microwaveRecipes = getMicrowaveRecipes();
-const eggRiceRecipe = byTitle.get("계란간장밥");
+const eggRiceRecipe = recipeForRequiredName("계란간장밥");
 const sortedEmptyFridge = sortRecipesForBeginnerHome(onboardingRecipes, []);
 const eggRiceMissing = eggRiceRecipe ? getMissingIngredients(eggRiceRecipe, ["계란", "밥", "간장"]) : [];
 const ingredientMatches = matchRecipesByIngredients(releaseRecipes, ["계란", "밥", "간장", "김치"]);

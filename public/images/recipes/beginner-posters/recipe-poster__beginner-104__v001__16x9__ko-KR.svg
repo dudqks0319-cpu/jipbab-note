@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">누룽지 두부 계란죽 집밥노트 초보자 레시피 포스터</title>
-  <desc id="desc">누룽지 두부 계란죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
+  <desc id="desc">누룽지 두부 계란죽 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
   <rect width="1600" height="900" fill="#fff8ef" />
   <rect x="22" y="22" width="1556" height="856" rx="36" fill="#fffdf8" stroke="#ead7c6" stroke-width="3" />
 
@@ -15,9 +15,9 @@
     <circle cx="353" cy="231" r="21" fill="#ffffff" opacity="0.65" />
     <path d="M173 170 C239 117, 346 118, 416 169" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.55" />
     <text x="80" y="115" font-size="56" font-weight="950" fill="#5b2017">누룽지 두부 계란죽</text>
-    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">누룽지 두부 계란죽은 15분 안에</text>
-<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34"> 만들 수 있는 초보자용 집밥 메</text>
-<text x="82" y="224" font-size="24" font-weight="800" fill="#513f34">뉴입니다.</text>
+    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">누룽지 두부 계란죽 레시피는 15</text>
+<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34">분 안에 만들 수 있는 초보자용 </text>
+<text x="82" y="224" font-size="24" font-weight="800" fill="#513f34">집밥 메뉴입니다.</text>
     
   <rect x="82" y="398" width="118" height="42" rx="21" fill="#ffffff" stroke="#e2c6ad" />
   <text x="141" y="426" text-anchor="middle" font-size="20" font-weight="800" fill="#5b2017">15분</text>
@@ -39,8 +39,8 @@
       <rect x="595" y="160" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="627" cy="191" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M618 193 C623 184, 635 184, 638 193 C634 203, 622 203, 618 193Z" fill="#d94b2b" opacity="0.72" />
-      <text x="662" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">계란</text>
-      <text x="662" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">2개</text>
+      <text x="662" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">누룽지</text>
+      <text x="662" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1컵</text>
     </g>
   
 
@@ -48,8 +48,8 @@
       <rect x="749" y="160" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="781" cy="191" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M772 193 C777 184, 789 184, 792 193 C788 203, 776 203, 772 193Z" fill="#d94b2b" opacity="0.72" />
-      <text x="816" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">밥</text>
-      <text x="816" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1공기</text>
+      <text x="816" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">두부</text>
+      <text x="816" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1/2모</text>
     </g>
   
 
@@ -57,8 +57,8 @@
       <rect x="903" y="160" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="935" cy="191" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M926 193 C931 184, 943 184, 946 193 C942 203, 930 203, 926 193Z" fill="#d94b2b" opacity="0.72" />
-      <text x="970" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">두부</text>
-      <text x="970" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1모</text>
+      <text x="970" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">계란</text>
+      <text x="970" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1개</text>
     </g>
   
 
@@ -66,8 +66,8 @@
       <rect x="1057" y="160" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="1089" cy="191" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M1080 193 C1085 184, 1097 184, 1100 193 C1096 203, 1084 203, 1080 193Z" fill="#d94b2b" opacity="0.72" />
-      <text x="1124" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">누룽지</text>
-      <text x="1124" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1컵</text>
+      <text x="1124" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">물</text>
+      <text x="1124" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">3컵</text>
     </g>
   
 
@@ -75,17 +75,8 @@
       <rect x="595" y="275" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="627" cy="306" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M618 308 C623 299, 635 299, 638 308 C634 318, 622 318, 618 308Z" fill="#d94b2b" opacity="0.72" />
-      <text x="662" y="309" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">물</text>
-      <text x="662" y="340" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">2컵</text>
-    </g>
-  
-
-    <g>
-      <rect x="749" y="275" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
-      <circle cx="781" cy="306" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
-      <path d="M772 308 C777 299, 789 299, 792 308 C788 318, 776 318, 772 308Z" fill="#d94b2b" opacity="0.72" />
-      <text x="816" y="309" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">국간장</text>
-      <text x="816" y="340" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1큰술</text>
+      <text x="662" y="309" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">소금</text>
+      <text x="662" y="340" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">두 꼬집</text>
     </g>
   
   
@@ -111,7 +102,7 @@
   
 
   <rect x="580" y="400" width="915" height="63" rx="20" fill="#fff2da" stroke="#ead7c6" />
-  <text x="606" y="440" font-size="22" font-weight="850" fill="#5a483c">눈으로 확인: 가장 두꺼운 재료가 차갑지 않고 젓가락이나 숟가락으로 쉽게 나뉩니다.</text>
+  <text x="606" y="440" font-size="22" font-weight="850" fill="#5a483c">눈으로 확인: 누룽지가 부드럽게 풀리고 두부와 계란이 숟가락에 함께 올라옵니다.</text>
 
   <text x="48" y="496" font-size="38" font-weight="950" fill="#2a211a">3. 조리 순서</text>
   
@@ -119,10 +110,10 @@
       <rect x="48" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="90" cy="555" r="25" fill="#d94b2b" />
       <text x="90" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">1</text>
-      <text x="131" y="551" font-size="24" font-weight="950" fill="#5b2017">냄비 시작</text>
-      <text x="131" y="585" font-size="18" font-weight="700" fill="#4b4038">냄비에 물과 기본 양념을 넣고 중불로 올립니다</text>
-<text x="131" y="607.5" font-size="18" font-weight="700" fill="#4b4038">.</text>
-      <text x="388" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 3분</text>
+      <text x="131" y="551" font-size="24" font-weight="950" fill="#5b2017">누룽지 끓이기</text>
+      <text x="131" y="585" font-size="18" font-weight="700" fill="#4b4038">냄비에 누룽지 1컵과 물 3컵을 넣고 중불에서</text>
+<text x="131" y="607.5" font-size="18" font-weight="700" fill="#4b4038"> 5분 끓입니다.</text>
+      <text x="388" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 5분</text>
     </g>
   
 
@@ -130,10 +121,10 @@
       <rect x="553" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="595" cy="555" r="25" fill="#d94b2b" />
       <text x="595" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">2</text>
-      <text x="636" y="551" font-size="24" font-weight="950" fill="#5b2017">주재료 넣기</text>
-      <text x="636" y="585" font-size="18" font-weight="700" fill="#4b4038">누룽지 두부 계란죽의 주재료를 숟가락에 올라가</text>
-<text x="636" y="607.5" font-size="18" font-weight="700" fill="#4b4038">는 크기로 넣습니다.</text>
-      <text x="893" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 5분</text>
+      <text x="636" y="551" font-size="24" font-weight="950" fill="#5b2017">두부 넣기</text>
+      <text x="636" y="585" font-size="18" font-weight="700" fill="#4b4038">두부 1/2모를 숟가락 크기로 잘라 넣고 중약</text>
+<text x="636" y="607.5" font-size="18" font-weight="700" fill="#4b4038">불에서 2분 더 끓입니다.</text>
+      <text x="893" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중약불 · 2분</text>
     </g>
   
 
@@ -141,10 +132,10 @@
       <rect x="1058" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="1100" cy="555" r="25" fill="#d94b2b" />
       <text x="1100" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">3</text>
-      <text x="1141" y="551" font-size="24" font-weight="950" fill="#5b2017">간 보기</text>
-      <text x="1141" y="585" font-size="18" font-weight="700" fill="#4b4038">국물을 한 숟가락 떠서 맛보고 싱거우면 국간장</text>
-<text x="1141" y="607.5" font-size="18" font-weight="700" fill="#4b4038"> 1작은술만 추가합니다.</text>
-      <text x="1398" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중약불 · 3분</text>
+      <text x="1141" y="551" font-size="24" font-weight="950" fill="#5b2017">계란 풀어 넣기</text>
+      <text x="1141" y="585" font-size="18" font-weight="700" fill="#4b4038">계란 1개를 그릇에 풀고 냄비 가장자리로 천천</text>
+<text x="1141" y="607.5" font-size="18" font-weight="700" fill="#4b4038">히 부은 뒤 20초 기다렸다가 한 번만 젓습니</text>
+      <text x="1398" y="618" font-size="17" font-weight="850" fill="#7f6b5b">약불 · 1분</text>
     </g>
   
 
@@ -152,16 +143,16 @@
       <rect x="48" y="663" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="90" cy="703" r="25" fill="#d94b2b" />
       <text x="90" y="712" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">4</text>
-      <text x="131" y="699" font-size="24" font-weight="950" fill="#5b2017">완성 확인</text>
-      <text x="131" y="733" font-size="18" font-weight="700" fill="#4b4038">가장 두꺼운 재료를 젓가락으로 찔러 부드럽게 </text>
-<text x="131" y="755.5" font-size="18" font-weight="700" fill="#4b4038">들어가면 불을 끕니다.</text>
-      <text x="388" y="766" font-size="17" font-weight="850" fill="#7f6b5b">약불 · 2분</text>
+      <text x="131" y="699" font-size="24" font-weight="950" fill="#5b2017">소금으로 간 맞추기</text>
+      <text x="131" y="733" font-size="18" font-weight="700" fill="#4b4038">불을 끄고 소금 두 꼬집을 넣은 뒤 한입 맛보</text>
+<text x="131" y="755.5" font-size="18" font-weight="700" fill="#4b4038">고 싱거우면 한 꼬집만 더 넣습니다.</text>
+      <text x="388" y="766" font-size="17" font-weight="850" fill="#7f6b5b">불 없음 · 1분</text>
     </g>
   
 
   <g>
     <rect x="48" y="810" width="720" height="48" rx="18" fill="#f6fbf0" stroke="#d6e7c9" />
-    <text x="75" y="841" font-size="20" font-weight="900" fill="#456b2c">망했어요? 넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요.</text>
+    <text x="75" y="841" font-size="20" font-weight="900" fill="#456b2c">망했어요? 바닥이 붙기 시작하면 물 1/2컵을 넣고 불을 낮추세요.</text>
     <rect x="790" y="810" width="760" height="48" rx="18" fill="#fff7e8" stroke="#ead7c6" />
     <text x="817" y="841" font-size="20" font-weight="900" fill="#6f4c20">집밥노트 자체 제작 · 외부 사진/캐릭터/브랜드 미사용</text>
   </g>

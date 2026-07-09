@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">알배추간장무침 2단계. 먹기 좋게 자르기</title>
+  <desc id="desc">알배추간장무침 레시피는 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 먹기 좋게 자르기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <defs>
+    <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
+      <stop offset="0%" stop-color="#fffdf8"/>
+      <stop offset="100%" stop-color="#eff8f4"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#5b3219" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#warmBg)"/>
+  <rect x="14" y="14" width="1172" height="872" rx="20" fill="#fffdf8" opacity="0.88" stroke="#e6cda8"/>
+  
+  <g>
+    <rect x="42" y="34" width="108" height="66" rx="20" fill="#df321c"/>
+    <path d="M143 68 L171 52 L171 84 Z" fill="#df321c"/>
+    <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">5/7</text>
+  </g>
+
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 먹기 좋게 자르기</text>
+  <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#48ae8c">알배추간장무침 조리순서입니다.</text>
+  <g fill="#173d34" opacity="0.96">
+    <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
+    <g transform="translate(290 380) scale(0.9)">
+      
+    <g transform="translate(0 0) scale(0.88)" filter="url(#softShadow)">
+      <ellipse cx="0" cy="118" rx="250" ry="58" fill="#4b2b1e" opacity="0.16"/>
+      <ellipse cx="0" cy="20" rx="255" ry="155" fill="#1e1b19"/>
+      <ellipse cx="0" cy="5" rx="218" ry="124" fill="#fff4d9"/>
+      <ellipse cx="0" cy="8" rx="196" ry="103" fill="#48ae8c" opacity="0.78"/>
+      
+      
+      <circle cx="55.0" cy="0.0" r="10" fill="#f7f0dc" opacity="0.76"/><circle cx="71.1" cy="15.7" r="13" fill="#173d34" opacity="0.76"/><circle cx="70.0" cy="38.2" r="16" fill="#d33b21" opacity="0.76"/><circle cx="46.3" cy="25.9" r="19" fill="#7cbf62" opacity="0.76"/><circle cx="0.0" cy="41.0" r="10" fill="#d33b21" opacity="0.76"/><circle cx="-29.5" cy="49.9" r="13" fill="#f7f0dc" opacity="0.76"/><circle cx="-70.0" cy="19.8" r="16" fill="#7cbf62" opacity="0.76"/><circle cx="-111.8" cy="15.7" r="19" fill="#173d34" opacity="0.76"/><circle cx="-55.0" cy="0.0" r="10" fill="#d33b21" opacity="0.76"/><circle cx="-71.1" cy="-10.7" r="13" fill="#7cbf62" opacity="0.76"/><circle cx="-70.0" cy="-29.0" r="16" fill="#f7f0dc" opacity="0.76"/><circle cx="-46.3" cy="-49.9" r="19" fill="#173d34" opacity="0.76"/><circle cx="-0.0" cy="-28.0" r="10" fill="#7cbf62" opacity="0.76"/><circle cx="29.5" cy="-37.9" r="13" fill="#173d34" opacity="0.76"/><circle cx="70.0" cy="-38.2" r="16" fill="#d33b21" opacity="0.76"/><circle cx="111.8" cy="-10.7" r="19" fill="#f7f0dc" opacity="0.76"/>
+      
+    </g>
+  
+      <path d="M-190 -132 C-120 -190, -26 -176, 64 -148 C126 -128, 164 -126, 200 -150" fill="none" stroke="#fff3cf" stroke-width="16" opacity="0.38" stroke-linecap="round"/>
+    </g>
+    <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
+    <circle cx="630" cy="218" r="33" fill="#48ae8c"/>
+    <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">2</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#173d34">먹기 좋게 자르기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">배추를 손가락 두 마디 크기로 자르거나 </text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">손으로 찢습니다.</text>
+    <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
+    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">불 없음 · 1분</text>
+    <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
+    <text x="963" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#4d7a37">초보 확인</text>
+
+    <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
+    <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">한입에 들어가는 크기면 젓가락으로 집기 쉽습니다.</text>
+    <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
+    <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">너무 크게 두면 양념이 고르게 묻지 않습니다.</text>
+    <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
+    <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">큰 조각은 그릇 안에서 가위로 한 번 더 자르세요.</text>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">미역국 집밥노트 초보자 레시피 포스터</title>
-  <desc id="desc">미역국은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
+  <desc id="desc">미역국 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
   <rect width="1600" height="900" fill="#fff8ef" />
   <rect x="22" y="22" width="1556" height="856" rx="36" fill="#fffdf8" stroke="#ead7c6" stroke-width="3" />
 
@@ -15,8 +15,9 @@
     <circle cx="353" cy="231" r="21" fill="#ffffff" opacity="0.65" />
     <path d="M173 170 C239 117, 346 118, 416 169" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.55" />
     <text x="80" y="115" font-size="56" font-weight="950" fill="#5b2017">미역국</text>
-    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">미역국은 15분 안에 만들 수 있</text>
-<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34">는 초보자용 집밥 메뉴입니다.</text>
+    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">미역국 레시피는 15분 안에 만들</text>
+<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34"> 수 있는 초보자용 집밥 메뉴입니</text>
+<text x="82" y="224" font-size="24" font-weight="800" fill="#513f34">다.</text>
     
   <rect x="82" y="398" width="118" height="42" rx="21" fill="#ffffff" stroke="#e2c6ad" />
   <text x="141" y="426" text-anchor="middle" font-size="20" font-weight="800" fill="#5b2017">15분</text>
@@ -48,7 +49,7 @@
       <circle cx="781" cy="191" r="18" fill="#ffe6d9" stroke="#d94b2b" stroke-width="3" />
       <path d="M772 193 C777 184, 789 184, 792 193 C788 203, 776 203, 772 193Z" fill="#d94b2b" opacity="0.72" />
       <text x="816" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#5b2017">물</text>
-      <text x="816" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">2컵</text>
+      <text x="816" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">2.5컵</text>
     </g>
   
 
@@ -91,10 +92,10 @@
       <rect x="48" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="90" cy="555" r="25" fill="#d94b2b" />
       <text x="90" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">1</text>
-      <text x="131" y="551" font-size="24" font-weight="950" fill="#5b2017">냄비 시작</text>
-      <text x="131" y="585" font-size="18" font-weight="700" fill="#4b4038">냄비에 물과 기본 양념을 넣고 중불로 올립니다</text>
-<text x="131" y="607.5" font-size="18" font-weight="700" fill="#4b4038">.</text>
-      <text x="388" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 3분</text>
+      <text x="131" y="551" font-size="24" font-weight="950" fill="#5b2017">미역 준비</text>
+      <text x="131" y="585" font-size="18" font-weight="700" fill="#4b4038">불린 미역 1컵을 물에 한 번 헹구고 길면 가</text>
+<text x="131" y="607.5" font-size="18" font-weight="700" fill="#4b4038">위로 두세 번 자릅니다.</text>
+      <text x="388" y="618" font-size="17" font-weight="850" fill="#7f6b5b">불 없음 · 2분</text>
     </g>
   
 
@@ -102,10 +103,10 @@
       <rect x="553" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="595" cy="555" r="25" fill="#d94b2b" />
       <text x="595" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">2</text>
-      <text x="636" y="551" font-size="24" font-weight="950" fill="#5b2017">주재료 넣기</text>
-      <text x="636" y="585" font-size="18" font-weight="700" fill="#4b4038">미역국의 주재료를 숟가락에 올라가는 크기로 넣</text>
-<text x="636" y="607.5" font-size="18" font-weight="700" fill="#4b4038">습니다.</text>
-      <text x="893" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 5분</text>
+      <text x="636" y="551" font-size="24" font-weight="950" fill="#5b2017">미역 데우기</text>
+      <text x="636" y="585" font-size="18" font-weight="700" fill="#4b4038">냄비에 미역과 참기름이 있으면 1작은술을 넣고</text>
+<text x="636" y="607.5" font-size="18" font-weight="700" fill="#4b4038"> 약불에서 1분 볶습니다.</text>
+      <text x="893" y="618" font-size="17" font-weight="850" fill="#7f6b5b">약불 · 1분</text>
     </g>
   
 
@@ -113,10 +114,9 @@
       <rect x="1058" y="515" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="1100" cy="555" r="25" fill="#d94b2b" />
       <text x="1100" y="564" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">3</text>
-      <text x="1141" y="551" font-size="24" font-weight="950" fill="#5b2017">간 보기</text>
-      <text x="1141" y="585" font-size="18" font-weight="700" fill="#4b4038">국물을 한 숟가락 떠서 맛보고 싱거우면 국간장</text>
-<text x="1141" y="607.5" font-size="18" font-weight="700" fill="#4b4038"> 1작은술만 추가합니다.</text>
-      <text x="1398" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중약불 · 3분</text>
+      <text x="1141" y="551" font-size="24" font-weight="950" fill="#5b2017">물 넣고 끓이기</text>
+      <text x="1141" y="585" font-size="18" font-weight="700" fill="#4b4038">물 2.5컵을 넣고 중불에서 8분 끓입니다.</text>
+      <text x="1398" y="618" font-size="17" font-weight="850" fill="#7f6b5b">중불 · 8분</text>
     </g>
   
 
@@ -124,16 +124,16 @@
       <rect x="48" y="663" width="465" height="125" rx="22" fill="#fffdf8" stroke="#ead7c6" />
       <circle cx="90" cy="703" r="25" fill="#d94b2b" />
       <text x="90" y="712" text-anchor="middle" font-size="28" font-weight="950" fill="#ffffff">4</text>
-      <text x="131" y="699" font-size="24" font-weight="950" fill="#5b2017">완성 확인</text>
-      <text x="131" y="733" font-size="18" font-weight="700" fill="#4b4038">가장 두꺼운 재료를 젓가락으로 찔러 부드럽게 </text>
-<text x="131" y="755.5" font-size="18" font-weight="700" fill="#4b4038">들어가면 불을 끕니다.</text>
-      <text x="388" y="766" font-size="17" font-weight="850" fill="#7f6b5b">약불 · 2분</text>
+      <text x="131" y="699" font-size="24" font-weight="950" fill="#5b2017">간 맞추기</text>
+      <text x="131" y="733" font-size="18" font-weight="700" fill="#4b4038">국간장 1큰술을 넣고 1분 더 끓인 뒤 맛보고</text>
+<text x="131" y="755.5" font-size="18" font-weight="700" fill="#4b4038"> 싱거울 때만 1작은술 더 넣습니다.</text>
+      <text x="388" y="766" font-size="17" font-weight="850" fill="#7f6b5b">약불 · 1분</text>
     </g>
   
 
   <g>
     <rect x="48" y="810" width="720" height="48" rx="18" fill="#f6fbf0" stroke="#d6e7c9" />
-    <text x="75" y="841" font-size="20" font-weight="900" fill="#456b2c">망했어요? 넘치려 하면 바로 약불로 낮추고 국자로 거품을 걷어내세요.</text>
+    <text x="75" y="841" font-size="20" font-weight="900" fill="#456b2c">망했어요? 미역이 많으면 절반만 쓰고 나머지는 냉장 보관하세요.</text>
     <rect x="790" y="810" width="760" height="48" rx="18" fill="#fff7e8" stroke="#ead7c6" />
     <text x="817" y="841" font-size="20" font-weight="900" fill="#6f4c20">집밥노트 자체 제작 · 외부 사진/캐릭터/브랜드 미사용</text>
   </g>

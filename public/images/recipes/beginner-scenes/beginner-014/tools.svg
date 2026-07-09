@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
   <title id="title">참치김치볶음밥 필요한 조리도구</title>
-  <desc id="desc">참치김치볶음밥은 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 필요한 조리도구 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <desc id="desc">참치김치볶음밥 레시피는 12분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 필요한 조리도구 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -21,7 +21,7 @@
   </g>
 
   <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">필요한 조리도구</text>
-  <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#ef8f37">참치김치볶음밥를 만들 때 필요한 기본 도구입니다.</text>
+  <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#ef8f37">참치김치볶음밥을 만들 때 필요한 기본 도구입니다.</text>
   <g fill="#5e3414" opacity="0.96">
     <rect x="44" y="165" width="1112" height="610" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
     

@@ -4,12 +4,12 @@
   "assetFamily": "beginner-recipe-scenes",
   "sourcePolicy": "Generated from 집밥노트 BeginnerRecipe data. No external photos, blog screenshots, shopping images, brand logos, or character references are used.",
   "namingRule": "beginner-scenes/{recipeSlug}/{cover|ingredients|tools|step-XX}.svg",
-  "count": 120,
+  "count": 176,
   "assets": [
     {
       "recipeId": "beginner-recipe-001",
       "recipeSlug": "beginner-001",
-      "titleKo": "계란간장밥",
+      "titleKo": "간장계란밥",
       "version": 1,
       "status": "app_ready",
       "locale": "ko-KR",
@@ -53,7 +53,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-001/step-04.svg"
         }
       ],
-      "promptHash": "b398b3b1",
+      "promptHash": "1175f0ae",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -118,7 +118,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-002/step-04.svg"
         }
       ],
-      "promptHash": "9abd30ad",
+      "promptHash": "1261a0e1",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -183,7 +183,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-003/step-04.svg"
         }
       ],
-      "promptHash": "8e9f0347",
+      "promptHash": "7298a3a0",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -248,7 +248,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-004/step-04.svg"
         }
       ],
-      "promptHash": "538a65e7",
+      "promptHash": "da064630",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -313,7 +313,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-005/step-04.svg"
         }
       ],
-      "promptHash": "12e6d4b5",
+      "promptHash": "80674732",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -378,7 +378,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-006/step-04.svg"
         }
       ],
-      "promptHash": "b08b71bc",
+      "promptHash": "e60076fd",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -443,7 +443,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-007/step-04.svg"
         }
       ],
-      "promptHash": "fe477984",
+      "promptHash": "3eac2e2b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -508,7 +508,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-008/step-04.svg"
         }
       ],
-      "promptHash": "ad94260f",
+      "promptHash": "ac6ce0f2",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -573,7 +573,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-009/step-04.svg"
         }
       ],
-      "promptHash": "65ee4ac9",
+      "promptHash": "578a7673",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -638,7 +638,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-010/step-04.svg"
         }
       ],
-      "promptHash": "ed362420",
+      "promptHash": "d0d87d37",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -703,7 +703,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-011/step-04.svg"
         }
       ],
-      "promptHash": "aea1496f",
+      "promptHash": "93e81a39",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -768,7 +768,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-012/step-04.svg"
         }
       ],
-      "promptHash": "5eeb3167",
+      "promptHash": "130e5151",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -833,7 +833,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-013/step-04.svg"
         }
       ],
-      "promptHash": "c7741439",
+      "promptHash": "adfacf24",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -898,7 +898,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-014/step-04.svg"
         }
       ],
-      "promptHash": "d6abe9cb",
+      "promptHash": "038e418f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -963,7 +963,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-015/step-04.svg"
         }
       ],
-      "promptHash": "19dd1496",
+      "promptHash": "a9f083dd",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1028,7 +1028,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-016/step-04.svg"
         }
       ],
-      "promptHash": "72e5e075",
+      "promptHash": "95cfd3cc",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1093,7 +1093,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-017/step-04.svg"
         }
       ],
-      "promptHash": "62a09d03",
+      "promptHash": "36b614b9",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1158,7 +1158,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-018/step-04.svg"
         }
       ],
-      "promptHash": "e983dc6c",
+      "promptHash": "c0db3727",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1223,7 +1223,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-019/step-04.svg"
         }
       ],
-      "promptHash": "3c41e4fa",
+      "promptHash": "54b2d0b5",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1288,7 +1288,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-020/step-04.svg"
         }
       ],
-      "promptHash": "2117b1a0",
+      "promptHash": "5d45475d",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1353,7 +1353,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-021/step-04.svg"
         }
       ],
-      "promptHash": "99485325",
+      "promptHash": "74544f90",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1418,7 +1418,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-022/step-04.svg"
         }
       ],
-      "promptHash": "df067479",
+      "promptHash": "f72bae03",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1483,7 +1483,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-023/step-04.svg"
         }
       ],
-      "promptHash": "4d96aefd",
+      "promptHash": "b75c735b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1548,7 +1548,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-024/step-04.svg"
         }
       ],
-      "promptHash": "a4dfac28",
+      "promptHash": "74cd6e00",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1613,7 +1613,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-025/step-04.svg"
         }
       ],
-      "promptHash": "055d95a3",
+      "promptHash": "1505dc5e",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1678,7 +1678,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-026/step-04.svg"
         }
       ],
-      "promptHash": "65dee017",
+      "promptHash": "1c0649b4",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1743,7 +1743,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-027/step-04.svg"
         }
       ],
-      "promptHash": "43737904",
+      "promptHash": "6d920332",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1808,7 +1808,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-028/step-04.svg"
         }
       ],
-      "promptHash": "ff7fdf81",
+      "promptHash": "25bf0149",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1873,7 +1873,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-029/step-04.svg"
         }
       ],
-      "promptHash": "4331c0a9",
+      "promptHash": "ac947f65",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -1938,7 +1938,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-030/step-04.svg"
         }
       ],
-      "promptHash": "01e3f068",
+      "promptHash": "998ee789",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2003,7 +2003,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-031/step-04.svg"
         }
       ],
-      "promptHash": "b537ca99",
+      "promptHash": "f2b3e48c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2068,7 +2068,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-032/step-04.svg"
         }
       ],
-      "promptHash": "0fa8e763",
+      "promptHash": "b51ddd97",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2133,7 +2133,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-033/step-04.svg"
         }
       ],
-      "promptHash": "71086f40",
+      "promptHash": "27030a4f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2198,7 +2198,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-034/step-04.svg"
         }
       ],
-      "promptHash": "97249c75",
+      "promptHash": "32db2bae",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2263,7 +2263,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-035/step-04.svg"
         }
       ],
-      "promptHash": "a899d40e",
+      "promptHash": "37d3240c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2328,7 +2328,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-036/step-04.svg"
         }
       ],
-      "promptHash": "faab29f4",
+      "promptHash": "ca29efec",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2393,7 +2393,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-037/step-04.svg"
         }
       ],
-      "promptHash": "7ad6a276",
+      "promptHash": "335d2af7",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2458,7 +2458,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-038/step-04.svg"
         }
       ],
-      "promptHash": "419188f0",
+      "promptHash": "7d2ebed6",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2523,7 +2523,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-039/step-04.svg"
         }
       ],
-      "promptHash": "ac9d8a39",
+      "promptHash": "c9829f3e",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2588,7 +2588,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-040/step-04.svg"
         }
       ],
-      "promptHash": "8afd9c33",
+      "promptHash": "13007576",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2653,7 +2653,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-041/step-04.svg"
         }
       ],
-      "promptHash": "b9f58d5d",
+      "promptHash": "d0d1dfae",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2718,7 +2718,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-042/step-04.svg"
         }
       ],
-      "promptHash": "9207ca87",
+      "promptHash": "ecfeef2b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2783,7 +2783,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-043/step-04.svg"
         }
       ],
-      "promptHash": "f66e70b1",
+      "promptHash": "bf2627f5",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2848,7 +2848,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-044/step-04.svg"
         }
       ],
-      "promptHash": "98750754",
+      "promptHash": "6f2500cf",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2913,7 +2913,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-045/step-04.svg"
         }
       ],
-      "promptHash": "49202956",
+      "promptHash": "6b8b62fa",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -2978,7 +2978,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-046/step-04.svg"
         }
       ],
-      "promptHash": "dc05ac46",
+      "promptHash": "43de5214",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3043,7 +3043,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-047/step-04.svg"
         }
       ],
-      "promptHash": "a9643b63",
+      "promptHash": "6efc49ba",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3108,7 +3108,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-048/step-04.svg"
         }
       ],
-      "promptHash": "bc714ff3",
+      "promptHash": "c9fe7bb5",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3173,7 +3173,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-049/step-04.svg"
         }
       ],
-      "promptHash": "87413fdc",
+      "promptHash": "253467d3",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3238,7 +3238,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-050/step-04.svg"
         }
       ],
-      "promptHash": "3d789994",
+      "promptHash": "28c1f541",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3303,7 +3303,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-051/step-04.svg"
         }
       ],
-      "promptHash": "0f731f09",
+      "promptHash": "c1b20efb",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3368,7 +3368,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-052/step-04.svg"
         }
       ],
-      "promptHash": "f286be36",
+      "promptHash": "1eb96b69",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3433,7 +3433,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-053/step-04.svg"
         }
       ],
-      "promptHash": "180929b3",
+      "promptHash": "ad9e012f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3498,7 +3498,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-054/step-04.svg"
         }
       ],
-      "promptHash": "21c0008f",
+      "promptHash": "bd532791",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3563,7 +3563,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-055/step-04.svg"
         }
       ],
-      "promptHash": "53ec3a9f",
+      "promptHash": "73019140",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3628,7 +3628,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-056/step-04.svg"
         }
       ],
-      "promptHash": "f733390c",
+      "promptHash": "4fe6949a",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3693,7 +3693,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-057/step-04.svg"
         }
       ],
-      "promptHash": "725c8d6d",
+      "promptHash": "b047038f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3758,7 +3758,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-058/step-04.svg"
         }
       ],
-      "promptHash": "065e597e",
+      "promptHash": "90cb3a5c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3823,7 +3823,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-059/step-04.svg"
         }
       ],
-      "promptHash": "56f9668a",
+      "promptHash": "6578571e",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3888,7 +3888,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-060/step-04.svg"
         }
       ],
-      "promptHash": "6df3d559",
+      "promptHash": "ede93155",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -3953,7 +3953,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-061/step-04.svg"
         }
       ],
-      "promptHash": "40fa8d2c",
+      "promptHash": "fb8ca9a4",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4018,7 +4018,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-062/step-04.svg"
         }
       ],
-      "promptHash": "62d6a07f",
+      "promptHash": "fbf024d9",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4083,7 +4083,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-063/step-04.svg"
         }
       ],
-      "promptHash": "12dc092c",
+      "promptHash": "2fc00a8d",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4148,7 +4148,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-064/step-04.svg"
         }
       ],
-      "promptHash": "a9ce9916",
+      "promptHash": "3ecc0ba2",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4213,7 +4213,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-065/step-04.svg"
         }
       ],
-      "promptHash": "fde914d4",
+      "promptHash": "20b19b85",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4278,7 +4278,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-066/step-04.svg"
         }
       ],
-      "promptHash": "147a53be",
+      "promptHash": "04f5faab",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4343,7 +4343,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-067/step-04.svg"
         }
       ],
-      "promptHash": "21f7f32d",
+      "promptHash": "ade394bf",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4408,7 +4408,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-068/step-04.svg"
         }
       ],
-      "promptHash": "86918abd",
+      "promptHash": "c7f9f003",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4473,7 +4473,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-069/step-04.svg"
         }
       ],
-      "promptHash": "c8188285",
+      "promptHash": "7d5b452a",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4538,7 +4538,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-070/step-04.svg"
         }
       ],
-      "promptHash": "33d014e9",
+      "promptHash": "9e2928f8",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4603,7 +4603,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-071/step-04.svg"
         }
       ],
-      "promptHash": "24a8dce9",
+      "promptHash": "a0add842",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4668,7 +4668,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-072/step-04.svg"
         }
       ],
-      "promptHash": "254040a7",
+      "promptHash": "23a8285d",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4733,7 +4733,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-073/step-04.svg"
         }
       ],
-      "promptHash": "a2adebde",
+      "promptHash": "9462c6cd",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4798,7 +4798,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-074/step-04.svg"
         }
       ],
-      "promptHash": "d8a8651d",
+      "promptHash": "92206b3a",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4863,7 +4863,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-075/step-04.svg"
         }
       ],
-      "promptHash": "7246cfd0",
+      "promptHash": "ef56460f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4928,7 +4928,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-076/step-04.svg"
         }
       ],
-      "promptHash": "53caa7b9",
+      "promptHash": "d0a0b063",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -4993,7 +4993,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-077/step-04.svg"
         }
       ],
-      "promptHash": "4f95d2c2",
+      "promptHash": "cbffe95a",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5058,7 +5058,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-078/step-04.svg"
         }
       ],
-      "promptHash": "ae25d398",
+      "promptHash": "7bd8da93",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5123,7 +5123,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-079/step-04.svg"
         }
       ],
-      "promptHash": "ca62231e",
+      "promptHash": "78a71087",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5188,7 +5188,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-080/step-04.svg"
         }
       ],
-      "promptHash": "3b93a4b5",
+      "promptHash": "4206a2be",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5253,7 +5253,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-081/step-04.svg"
         }
       ],
-      "promptHash": "00b4159b",
+      "promptHash": "032c14aa",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5318,7 +5318,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-082/step-04.svg"
         }
       ],
-      "promptHash": "e434fe59",
+      "promptHash": "5abdf95f",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5383,7 +5383,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-083/step-04.svg"
         }
       ],
-      "promptHash": "10186ab9",
+      "promptHash": "74159918",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5448,7 +5448,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-084/step-04.svg"
         }
       ],
-      "promptHash": "daadef7a",
+      "promptHash": "cbb726df",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5513,7 +5513,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-085/step-04.svg"
         }
       ],
-      "promptHash": "2d55d162",
+      "promptHash": "fe36aef1",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5578,7 +5578,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-086/step-04.svg"
         }
       ],
-      "promptHash": "6f313c39",
+      "promptHash": "2438d6b8",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5643,7 +5643,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-087/step-04.svg"
         }
       ],
-      "promptHash": "db86ec0a",
+      "promptHash": "c530cfa5",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5708,7 +5708,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-088/step-04.svg"
         }
       ],
-      "promptHash": "0eda8dd1",
+      "promptHash": "f2dc57f0",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5773,7 +5773,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-089/step-04.svg"
         }
       ],
-      "promptHash": "ca819953",
+      "promptHash": "5293628e",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5838,7 +5838,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-090/step-04.svg"
         }
       ],
-      "promptHash": "a3ccb0a8",
+      "promptHash": "6ea3873c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5903,7 +5903,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-091/step-04.svg"
         }
       ],
-      "promptHash": "49a86cad",
+      "promptHash": "39c87fae",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -5968,7 +5968,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-092/step-04.svg"
         }
       ],
-      "promptHash": "3f56b718",
+      "promptHash": "4a23fd93",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6033,7 +6033,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-093/step-04.svg"
         }
       ],
-      "promptHash": "89ed7508",
+      "promptHash": "0f1f435b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6098,7 +6098,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-094/step-04.svg"
         }
       ],
-      "promptHash": "74787397",
+      "promptHash": "82f3262d",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6163,7 +6163,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-095/step-04.svg"
         }
       ],
-      "promptHash": "632875b2",
+      "promptHash": "02fdca6a",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6228,7 +6228,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-096/step-04.svg"
         }
       ],
-      "promptHash": "45d90474",
+      "promptHash": "d96f8534",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6293,7 +6293,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-097/step-04.svg"
         }
       ],
-      "promptHash": "910bf4cf",
+      "promptHash": "7a64a310",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6358,7 +6358,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-098/step-04.svg"
         }
       ],
-      "promptHash": "3403492a",
+      "promptHash": "3471780b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6423,7 +6423,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-099/step-04.svg"
         }
       ],
-      "promptHash": "869356a2",
+      "promptHash": "27b0a038",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6488,7 +6488,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-100/step-04.svg"
         }
       ],
-      "promptHash": "869c22dd",
+      "promptHash": "7479e941",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6553,7 +6553,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-101/step-04.svg"
         }
       ],
-      "promptHash": "55592611",
+      "promptHash": "d23913e3",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6618,7 +6618,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-102/step-04.svg"
         }
       ],
-      "promptHash": "1e5a991c",
+      "promptHash": "0b963ee2",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6683,7 +6683,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-103/step-04.svg"
         }
       ],
-      "promptHash": "596b1fa6",
+      "promptHash": "9be99491",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6748,7 +6748,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-104/step-04.svg"
         }
       ],
-      "promptHash": "70a52090",
+      "promptHash": "50f8e7af",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6813,7 +6813,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-105/step-04.svg"
         }
       ],
-      "promptHash": "bc73dcb1",
+      "promptHash": "26831019",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6878,7 +6878,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-106/step-04.svg"
         }
       ],
-      "promptHash": "d7a26614",
+      "promptHash": "0bff3eaa",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -6943,7 +6943,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-107/step-04.svg"
         }
       ],
-      "promptHash": "57c7d774",
+      "promptHash": "83addc6c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7008,7 +7008,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-108/step-04.svg"
         }
       ],
-      "promptHash": "cf920056",
+      "promptHash": "3a7a9d63",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7073,7 +7073,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-109/step-04.svg"
         }
       ],
-      "promptHash": "93311ca4",
+      "promptHash": "97f7af3b",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7138,7 +7138,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-110/step-04.svg"
         }
       ],
-      "promptHash": "58db972c",
+      "promptHash": "884477d9",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7203,7 +7203,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-111/step-04.svg"
         }
       ],
-      "promptHash": "0cdddf0b",
+      "promptHash": "b3e7a859",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7268,7 +7268,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-112/step-04.svg"
         }
       ],
-      "promptHash": "d81525b2",
+      "promptHash": "c14afafa",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7333,7 +7333,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-113/step-04.svg"
         }
       ],
-      "promptHash": "e15ffad9",
+      "promptHash": "6338bbfc",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7398,7 +7398,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-114/step-04.svg"
         }
       ],
-      "promptHash": "c1491f85",
+      "promptHash": "527a26a3",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7463,7 +7463,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-115/step-04.svg"
         }
       ],
-      "promptHash": "9f458263",
+      "promptHash": "772a8f6c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7528,7 +7528,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-116/step-04.svg"
         }
       ],
-      "promptHash": "c6eeb4e1",
+      "promptHash": "f9a76331",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7593,7 +7593,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-117/step-04.svg"
         }
       ],
-      "promptHash": "2563db84",
+      "promptHash": "ee4395d4",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7658,7 +7658,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-118/step-04.svg"
         }
       ],
-      "promptHash": "f4afc96e",
+      "promptHash": "7718a244",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7723,7 +7723,7 @@
           "path": "/images/recipes/beginner-scenes/beginner-119/step-04.svg"
         }
       ],
-      "promptHash": "97cbae71",
+      "promptHash": "ba787f56",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {
@@ -7788,7 +7788,3647 @@
           "path": "/images/recipes/beginner-scenes/beginner-120/step-04.svg"
         }
       ],
-      "promptHash": "8c7c0984",
+      "promptHash": "e3871ccf",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-121",
+      "recipeSlug": "beginner-121",
+      "titleKo": "두부계란덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-121/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-121/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-121/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-121/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-121/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-121/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-121/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-121/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-121/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-121/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-121/step-04.svg"
+        }
+      ],
+      "promptHash": "afdf3ebb",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-122",
+      "recipeSlug": "beginner-122",
+      "titleKo": "양파참치덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-122/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-122/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-122/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-122/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-122/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-122/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-122/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-122/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-122/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-122/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-122/step-04.svg"
+        }
+      ],
+      "promptHash": "2e92ef3e",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-123",
+      "recipeSlug": "beginner-123",
+      "titleKo": "감자계란국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-123/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-123/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-123/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-123/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-123/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-123/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-123/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-123/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-123/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-123/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-123/step-04.svg"
+        }
+      ],
+      "promptHash": "676fc57e",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-124",
+      "recipeSlug": "beginner-124",
+      "titleKo": "알배추간장무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-124/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-124/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-124/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-124/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-124/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-124/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-124/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-124/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-124/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-124/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-124/step-04.svg"
+        }
+      ],
+      "promptHash": "19b66932",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-125",
+      "recipeSlug": "beginner-125",
+      "titleKo": "팽이버섯전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-125/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-125/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-125/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-125/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-125/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-125/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-125/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-125/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-125/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-125/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-125/step-04.svg"
+        }
+      ],
+      "promptHash": "224393b3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-126",
+      "recipeSlug": "beginner-126",
+      "titleKo": "계란토스트",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-126/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-126/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-126/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-126/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-126/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-126/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-126/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-126/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-126/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-126/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-126/step-04.svg"
+        }
+      ],
+      "promptHash": "a68f7ba3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-127",
+      "recipeSlug": "beginner-127",
+      "titleKo": "오이냉국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-127/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-127/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-127/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-127/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-127/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-127/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-127/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-127/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-127/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-127/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-127/step-04.svg"
+        }
+      ],
+      "promptHash": "af9ca30d",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-128",
+      "recipeSlug": "beginner-128",
+      "titleKo": "계란볶음라면",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-128/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-128/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-128/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-128/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-128/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-128/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-128/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-128/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-128/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-128/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-128/step-04.svg"
+        }
+      ],
+      "promptHash": "295e59f0",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-129",
+      "recipeSlug": "beginner-129",
+      "titleKo": "애호박전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-129/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-129/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-129/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-129/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-129/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-129/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-129/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-129/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-129/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-129/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-129/step-04.svg"
+        }
+      ],
+      "promptHash": "a938673f",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-130",
+      "recipeSlug": "beginner-130",
+      "titleKo": "무생채",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-130/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-130/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-130/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-130/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-130/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-130/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-130/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-130/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-130/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-130/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-130/step-04.svg"
+        }
+      ],
+      "promptHash": "31a963e3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-131",
+      "recipeSlug": "beginner-131",
+      "titleKo": "고추참치비빔밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-131/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-131/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-131/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-131/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-131/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-131/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-131/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-131/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-131/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-131/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-131/step-04.svg"
+        }
+      ],
+      "promptHash": "8aa2c7e6",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-132",
+      "recipeSlug": "beginner-132",
+      "titleKo": "새송이버섯볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-132/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-132/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-132/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-132/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-132/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-132/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-132/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-132/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-132/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-132/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-132/step-04.svg"
+        }
+      ],
+      "promptHash": "7c0ad4cf",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-133",
+      "recipeSlug": "beginner-133",
+      "titleKo": "김치참치볶음밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-133/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-133/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-133/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-133/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-133/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-133/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-133/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-133/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-133/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-133/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-133/step-04.svg"
+        }
+      ],
+      "promptHash": "f414942e",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-134",
+      "recipeSlug": "beginner-134",
+      "titleKo": "가지무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-134/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-134/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-134/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-134/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-134/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-134/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-134/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-134/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-134/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-134/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-134/step-04.svg"
+        }
+      ],
+      "promptHash": "b5309d4c",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-135",
+      "recipeSlug": "beginner-135",
+      "titleKo": "진미채무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-135/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-135/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-135/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-135/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-135/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-135/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-135/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-135/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-135/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-135/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-135/step-04.svg"
+        }
+      ],
+      "promptHash": "5bf9cab4",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-136",
+      "recipeSlug": "beginner-136",
+      "titleKo": "팽이버섯덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-136/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-136/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-136/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-136/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-136/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-136/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-136/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-136/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-136/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-136/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-136/step-04.svg"
+        }
+      ],
+      "promptHash": "cb6ecdfb",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-137",
+      "recipeSlug": "beginner-137",
+      "titleKo": "김치비빔국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-137/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-137/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-137/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-137/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-137/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-137/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-137/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-137/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-137/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-137/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-137/step-04.svg"
+        }
+      ],
+      "promptHash": "e36a13e3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-138",
+      "recipeSlug": "beginner-138",
+      "titleKo": "두부김치",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-138/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-138/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-138/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-138/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-138/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-138/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-138/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-138/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-138/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-138/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-138/step-04.svg"
+        }
+      ],
+      "promptHash": "d9ac5a2c",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-139",
+      "recipeSlug": "beginner-139",
+      "titleKo": "오이크래미무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-139/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-139/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-139/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-139/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-139/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-139/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-139/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-139/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-139/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-139/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-139/step-04.svg"
+        }
+      ],
+      "promptHash": "a38564cd",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-140",
+      "recipeSlug": "beginner-140",
+      "titleKo": "참치쌈장",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-140/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-140/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-140/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-140/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-140/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-140/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-140/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-140/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-140/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-140/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-140/step-04.svg"
+        }
+      ],
+      "promptHash": "150c3fdc",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-141",
+      "recipeSlug": "beginner-141",
+      "titleKo": "감자옥수수샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-141/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-141/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-141/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-141/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-141/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-141/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-141/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-141/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-141/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-141/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-141/step-04.svg"
+        }
+      ],
+      "promptHash": "76e59321",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-142",
+      "recipeSlug": "beginner-142",
+      "titleKo": "가지덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-142/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-142/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-142/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-142/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-142/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-142/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-142/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-142/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-142/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-142/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-142/step-04.svg"
+        }
+      ],
+      "promptHash": "50c4cdf1",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-143",
+      "recipeSlug": "beginner-143",
+      "titleKo": "두부샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-143/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-143/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-143/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-143/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-143/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-143/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-143/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-143/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-143/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-143/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-143/step-04.svg"
+        }
+      ],
+      "promptHash": "14c89821",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-144",
+      "recipeSlug": "beginner-144",
+      "titleKo": "간장계란장",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-144/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-144/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-144/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-144/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-144/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-144/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-144/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-144/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-144/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-144/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-144/step-04.svg"
+        }
+      ],
+      "promptHash": "bca3fb05",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-145",
+      "recipeSlug": "beginner-145",
+      "titleKo": "양배추라페",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-145/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-145/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-145/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-145/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-145/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-145/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-145/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-145/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-145/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-145/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-145/step-04.svg"
+        }
+      ],
+      "promptHash": "5d5552a1",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-146",
+      "recipeSlug": "beginner-146",
+      "titleKo": "토마토마리네이드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-146/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-146/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-146/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-146/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-146/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-146/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-146/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-146/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-146/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-146/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-146/step-04.svg"
+        }
+      ],
+      "promptHash": "269e8876",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-147",
+      "recipeSlug": "beginner-147",
+      "titleKo": "상추겉절이",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-147/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-147/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-147/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-147/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-147/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-147/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-147/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-147/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-147/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-147/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-147/step-04.svg"
+        }
+      ],
+      "promptHash": "22a0caa2",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-148",
+      "recipeSlug": "beginner-148",
+      "titleKo": "김치말이국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-148/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-148/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-148/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-148/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-148/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-148/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-148/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-148/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-148/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-148/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-148/step-04.svg"
+        }
+      ],
+      "promptHash": "cba7c16d",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-149",
+      "recipeSlug": "beginner-149",
+      "titleKo": "오이계란샌드위치",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-149/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-149/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-149/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-149/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-149/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-149/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-149/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-149/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-149/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-149/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-149/step-04.svg"
+        }
+      ],
+      "promptHash": "02f66372",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-150",
+      "recipeSlug": "beginner-150",
+      "titleKo": "양배추참치샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-150/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-150/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-150/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-150/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-150/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-150/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-150/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-150/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-150/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-150/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-150/step-04.svg"
+        }
+      ],
+      "promptHash": "fcc55fa5",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-151",
+      "recipeSlug": "beginner-151",
+      "titleKo": "오이김밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-151/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-151/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-151/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-151/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-151/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-151/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-151/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-151/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-151/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-151/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-151/step-04.svg"
+        }
+      ],
+      "promptHash": "56ac8fa3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-152",
+      "recipeSlug": "beginner-152",
+      "titleKo": "콩나물비빔라면",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-152/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-152/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-152/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-152/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-152/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-152/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-152/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-152/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-152/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-152/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-152/step-04.svg"
+        }
+      ],
+      "promptHash": "af1a8ded",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-153",
+      "recipeSlug": "beginner-153",
+      "titleKo": "토마토카프레제",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-153/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-153/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-153/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-153/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-153/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-153/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-153/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-153/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-153/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-153/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-153/step-04.svg"
+        }
+      ],
+      "promptHash": "d608ebf3",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-154",
+      "recipeSlug": "beginner-154",
+      "titleKo": "두부면비빔국수",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-154/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-154/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-154/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-154/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-154/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-154/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-154/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-154/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-154/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-154/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-154/step-04.svg"
+        }
+      ],
+      "promptHash": "0eccdb52",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-155",
+      "recipeSlug": "beginner-155",
+      "titleKo": "크래미유부초밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-155/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-155/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-155/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-155/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-155/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-155/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-155/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-155/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-155/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-155/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-155/step-04.svg"
+        }
+      ],
+      "promptHash": "6e14bc66",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-156",
+      "recipeSlug": "beginner-156",
+      "titleKo": "토마토계란국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-156/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-156/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-156/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-156/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-156/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-156/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-156/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-156/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-156/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-156/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-156/step-04.svg"
+        }
+      ],
+      "promptHash": "6979a33d",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-157",
+      "recipeSlug": "beginner-157",
+      "titleKo": "오이참치비빔밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-157/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-157/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-157/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-157/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-157/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-157/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-157/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-157/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-157/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-157/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-157/step-04.svg"
+        }
+      ],
+      "promptHash": "25da260a",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-158",
+      "recipeSlug": "beginner-158",
+      "titleKo": "참치마요주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-158/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-158/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-158/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-158/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-158/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-158/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-158/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-158/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-158/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-158/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-158/step-04.svg"
+        }
+      ],
+      "promptHash": "e11b48d4",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-159",
+      "recipeSlug": "beginner-159",
+      "titleKo": "계란양배추토스트",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-159/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-159/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-159/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-159/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-159/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-159/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-159/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-159/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-159/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-159/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-159/step-04.svg"
+        }
+      ],
+      "promptHash": "731c6768",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-160",
+      "recipeSlug": "beginner-160",
+      "titleKo": "김치콩나물국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-160/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-160/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-160/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-160/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-160/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-160/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-160/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-160/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-160/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-160/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-160/step-04.svg"
+        }
+      ],
+      "promptHash": "dacc7014",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-161",
+      "recipeSlug": "beginner-161",
+      "titleKo": "콩나물냉국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-161/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-161/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-161/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-161/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-161/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-161/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-161/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-161/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-161/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-161/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-161/step-04.svg"
+        }
+      ],
+      "promptHash": "5f42817e",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-162",
+      "recipeSlug": "beginner-162",
+      "titleKo": "계란카레덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-162/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-162/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-162/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-162/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-162/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-162/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-162/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-162/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-162/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-162/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-162/step-04.svg"
+        }
+      ],
+      "promptHash": "09a6c87b",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-163",
+      "recipeSlug": "beginner-163",
+      "titleKo": "김치치즈주먹밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-163/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-163/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-163/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-163/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-163/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-163/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-163/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-163/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-163/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-163/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-163/step-04.svg"
+        }
+      ],
+      "promptHash": "76a60012",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-164",
+      "recipeSlug": "beginner-164",
+      "titleKo": "닭가슴살오이냉채",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-164/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-164/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-164/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-164/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-164/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-164/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-164/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-164/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-164/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-164/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-164/step-04.svg"
+        }
+      ],
+      "promptHash": "43c93ed4",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-165",
+      "recipeSlug": "beginner-165",
+      "titleKo": "두부면샐러드",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-165/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-165/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-165/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-165/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-165/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-165/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-165/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-165/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-165/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-165/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-165/step-04.svg"
+        }
+      ],
+      "promptHash": "06d3d3fc",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-166",
+      "recipeSlug": "beginner-166",
+      "titleKo": "브로콜리계란볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-166/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-166/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-166/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-166/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-166/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-166/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-166/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-166/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-166/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-166/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-166/step-04.svg"
+        }
+      ],
+      "promptHash": "47a19837",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-167",
+      "recipeSlug": "beginner-167",
+      "titleKo": "참치계란죽",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-167/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-167/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-167/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-167/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-167/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-167/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-167/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-167/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-167/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-167/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-167/step-04.svg"
+        }
+      ],
+      "promptHash": "807c7871",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-168",
+      "recipeSlug": "beginner-168",
+      "titleKo": "어묵김밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-168/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-168/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-168/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-168/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-168/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-168/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-168/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-168/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-168/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-168/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-168/step-04.svg"
+        }
+      ],
+      "promptHash": "607b7aa9",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-169",
+      "recipeSlug": "beginner-169",
+      "titleKo": "양배추계란국",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-169/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-169/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-169/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-169/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-169/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-169/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-169/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-169/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-169/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-169/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-169/step-04.svg"
+        }
+      ],
+      "promptHash": "50ce225f",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-170",
+      "recipeSlug": "beginner-170",
+      "titleKo": "닭가슴살양배추덮밥",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-170/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-170/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-170/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-170/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-170/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-170/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-170/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-170/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-170/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-170/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-170/step-04.svg"
+        }
+      ],
+      "promptHash": "dca59919",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-171",
+      "recipeSlug": "beginner-171",
+      "titleKo": "두부참치전",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-171/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-171/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-171/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-171/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-171/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-171/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-171/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-171/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-171/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-171/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-171/step-04.svg"
+        }
+      ],
+      "promptHash": "9ade764d",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-172",
+      "recipeSlug": "beginner-172",
+      "titleKo": "오이두부무침",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-172/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-172/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-172/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-172/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-172/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-172/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-172/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-172/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-172/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-172/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-172/step-04.svg"
+        }
+      ],
+      "promptHash": "f719f38c",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-173",
+      "recipeSlug": "beginner-173",
+      "titleKo": "스팸무스비",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-173/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-173/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-173/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-173/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-173/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-173/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-173/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-173/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-173/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-173/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-173/step-04.svg"
+        }
+      ],
+      "promptHash": "973e2f94",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-174",
+      "recipeSlug": "beginner-174",
+      "titleKo": "가지토마토볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-174/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-174/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-174/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-174/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-174/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-174/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-174/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-174/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-174/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-174/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-174/step-04.svg"
+        }
+      ],
+      "promptHash": "ce29b654",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-175",
+      "recipeSlug": "beginner-175",
+      "titleKo": "김치어묵볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-175/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-175/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-175/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-175/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-175/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-175/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-175/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-175/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-175/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-175/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-175/step-04.svg"
+        }
+      ],
+      "promptHash": "8a60ee16",
+      "generator": "jipbab-note-svg-scene-generator",
+      "generatedAt": "2026-05-29",
+      "rights": {
+        "originalGenerated": true,
+        "noExternalPhoto": true,
+        "noBrandLogo": true,
+        "noCharacter": true,
+        "noCompetitorAsset": true
+      },
+      "qa": {
+        "textReadable": true,
+        "recipeMatch": true,
+        "beginnerSafe": true,
+        "mobileLegible": true,
+        "perStepImage": true
+      }
+    },
+    {
+      "recipeId": "beginner-recipe-176",
+      "recipeSlug": "beginner-176",
+      "titleKo": "양파달걀볶음",
+      "version": 1,
+      "status": "app_ready",
+      "locale": "ko-KR",
+      "aspectRatio": "4:3",
+      "sceneCount": 7,
+      "basePath": "/images/recipes/beginner-scenes/beginner-176/",
+      "coverPath": "/images/recipes/beginner-scenes/beginner-176/cover.svg",
+      "ingredientsPath": "/images/recipes/beginner-scenes/beginner-176/ingredients.svg",
+      "toolsPath": "/images/recipes/beginner-scenes/beginner-176/tools.svg",
+      "scenes": [
+        {
+          "kind": "cover",
+          "path": "/images/recipes/beginner-scenes/beginner-176/cover.svg"
+        },
+        {
+          "kind": "ingredients",
+          "path": "/images/recipes/beginner-scenes/beginner-176/ingredients.svg"
+        },
+        {
+          "kind": "tools",
+          "path": "/images/recipes/beginner-scenes/beginner-176/tools.svg"
+        },
+        {
+          "kind": "step",
+          "order": 1,
+          "path": "/images/recipes/beginner-scenes/beginner-176/step-01.svg"
+        },
+        {
+          "kind": "step",
+          "order": 2,
+          "path": "/images/recipes/beginner-scenes/beginner-176/step-02.svg"
+        },
+        {
+          "kind": "step",
+          "order": 3,
+          "path": "/images/recipes/beginner-scenes/beginner-176/step-03.svg"
+        },
+        {
+          "kind": "step",
+          "order": 4,
+          "path": "/images/recipes/beginner-scenes/beginner-176/step-04.svg"
+        }
+      ],
+      "promptHash": "104c163c",
       "generator": "jipbab-note-svg-scene-generator",
       "generatedAt": "2026-05-29",
       "rights": {

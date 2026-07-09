@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-  <title id="title">감자달걀샐러드 3단계. 살살 섞기</title>
-  <desc id="desc">감자달걀샐러드은 6분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 3단계. 살살 섞기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <title id="title">감자달걀샐러드 3단계. 마요네즈 섞기</title>
+  <desc id="desc">감자달걀샐러드 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 3단계. 마요네즈 섞기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -20,7 +20,7 @@
     <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">6/7</text>
   </g>
 
-  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">3단계. 살살 섞기</text>
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">3단계. 마요네즈 섞기</text>
   <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#70b764">감자달걀샐러드 조리순서입니다.</text>
   <g fill="#244c27" opacity="0.96">
     <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
@@ -42,22 +42,22 @@
     <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
     <circle cx="630" cy="218" r="33" fill="#70b764"/>
     <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">3</text>
-    <text x="685" y="229" font-size="38" font-weight="950" fill="#244c27">살살 섞기</text>
-    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">숟가락 두 개나 젓가락으로 아래에서 위로</text>
-<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17"> 들어 올리듯 섞습니다.</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#244c27">마요네즈 섞기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">마요네즈 1큰술과 소금 한 꼬집을 넣고 </text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">아래에서 위로 가볍게 섞습니다.</text>
     <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
-    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">불 없음 · 2분</text>
+    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">불 없음 · 1분</text>
     <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="963" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#4d7a37">초보 확인</text>
 
     <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
-    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">재료가 부서지지 않고 양념 색이 고르게 보이면 됩니다.</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">감자와 계란 표면에 마요네즈가 얇게 묻으면 충분합니다.</text>
     <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
     <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
-    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">세게 누르며 섞으면 두부나 밥이 뭉개집니다.</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">마요네즈를 많이 넣으면 질척하고 느끼해집니다.</text>
     <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
     <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
-    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">모양이 무너지면 그릇에 담아 덮밥이나 비빔밥처럼 먹으면 됩니다.</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">질척하면 으깬 감자나 오이를 조금 더 넣으세요.</text>
   </g>
 </svg>

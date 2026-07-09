@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-  <title id="title">전자레인지 두부찜 2단계. 덮개 덮기</title>
-  <desc id="desc">전자레인지 두부찜은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 덮개 덮기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <title id="title">전자레인지 두부찜 2단계. 물 넣고 덮기</title>
+  <desc id="desc">전자레인지 두부찜 레시피는 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 물 넣고 덮기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -20,7 +20,7 @@
     <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">5/7</text>
   </g>
 
-  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 덮개 덮기</text>
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 물 넣고 덮기</text>
   <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#8465d8">전자레인지 두부찜 조리순서입니다.</text>
   <g fill="#342057" opacity="0.96">
     <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
@@ -42,9 +42,9 @@
     <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
     <circle cx="630" cy="218" r="33" fill="#8465d8"/>
     <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">2</text>
-    <text x="685" y="229" font-size="38" font-weight="950" fill="#342057">덮개 덮기</text>
-    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">랩이나 뚜껑은 완전히 밀봉하지 말고 한쪽</text>
-<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">을 조금 열어 김이 빠지게 합니다.</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#342057">물 넣고 덮기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">물 1큰술을 그릇 가장자리에 넣고 랩이나</text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17"> 뚜껑은 한쪽을 조금 열어 덮습니다.</text>
     <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
     <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">불 없음 · 1분</text>
     <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
@@ -52,13 +52,12 @@
 
     <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
-    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">덮개 한쪽에 손가락 한 마디 정도 틈이 보이면 안전합니다.</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">김이 빠질 틈이 한쪽에 보이면 안전하게 돌릴 수 있습니다.</text>
     <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
     <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
-    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">완전히 막으면 수증기가 모여 넘칠 수 있습니다.</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">랩을 완전히 밀봉하면 김 때문에 위험할 수 있습니다.</text>
     <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
     <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
-    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">이미 넘쳤다면 닦고 같은 그릇에 물 1큰술을 더해 짧게 다시 데우</text>
-<text x="828" y="749.5" font-size="18" font-weight="800" fill="#6b3028">세요.</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">랩을 쓴다면 젓가락으로 구멍 2개를 내세요.</text>
   </g>
 </svg>

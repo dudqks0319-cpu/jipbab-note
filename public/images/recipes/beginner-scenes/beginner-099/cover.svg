@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
   <title id="title">양배추참치덮밥 양배추참치덮밥</title>
-  <desc id="desc">양배추참치덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 양배추참치덮밥 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <desc id="desc">양배추참치덮밥 레시피는 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 양배추참치덮밥 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -39,6 +39,6 @@
     </g>
   
     <rect x="165" y="782" width="870" height="70" rx="22" fill="#fff8ed" stroke="#e4cba7"/>
-    <text x="600" y="826" text-anchor="middle" font-size="25" font-weight="850" fill="#5b3e2f">양배추참치덮밥은 10분 안에 만들 수 있는 초보자용 집밥 메뉴입니다.</text>
+    <text x="600" y="826" text-anchor="middle" font-size="25" font-weight="850" fill="#5b3e2f">양배추참치덮밥 레시피는 10분 안에 만들 수 있는 초보자용 집밥 메뉴입…</text>
   </g>
 </svg>

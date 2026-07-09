@@ -50,6 +50,16 @@ const truncate = (value, maxLength) => {
   return text.length > maxLength ? `${text.slice(0, Math.max(0, maxLength - 1))}…` : text;
 };
 
+const hasKoreanFinalConsonant = (value) => {
+  const text = normalizeText(value);
+  const lastChar = text.at(-1);
+  if (!lastChar) return false;
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  return code >= 0 && code <= 11171 && code % 28 !== 0;
+};
+
+const withObjectParticle = (value) => `${value}${hasKoreanFinalConsonant(value) ? "을" : "를"}`;
+
 const wrapText = (value, maxChars, maxLines = 3) => {
   const text = normalizeText(value);
   const lines = [];
@@ -107,7 +117,7 @@ const pageBadge = (current, total) => `
 `;
 
 const baseSvg = ({ recipe, current, total, title, subtitle, body }) => {
-  const [, accent, dark] = getPalette(recipe);
+  const [soft, accent, dark] = getPalette(recipe);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
   <title id="title">${escapeXml(recipe.title)} ${escapeXml(title)}</title>
@@ -251,7 +261,7 @@ const buildToolsSvg = (recipe, total) => {
     current: 3,
     total,
     title: "필요한 조리도구",
-    subtitle: `${recipe.title}를 만들 때 필요한 기본 도구입니다.`,
+    subtitle: `${withObjectParticle(recipe.title)} 만들 때 필요한 기본 도구입니다.`,
     body,
   });
 };

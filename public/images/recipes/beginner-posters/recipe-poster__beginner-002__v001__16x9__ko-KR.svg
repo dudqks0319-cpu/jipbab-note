@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">전자레인지 계란찜 집밥노트 초보자 레시피 포스터</title>
-  <desc id="desc">전자레인지 계란찜은 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
+  <desc id="desc">전자레인지 계란찜 레시피는 8분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 재료, 도구, 조리 순서, 복구 팁을 한 장에 정리한 자체 제작 이미지입니다.</desc>
   <rect width="1600" height="900" fill="#fff8ef" />
   <rect x="22" y="22" width="1556" height="856" rx="36" fill="#fffdf8" stroke="#ead7c6" stroke-width="3" />
 
@@ -15,9 +15,9 @@
     <circle cx="353" cy="231" r="21" fill="#ffffff" opacity="0.65" />
     <path d="M173 170 C239 117, 346 118, 416 169" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.55" />
     <text x="80" y="115" font-size="56" font-weight="950" fill="#39245f">전자레인지 계란찜</text>
-    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">전자레인지 계란찜은 8분 안에 만</text>
-<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34">들 수 있는 초보자용 집밥 메뉴입</text>
-<text x="82" y="224" font-size="24" font-weight="800" fill="#513f34">니다.</text>
+    <text x="82" y="164" font-size="24" font-weight="800" fill="#513f34">전자레인지 계란찜 레시피는 8분 </text>
+<text x="82" y="194" font-size="24" font-weight="800" fill="#513f34">안에 만들 수 있는 초보자용 집밥</text>
+<text x="82" y="224" font-size="24" font-weight="800" fill="#513f34"> 메뉴입니다.</text>
     
   <rect x="82" y="398" width="118" height="42" rx="21" fill="#ffffff" stroke="#e2c6ad" />
   <text x="141" y="426" text-anchor="middle" font-size="20" font-weight="800" fill="#39245f">8분</text>
@@ -48,7 +48,7 @@
       <rect x="749" y="160" width="134" height="92" rx="18" fill="#fffaf4" stroke="#ead7c6" />
       <circle cx="781" cy="191" r="18" fill="#f0e8ff" stroke="#8d6ad8" stroke-width="3" />
       <path d="M772 193 C777 184, 789 184, 792 193 C788 203, 776 203, 772 193Z" fill="#8d6ad8" opacity="0.72" />
-      <text x="816" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#39245f">식용유</text>
+      <text x="816" y="194" text-anchor="middle" font-size="19" font-weight="900" fill="#39245f">간장</text>
       <text x="816" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#735f50">1큰술</text>
     </g>
   

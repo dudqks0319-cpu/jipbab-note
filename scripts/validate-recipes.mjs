@@ -18,6 +18,22 @@ const DANGEROUS_PHRASES = [
 ];
 
 const VAGUE_PHRASES = ["적당히", "노릇하게", "익을 때까지"];
+const TITLE_INGREDIENT_RULES = [
+  { keyword: /버터/, required: /버터/, label: "버터" },
+  { keyword: /마요/, required: /마요|마요네즈/, label: "마요네즈" },
+  { keyword: /샐러드/, required: /마요|마요네즈|드레싱|요거트/, label: "샐러드 양념" },
+  { keyword: /계란|달걀/, required: /계란|달걀/, label: "계란" },
+  { keyword: /밥|덮밥|볶음밥|주먹밥|비빔밥/, required: /밥|즉석밥/, label: "밥" },
+  { keyword: /김치/, required: /김치/, label: "김치" },
+  { keyword: /참치/, required: /참치/, label: "참치" },
+  { keyword: /스팸/, required: /스팸|햄/, label: "스팸/햄" },
+  { keyword: /햄/, required: /햄|스팸/, label: "햄" },
+  { keyword: /어묵/, required: /어묵/, label: "어묵" },
+  { keyword: /두부|순두부|연두부/, required: /두부|순두부|연두부/, label: "두부" },
+  { keyword: /감자/, required: /감자/, label: "감자" },
+  { keyword: /된장/, required: /된장/, label: "된장" },
+  { keyword: /파스타/, required: /파스타|스파게티/, label: "파스타면" },
+];
 
 function collectText(value, output = []) {
   if (typeof value === "string") {
@@ -32,6 +48,12 @@ function collectText(value, output = []) {
     for (const item of Object.values(value)) collectText(item, output);
   }
   return output;
+}
+
+function collectIngredientText(recipe) {
+  return recipe.ingredients
+    .map((ingredient) => `${ingredient.name} ${ingredient.amount} ${ingredient.substitute ?? ""}`)
+    .join("\n");
 }
 
 function findDuplicates(items, field) {
@@ -80,6 +102,7 @@ issues.push(...requireRecipeSet(CORE_RECIPE_50_NAMES, 80, "core_50"));
 for (const recipe of BEGINNER_RECIPE_LIBRARY) {
   const requiredIngredients = recipe.ingredients.filter((ingredient) => ingredient.required);
   const allText = collectText(recipe).join("\n");
+  const ingredientText = collectIngredientText(recipe);
 
   for (const phrase of DANGEROUS_PHRASES) {
     if (allText.includes(phrase)) {
@@ -90,6 +113,12 @@ for (const recipe of BEGINNER_RECIPE_LIBRARY) {
   for (const phrase of VAGUE_PHRASES) {
     if (allText.includes(phrase)) {
       issues.push(`${recipe.id}: 초보자에게 모호한 표현 포함 ${phrase}`);
+    }
+  }
+
+  for (const rule of TITLE_INGREDIENT_RULES) {
+    if (rule.keyword.test(recipe.title) && !rule.required.test(ingredientText)) {
+      issues.push(`${recipe.id}: 제목에 ${rule.label}이 있으나 재료에 없음`);
     }
   }
 

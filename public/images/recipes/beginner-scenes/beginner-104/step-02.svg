@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-  <title id="title">누룽지 두부 계란죽 2단계. 주재료 넣기</title>
-  <desc id="desc">누룽지 두부 계란죽은 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 주재료 넣기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <title id="title">누룽지 두부 계란죽 2단계. 두부 넣기</title>
+  <desc id="desc">누룽지 두부 계란죽 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 2단계. 두부 넣기 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
   <defs>
     <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
       <stop offset="0%" stop-color="#fffdf8"/>
@@ -20,7 +20,7 @@
     <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">5/7</text>
   </g>
 
-  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 주재료 넣기</text>
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">2단계. 두부 넣기</text>
   <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#d94324">누룽지 두부 계란죽 조리순서입니다.</text>
   <g fill="#551d12" opacity="0.96">
     <rect x="40" y="154" width="500" height="480" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
@@ -42,22 +42,22 @@
     <rect x="575" y="154" width="585" height="480" rx="22" fill="#fffdf8" stroke="#e7d3bb"/>
     <circle cx="630" cy="218" r="33" fill="#d94324"/>
     <text x="630" y="229" text-anchor="middle" font-size="36" font-weight="950" fill="#fff">2</text>
-    <text x="685" y="229" font-size="38" font-weight="950" fill="#551d12">주재료 넣기</text>
-    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">누룽지 두부 계란죽의 주재료를 숟가락에 </text>
-<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17">올라가는 크기로 넣습니다.</text>
+    <text x="685" y="229" font-size="38" font-weight="950" fill="#551d12">두부 넣기</text>
+    <text x="626" y="300" font-size="31" font-weight="850" fill="#241c17">두부 1/2모를 숟가락 크기로 잘라 넣고</text>
+<text x="626" y="344.95" font-size="31" font-weight="850" fill="#241c17"> 중약불에서 2분 더 끓입니다.</text>
     <rect x="626" y="515" width="210" height="46" rx="16" fill="#fff3df" stroke="#e4cba7"/>
-    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">중불 · 5분</text>
+    <text x="731" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#6a4128">중약불 · 2분</text>
     <rect x="858" y="515" width="210" height="46" rx="16" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="963" y="546" text-anchor="middle" font-size="22" font-weight="950" fill="#4d7a37">초보 확인</text>
 
     <rect x="40" y="665" width="360" height="82" rx="18" fill="#f3faec" stroke="#d8e8c9"/>
     <text x="68" y="697" font-size="20" font-weight="950" fill="#4d7a37">체크 포인트</text>
-    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">재료 가장자리가 부드럽게 휘거나 색이 진해지면 익고 있습니다.</text>
+    <text x="68" y="727" font-size="18" font-weight="800" fill="#49643d">두부가 국물에 잠기고 가운데까지 따뜻해지면 됩니다.</text>
     <rect x="420" y="665" width="360" height="82" rx="18" fill="#fff7df" stroke="#e4cba7"/>
     <text x="448" y="697" font-size="20" font-weight="950" fill="#a14a25">주의</text>
-    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">재료를 너무 크게 넣으면 겉만 뜨겁고 속은 차가울 수 있습니다.</text>
+    <text x="448" y="727" font-size="18" font-weight="800" fill="#6a4128">두부를 세게 저으면 잘게 부서집니다.</text>
     <rect x="800" y="665" width="360" height="82" rx="18" fill="#fff0ee" stroke="#f0c6bf"/>
     <text x="828" y="697" font-size="20" font-weight="950" fill="#c63421">망했어요?</text>
-    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">크게 넣었다면 국자나 가위로 냄비 안에서 작게 나눠 주세요.</text>
+    <text x="828" y="727" font-size="18" font-weight="800" fill="#6b3028">부서져도 죽에는 어울리니 더 젓지 말고 그대로 끓이세요.</text>
   </g>
 </svg>
