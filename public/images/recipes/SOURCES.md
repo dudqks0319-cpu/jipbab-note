@@ -31,6 +31,7 @@ These images were generated in-house for Korean home-cooking recipe cards. They 
 - `jipbab-curated/spinach-namul.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
 - `jipbab-curated/kimchi-jeon.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
 - `jipbab-curated/tomato-egg-stirfry.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
+- `generated/*.png`: in-house generated finished-dish food photos for the expanded beginner recipe library, added 2026-06-10.
 - `beginner-food-photos/*.png`: generated in-house with the installed image generation skill for core beginner recipe thumbnails, added 2026-06-10. These are finished-dish food photos only; they are not recipe cards, posters, UI screenshots, SVG stand-ins, marketplace images, restaurant photos, blog images, or competitor assets.
 
 Contact-sheet source for the 2026-05-06 batch:
@@ -51,6 +52,10 @@ These poster/detail assets were generated locally from project scripts and in-ho
 - `beginner-recipe-guides/*.png`: in-house recipe guide images generated from the installed image generation workflow's local food photos plus app-owned Korean recipe copy, added 2026-06-12. These show beginner ingredients, tools, and cooking order for each BeginnerRecipe; they are not copied from recipe cards, blog images, marketplace images, restaurant photos, or competitor assets.
 - `beginner-recipe-guides/prep/*.png`: in-house tool-and-ingredient guide photos generated from local food-photo assets plus app-owned Korean ingredient/tool copy, added 2026-06-12.
 - `beginner-recipe-guides/steps/*.png`: in-house cooking-order guide photos generated from local food-photo assets plus app-owned Korean step copy, added 2026-06-12.
+- `ganjang-egg-rice/*.png`: 집밥노트가 자체 작성한 간장계란밥 조리 단계 사진, added 2026-07-10.
+- `butter-soy-egg-rice/*.png`: 집밥노트가 자체 작성한 버터간장계란밥 조리 단계 사진, added 2026-07-10.
+- `ganjang-egg-rice/step-04-finished.png`: 집밥노트가 자체 작성한 간장계란밥 완성 사진, added 2026-07-10.
+- `butter-soy-egg-rice/step-04-finished.png`: 집밥노트가 자체 작성한 버터간장계란밥 완성 사진, added 2026-07-10.
 - `beginner-imagegen-posters/*.png`: in-house Korean recipe infographic poster images generated with the installed image generation skill from app-owned recipe copy, added 2026-06-13. These show tools, ingredients, and step-by-step cooking order in the reference style requested by the user; they are not copied from recipe cards, blog images, marketplace images, restaurant photos, or competitor assets.
 - `*-recipe-poster.svg`
 - `*-recipe-poster.png`

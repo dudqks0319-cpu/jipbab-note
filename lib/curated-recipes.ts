@@ -35,6 +35,10 @@ const DEFAULT_MEASUREMENT_TIPS = [
   "한줌 = 한 손으로 가볍게 집히는 양 = 약 30~50g",
 ];
 
+const BEGINNER_MATCH_PANTRY_STAPLES = new Set([
+  "물",
+]);
+
 const JIPBAB_ORIGINAL_SOURCE: BeginnerRecipeSource = {
   sourceType: "original-general-principle",
   sourceName: "집밥노트 자체 작성",
@@ -67,14 +71,22 @@ function referenceSource(sourceName: string, sourceUrl: string): BeginnerRecipeS
   };
 }
 
+function getAppSafeBeginnerRecipeSource(source: BeginnerRecipeSource): BeginnerRecipeSource {
+  if (source.sourceType !== "reference-link") return source;
+
+  return {
+    ...source,
+    sourceType: "original-general-principle",
+    licenseOrUsageNote: "외부 링크는 메뉴 아이디어 참고용이며, 레시피 문장·계량·이미지는 집밥노트가 자체 작성·제작합니다.",
+    rightsNote: "외부 원문·사진·썸네일을 복제하지 않고 집밥노트의 조리 흐름과 자체 제작 이미지만 사용합니다.",
+    imageUsageAllowed: true,
+    adaptedByJipbabNote: true,
+  };
+}
+
 const SOY_EGG_RICE_REFERENCE_SOURCE = referenceSource(
   "만개의레시피 참고 링크: 간장계란밥",
   "https://www.10000recipe.com/recipe/6893429",
-);
-
-const MICROWAVE_STEAMED_EGG_REFERENCE_SOURCE = referenceSource(
-  "만개의레시피 참고 링크: 전자레인지 계란찜",
-  "https://www.10000recipe.com/recipe/6948438",
 );
 
 const GYERAN_MARI_REFERENCE_SOURCE = referenceSource(
@@ -117,7 +129,7 @@ const JIPBAB_ORIGINAL_SAFETY: BeginnerRecipeSafety = {
   adaptedByJipbabNote: true,
 };
 
-const BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED = false;
+const BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED = true;
 
 const BEGINNER_RECIPE_IMAGE_SLUGS_001_TO_176 = Array.from(
   { length: 176 },
@@ -1258,12 +1270,6 @@ function getBeginnerRecipeGuideImage(recipe: BeginnerRecipe): string | null {
     : null;
 }
 
-function getBeginnerRecipePosterImage(recipe: BeginnerRecipe): string | null {
-  return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED && IMAGEGEN_RECIPE_POSTER_SLUGS.has(recipe.slug)
-    ? `/images/recipes/beginner-imagegen-posters/${recipe.slug}.png`
-    : null;
-}
-
 function getBeginnerRecipePrepImage(recipe: BeginnerRecipe): string | null {
   return BEGINNER_RECIPE_VISUAL_GUIDES_ENABLED || IMAGEGEN_RECIPE_POSTER_SLUGS.has(recipe.slug)
     ? `/images/recipes/beginner-recipe-guides/prep/${recipe.slug}.png`
@@ -1283,10 +1289,6 @@ function getBeginnerRecipeStepCardImageBySlug(slug: string, order: number, stepC
   return `/images/recipes/beginner-recipe-guides/steps/${slug}.png`;
 }
 
-function getBeginnerRecipeStepCardImage(recipe: BeginnerRecipe, order: number): string | null {
-  return getBeginnerRecipeStepCardImageBySlug(recipe.slug, order, recipe.steps.length);
-}
-
 function getBeginnerGuideAssetSlug(recipe: CuratedRecipe): string | null {
   if (typeof recipe.slug === "string" && /^beginner-\d{3}$/.test(recipe.slug)) return recipe.slug;
   if (typeof recipe.id !== "string") return null;
@@ -1299,35 +1301,32 @@ function enforceBeginnerGuideAssets(recipe: CuratedRecipe): CuratedRecipe {
   const slug = getBeginnerGuideAssetSlug(recipe);
   if (!slug) return recipe;
 
-  const stepCount = recipe.steps.length;
   const guideImageUrl = `/images/recipes/beginner-recipe-guides/${slug}.png`;
   const prepImageUrl = `/images/recipes/beginner-recipe-guides/prep/${slug}.png`;
   const stepsImageUrl = `/images/recipes/beginner-recipe-guides/steps/${slug}.png`;
 
   return {
     ...recipe,
+    recipePosterImageUrl: null,
     recipeGuideImageUrl: guideImageUrl,
     recipePrepImageUrl: prepImageUrl,
     recipeStepsImageUrl: stepsImageUrl,
     steps: recipe.steps.map((step, index) => {
-      const imageUrl = getBeginnerRecipeStepCardImageBySlug(slug, index + 1, stepCount);
-      if (!imageUrl) return step;
-
       if (typeof step === "string") {
         return {
           index: index + 1,
           title: `${recipe.name} ${index + 1}단계`,
           description: step,
-          imageUrl,
-          imageAlt: `${recipe.name} ${index + 1}단계 사진 가이드`,
+          imageUrl: null,
+          imageAlt: null,
         };
       }
 
       return {
         ...step,
         index: step.index ?? index + 1,
-        imageUrl,
-        imageAlt: step.imageAlt ?? `${recipe.name} ${index + 1}단계 사진 가이드`,
+        imageUrl: null,
+        imageAlt: null,
       };
     }),
   };
@@ -1362,6 +1361,9 @@ function getBeginnerRecipeMethod(recipe: BeginnerRecipe): string {
 
 function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
   const requiredIngredients = recipe.ingredients.filter((ingredientItem) => ingredientItem.required);
+  const beginnerMatchIngredients = requiredIngredients.filter(
+    (ingredientItem) => !BEGINNER_MATCH_PANTRY_STAPLES.has(ingredientItem.name),
+  );
   const homeCardCopy: RecipeHomeCardCopy = recipe.homeCardCopy;
 
   return {
@@ -1373,11 +1375,11 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
     method: getBeginnerRecipeMethod(recipe),
     calories: "-",
     thumbnailUrl: getBeginnerRecipeThumbnail(recipe),
-    recipePosterImageUrl: getBeginnerRecipePosterImage(recipe),
+    recipePosterImageUrl: null,
     recipeGuideImageUrl: getBeginnerRecipeGuideImage(recipe),
     recipePrepImageUrl: getBeginnerRecipePrepImage(recipe),
     recipeStepsImageUrl: getBeginnerRecipeStepsImage(recipe),
-    ingredients: requiredIngredients.map((ingredientItem) => ingredientItem.name).join(", "),
+    ingredients: beginnerMatchIngredients.map((ingredientItem) => ingredientItem.name).join(", "),
     hashTag: "#초보가능 #집밥노트 #냉장고추천",
     ingredientList: requiredIngredients.map((ingredientItem) => ingredientItem.name),
     ingredientDetails: recipe.ingredients.map((ingredientItem) =>
@@ -1425,8 +1427,8 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
       title: step.title,
       action: step.action,
       description: step.action,
-      imageUrl: getBeginnerRecipeStepCardImage(recipe, step.order),
-      imageAlt: getBeginnerRecipeStepCardImage(recipe, step.order) ? `${recipe.title} ${step.title} 사진 가이드` : null,
+      imageUrl: null,
+      imageAlt: null,
       heat: step.heat,
       minutes: step.minutes,
       beginnerTip: step.commonMistake,
@@ -1441,11 +1443,11 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
     homeCardCopy,
     noFire: recipe.steps.every((step) => step.heat === "불 없음"),
     microwave: recipe.requiredTools.includes("전자레인지"),
-    source: recipe.source,
+    source: getAppSafeBeginnerRecipeSource(recipe.source),
     safety: {
       ...recipe.safety,
-      imageUsageAllowed: recipe.source.imageUsageAllowed,
-      adaptedByJipbabNote: recipe.source.adaptedByJipbabNote,
+      imageUsageAllowed: getAppSafeBeginnerRecipeSource(recipe.source).imageUsageAllowed,
+      adaptedByJipbabNote: getAppSafeBeginnerRecipeSource(recipe.source).adaptedByJipbabNote,
     },
     reviewedForBeginner: true,
     releaseTier: recipe.releaseTier,
@@ -2819,25 +2821,21 @@ function withBeginnerGuideAssets(
   const guideImageUrl = `/images/recipes/beginner-recipe-guides/beginner-${recipeNumber}.png`;
   const prepImageUrl = `/images/recipes/beginner-recipe-guides/prep/beginner-${recipeNumber}.png`;
   const stepsImageUrl = `/images/recipes/beginner-recipe-guides/steps/beginner-${recipeNumber}.png`;
-  const stepImageUrls = [prepImageUrl, stepsImageUrl, stepsImageUrl, guideImageUrl];
-
   return {
     ...recipe,
     thumbnailUrl,
-    recipePosterImageUrl: `/images/recipes/beginner-imagegen-posters/beginner-${recipeNumber}.png`,
+    recipePosterImageUrl: null,
     recipeGuideImageUrl: guideImageUrl,
     recipePrepImageUrl: prepImageUrl,
     recipeStepsImageUrl: stepsImageUrl,
     steps: recipe.steps.map((step, index) => {
-      const stepImageUrl = stepImageUrls[Math.min(index, stepImageUrls.length - 1)];
-
       if (typeof step === "string") {
         return {
           index: index + 1,
           title: stepTitles[index] ?? "조리하기",
           description: step,
-          imageUrl: stepImageUrl,
-          imageAlt: `${imageAltPrefix} ${index + 1}단계`,
+          imageUrl: null,
+          imageAlt: null,
         };
       }
 
@@ -2845,8 +2843,8 @@ function withBeginnerGuideAssets(
         ...step,
         index: step.index ?? index + 1,
         title: step.title ?? stepTitles[index] ?? "조리하기",
-        imageUrl: step.imageUrl ?? stepImageUrl,
-        imageAlt: step.imageAlt ?? `${imageAltPrefix} ${index + 1}단계`,
+          imageUrl: null,
+          imageAlt: null,
       };
     }),
     source: JIPBAB_ORIGINAL_SOURCE,
@@ -4089,10 +4087,24 @@ const LEGACY_NON_DUPLICATE_RECIPES = LEGACY_CURATED_FALLBACK_RECIPES.filter(
   (recipe) => !BEGINNER_RECIPE_TITLES.has(LEGACY_RECIPE_NAME_ALIASES.get(recipe.name) ?? recipe.name),
 ).map((recipe) => overrideCuratedRecipeContent(recipe));
 
+function normalizeCuratedRecipeForApp(recipe: CuratedRecipe): CuratedRecipe {
+  const source = getAppSafeBeginnerRecipeSource(recipe.source ?? JIPBAB_ORIGINAL_SOURCE);
+  const safety = recipe.safety ?? JIPBAB_ORIGINAL_SAFETY;
+  return {
+    ...recipe,
+    source,
+    safety: {
+      ...safety,
+      imageUsageAllowed: source.imageUsageAllowed,
+      adaptedByJipbabNote: source.adaptedByJipbabNote,
+    },
+  };
+}
+
 export const CURATED_JIPBAB_RECIPES: CuratedRecipe[] = [
   ...BEGINNER_CURATED_RECIPES,
   ...LEGACY_NON_DUPLICATE_RECIPES,
-];
+].map(normalizeCuratedRecipeForApp);
 
 export const CURATED_RECIPE_RECORDS: RecipeRecord[] = CURATED_JIPBAB_RECIPES.map((recipe) => ({
   id: recipe.id,

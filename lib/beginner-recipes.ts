@@ -1510,7 +1510,7 @@ function isNoFireRecipe(title: string): boolean {
 }
 
 function inferRequiredTools(title: string): string[] {
-  if (title === "스팸무스비") return ["프라이팬", "칼", "그릇", "랩"];
+  if (title === "스팸무스비") return ["프라이팬", "칼", "랩"];
   if (title === "가지토마토볶음") return ["프라이팬", "주걱", "그릇"];
   if (title === "김치어묵볶음") return ["프라이팬", "주걱", "가위"];
   if (title === "양파달걀볶음") return ["프라이팬", "젓가락", "그릇"];
@@ -1522,10 +1522,10 @@ function inferRequiredTools(title: string): string[] {
   if (title === "오이두부무침") return ["그릇", "칼", "숟가락"];
 
   // 어묵김밥_TOOLS_BATCH12
-  if (title === "두부면샐러드") return ["그릇", "체", "젓가락", "칼"];
+  if (title === "두부면샐러드") return ["그릇", "체", "젓가락"];
   if (title === "브로콜리계란볶음") return ["프라이팬", "주걱", "그릇"];
   if (title === "참치계란죽") return ["냄비", "국자", "그릇"];
-  if (title === "어묵김밥") return ["프라이팬", "김발", "칼", "그릇"];
+  if (title === "어묵김밥") return ["프라이팬", "김발", "칼"];
 
   // 닭가슴살오이냉채_TOOLS_BATCH11
   if (title === "콩나물냉국") return ["냄비", "체", "그릇"];
@@ -2815,11 +2815,12 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
   }
 
   if (title === "된장찌개") {
-    add("된장", "1큰술", true, null, "처음부터 많이 넣지 말고 1큰술부터 풀어야 짜지 않습니다.");
+    add("된장", "2큰술", true, null, "밥숟가락으로 평평하게 2번 넣고, 싱거우면 마지막에 조금 더 넣습니다.");
     add("두부", "1/2모", true, "찌개용 두부 1/2모", "숟가락에 올라가는 크기로 자릅니다.");
     add("물", "2컵", true, null, "국물 양의 기준입니다.");
-    add("애호박", "1/4개", false, "양파 1/4개", "있으면 넣고 없으면 생략해도 됩니다.");
-    add("대파", "1큰술", false, null, "마지막 향을 더하는 선택 재료입니다.");
+    add("애호박", "1/3개", true, "양파 1/4개", "손가락 두 마디 길이만큼 썰어 넣습니다.");
+    add("양파", "1/4개", true, null, "얇게 썰면 빨리 익습니다.");
+    add("대파", "1/2대", true, null, "마지막에 넣어 향을 냅니다.");
     return ingredients;
   }
 

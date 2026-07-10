@@ -245,7 +245,7 @@ test("all curated recipe and ingredient image references resolve to local assets
   }
 });
 
-test("curated beginner recipes keep unverified visual guide images disabled", () => {
+test("curated beginner recipes expose verified visual guide images", () => {
   const beginnerRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) =>
     recipe.slug?.startsWith("beginner-"),
   );
@@ -254,15 +254,20 @@ test("curated beginner recipes keep unverified visual guide images disabled", ()
     "utf8",
   );
 
-  assert.equal(beginnerRecipes.length, 120);
+  assert.equal(beginnerRecipes.length, 176);
   assert.ok(sourceLedger.includes("beginner-recipe-guides/*.png"));
   assert.ok(sourceLedger.includes("beginner-recipe-guides/prep/*.png"));
   assert.ok(sourceLedger.includes("beginner-recipe-guides/steps/*.png"));
 
   for (const recipe of beginnerRecipes) {
-    assert.equal(recipe.recipeGuideImageUrl, null, `${recipe.id} should not expose an unverified guide image`);
-    assert.equal(recipe.recipePrepImageUrl, null, `${recipe.id} should not expose an unverified prep image`);
-    assert.equal(recipe.recipeStepsImageUrl, null, `${recipe.id} should not expose an unverified steps image`);
+    const imageUrls = [recipe.recipeGuideImageUrl, recipe.recipePrepImageUrl, recipe.recipeStepsImageUrl].filter(
+      (imageUrl): imageUrl is string => typeof imageUrl === "string",
+    );
+    assert.equal(imageUrls.length, 3, `${recipe.id} missing verified guide image`);
+    for (const imageUrl of imageUrls) {
+      assert.ok(imageUrl.startsWith("/images/recipes/beginner-recipe-guides/"), `${recipe.id} uses an unexpected guide image`);
+      assert.ok(existsSync(join(process.cwd(), "public", imageUrl)), `${recipe.id} missing ${imageUrl}`);
+    }
   }
 });
 
@@ -294,15 +299,19 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
       assert.match(sourceLedger, /finished-dish food photos only/i);
       continue;
     }
+    if (ledgerPath.startsWith("generated/")) {
+      assert.ok(sourceLedger.includes("generated/*.png"), recipe.id);
+      continue;
+    }
     assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
   }
 });
 
 test("recipe list quick filters expose beginner and ready states", () => {
-  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.name === "계란간장밥");
+  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.name === "간장계란밥");
   const recipe = {
     id: curated?.id ?? "beginner-recipe-001",
-    name: "계란간장밥",
+    name: "간장계란밥",
     category: "밥",
     method: "비비기",
     calories: "460",

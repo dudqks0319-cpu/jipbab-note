@@ -321,7 +321,7 @@ export function calculateRecipeRecommendationScore(
   const score = {
     matchRatePoints: match.matchRate * 10,
     missingIngredientPenalty: missingIngredientCount * 20,
-    availableIngredientPoints: availableIngredientCount * 5,
+    availableIngredientPoints: availableIngredientCount * 10,
     freshnessUrgencyPoints,
     beginnerFitPoints: calculateBeginnerFitPoints(recipe),
   };
