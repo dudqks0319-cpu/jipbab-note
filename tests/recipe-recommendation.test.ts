@@ -128,7 +128,7 @@ test("curated beginner recipes keep structured amounts and visual cues", () => {
   const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.name === "된장찌개");
 
   assert.ok(recipe);
-  assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "2큰술"));
+  assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "1.5큰술"));
   assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")));
   assert.ok(recipe.steps.some((step) => step.beginnerTip && step.visualCue));
 });

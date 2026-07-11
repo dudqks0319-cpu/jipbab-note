@@ -1,0 +1,21 @@
+order,requested_title,selected_title,recipe_id,recipe_version,test_date,tester_code,heat_source,cookware,started_at,completed_at,actual_minutes,completed,failed_step,failure_code,safety_issue,copy_change,image_change,evidence_path,status
+1,간장계란밥,간장계란밥,beginner-recipe-001,,,,,,,,,,,,,,,,pending
+2,계란볶음밥,햄야채볶음밥,beginner-recipe-016,,,,,,,,,,,,,,,,pending
+3,참치김치볶음밥,참치김치볶음밥,beginner-recipe-014,,,,,,,,,,,,,,,,pending
+4,김치볶음밥,김치볶음밥,beginner-recipe-013,,,,,,,,,,,,,,,,pending
+5,계란말이,프라이팬 계란말이,beginner-recipe-003,,,,,,,,,,,,,,,,pending
+6,계란찜,전자레인지 계란찜,beginner-recipe-002,,,,,,,,,,,,,,,,pending
+7,두부조림,두부조림,beginner-recipe-028,,,,,,,,,,,,,,,,pending
+8,감자조림,감자조림,curated-gamja-jorim,,,,,,,,,,,,,,,,pending
+9,어묵볶음,어묵볶음,beginner-recipe-051,,,,,,,,,,,,,,,,pending
+10,콩나물무침,콩나물무침,beginner-recipe-032,,,,,,,,,,,,,,,,pending
+11,된장찌개,된장찌개,beginner-recipe-067,,,,,,,,,,,,,,,,pending
+12,돼지고기 김치찌개,돼지고기 김치찌개,curated-pork-kimchi-jjigae,,,,,,,,,,,,,,,,pending
+13,미역국,미역국,beginner-recipe-064,,,,,,,,,,,,,,,,pending
+14,북엇국,북엇국,beginner-recipe-065,,,,,,,,,,,,,,,,pending
+15,제육볶음,제육볶음,curated-jeyuk-bokkeum,,,,,,,,,,,,,,,,pending
+16,간장불고기,간장마늘 닭조림,curated-soy-garlic-chicken,,,,,,,,,,,,,,,,pending
+17,잔치국수,잔치국수,beginner-recipe-081,,,,,,,,,,,,,,,,pending
+18,떡볶이,떡국떡달걀국,beginner-recipe-070,,,,,,,,,,,,,,,,pending
+19,토마토달걀볶음,토마토달걀볶음,beginner-recipe-006,,,,,,,,,,,,,,,,pending
+20,닭가슴살 채소볶음,닭가슴살양배추덮밥,beginner-recipe-170,,,,,,,,,,,,,,,,pending

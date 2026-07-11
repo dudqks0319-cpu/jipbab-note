@@ -12,13 +12,13 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase4_cook_mode_local_verified_real_data_and_device_paths_blocked"
+  phase: "phase5_core20_editorial_verified_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
   git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase0_through_phase4_content_committed_and_pushed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/current-release-state.md"
+  dirty_state: "phase5_core20_changes_pending_commit"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -138,6 +138,31 @@ phase4_cook_mode:
   production_deploy_status: "deployed_real_device_qa_pending"
   evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
 
+phase5_core20:
+  audit: "docs/phase-5-core-20-audit.md"
+  audit_csv: "docs/phase-5-core-20-audit.csv"
+  actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
+  selected_recipe_count: 20
+  exact_or_named_variant_count: 16
+  substitute_count: 4
+  automatic_editorial_score_90_plus_count: 20
+  local_bitmap_present_count: 20
+  actual_cooking_evidence_count: 0
+  beginner_human_review_count: 0
+  food_safety_human_review_count: 0
+  legal_source_human_review_count: 0
+  image_rights_human_review_count: 0
+  approved_for_publication_count: 0
+  detailed_recipe_rewrites: "프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥"
+  phase5_test_status: "verified_5_of_5"
+  full_unit_test_status: "verified_348_of_348"
+  content_gate_status: "verified"
+  production_build_status: "not_reverified_sandbox_port_block_then_external_execution_rejected_by_usage_limit"
+  last_verified_build_status: "phase0_to_phase4_a1b7e0f_38_routes"
+  secret_hygiene_status: "verified_no_tracked_env_or_release_secret_files"
+  dependency_audit_status: "not_reverified_registry_dns_enotfound_dependencies_and_lockfile_unchanged"
+  publication_status: "blocked_missing_human_evidence_and_db_source_links"
+
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
   content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
@@ -173,12 +198,16 @@ migration_history:
 local_checks:
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_339_of_339"
-    evidence: "tests/guest-session-security.test.ts"
+    status: "current_pass_348_of_348"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
     evidence: "docs/recipe-inventory.md, docs/phase-1-data-contract.md"
+  - name: "Phase 5 core 20 editorial and evidence audit"
+    command: "pnpm check:phase5-core-audit"
+    status: "current_pass_5_of_5_editorial_20_of_20_score_90_plus_publication_0_of_20"
+    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-actual-cooking-template.csv"
   - name: "Phase 1 recipe data contract"
     command: "pnpm check:phase1-data-contract"
     status: "current_pass_25_of_25"
@@ -345,8 +374,18 @@ security:
   payments_legal:
     status: "not_applicable"
     evidence: "No payment flow in current release ledger."
+  dependency_audit:
+    status: "current_run_blocked_registry_dns_dependencies_and_lockfile_unchanged"
+    evidence: "pnpm release:security-check local secret checks passed; registry audit returned ENOTFOUND"
 
 blockers:
+  - id: "P0-JIPBAB-PHASE5-HUMAN-EVIDENCE"
+    severity: "P0"
+    status: "open"
+    title: "Core 20 automatic editorial scores and local bitmap checks pass, but actual cooking, beginner, food-safety, legal-source, image-rights, and DB source-link evidence are 0/20."
+    owner: "ContentQA+BeginnerTesters+FoodSafety+Legal"
+    evidence: "docs/phase-5-core-20-audit.md"
+    due: "before_any_phase5_recipe_publication"
   - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
     severity: "P0"
     status: "open"
@@ -433,6 +472,6 @@ blockers:
     due: "before_cloudflare_primary"
 
 next_action:
-  owner: "FullStackDev+DBA"
-  command: "Reconcile remote migration history and validate the Phase 0 publication/auth, Phase 1 schema/catalog, and Phase 2 distributed-rate-limit migrations in staging before any production deploy."
-  description: "Keep anonymous auth disabled, obtain a restorable backup, register a server-only rate-limit secret, execute capture/restore and auth negative tests, and verify API v1 200/400/429/503 paths with a reviewed staging fixture before client cutover."
+  owner: "ContentQA+BeginnerTesters"
+  command: "Run Wave 1 actual cooking tests from docs/phase-5-actual-cooking-template.csv and record successes, failures, safety issues, copy changes, image changes, and evidence paths."
+  description: "Do not publish or set human-review flags from code. Record failed attempts as well as successful attempts, then route evidence to separate beginner, food-safety, legal-source, and image-rights reviewers before any DB publication change."

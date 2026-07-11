@@ -1577,6 +1577,9 @@ function inferRequiredTools(title: string): string[] {
 }
 
 function inferMinutes(title: string): number {
+  if (title === "프라이팬 계란말이") return 15;
+  if (title === "두부조림") return 18;
+  if (title === "된장찌개") return 18;
   if (title === "스팸무스비") return 12;
   if (title === "가지토마토볶음") return 10;
   if (title === "김치어묵볶음") return 10;
@@ -1867,9 +1870,9 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
 
   if (title === "참치김치볶음밥") {
     return [
-      { name: "밥", amount: "1공기", required: true, substitute: "즉석밥 1개", beginnerNote: "찬밥이면 좋고 즉석밥은 데운 뒤 1분 식혀 씁니다." },
-      { name: "김치", amount: "3/4컵", required: true, substitute: "볶음김치 3/4컵", beginnerNote: "참치가 들어가니 김치는 김치볶음밥보다 조금 적게 잡습니다." },
-      { name: "참치캔", amount: "1/2캔", required: true, substitute: "닭가슴살 1/2팩", beginnerNote: "기름은 1큰술만 남기고 덜어내야 질척하지 않습니다." },
+      { name: "밥", amount: "200g", required: true, substitute: "즉석밥 1개", beginnerNote: "밥 1공기 정도이며 찬밥이면 좋고 즉석밥은 데운 뒤 1분 식혀 씁니다." },
+      { name: "김치", amount: "150g", required: true, substitute: "볶음김치 3/4컵", beginnerNote: "가위로 1cm 크기로 잘라야 밥과 고르게 섞입니다." },
+      { name: "참치캔", amount: "50~70g", required: true, substitute: "익힌 닭가슴살 60g", beginnerNote: "기름은 1큰술만 남기고 덜어내야 질척하지 않습니다." },
       { name: "대파", amount: "2큰술", required: false, substitute: "양파 2큰술", beginnerNote: "볶음 향을 내는 선택 재료입니다." },
       { name: "식용유", amount: "1작은술", required: true, substitute: "참치기름 1큰술", beginnerNote: "참치기름을 쓰면 식용유는 적게 넣어도 됩니다." },
       { name: "간장", amount: "1작은술", required: false, substitute: null, beginnerNote: "김치와 참치가 짜면 넣지 마세요." },
@@ -2196,6 +2199,15 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
     ingredients.push({ name, amount, required, substitute, beginnerNote });
   };
 
+  if (title === "프라이팬 계란말이") {
+    add("계란", "4개", true, "달걀 4개", "20~24cm 프라이팬에서 2~3번 나눠 말기 좋은 양입니다.");
+    add("대파", "2큰술", false, "부추 2큰술", "3~5mm보다 크지 않게 다져야 말 때 계란이 찢어지지 않습니다.");
+    add("당근", "2큰술", false, "양파 2큰술", "3~5mm 크기로 잘게 다지면 속까지 빠르게 익습니다.");
+    add("소금", "1/4작은술", true, null, "계란 4개 기준으로 티스푼의 1/4만 넣습니다.");
+    add("식용유", "1/2작은술", true, null, "키친타월로 팬에 얇게 펴 바를 양입니다.");
+    return ingredients;
+  }
+
   if (title === "간장계란밥") {
     add("계란", "2~3개", true, "달걀", "2개는 가볍게, 3개는 든든하게 먹는 양입니다.");
     add("밥", "1.5공기", true, "즉석밥 1.5개", "평소 밥공기 기준 한 공기 반입니다.");
@@ -2502,10 +2514,10 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
   }
 
   if (title === "두부조림") {
-    add("두부", "1모", true, "부침용 두부 1모", "단단한 두부가 조릴 때 덜 부서집니다.");
+    add("두부", "300g", true, "부침용 두부 1모", "1.5cm 두께로 썬 뒤 키친타월에 5분 두면 덜 튀고 덜 부서집니다.");
     add("식용유", "1큰술", true, null, "두부 겉면을 먼저 잡아줍니다.");
     add("간장", "2큰술", true, null, "조림 양념의 기준입니다.");
-    add("물", "1/2컵", true, null, "양념이 타지 않게 합니다.");
+    add("물", "100ml", true, null, "양념이 타지 않고 5~7분 조려질 수 있는 양입니다.");
     add("설탕", "1작은술", true, "올리고당 1작은술", "간장의 짠맛을 부드럽게 합니다.");
     add("대파", "2큰술", false, "양파 2큰술", "마지막 향을 더합니다.");
     add("고춧가루", "1작은술", false, null, "매운맛이 싫으면 빼도 됩니다.");
@@ -2815,12 +2827,13 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
   }
 
   if (title === "된장찌개") {
-    add("된장", "2큰술", true, null, "밥숟가락으로 평평하게 2번 넣고, 싱거우면 마지막에 조금 더 넣습니다.");
-    add("두부", "1/2모", true, "찌개용 두부 1/2모", "숟가락에 올라가는 크기로 자릅니다.");
-    add("물", "2컵", true, null, "국물 양의 기준입니다.");
-    add("애호박", "1/3개", true, "양파 1/4개", "손가락 두 마디 길이만큼 썰어 넣습니다.");
-    add("양파", "1/4개", true, null, "얇게 썰면 빨리 익습니다.");
-    add("대파", "1/2대", true, null, "마지막에 넣어 향을 냅니다.");
+    add("된장", "1.5큰술", true, null, "처음에는 1.5큰술만 풀고 싱거우면 마지막에 1작은술씩 더합니다.");
+    add("두부", "150g", true, "찌개용 두부 1/2모", "1.5cm 크기로 잘라야 숟가락에 올라가고 덜 부서집니다.");
+    add("물", "500ml", true, "멸치육수 500ml", "18~20cm 냄비 기준 국물 양입니다.");
+    add("감자", "1/2개", false, "애호박 1/3개", "1.5cm 크기로 잘라 먼저 익힙니다.");
+    add("애호박", "1/3개", true, "양파 1/4개", "1.5cm 두께로 썰면 5분 안에 익습니다.");
+    add("양파", "1/4개", true, null, "1.5cm 크기로 썰면 애호박과 익는 시간이 비슷합니다.");
+    add("대파", "1/2대", true, "쪽파 조금", "마지막 1분에 넣어 향을 냅니다.");
     return ingredients;
   }
 
@@ -3316,6 +3329,51 @@ function buildIngredients(title: string): BeginnerRecipeIngredient[] {
 }
 
 function buildSteps(title: string): BeginnerRecipeStep[] {
+  if (title === "프라이팬 계란말이") {
+    return [
+      {
+        order: 1,
+        title: "계란물 준비",
+        action: "대파와 당근을 3~5mm 크기로 다지고 계란 4개, 소금 1/4작은술과 30번 섞습니다.",
+        heat: "불 없음",
+        minutes: 4,
+        visualCue: "흰자 덩어리가 거의 없고 채소 조각이 계란물 전체에 고르게 보이면 됩니다.",
+        commonMistake: "채소가 크면 말 때 계란막이 찢어지고 가운데가 덜 익습니다.",
+        rescueTip: "큰 채소 조각은 계란물 안에서 주방가위로 더 잘게 자르세요.",
+      },
+      {
+        order: 2,
+        title: "팬 예열과 기름 코팅",
+        action: "20~24cm 프라이팬을 약불에서 30초 예열하고 식용유 1/2작은술을 키친타월로 얇게 펴 바릅니다.",
+        heat: "약불",
+        minutes: 1,
+        visualCue: "팬 전체가 살짝 반짝이지만 기름이 고인 곳은 없으면 됩니다.",
+        commonMistake: "팬이 뜨겁거나 기름이 많으면 계란이 바로 굳거나 미끄러져 말기 어렵습니다.",
+        rescueTip: "연기가 나면 불을 끄고 1분 식힌 뒤 기름을 다시 얇게 닦아 시작하세요.",
+      },
+      {
+        order: 3,
+        title: "2~3번 나눠 말기",
+        action: "계란물 1/3을 붓고 윗면이 약 70% 굳으면 끝에서 말아 팬 끝으로 민 뒤, 남은 계란물을 2~3번 나눠 같은 방법으로 이어 붙입니다.",
+        heat: "약불",
+        minutes: 6,
+        visualCue: "윗면은 흐르지 않지만 살짝 촉촉하고, 말아 둔 계란 아래로 새 계란물이 이어지면 됩니다.",
+        commonMistake: "완전히 익힌 뒤 말면 층끼리 붙지 않고 갈라집니다.",
+        rescueTip: "찢어진 부분은 다음 계란물을 얇게 부어 덮고 20초 기다린 뒤 다시 말아 주세요.",
+      },
+      {
+        order: 4,
+        title: "속까지 익히고 식히기",
+        action: "이음매를 아래로 두고 약불에서 앞뒤를 1분씩 더 익힌 뒤 접시에 옮겨 2분 식히고 1.5cm 두께로 썹니다.",
+        heat: "약불",
+        minutes: 4,
+        visualCue: "가운데를 눌렀을 때 계란물이 나오지 않고 단면이 촉촉한 노란색이면 완성입니다.",
+        commonMistake: "바로 썰면 뜨거운 속이 밀려나와 모양이 무너집니다.",
+        rescueTip: "단면에 묽은 계란물이 보이면 팬에 다시 올려 약불에서 1분 더 익히세요.",
+      },
+    ];
+  }
+
   if (title === "감자참치조림") {
     return [
       { order: 1, title: "감자와 참치 준비", action: "감자 1개는 1cm 두께 한입 크기로 썰고, 참치캔 1/2캔은 기름을 절반만 빼 둡니다.", heat: "불 없음", minutes: 3, visualCue: "감자 조각이 비슷한 크기이고 참치가 너무 마르지 않게 촉촉하면 됩니다.", commonMistake: "감자를 크게 썰면 겉만 익고 가운데가 딱딱합니다.", rescueTip: "크게 썰었다면 냄비 안에서 가위로 한 번 더 자르세요." },
@@ -3489,10 +3547,10 @@ function buildSteps(title: string): BeginnerRecipeStep[] {
 
   if (title === "두부조림") {
     return [
-      { order: 1, title: "두부 자르고 닦기", action: "두부 1모를 손가락 두께로 자르고 키친타월로 겉물기를 닦습니다.", heat: "불 없음", minutes: 3, visualCue: "두부 표면이 축축하지만 물이 흐르지 않으면 됩니다.", commonMistake: "물기가 많으면 팬에서 튀고 양념이 묽어집니다.", rescueTip: "물기가 많으면 키친타월을 새로 깔고 1분 더 두세요." },
-      { order: 2, title: "두부 먼저 부치기", action: "팬에 식용유 1큰술을 두르고 두부를 중불에서 앞뒤로 2분씩 부칩니다.", heat: "중불", minutes: 4, visualCue: "두부 겉면이 살짝 노란색으로 단단해지면 됩니다.", commonMistake: "부치지 않고 바로 조리면 두부가 쉽게 부서집니다.", rescueTip: "부서진 두부는 건드리지 말고 양념을 끼얹어 마무리하세요." },
-      { order: 3, title: "양념 넣기", action: "간장 2큰술, 물 1/2컵, 설탕 1작은술을 섞어 팬에 붓습니다.", heat: "중약불", minutes: 2, visualCue: "양념이 두부 가장자리에서 보글보글 끓으면 됩니다.", commonMistake: "물을 빼면 간장이 빨리 타고 짜집니다.", rescueTip: "양념이 빨리 졸면 물 2큰술을 더 넣으세요." },
-      { order: 4, title: "끼얹어 조리기", action: "대파를 넣고 숟가락으로 양념을 두부 위에 3~4번 끼얹은 뒤 불을 끕니다.", heat: "중약불", minutes: 3, visualCue: "팬 바닥에 양념이 조금 남고 두부에 갈색 윤기가 돌면 완성입니다.", commonMistake: "오래 뒤적이면 두부가 부서집니다.", rescueTip: "뒤집지 말고 숟가락으로 양념만 끼얹으세요." },
+      { order: 1, title: "두부 자르고 물기 빼기", action: "두부 300g을 1.5cm 두께로 자르고 키친타월 위에 5분 두어 앞뒤 물기를 뺍니다.", heat: "불 없음", minutes: 5, visualCue: "두부 표면에 흐르는 물방울이 없고 키친타월에 물 자국이 옅어지면 됩니다.", commonMistake: "물기가 많으면 기름이 튀고 두부가 팬에 달라붙습니다.", rescueTip: "키친타월을 새것으로 바꾸고 위에서도 30초 가볍게 눌러 주세요." },
+      { order: 2, title: "앞뒤로 부치기", action: "24cm 프라이팬에 식용유 1큰술을 두르고 중불에서 두부를 앞면 2~3분, 뒷면 2~3분 부칩니다.", heat: "중불", minutes: 6, visualCue: "두부 가장자리가 연한 갈색이고 뒤집개가 바닥에 무리 없이 들어가면 됩니다.", commonMistake: "겉면이 잡히기 전에 뒤집으면 두부가 찢어집니다.", rescueTip: "팬에 붙었으면 불을 약하게 낮추고 30초 기다린 뒤 뒤집개를 깊게 넣으세요." },
+      { order: 3, title: "양념 붓기", action: "간장 2큰술, 물 100ml, 설탕 1작은술을 섞어 팬에 붓고 중약불로 낮춥니다.", heat: "중약불", minutes: 1, visualCue: "양념이 두부 높이의 절반보다 낮고 가장자리에서 작은 거품이 나면 됩니다.", commonMistake: "간장만 붓거나 센불을 유지하면 양념이 바로 타고 짜집니다.", rescueTip: "양념이 빠르게 줄면 물 2큰술을 추가하고 불을 약불로 낮추세요." },
+      { order: 4, title: "5~7분 조리기", action: "대파를 넣고 중약불에서 5~7분 동안 양념을 3~4번 끼얹으며 조립니다.", heat: "중약불", minutes: 6, visualCue: "두부에 갈색 윤기가 돌고 팬 바닥에 양념이 2~3큰술 남으면 완성입니다.", commonMistake: "두부를 계속 뒤집으면 부서지고 양념을 모두 말리면 짜집니다.", rescueTip: "두부가 부서지면 더 건드리지 말고 양념만 끼얹고, 너무 졸면 물 2큰술을 넣고 불을 끄세요." },
     ];
   }
 
@@ -3543,10 +3601,10 @@ function buildSteps(title: string): BeginnerRecipeStep[] {
 
   if (title === "참치김치볶음밥") {
     return [
-      { order: 1, title: "참치와 김치 준비", action: "참치캔 1/2캔은 기름 1큰술만 남기고 덜어내고, 김치는 잘게 자릅니다.", heat: "불 없음", minutes: 2, visualCue: "참치가 촉촉하지만 캔 바닥에 기름이 흥건하지 않으면 됩니다.", commonMistake: "참치 기름을 모두 넣으면 볶음밥이 질척하고 느끼합니다.", rescueTip: "기름이 많아졌다면 키친타월로 팬 가장자리를 살짝 닦으세요." },
-      { order: 2, title: "김치 볶기", action: "팬에 식용유 1작은술과 김치를 넣고 중불에서 3분 볶습니다.", heat: "중불", minutes: 3, visualCue: "김치가 부드러워지고 팬 바닥의 물기가 줄면 됩니다.", commonMistake: "김치를 덜 볶으면 신맛과 물기가 그대로 남습니다.", rescueTip: "신맛이 강하면 설탕 1/2작은술을 넣고 30초 더 볶으세요." },
-      { order: 3, title: "참치와 밥 넣기", action: "참치와 밥 1공기를 넣고 밥덩어리를 풀며 2분 볶습니다.", heat: "중불", minutes: 2, visualCue: "참치가 밥 사이에 작게 퍼지고 밥알이 붉게 보이면 됩니다.", commonMistake: "참치를 오래 볶으면 퍽퍽해집니다.", rescueTip: "퍽퍽하면 물 1큰술이나 김치국물 1큰술을 넣어 섞으세요." },
-      { order: 4, title: "간 보고 담기", action: "한입 맛보고 싱거울 때만 간장 1작은술을 넣고 김가루나 참깨를 뿌립니다.", heat: "불 없음", minutes: 1, visualCue: "팬 바닥에 물기가 거의 없고 밥알이 따로 움직이면 완성입니다.", commonMistake: "참치와 김치가 이미 짠데 간장을 많이 넣기 쉽습니다.", rescueTip: "짜면 밥이나 계란프라이를 추가하세요." },
+      { order: 1, title: "정량 준비", action: "밥 200g, 김치 150g, 참치 50~70g을 준비하고 김치는 1cm 크기로 자르며 참치 기름은 1큰술만 남깁니다.", heat: "불 없음", minutes: 3, visualCue: "김치 조각이 숟가락에 쉽게 올라가고 참치캔 바닥에 기름이 고이지 않으면 됩니다.", commonMistake: "참치 기름을 모두 넣으면 볶음밥이 질척하고 느끼합니다.", rescueTip: "기름이 많아졌다면 팬에 넣기 전 키친타월로 참치를 한 번 눌러 주세요." },
+      { order: 2, title: "파 향 내고 김치 볶기", action: "24~26cm 프라이팬에 식용유 1작은술과 대파를 넣어 중불에서 1분 볶은 뒤 김치를 넣고 3분 더 볶습니다.", heat: "중불", minutes: 4, visualCue: "대파 향이 나고 김치색이 진해지며 팬 바닥의 물기가 거의 없어지면 됩니다.", commonMistake: "김치를 덜 볶으면 신맛과 물기가 남아 밥이 질척해집니다.", rescueTip: "물이 많으면 밥을 넣기 전에 중불에서 1분 더 볶아 날리세요." },
+      { order: 3, title: "참치와 밥 볶기", action: "참치와 밥 200g을 넣고 뒤집개로 밥덩어리를 누르며 중불에서 3~4분 볶습니다.", heat: "중불", minutes: 4, visualCue: "참치가 밥 사이에 고르게 퍼지고 밥알이 붉게 물들어 팬에서 따로 움직이면 됩니다.", commonMistake: "참치를 오래 센불에 볶으면 퍽퍽하고 밥은 팬에 붙습니다.", rescueTip: "퍽퍽하면 물 1큰술을 팬 가장자리에 넣고 약불에서 30초만 섞으세요." },
+      { order: 4, title: "간 보고 완성", action: "불을 끄고 한입 맛본 뒤 싱거울 때만 간장 1작은술을 넣고 김가루나 참깨를 뿌립니다.", heat: "불 없음", minutes: 1, visualCue: "팬 바닥에 물이나 기름이 고이지 않고 밥알이 고슬고슬하면 완성입니다.", commonMistake: "김치와 참치의 짠맛을 확인하지 않고 간장을 먼저 넣으면 되돌리기 어렵습니다.", rescueTip: "짜면 밥 100g이나 완숙 계란프라이 1개를 추가해 간을 낮추세요." },
     ];
   }
 
@@ -6678,43 +6736,43 @@ function buildSteps(title: string): BeginnerRecipeStep[] {
     return [
       {
         order: 1,
-        title: "된장 풀기",
-        action: "냄비에 물 2컵과 된장 1큰술을 넣고 숟가락으로 풀어 중불에 올립니다.",
-        heat: "중불",
+        title: "재료 1.5cm로 준비",
+        action: "감자, 애호박, 양파는 1.5cm 크기로 자르고 두부 150g도 비슷한 크기로 따로 둡니다.",
+        heat: "불 없음",
         minutes: 3,
-        visualCue: "된장 덩어리가 거의 풀리고 국물이 고르게 베이지색이면 됩니다.",
-        commonMistake: "된장을 덩어리째 끓이면 한입이 너무 짤 수 있습니다.",
-        rescueTip: "덩어리가 보이면 숟가락으로 눌러 더 풀어 주세요.",
+        visualCue: "채소와 두부가 숟가락에 한두 조각씩 올라가는 비슷한 크기면 됩니다.",
+        commonMistake: "감자를 크게 자르면 다른 재료가 익어도 가운데가 딱딱합니다.",
+        rescueTip: "큰 감자 조각은 냄비에 넣기 전에 1.5cm 크기로 한 번 더 자르세요.",
       },
       {
         order: 2,
-        title: "채소 먼저 넣기",
-        action: "애호박이나 양파가 있으면 얇게 썰어 넣고 중불에서 3분 끓입니다.",
+        title: "된장 풀고 감자 익히기",
+        action: "18~20cm 냄비에 물 500ml와 된장 1.5큰술을 풀고 감자를 넣어 끓기 시작한 뒤 중불에서 5분 끓입니다.",
         heat: "중불",
-        minutes: 3,
-        visualCue: "채소 가장자리가 살짝 투명해지면 두부를 넣을 때입니다.",
-        commonMistake: "채소를 두껍게 넣으면 두부가 익어도 채소가 딱딱합니다.",
-        rescueTip: "두꺼우면 2분 더 끓인 뒤 두부를 넣으세요.",
+        minutes: 7,
+        visualCue: "된장 덩어리가 없고 감자 가장자리가 살짝 반투명하면 됩니다.",
+        commonMistake: "된장을 2큰술 이상 처음부터 넣으면 졸아들수록 짜집니다.",
+        rescueTip: "이미 짜면 물 100ml를 더 넣고 다시 끓여 간을 낮추세요.",
       },
       {
         order: 3,
-        title: "두부 넣기",
-        action: "두부 1/2모를 숟가락에 올라가는 크기로 넣고 3분 더 끓입니다.",
+        title: "애호박과 두부 익히기",
+        action: "애호박, 양파, 두부를 넣고 중불에서 5분 더 끓입니다.",
         heat: "중불",
-        minutes: 3,
-        visualCue: "두부가 따뜻해지고 국물이 다시 보글거리면 됩니다.",
-        commonMistake: "두부를 세게 저으면 부서져 국물이 탁해집니다.",
-        rescueTip: "부서져도 먹을 수 있으니 더 젓지 말고 그대로 끓이세요.",
+        minutes: 5,
+        visualCue: "감자는 젓가락이 들어가고 애호박 가장자리는 투명하며 두부는 가운데까지 뜨거우면 됩니다.",
+        commonMistake: "두부를 넣은 뒤 세게 저으면 부서지고 국물이 탁해집니다.",
+        rescueTip: "감자가 딱딱하면 두부를 건드리지 말고 2분 더 끓이세요.",
       },
       {
         order: 4,
         title: "간 보고 완성",
-        action: "국물을 맛보고 싱거우면 된장 1작은술만 더 풀고 대파가 있으면 올립니다.",
+        action: "약불로 낮춰 국물을 맛보고 싱거울 때만 된장 1작은술을 국물에 따로 풀어 넣고 대파를 넣어 1분 끓입니다.",
         heat: "약불",
         minutes: 1,
-        visualCue: "국물이 따뜻하고 두부가 부드러우며 너무 짜지 않으면 완성입니다.",
-        commonMistake: "된장을 큰술로 또 넣으면 금방 짜집니다.",
-        rescueTip: "짜면 물 1/2컵을 넣고 1분 더 끓이세요.",
+        visualCue: "국물이 구수하지만 짜지 않고 감자와 애호박이 숟가락으로 쉽게 잘리면 완성입니다.",
+        commonMistake: "된장을 덩어리째 추가하면 한쪽만 짜고 덩어리가 남습니다.",
+        rescueTip: "짜면 물 100ml를 넣고 1분 더 끓이고, 싱거우면 된장 1작은술만 추가하세요.",
       },
     ];
   }
@@ -9034,6 +9092,38 @@ function buildSteps(title: string): BeginnerRecipeStep[] {
 }
 
 function buildBeforeStart(title: string): string[] {
+  if (title === "프라이팬 계란말이") {
+    return [
+      "20~24cm 프라이팬, 뒤집개, 키친타월을 준비하고 팬이 큰 경우 계란물을 더 얇게 붓습니다.",
+      "대파와 당근은 3~5mm 크기로 다지고 계란 4개, 소금 1/4작은술을 먼저 섞습니다.",
+      "식용유 1/2작은술은 키친타월로 얇게 펴 바르고, 약불에서 천천히 말 준비를 합니다.",
+    ];
+  }
+
+  if (title === "두부조림") {
+    return [
+      "24cm 프라이팬과 넓은 뒤집개를 준비하고 부침용 두부 300g을 1.5cm 두께로 자릅니다.",
+      "두부를 키친타월 위에 5분 두어 물기를 빼고 간장 2큰술, 물 100ml, 설탕 1작은술을 섞습니다.",
+      "기름이 튈 수 있으니 젖은 손과 조리도구의 물기를 닦고 팬 손잡이를 안쪽으로 둡니다.",
+    ];
+  }
+
+  if (title === "된장찌개") {
+    return [
+      "18~20cm 냄비에 물 500ml를 준비하고 된장은 1.5큰술만 먼저 덜어 둡니다.",
+      "감자, 애호박, 양파는 1.5cm 크기로 맞추고 두부는 마지막에 넣을 수 있게 따로 둡니다.",
+      "된장은 더 넣기 쉽지만 빼기 어려우므로 마지막 간 보기 전에는 추가하지 않습니다.",
+    ];
+  }
+
+  if (title === "참치김치볶음밥") {
+    return [
+      "24~26cm 프라이팬에 밥 200g, 김치 150g, 참치 50~70g을 각각 계량해 둡니다.",
+      "김치는 1cm 크기로 자르고 참치 기름은 1큰술만 남겨 팬 바닥이 흥건해지지 않게 합니다.",
+      "김치와 참치는 이미 짤 수 있으므로 간장은 완성 직전에 맛을 본 뒤 1작은술만 선택합니다.",
+    ];
+  }
+
   const noFireStart = isNoFireRecipe(title) || title === "냉두부" || title === "오이무침" || title === "깻잎무침" || title === "깻잎두부무침";
 
   return [
@@ -9048,6 +9138,7 @@ function buildBeforeStart(title: string): string[] {
 }
 
 function inferBeginnerScore(title: string, releaseTier: RecipeReleaseTier): number {
+  if (["프라이팬 계란말이", "참치김치볶음밥", "두부조림", "된장찌개"].includes(title)) return 92;
   if (RECIPE_NAME_SETS.onboarding.has(title)) return 92;
   let score = releaseTier === "release_30" ? 88 : releaseTier === "core_50" ? 85 : 82;
   if (isNoFireRecipe(title)) score += 5;
@@ -9189,6 +9280,38 @@ function buildSuccessCheck(title: string): string[] {
   const specificSuccessCheck =
     BEGINNER_RECIPE_SUCCESS_CHECKS_113_TO_120.get(title) ?? BEGINNER_RECIPE_SUCCESS_CHECKS_121_TO_176.get(title);
   if (specificSuccessCheck) return specificSuccessCheck;
+
+  if (title === "프라이팬 계란말이") {
+    return [
+      "단면에 묽은 계란물이 없고 채소 조각이 3~5mm 크기로 고르게 익었습니다.",
+      "겉면은 타지 않은 연한 노란색이고 1.5cm 두께로 썰어도 층이 크게 풀리지 않습니다.",
+      "찢어진 곳이 있어도 새 계란물로 이어 붙여 가운데까지 뜨겁게 익었습니다.",
+    ];
+  }
+
+  if (title === "참치김치볶음밥") {
+    return [
+      "밥알 전체가 붉게 물들고 참치가 고르게 퍼져 큰 밥 덩어리가 없습니다.",
+      "팬 바닥에 물이나 기름이 고이지 않고 밥알이 따로 움직입니다.",
+      "간장을 넣기 전 맛을 확인해 김치와 참치의 짠맛이 강하지 않습니다.",
+    ];
+  }
+
+  if (title === "두부조림") {
+    return [
+      "두부 겉면이 연한 갈색이고 가운데까지 따뜻하며 크게 부서지지 않았습니다.",
+      "간장 양념이 두부에 묻고 팬 바닥에는 양념이 2~3큰술 남았습니다.",
+      "물 100ml로 5~7분 조려 짜거나 타지 않고 밥과 함께 먹기 좋은 간입니다.",
+    ];
+  }
+
+  if (title === "된장찌개") {
+    return [
+      "감자에 젓가락이 들어가고 애호박 가장자리는 투명하며 두부 가운데까지 뜨겁습니다.",
+      "된장 덩어리가 없고 국물을 맛봤을 때 짜지 않은 구수한 맛이 납니다.",
+      "처음 넣은 된장 1.5큰술에서 간을 확인한 뒤 필요한 경우에만 1작은술을 추가했습니다.",
+    ];
+  }
 
   if (title === "북엇국") {
     return [
