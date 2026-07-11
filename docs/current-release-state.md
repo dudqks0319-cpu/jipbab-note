@@ -2,6 +2,16 @@
 
 Updated: 2026-07-11 KST
 
+## 2026-07-11 Phase 6 SECURITY DEFINER 권한 보강
+
+- 구현 커밋 `c5e06f4d7771fc88529e789319f0145024548c22`에서 migration `20260711113000_harden_security_definer_privileges.sql`과 fail-closed rollback을 추가했다.
+- 계정 삭제 trigger 함수의 search path를 `pg_catalog, public, auth`로 고정하고 app/service 역할의 직접 EXECUTE를 회수했다. signed-session 이후 사용되지 않는 `family_group_member_count(uuid)` definer는 non-cascade drop으로 제거했다.
+- 가족 helper/RPC는 `authenticated`만, 익명 병합·레시피 버전·분산 레이트 리밋 함수는 `service_role`만 실행하도록 최종 권한을 다시 고정했다.
+- 검증: definer 계약 14/14, 관련 집중 테스트 29/29, Supabase 계약 146/146, 전체 unit 366/366, integration pass, release security 4/4, production build 38/38 routes.
+- `pnpm release:check`는 기존 11개가 통과하고 Phase 5 사람 증거 0/20 한 항목에서만 의도대로 실패한다.
+- Docker와 `psql`이 없어 isolated PostgreSQL 실행은 아직 못 했고 remote migration history도 불일치하므로 Supabase production에는 적용하지 않았다. 기존 Vercel production·Preview도 변경하지 않았다.
+- Evidence: `docs/phase-6-security-definer-review.md`.
+
 ## 2026-07-11 Phase 5 핵심 20개 레시피 편집 감사
 
 - Phase 5 기본 콘텐츠는 `b3774145285077290c04c2d91515f12981beb4f3`, 실제 조리 증거 보존 수정은 `992e2ced41db4df47c4b5dff1182d630ca2425d5`, 사람 검수 실행 패킷과 출시 하드 게이트는 `1d77369b6c9ca55cb0278f0183256e1f71aab668`, 현재 검증 체크포인트는 `3d01c1b13627265b38429d6736c12e7e55bc5795`다. 이 커밋들은 사람 검증·DB 공개·production 배포 승인을 뜻하지 않는다.

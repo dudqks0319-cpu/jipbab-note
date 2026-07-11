@@ -12,13 +12,13 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase5_core20_editorial_verified_human_cooking_blocked"
+  phase: "phase6_security_definer_hardened_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "3d01c1b13627265b38429d6736c12e7e55bc5795"
+  git_sha: "c5e06f4d7771fc88529e789319f0145024548c22"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase5_verified_checkpoint_committed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
+  dirty_state: "phase6_security_checkpoint_committed"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/current-release-state.md"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -192,6 +192,26 @@ phase5_vercel_preview:
   production_promoted: false
   production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_and_db_source_links_missing"
 
+phase6_quality_security:
+  implementation_git_sha: "c5e06f4d7771fc88529e789319f0145024548c22"
+  report: "docs/phase-6-security-definer-review.md"
+  migration: "20260711113000_harden_security_definer_privileges.sql"
+  rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql"
+  security_definer_contract_status: "verified_14_of_14"
+  security_definer_effective_count: 11
+  removed_unused_security_definer_count: 1
+  focused_security_test_status: "verified_29_of_29"
+  full_unit_test_status: "verified_366_of_366"
+  supabase_contract_status: "verified_146_of_146"
+  integration_status: "verified_zero_unreviewed_exposed_and_signed_session_negative_paths"
+  release_security_status: "verified_4_of_4"
+  production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  release_gate_status: "11_pass_1_expected_fail_phase5_human_evidence"
+  isolated_postgres_execution_status: "blocked_no_docker_or_psql"
+  production_migration_status: "not_applied"
+  production_deploy_status: "not_deployed"
+  p0_p1_claim: "not_complete_external_and_human_evidence_blockers_remain"
+
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
   content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
@@ -222,9 +242,18 @@ migration_history:
   phase1_schema_migration_recorded_remote: false
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: false
+  phase6_security_definer_migration_recorded_remote: false
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
+  - name: "Phase 6 SECURITY DEFINER contract"
+    command: "pnpm check:security-definer"
+    status: "current_pass_14_of_14"
+    evidence: "docs/phase-6-security-definer-review.md"
+  - name: "Phase 6 focused security regression"
+    command: "node --experimental-strip-types --test tests/security-definer-contract.test.ts tests/account-deletion-cascade.test.ts tests/guest-session-security.test.ts tests/family-share.test.ts tests/release-security.test.ts"
+    status: "current_pass_29_of_29"
+    evidence: "tests/security-definer-contract.test.ts"
   - name: "Frozen dependency installation"
     command: "pnpm install --frozen-lockfile"
     status: "current_pass_lockfile_unchanged"
@@ -400,8 +429,8 @@ security:
     status: "local_secret_files_0600_and_git_ignored"
     evidence: "docs/phase-0-baseline-2026-07-10.md"
   authz:
-    status: "local_fix_verified_production_migration_and_deploy_pending"
-    evidence: "docs/guest-session-security.md"
+    status: "local_phase6_definer_hardening_verified_production_migrations_pending"
+    evidence: "docs/guest-session-security.md, docs/phase-6-security-definer-review.md"
   api_abuse_controls:
     status: "local_contract_verified_staging_secret_and_proxy_trust_pending"
     evidence: "docs/phase-2-api-v1-report.md"
@@ -413,7 +442,7 @@ security:
     evidence: "No payment flow in current release ledger."
   dependency_audit:
     status: "current_pass_no_known_production_vulnerabilities_at_moderate_or_higher"
-    evidence: "pnpm release:security-check passed 3 of 3"
+    evidence: "pnpm release:security-check passed 4 of 4"
 
 blockers:
   - id: "P0-JIPBAB-PHASE5-HUMAN-EVIDENCE"
@@ -465,6 +494,13 @@ blockers:
     owner: "FullStackDev+DBA+ContentQA"
     evidence: "docs/phase-2-api-v1-report.md"
     due: "before_any_api_v1_client_cutover"
+  - id: "P0-JIPBAB-PHASE6-DEFINER-ROLLOUT"
+    severity: "P0"
+    status: "local_contract_verified_staging_execution_pending"
+    title: "SECURITY DEFINER search paths and EXECUTE grants are hardened locally, but the migration and fail-closed rollback have not run in isolated PostgreSQL or production."
+    owner: "FullStackDev+DBA+Security"
+    evidence: "docs/phase-6-security-definer-review.md"
+    due: "before_next_supabase_production_rollout"
   - id: "P0-JIPBAB-IOS-FULL-QA"
     severity: "P0"
     status: "resolved"
