@@ -15,9 +15,9 @@ candidate:
   phase: "phase5_core20_editorial_verified_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
+  git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase5_core20_changes_pending_commit"
+  dirty_state: "phase5_core20_checkpoint_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -139,6 +139,7 @@ phase4_cook_mode:
   evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
 
 phase5_core20:
+  implementation_git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
   audit: "docs/phase-5-core-20-audit.md"
   audit_csv: "docs/phase-5-core-20-audit.csv"
   actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
@@ -154,14 +155,15 @@ phase5_core20:
   image_rights_human_review_count: 0
   approved_for_publication_count: 0
   detailed_recipe_rewrites: "프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥"
-  phase5_test_status: "verified_5_of_5"
-  full_unit_test_status: "verified_348_of_348"
+  phase5_test_status: "verified_7_of_7_including_evidence_preservation_and_incompatible_template_fail_closed"
+  full_unit_test_status: "verified_350_of_350"
   content_gate_status: "verified"
   production_build_status: "not_reverified_sandbox_port_block_then_external_execution_rejected_by_usage_limit"
   last_verified_build_status: "phase0_to_phase4_a1b7e0f_38_routes"
   secret_hygiene_status: "verified_no_tracked_env_or_release_secret_files"
   dependency_audit_status: "not_reverified_registry_dns_enotfound_dependencies_and_lockfile_unchanged"
   publication_status: "blocked_missing_human_evidence_and_db_source_links"
+  actual_cooking_template_preservation: "verified_existing_compatible_records_preserved_incompatible_selection_fails_closed"
 
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
@@ -198,7 +200,7 @@ migration_history:
 local_checks:
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_348_of_348"
+    status: "current_pass_350_of_350"
     evidence: "tests/phase-5-core-recipe-audit.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
@@ -206,7 +208,7 @@ local_checks:
     evidence: "docs/recipe-inventory.md, docs/phase-1-data-contract.md"
   - name: "Phase 5 core 20 editorial and evidence audit"
     command: "pnpm check:phase5-core-audit"
-    status: "current_pass_5_of_5_editorial_20_of_20_score_90_plus_publication_0_of_20"
+    status: "current_pass_7_of_7_editorial_20_of_20_score_90_plus_publication_0_of_20"
     evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-actual-cooking-template.csv"
   - name: "Phase 1 recipe data contract"
     command: "pnpm check:phase1-data-contract"

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
@@ -6,6 +9,7 @@ import {
   PHASE5_CORE_20_SELECTIONS,
   buildPhase5Artifacts,
   checkPhase5Artifacts,
+  writePhase5Artifacts,
 } from "../scripts/generate-phase-5-core-recipe-audit.mjs";
 
 const cwd = process.cwd();
@@ -80,4 +84,44 @@ test("계획서 지정 6개 레시피는 계량, 도구, 시간, 복구 기준�
 
 test("커밋된 Phase 5 감사 산출물은 현재 소스와 일치한다", () => {
   assert.deepEqual(checkPhase5Artifacts(cwd).stale, []);
+});
+
+test("감사 재생성은 입력된 실제 조리 증거를 덮어쓰지 않는다", () => {
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "jipbab-phase5-"));
+  const templatePath = path.join(tempRoot, "docs/phase-5-actual-cooking-template.csv");
+  mkdirSync(path.dirname(templatePath), { recursive: true });
+
+  const emptyTemplate = buildPhase5Artifacts(cwd).files["docs/phase-5-actual-cooking-template.csv"];
+  const populatedTemplate = emptyTemplate.replace("beginner-recipe-001,,", "beginner-recipe-001,v1,");
+  assert.notEqual(populatedTemplate, emptyTemplate);
+  writeFileSync(templatePath, populatedTemplate, "utf8");
+
+  try {
+    writePhase5Artifacts(tempRoot);
+    assert.equal(readFileSync(templatePath, "utf8"), populatedTemplate);
+    assert.deepEqual(checkPhase5Artifacts(tempRoot).stale, []);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("현재 선택과 맞지 않는 실제 조리 기록은 덮어쓰지 않고 감사를 중단한다", () => {
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "jipbab-phase5-"));
+  const templatePath = path.join(tempRoot, "docs/phase-5-actual-cooking-template.csv");
+  mkdirSync(path.dirname(templatePath), { recursive: true });
+
+  const incompatibleTemplate = buildPhase5Artifacts(cwd).files[
+    "docs/phase-5-actual-cooking-template.csv"
+  ].replace("beginner-recipe-001", "retired-recipe-001");
+  writeFileSync(templatePath, incompatibleTemplate, "utf8");
+
+  try {
+    assert.throws(
+      () => writePhase5Artifacts(tempRoot),
+      /actual cooking evidence is incompatible/u,
+    );
+    assert.equal(readFileSync(templatePath, "utf8"), incompatibleTemplate);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
 });

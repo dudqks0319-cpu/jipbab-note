@@ -29,6 +29,29 @@ export const PHASE5_CORE_20_SELECTIONS = [
 
 const VAGUE_PHRASES = ["적당히", "노릇하게", "익을 때까지"];
 const BITMAP_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
+const COOKING_TEMPLATE_PATH = "docs/phase-5-actual-cooking-template.csv";
+const COOKING_TEMPLATE_COLUMNS = [
+  "order",
+  "requested_title",
+  "selected_title",
+  "recipe_id",
+  "recipe_version",
+  "test_date",
+  "tester_code",
+  "heat_source",
+  "cookware",
+  "started_at",
+  "completed_at",
+  "actual_minutes",
+  "completed",
+  "failed_step",
+  "failure_code",
+  "safety_issue",
+  "copy_change",
+  "image_change",
+  "evidence_path",
+  "status",
+];
 
 function nonBlank(value) {
   return typeof value === "string" && value.trim().length > 0;
@@ -181,6 +204,64 @@ function toCsv(columns, rows) {
   return `${columns.join(",")}\n${rows.map((row) => columns.map((column) => csvValue(row[column])).join(",")).join("\n")}\n`;
 }
 
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    const next = text[index + 1];
+    if (quoted && character === '"' && next === '"') {
+      cell += '"';
+      index += 1;
+    } else if (character === '"') {
+      quoted = !quoted;
+    } else if (!quoted && character === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (!quoted && character === "\n") {
+      row.push(cell.replace(/\r$/u, ""));
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += character;
+    }
+  }
+
+  if (quoted) return null;
+  if (cell || row.length > 0) {
+    row.push(cell.replace(/\r$/u, ""));
+    rows.push(row);
+  }
+  return rows;
+}
+
+function cookingTemplateIsCompatible(text, audits) {
+  const parsedRows = parseCsvRows(text);
+  if (!parsedRows || parsedRows.length === 0) return false;
+  const [header, ...rows] = parsedRows;
+  const dataRows = rows.filter((values) => values.some(Boolean));
+  if (
+    header.length !== COOKING_TEMPLATE_COLUMNS.length ||
+    !header.every((column, index) => column === COOKING_TEMPLATE_COLUMNS[index]) ||
+    dataRows.length !== audits.length
+  ) {
+    return false;
+  }
+
+  return dataRows.every(
+    (values, index) =>
+      values.length === COOKING_TEMPLATE_COLUMNS.length &&
+      values[0] === String(audits[index].order) &&
+      values[1] === audits[index].requestedTitle &&
+      values[2] === audits[index].selectedTitle &&
+      values[3] === audits[index].recipe.id,
+  );
+}
+
 function auditCsv(audits) {
   const columns = [
     "order",
@@ -226,30 +307,8 @@ function auditCsv(audits) {
 }
 
 function cookingTemplateCsv(audits) {
-  const columns = [
-    "order",
-    "requested_title",
-    "selected_title",
-    "recipe_id",
-    "recipe_version",
-    "test_date",
-    "tester_code",
-    "heat_source",
-    "cookware",
-    "started_at",
-    "completed_at",
-    "actual_minutes",
-    "completed",
-    "failed_step",
-    "failure_code",
-    "safety_issue",
-    "copy_change",
-    "image_change",
-    "evidence_path",
-    "status",
-  ];
   return toCsv(
-    columns,
+    COOKING_TEMPLATE_COLUMNS,
     audits.map((audit) => ({
       order: audit.order,
       requested_title: audit.requestedTitle,
@@ -297,7 +356,7 @@ export function buildPhase5Artifacts(cwd = process.cwd()) {
     files: {
       "docs/phase-5-core-20-audit.csv": auditCsv(audits),
       "docs/phase-5-core-20-audit.md": auditMarkdown(audits),
-      "docs/phase-5-actual-cooking-template.csv": cookingTemplateCsv(audits),
+      [COOKING_TEMPLATE_PATH]: cookingTemplateCsv(audits),
     },
   };
 }
@@ -305,7 +364,17 @@ export function buildPhase5Artifacts(cwd = process.cwd()) {
 export function writePhase5Artifacts(cwd = process.cwd()) {
   const artifacts = buildPhase5Artifacts(cwd);
   for (const [relativePath, content] of Object.entries(artifacts.files)) {
-    writeFileSync(path.join(cwd, relativePath), content, "utf8");
+    const absolutePath = path.join(cwd, relativePath);
+    if (relativePath === COOKING_TEMPLATE_PATH && existsSync(absolutePath)) {
+      const existingTemplate = readFileSync(absolutePath, "utf8");
+      if (!cookingTemplateIsCompatible(existingTemplate, artifacts.audits)) {
+        throw new Error(
+          `Phase 5 actual cooking evidence is incompatible with the current selection; reconcile it manually: ${relativePath}`,
+        );
+      }
+      continue;
+    }
+    writeFileSync(absolutePath, content, "utf8");
   }
   return artifacts;
 }
@@ -315,7 +384,12 @@ export function checkPhase5Artifacts(cwd = process.cwd()) {
   const stale = Object.entries(artifacts.files)
     .filter(([relativePath, expected]) => {
       const absolutePath = path.join(cwd, relativePath);
-      return !existsSync(absolutePath) || readFileSync(absolutePath, "utf8") !== expected;
+      if (!existsSync(absolutePath)) return true;
+      const actual = readFileSync(absolutePath, "utf8");
+      if (relativePath === COOKING_TEMPLATE_PATH) {
+        return !cookingTemplateIsCompatible(actual, artifacts.audits);
+      }
+      return actual !== expected;
     })
     .map(([relativePath]) => relativePath);
   return { ...artifacts, stale };
