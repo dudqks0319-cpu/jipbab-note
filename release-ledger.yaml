@@ -15,9 +15,9 @@ candidate:
   phase: "phase6_accessibility_security_hardened_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
+  git_sha: "ce855a6f7ba1396513bf9d2a258850a5f44e9a25"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_accessibility_checkpoint_committed"
+  dirty_state: "phase6_preview_deployment_record_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -222,7 +222,29 @@ phase6_quality_security:
   production_migration_status: "not_applied"
   production_deploy_status: "not_deployed"
   accessibility_production_deploy_status: "not_deployed"
+  accessibility_preview_deploy_status: "deployed_ready"
   p0_p1_claim: "not_complete_external_and_human_evidence_blockers_remain"
+
+phase6_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  implementation_git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
+  deployed_git_sha: "ce855a6f7ba1396513bf9d2a258850a5f44e9a25"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_2aCT3GhGL5s9Zb7B22AoJhxZgWkM"
+  deployment_url: "https://jipbab-note-chz9fy0f1-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  exact_mobile_runtime_status: "verified_360_390_430_17_controls_each_zero_undersized_zero_overflow"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
 
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"

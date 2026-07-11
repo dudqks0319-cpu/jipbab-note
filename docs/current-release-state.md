@@ -2,6 +2,15 @@
 
 Updated: 2026-07-11 KST
 
+## 2026-07-11 Phase 6 GitHub·Vercel Preview 배포
+
+- 구현 `f9866d659804b2be04c29c46084b3085ba15bca8`과 접근성 체크포인트 `ce855a6f7ba1396513bf9d2a258850a5f44e9a25`를 `origin/ux/home-today-action-v2`에 push했다.
+- 같은 `ce855a6f7ba1396513bf9d2a258850a5f44e9a25`를 Vercel Preview `dpl_2aCT3GhGL5s9Zb7B22AoJhxZgWkM` (`https://jipbab-note-chz9fy0f1-youngbeens-projects.vercel.app`)로 배포했고 상태는 `READY`다.
+- 원격 build는 compile, TypeScript, 38/38 routes를 통과했다. 배포 후 `/`와 `/recipe`는 HTTP 200이다.
+- `/api/v1/recipes?limit=1`은 migration과 `API_RATE_LIMIT_HMAC_SECRET` 미적용 때문에 예상된 redacted 503, `Retry-After: 60`, `Cache-Control: no-store`, `X-Request-Id`를 반환한다.
+- 새 Preview 자체를 CDP 360/390/430px로 다시 측정해 각 너비에서 보이는 컨트롤 17개, 44px 미만 0개, 가로 overflow 0을 확인했다.
+- Phase 5 사람 증거 0/20, migration history 불일치, Supabase production 미적용 때문에 production alias `https://jipbab-note-app.vercel.app`는 승격하지 않았다.
+
 ## 2026-07-11 Phase 6 모바일 접근성·LCP
 
 - 구현 커밋 `f9866d659804b2be04c29c46084b3085ba15bca8`에서 홈과 공통 인터랙션의 44px 터치 타깃 하한, 사용자 확대 허용, 포커스 시 보이는 본문 건너뛰기 링크와 main landmark, reduced-motion 대응을 추가했다.
@@ -9,7 +18,7 @@ Updated: 2026-07-11 KST
 - Chrome DevTools Protocol로 정확한 360/390/430px viewport를 강제한 production runtime에서 각 너비의 보이는 컨트롤 17개, 44px 미만 0개, 가로 overflow 0, focus 시 44px skip link를 확인했다.
 - 홈에서 같은 냉장고 이미지를 렌더링하는 세 above-fold 경로에 eager/high fetch priority를 적용한 뒤 LCP 경고가 사라졌다.
 - 검증: 전체 unit 368/368, production build 38/38 routes, release gate 12개 통과와 Phase 5 사람 증거 0/20 한 항목의 의도된 실패.
-- 이 체크포인트는 아직 Vercel production과 Supabase production에 배포하지 않았다. CDP 스크린샷은 `output/ui-evidence/phase6-accessibility-home-{360,390,430}-cdp.png`에 로컬 증거로만 보관한다.
+- 이 체크포인트는 Vercel Preview에만 배포했으며 Vercel production과 Supabase production에는 배포하지 않았다. CDP 스크린샷은 `output/ui-evidence/phase6-accessibility-home-{360,390,430}-cdp.png`에 로컬 증거로만 보관한다.
 - Evidence: `docs/phase-6-mobile-accessibility-report.md`.
 
 ## 2026-07-11 Phase 6 SECURITY DEFINER 권한 보강

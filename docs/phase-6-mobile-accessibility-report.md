@@ -51,7 +51,11 @@ DB, API, 인증 계약, 의존성은 변경하지 않았다.
 ## 보안·출시 상태
 
 - 구현 커밋: `f9866d659804b2be04c29c46084b3085ba15bca8`
+- GitHub 체크포인트: `ce855a6f7ba1396513bf9d2a258850a5f44e9a25`
+- Vercel Preview: `dpl_2aCT3GhGL5s9Zb7B22AoJhxZgWkM`, `https://jipbab-note-chz9fy0f1-youngbeens-projects.vercel.app`, `READY`
+- Preview 원격 build 38/38 routes, `/`와 `/recipe` HTTP 200, API v1의 예상된 redacted 503를 확인했다.
+- Preview에서 CDP 360/390/430px 검증을 다시 실행해 44px 미만 컨트롤과 가로 overflow가 각각 0건임을 확인했다.
 - 비밀값, 권한, 입력 검증, dependency lockfile 변경 없음
 - Supabase migration은 적용하지 않았다.
-- 현재 production alias는 이 변경을 포함하지 않는다.
+- 현재 production alias는 이 변경을 포함하지 않으며 Preview를 production으로 승격하지 않았다.
 - Phase 5 실제 조리·초보자·식품 안전·출처·이미지 권리 검수 0/20과 migration history 불일치는 계속 출시 차단 항목이다.
