@@ -15,9 +15,9 @@ candidate:
   phase: "phase4_cook_mode_local_verified_real_data_and_device_paths_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "efd86133c12bb509bb8eedbd033bfed98d24b250"
+  git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
   branch: "ux/home-today-action-v2"
-  dirty_state: "local_phase0_through_phase4_changes_uncommitted"
+  dirty_state: "phase0_through_phase4_content_committed_and_pushed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -46,7 +46,7 @@ publication_gate:
   rollback: "supabase/rollbacks/20260710130000_gate_recipe_publication.sql"
   local_code_status: "verified"
   production_migration_status: "not_applied"
-  production_deploy_status: "not_deployed"
+  production_deploy_status: "code_deployed_migration_not_applied"
   local_public_recipe_count: 0
   production_plan_gate_eligible_recipe_count: 0
   policy: "approved_with_beginner_actual_cooking_food_safety_image_rights_source_and_complete_v2_content_only"
@@ -58,7 +58,7 @@ signed_guest_auth:
   design: "docs/guest-session-security.md"
   local_code_status: "verified"
   production_migration_status: "not_applied"
-  production_deploy_status: "not_deployed"
+  production_deploy_status: "code_deployed_migration_not_applied"
   anonymous_auth_feature_flag_default: false
   ownership_contract: "verified_supabase_auth_uid_only"
   permanent_user_only_features: "family,community_writes,recipe_comments,community_images,account_operations"
@@ -91,7 +91,7 @@ phase2_api_v1:
   production_fail_closed_status: "verified_three_routes_503_without_secret"
   production_migration_status: "not_applied"
   staging_healthy_path_status: "blocked_no_reconciled_postgres_and_no_reviewed_v2_fixture"
-  production_deploy_status: "not_deployed"
+  production_deploy_status: "code_deployed_dependency_blocked"
   server_secret_status: "not_registered"
   endpoint_count: 3
   public_v2_candidate_count: 0
@@ -113,7 +113,7 @@ phase3_frontend_api_v1:
   mobile_negative_path_status: "verified_360_390_430"
   mobile_detail_unavailable_status: "verified_390"
   staging_healthy_path_status: "blocked_no_reconciled_postgres_no_hmac_secret_no_reviewed_v2_fixture"
-  production_deploy_status: "not_deployed"
+  production_deploy_status: "deployed_dependency_blocked"
   evidence:
     - "output/ui-evidence/phase3-recipe-360.png"
     - "output/ui-evidence/phase3-recipe-390.png"
@@ -135,8 +135,24 @@ phase4_cook_mode:
   real_v2_detail_status: "blocked_no_reviewed_v2_fixture"
   real_device_background_status: "blocked_device_qa_required"
   server_progress_sync_status: "not_implemented_product_decision_required"
-  production_deploy_status: "not_deployed"
+  production_deploy_status: "deployed_real_device_qa_pending"
   evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
+
+phase0_to_phase4_vercel_deployment:
+  deployed_at: "2026-07-11 KST"
+  content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku"
+  deployment_url: "https://jipbab-note-m34pu5z3c-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  vercel_status: "READY"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  database_migrations_applied: false
+  server_hmac_secret_registered: false
 
 migration_history:
   remote_latest_recorded: "20260508143719"

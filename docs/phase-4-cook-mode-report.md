@@ -46,7 +46,7 @@
 - 데이터베이스 변경 없음.
 - 새 API 없음. 계획서의 server-side `/api/v1/recipe-progress`와 `/api/v1/recipe-feedback`는 인증·DB migration이 필요한 후속 범위로 남겼다.
 - 현재 구현은 기기 로컬 오프라인 진행 복원이며 다른 기기 동기화는 주장하지 않는다.
-- GitHub commit, Vercel deployment, Supabase migration 변경 없음. production 배포를 수행하지 않았다.
+- 이후 content commit `a1b7e0f`를 GitHub에 push하고 Vercel production deployment `dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku`로 배포했다. Supabase migration과 server secret은 변경하지 않았다.
 
 ## 보안 게이트와 잔여 위험
 

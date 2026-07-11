@@ -58,4 +58,4 @@
 - `P0 / Platform+Security / API 공개 전`: `API_RATE_LIMIT_HMAC_SECRET`을 secret store에 등록하고 200/429/503 복구를 확인한다.
 - `P0 / FullStackDev+QA / 배포 전`: 실제 staging 데이터로 홈 추천, 목록 pagination, 상세, 장보기의 정상 200 경로를 360/390/430에서 다시 검증한다.
 
-DB migration, secret 등록, production 배포, recipe 승인 또는 외부 상태 변경은 수행하지 않았다.
+Phase 완료 당시에는 외부 변경을 수행하지 않았다. 이후 content commit `a1b7e0f`를 GitHub에 push하고 Vercel production deployment `dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku`로 배포했다. DB migration, secret 등록, recipe 승인은 여전히 수행하지 않았다.

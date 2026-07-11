@@ -2,6 +2,14 @@
 
 Updated: 2026-07-11 KST
 
+## 2026-07-11 Phase 0~4 GitHub·Vercel production 배포
+
+- Content commit `a1b7e0f79d0e5004caac7b305e40feb3496c347d`를 `origin/ux/home-today-action-v2`에 push했다.
+- Vercel project `youngbeens-projects/jipbab-note-app` production deployment `dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku`가 `READY`다.
+- Deployment URL은 `https://jipbab-note-m34pu5z3c-youngbeens-projects.vercel.app`, production alias는 `https://jipbab-note-app.vercel.app`이다.
+- 배포 후 `/`와 `/recipe`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 migration과 `API_RATE_LIMIT_HMAC_SECRET` 미적용으로 예상된 redacted 503, `Retry-After: 60`, `Cache-Control: no-store`, `X-Request-Id`를 반환한다.
+- 앱 코드는 배포됐지만 Phase 0~2 DB migration, server secret, 검수된 v2 fixture는 적용하지 않았다. 따라서 API v1 정상 200 데이터 경로와 실제 조리 상세는 여전히 외부 차단 상태다.
+
 ## 2026-07-11 Phase 4 조리 모드
 
 - API v1의 초 단위·timer preset을 보존하고 절대 종료 시각 기반 timer로 바꿔 background/foreground 복귀 시 실제 남은 시간을 재계산한다.
@@ -17,7 +25,7 @@ Updated: 2026-07-11 KST
 - 목록 카테고리 레일은 Phase 1의 15개 정규 카테고리를 사용한다. 상세는 정규 재료·대체재·단계·안전·복구·보관·출처만 표시하며 임의 기본 사진과 일반 팁을 제거했다.
 - 검증: `pnpm test` 339/339, focused Phase 3 tests, `pnpm build` 38 pages/routes, OpenNext Cloudflare bundle, CI-safe 12/12, local release 11/11, security gate, production HTTP redacted 503 + Retry-After, 정확한 360/390/430 URL 복원·503 모바일 캡처, 390px 상세 공개 불가 캡처.
 - 현재 정상 결과가 503인 이유는 production/staging migration과 `API_RATE_LIMIT_HMAC_SECRET`이 미적용이기 때문이다. 정상 200 UI, pagination, 상세·장보기 실데이터 경로는 검수된 v2 staging fixture 전까지 완료로 주장하지 않는다.
-- DB migration, secret 등록, recipe 승인, production deploy는 수행하지 않았다.
+- DB migration, secret 등록, recipe 승인은 수행하지 않았다. Phase 3 앱 코드는 위 production deployment로 배포했다.
 - Evidence: `docs/phase-3-frontend-integration-report.md`, `docs/phase-3-debug-audit.md`, `output/ui-evidence/phase3-recipe-360.png`, `output/ui-evidence/phase3-detail-unavailable-390.png`.
 
 ## 2026-07-10 Phase 2 API v1·분산 레이트 리밋
