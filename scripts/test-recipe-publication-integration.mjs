@@ -68,7 +68,7 @@ try {
   const detailResponse = await fetch(`${origin}/recipe/curated-egg-drop-soup`);
   assert.equal(detailResponse.status, 200);
   const detailHtml = await detailResponse.text();
-  assert.match(detailHtml, /이 레시피는 현재 검수 중이에요/);
+  assert.match(detailHtml, /출처, 안전 안내와 실제 조리를 확인한 레시피만 공개합니다/);
   assert.doesNotMatch(detailHtml, /재료를 깨끗하게 손질하고 필요한 양을 준비합니다/);
 
   const familyResponse = await fetch(`${origin}/api/family-groups`, {
