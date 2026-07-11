@@ -95,6 +95,19 @@ if (tracked.error) {
   }
 }
 
+const securityDefiner = run("node", ["scripts/check-security-definer-contract.mjs"]);
+if (securityDefiner.error) {
+  fail("SECURITY DEFINER contract", securityDefiner.error.message);
+} else if (securityDefiner.status === 0) {
+  pass("SECURITY DEFINER contract", "fixed search paths and least-privilege EXECUTE grants passed");
+} else {
+  fail(
+    "SECURITY DEFINER contract",
+    oneLine(`${securityDefiner.stdout}\n${securityDefiner.stderr}`) ||
+      `contract check exited ${securityDefiner.status ?? "unknown"}`,
+  );
+}
+
 console.log("Release security check");
 console.log(`Passes: ${passes.length}`);
 console.log(`Failures: ${failures.length}`);
