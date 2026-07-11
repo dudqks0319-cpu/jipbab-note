@@ -64,25 +64,37 @@ test("Supabase live unblock SQL bundle command is available and complete", () =>
     packageJson.scripts["release:supabase-live-unblock-check"],
     "node scripts/check-supabase-live-unblock.mjs",
   );
-  assert.match(supabaseLiveUnblockSqlScript, /20260526093000_harden_community_image_storage\.sql/);
-  assert.match(supabaseLiveUnblockSqlScript, /20260527093000_add_family_scoped_fridge_shopping\.sql/);
+  assert.match(supabaseLiveUnblockSqlScript, /20260710130000_gate_recipe_publication\.sql/);
+  assert.match(supabaseLiveUnblockSqlScript, /20260710140000_replace_device_guest_auth_with_signed_sessions\.sql/);
+  assert.match(supabaseLiveUnblockSqlScript, /SUPABASE_MIGRATION_HISTORY_RECONCILED/);
+  assert.match(supabaseLiveUnblockSqlScript, /SUPABASE_BACKUP_VERIFIED/);
   assert.match(supabaseLiveUnblockSqlScript, /pnpm release:supabase-live-unblock-check/);
   assert.match(supabaseLiveUnblockSqlScript, /pnpm check:supabase-storage-live/);
-  assert.match(supabaseLiveUnblockCheckScript, /20260526093000_harden_community_image_storage\.sql/);
-  assert.match(supabaseLiveUnblockCheckScript, /20260527093000_add_family_scoped_fridge_shopping\.sql/);
+  assert.match(supabaseLiveUnblockCheckScript, /20260710130000_gate_recipe_publication\.sql/);
+  assert.match(supabaseLiveUnblockCheckScript, /20260710140000_replace_device_guest_auth_with_signed_sessions\.sql/);
   assert.match(supabaseLiveUnblockCheckScript, /scripts\/check-supabase-release\.mjs/);
   assert.match(supabaseLiveUnblockCheckScript, /scripts\/check-supabase-live\.mjs/);
   assert.match(supabaseLiveUnblockCheckScript, /scripts\/check-supabase-storage-live\.mjs/);
   assert.match(supabaseLiveUnblockCheckScript, /SUPABASE_LIVE_WRITE_TEST/);
   assert.match(supabaseLiveUnblockCheckScript, /pnpm release:external-status/);
 
+  assert.throws(() => execFileSync("node", ["scripts/print-supabase-live-unblock-sql.mjs"], {
+    encoding: "utf8",
+    stdio: "pipe",
+  }));
+
   const output = execFileSync("node", ["scripts/print-supabase-live-unblock-sql.mjs"], {
     encoding: "utf8",
+    env: {
+      ...process.env,
+      SUPABASE_MIGRATION_HISTORY_RECONCILED: "1",
+      SUPABASE_BACKUP_VERIFIED: "1",
+    },
   });
 
-  assert.match(output, /BEGIN supabase\/migrations\/20260526093000_harden_community_image_storage\.sql/);
-  assert.match(output, /BEGIN supabase\/migrations\/20260527093000_add_family_scoped_fridge_shopping\.sql/);
-  assert.match(output, /community-images/);
-  assert.match(output, /family_group_id/);
+  assert.match(output, /BEGIN supabase\/migrations\/20260710130000_gate_recipe_publication\.sql/);
+  assert.match(output, /BEGIN supabase\/migrations\/20260710140000_replace_device_guest_auth_with_signed_sessions\.sql/);
+  assert.match(output, /review_status = 'approved'/);
+  assert.match(output, /merge_anonymous_user_data/);
   assert.match(output, /SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live/);
 });

@@ -10,6 +10,7 @@ import { useIngredients } from "@/hooks/useIngredients";
 import { filterBeginnerHomeRecipes } from "@/lib/beginner-recipe-contract";
 import { CURATED_RECIPE_RECORDS } from "@/lib/curated-recipes";
 import { buildRecipeRecommendationReason, rankRecipeRecommendations } from "@/lib/matching";
+import { filterPublicationApprovedRecipes } from "@/lib/recipe-publication";
 import { getDday } from "@/lib/utils";
 
 export default function FamilyPage() {
@@ -40,7 +41,10 @@ export default function FamilyPage() {
   );
   const familyRecommendations = useMemo(
     () =>
-      rankRecipeRecommendations(filterBeginnerHomeRecipes(CURATED_RECIPE_RECORDS), ingredients)
+      rankRecipeRecommendations(
+        filterBeginnerHomeRecipes(filterPublicationApprovedRecipes(CURATED_RECIPE_RECORDS)),
+        ingredients,
+      )
         .slice(0, 8)
         .map(({ recipe, match }) => ({
           ...recipe,

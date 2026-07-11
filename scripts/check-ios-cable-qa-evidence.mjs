@@ -75,7 +75,7 @@ function fileText(dirPath, filename) {
 }
 
 function run() {
-  const expectedBuild = readIosProjectBuildNumber() ?? "2026060803";
+  const expectedBuild = readIosProjectBuildNumber() ?? "2026062602";
   const dirPath = process.env.IOS_CABLE_QA_EVIDENCE_DIR || latestEvidenceDir();
   const passes = [];
   const failures = [];

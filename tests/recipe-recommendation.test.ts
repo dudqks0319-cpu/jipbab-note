@@ -424,17 +424,18 @@ test("recipe list filters cover difficulty, time, tools, fridge fit, and beginne
   );
 });
 
-test("recipe page hides low-data cuisine tabs from the launch category rail", () => {
+test("recipe page uses the normalized API v1 category rail", () => {
   const typesSource = readFileSync(new URL("../types/index.ts", import.meta.url), "utf8");
   const pageSource = readFileSync(new URL("../app/recipe/page.tsx", import.meta.url), "utf8");
   const detailSource = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
   const apiSource = readFileSync(new URL("../app/api/recipes/route.ts", import.meta.url), "utf8");
 
   assert.match(typesSource, /DISPLAY_RECIPE_CATEGORIES/);
-  assert.match(typesSource, /"국·찌개"/);
+  assert.match(typesSource, /"찌개·전골"/);
   assert.match(typesSource, /"초보가능"/);
   assert.match(typesSource, /"10분요리"/);
-  assert.doesNotMatch(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"한식"|"중식"|"양식"|"일식"|"디저트"/);
+  assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"중식"/);
+  assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"간식·디저트"/);
   assert.match(pageSource, /visibleCategories/);
   assert.match(pageSource, /DISPLAY_CATEGORY_QUICK_FILTERS/);
   assert.match(pageSource, /setQuickFilter/);
@@ -445,11 +446,11 @@ test("recipe page hides low-data cuisine tabs from the launch category rail", ()
   assert.match(pageSource, /sortMode/);
   assert.match(pageSource, /matchesRecipeListFilters/);
   assert.match(pageSource, /sortRecipeListRecipes/);
-  assert.match(detailSource, /getStringField\(record, "action"\)/);
-  assert.match(detailSource, /getStringField\(record, "heat"\)/);
-  assert.match(detailSource, /getNumberField\(record, "minutes", "minute", "duration_minutes"\)/);
-  assert.match(detailSource, /common_mistake/);
-  assert.match(detailSource, /rescue_tip/);
+  assert.match(detailSource, /getPublicRecipeDetailV1/);
+  assert.match(detailSource, /recipeApiV1DetailToRecord/);
+  assert.match(detailSource, /isRecipeDetailPublicationApproved/);
+  assert.match(detailSource, /recipe\.safetyNotes/);
+  assert.match(detailSource, /recipe\.storageTip/);
   assert.match(apiSource, /categoryCounts/);
   assert.match(apiSource, /normalizeDisplayCategory/);
   assert.match(apiSource, /counts\.초보가능/);
@@ -457,8 +458,8 @@ test("recipe page hides low-data cuisine tabs from the launch category rail", ()
 
   const hookSource = readFileSync(new URL("../hooks/useRecipes.ts", import.meta.url), "utf8");
   assert.match(hookSource, /VIRTUAL_CATEGORY_LABELS/);
-  assert.match(hookSource, /counts\.초보가능/);
-  assert.match(hookSource, /counts\["10분요리"\]/);
+  assert.match(hookSource, /recipe\.totalMinutes <= 10/);
+  assert.match(hookSource, /counts\[category\]/);
   assert.doesNotMatch(hookSource, /normalizeCategoryCounts\(payload\.categoryCounts,\s*getCuratedFallbackCategoryCounts/);
 });
 

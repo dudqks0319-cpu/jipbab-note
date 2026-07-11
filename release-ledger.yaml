@@ -12,18 +12,200 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "appstore_remote_webview_production_updated"
+  phase: "phase4_cook_mode_local_verified_real_data_and_device_paths_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "ae9bd02"
+  git_sha: "efd86133c12bb509bb8eedbd033bfed98d24b250"
   branch: "ux/home-today-action-v2"
-  dirty_state: "committed_and_pushed_to_feature_branch"
-  source_of_truth: "docs/current-release-state.md, docs/real-device-qa.md"
+  dirty_state: "local_phase0_through_phase4_changes_uncommitted"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/current-release-state.md"
+
+phase0_baseline:
+  audited_at: "2026-07-10 KST"
+  canonical_repo_candidate: "https://github.com/dudqks0319-cpu/jipbab-note"
+  github_default_branch: "main"
+  github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
+  release_branch: "ux/home-today-action-v2"
+  release_sha: "efd86133c12bb509bb8eedbd033bfed98d24b250"
+  default_branch_behind_release_by: 33
+  vercel_project: "youngbeens-projects/jipbab-note-app"
+  vercel_linked_repo: "dudqks0319-cpu/jipbab-note-app"
+  vercel_production_branch: "main"
+  vercel_deployment_id: "dpl_GEJgsnCvRuofgWg82z74Wdw2UR9K"
+  production_domain: "https://jipbab-note-app.vercel.app"
+  supabase_project_ref: "xqelabiwtjntwrjqcteo"
+  live_recipe_count: 1152
+  recipe_source_count: 0
+  plan_gate_eligible_recipe_count: 0
+  external_alignment_status: "decision_required"
+  inventory: "docs/recipe-inventory.csv"
+  source_ledger: "docs/recipe-source-ledger.csv"
+
+publication_gate:
+  migration: "20260710130000_gate_recipe_publication.sql"
+  rollback: "supabase/rollbacks/20260710130000_gate_recipe_publication.sql"
+  local_code_status: "verified"
+  production_migration_status: "not_applied"
+  production_deploy_status: "not_deployed"
+  local_public_recipe_count: 0
+  production_plan_gate_eligible_recipe_count: 0
+  policy: "approved_with_beginner_actual_cooking_food_safety_image_rights_source_and_complete_v2_content_only"
+  browser_evidence: "output/ui-evidence/2026-07-10-publication-empty-home-390.png"
+
+signed_guest_auth:
+  migration: "20260710140000_replace_device_guest_auth_with_signed_sessions.sql"
+  rollback: "supabase/rollbacks/20260710140000_replace_device_guest_auth_with_signed_sessions.sql"
+  design: "docs/guest-session-security.md"
+  local_code_status: "verified"
+  production_migration_status: "not_applied"
+  production_deploy_status: "not_deployed"
+  anonymous_auth_feature_flag_default: false
+  ownership_contract: "verified_supabase_auth_uid_only"
+  permanent_user_only_features: "family,community_writes,recipe_comments,community_images,account_operations"
+  legacy_null_user_rows: "inaccessible_after_migration_not_claimed_by_device_id"
+
+phase1_recipe_data:
+  schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
+  catalog_seed_migration: "20260710151000_seed_phase1_ingredient_catalog.sql"
+  rollback: "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql"
+  local_contract_status: "verified_25_of_25"
+  production_migration_status: "not_applied"
+  staging_execution_status: "blocked_no_local_postgres_and_migration_history_unreconciled"
+  canonical_category_count: 15
+  ingredient_catalog_count: 173
+  exact_alias_count: 258
+  live_dry_run_recipe_count: 1152
+  live_v2_candidate_count: 0
+  live_legacy_string_ingredient_count: 1148
+  live_complete_step_v2_count: 0
+  evidence: "docs/phase-1-migration-dry-run.md"
+
+phase2_api_v1:
+  rate_limit_migration: "20260710160000_add_distributed_api_rate_limits.sql"
+  rollback: "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql"
+  operations: "docs/api-v1-operations.md"
+  report: "docs/phase-2-api-v1-report.md"
+  local_contract_status: "verified_14_of_14"
+  focused_test_status: "verified_21_of_21"
+  runtime_negative_path_status: "verified_400_413_429_503"
+  production_fail_closed_status: "verified_three_routes_503_without_secret"
+  production_migration_status: "not_applied"
+  staging_healthy_path_status: "blocked_no_reconciled_postgres_and_no_reviewed_v2_fixture"
+  production_deploy_status: "not_deployed"
+  server_secret_status: "not_registered"
+  endpoint_count: 3
+  public_v2_candidate_count: 0
+
+phase3_frontend_api_v1:
+  report: "docs/phase-3-frontend-integration-report.md"
+  debug_audit: "docs/phase-3-debug-audit.md"
+  local_code_status: "verified"
+  home_data_path: "api_v1_exact_ingredient_ids_no_curated_fallback"
+  list_data_path: "api_v1_cursor_sort_filter_url_state"
+  detail_data_path: "api_v1_normalized_ingredients_steps_safety_source"
+  canonical_category_count: 15
+  unit_test_status: "verified_full_suite_339_of_339"
+  production_build_status: "verified_38_pages_and_routes"
+  cloudflare_build_status: "verified_opennext_worker_bundle"
+  ci_static_gate_status: "verified_12_of_12"
+  local_release_gate_status: "verified_11_of_11"
+  security_gate_status: "verified"
+  mobile_negative_path_status: "verified_360_390_430"
+  mobile_detail_unavailable_status: "verified_390"
+  staging_healthy_path_status: "blocked_no_reconciled_postgres_no_hmac_secret_no_reviewed_v2_fixture"
+  production_deploy_status: "not_deployed"
+  evidence:
+    - "output/ui-evidence/phase3-recipe-360.png"
+    - "output/ui-evidence/phase3-recipe-390.png"
+    - "output/ui-evidence/phase3-recipe-430.png"
+    - "output/ui-evidence/phase3-detail-unavailable-390.png"
+
+phase4_cook_mode:
+  report: "docs/phase-4-cook-mode-report.md"
+  local_code_status: "verified"
+  timer_contract: "absolute_deadline_structured_seconds"
+  app_return_status: "verified_time_recalculation_in_browser_and_unit_driver"
+  local_progress_status: "verified_recipe_scoped_versioned_restore"
+  wake_lock_status: "implemented_browser_capability_guarded"
+  completion_signal_status: "implemented_audio_vibration_and_aria_live"
+  completion_feedback_status: "verified_local_restore"
+  unit_test_status: "verified_full_suite_343_of_343"
+  production_build_status: "verified_38_pages_and_routes"
+  mobile_harness_status: "verified_then_removed"
+  real_v2_detail_status: "blocked_no_reviewed_v2_fixture"
+  real_device_background_status: "blocked_device_qa_required"
+  server_progress_sync_status: "not_implemented_product_decision_required"
+  production_deploy_status: "not_deployed"
+  evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
+
+migration_history:
+  remote_latest_recorded: "20260508143719"
+  local_unrecorded_before_publication:
+    - "20260521160347"
+    - "20260523090000"
+    - "20260526093000"
+    - "20260527093000"
+    - "20260528010000"
+    - "20260530000000"
+  publication_migration_recorded_remote: false
+  signed_guest_auth_migration_recorded_remote: false
+  phase1_schema_migration_recorded_remote: false
+  phase1_catalog_seed_recorded_remote: false
+  phase2_rate_limit_migration_recorded_remote: false
+  db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
+  - name: "Full local lint, typecheck, and unit suite"
+    command: "pnpm test"
+    status: "current_pass_339_of_339"
+    evidence: "tests/guest-session-security.test.ts"
+  - name: "Phase 0 recipe inventory"
+    command: "pnpm test:content"
+    status: "current_pass_phase0_and_phase1"
+    evidence: "docs/recipe-inventory.md, docs/phase-1-data-contract.md"
+  - name: "Phase 1 recipe data contract"
+    command: "pnpm check:phase1-data-contract"
+    status: "current_pass_25_of_25"
+    evidence: "docs/phase-1-migration-dry-run.md"
+  - name: "Recipe publication integration"
+    command: "pnpm test:integration"
+    status: "current_pass_zero_unreviewed_exposed"
+    evidence: "output/ui-evidence/2026-07-10-publication-empty-list-390.png"
+  - name: "Recipe publication RLS contract"
+    command: "pnpm check:supabase-release"
+    status: "current_pass_145_of_145"
+    evidence: "supabase/migrations/20260710130000_gate_recipe_publication.sql, supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql, supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql"
+  - name: "API v1 contract"
+    command: "pnpm check:api-v1-contract"
+    status: "current_pass_14_of_14"
+    evidence: "docs/phase-2-api-v1-report.md"
+  - name: "API v1 focused tests"
+    command: "node --experimental-strip-types --test tests/api-v1-contract.test.ts tests/distributed-rate-limit.test.ts tests/recipe-api-v1.test.ts tests/recipe-recommendation-v1.test.ts"
+    status: "current_pass_21_of_21"
+    evidence: "tests/recipe-api-v1.test.ts"
+  - name: "API v1 HTTP negative paths"
+    command: "next dev and next start on local loopback"
+    status: "current_pass_400_413_429_503"
+    evidence: "docs/phase-2-api-v1-report.md"
+  - name: "Signed guest authorization negative tests"
+    command: "node --experimental-strip-types --test tests/guest-session-security.test.ts"
+    status: "current_pass_8_of_8"
+    evidence: "docs/guest-session-security.md"
+  - name: "Production build after publication gate"
+    command: "pnpm build"
+    status: "current_pass"
+    evidence: "docs/current-release-state.md"
+  - name: "Cloudflare OpenNext build"
+    command: "pnpm cloudflare:build"
+    status: "current_pass"
+    evidence: "docs/current-release-state.md"
+  - name: "CI-safe release gates"
+    command: "pnpm release:ci-static-check"
+    status: "current_pass_12_of_12"
+    evidence: "docs/current-release-state.md"
   - name: "Local release gates"
     command: "pnpm release:check"
-    status: "documented_pass"
+    status: "current_pass_11_of_11"
     evidence: "docs/current-release-state.md"
   - name: "Release security gate"
     command: "pnpm release:security-check"
@@ -121,7 +303,7 @@ external_checks:
   - name: "App Store Connect and TestFlight"
     target: "appstore"
     status: "ready_for_sale_public_url_live_screenshots_current_lookup_api_pending"
-    evidence: "output/release-evidence/2026-06-29T17-38-appstore-public-screenshot-check/summary.md"
+    evidence: "output/release-evidence/2026-07-10T04-02-31-522Z-store-console/summary.md"
   - name: "Google Play Console"
     target: "play"
     status: "blocked"
@@ -133,11 +315,14 @@ external_checks:
 
 security:
   secrets:
-    status: "needs_operator_action"
-    evidence: "Cloudflare runtime secrets are documented as external setup, not stored in repo."
+    status: "local_secret_files_0600_and_git_ignored"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
   authz:
-    status: "documented_pass_with_external_followup"
-    evidence: "docs/current-release-state.md"
+    status: "local_fix_verified_production_migration_and_deploy_pending"
+    evidence: "docs/guest-session-security.md"
+  api_abuse_controls:
+    status: "local_contract_verified_staging_secret_and_proxy_trust_pending"
+    evidence: "docs/phase-2-api-v1-report.md"
   privacy:
     status: "documented"
     evidence: "docs/real-device-qa.md"
@@ -146,6 +331,48 @@ security:
     evidence: "No payment flow in current release ledger."
 
 blockers:
+  - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
+    severity: "P0"
+    status: "open"
+    title: "Remote migration history stops at 20260508143719 while six earlier local migrations and the Phase 0/1 migrations remain unrecorded."
+    owner: "FullStackDev+DBA"
+    evidence: "docs/official-production-sources.md"
+    due: "before_any_supabase_db_push"
+  - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
+    severity: "P0"
+    status: "open"
+    title: "Public source repository, GitHub default branch, Vercel linked repository, and deployed feature SHA are not aligned."
+    owner: "project_owner"
+    evidence: "docs/official-production-sources.md"
+    due: "before_next_production_deploy"
+  - id: "P0-JIPBAB-RECIPE-PUBLISH-GATE"
+    severity: "P0"
+    status: "local_fix_verified_production_not_applied"
+    title: "Local RLS/API/UI gates block all unreviewed recipes, but production still exposes 1,152 rows until backup and migration rollout."
+    owner: "FullStackDev"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
+    due: "before_next_production_deploy"
+  - id: "P0-JIPBAB-GUEST-AUTHORIZATION"
+    severity: "P0"
+    status: "local_fix_verified_production_not_applied"
+    title: "Local code and migration use signed auth UID only, but production retains the device-header authorization path until coordinated rollout."
+    owner: "FullStackDev+Security"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
+    due: "before_next_production_deploy"
+  - id: "P0-JIPBAB-PHASE1-STAGING-SQL"
+    severity: "P0"
+    status: "local_static_contract_verified_staging_execution_pending"
+    title: "Recipe v2 capture/restore SQL is statically verified but has not run in isolated PostgreSQL because this machine has no local PostgreSQL or Docker runtime."
+    owner: "FullStackDev+DBA"
+    evidence: "docs/phase-1-data-contract.md"
+    due: "before_any_phase1_production_migration"
+  - id: "P0-JIPBAB-PHASE2-STAGING-API"
+    severity: "P0"
+    status: "local_contract_verified_staging_healthy_path_pending"
+    title: "API v1 negative paths and fail-closed production behavior are verified locally, but no reviewed v2 fixture or reconciled staging PostgreSQL exists for healthy 200-path and distributed-RPC verification."
+    owner: "FullStackDev+DBA+ContentQA"
+    evidence: "docs/phase-2-api-v1-report.md"
+    due: "before_any_api_v1_client_cutover"
   - id: "P0-JIPBAB-IOS-FULL-QA"
     severity: "P0"
     status: "resolved"
@@ -190,6 +417,6 @@ blockers:
     due: "before_cloudflare_primary"
 
 next_action:
-  owner: "operator"
-  command: "Use https://apps.apple.com/kr/app/id6762567054 for public App Store verification; optionally recheck iTunes Lookup until resultCount is 1."
-  description: "App Store iOS 1.0 build 2026062602 is READY_FOR_SALE, KOR/USA availability is created, and the public App Store direct URL is live. iTunes Lookup API/search index remains delayed. Google Play and Cloudflare primary cutover remain separate open lanes."
+  owner: "FullStackDev+DBA"
+  command: "Reconcile remote migration history and validate the Phase 0 publication/auth, Phase 1 schema/catalog, and Phase 2 distributed-rate-limit migrations in staging before any production deploy."
+  description: "Keep anonymous auth disabled, obtain a restorable backup, register a server-only rate-limit secret, execute capture/restore and auth negative tests, and verify API v1 200/400/429/503 paths with a reviewed staging fixture before client cutover."

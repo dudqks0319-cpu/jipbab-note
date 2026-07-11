@@ -45,7 +45,7 @@ export default function AccountDeletePage() {
     }
 
     try {
-      const client = getSupabaseClient({ deviceId });
+      const client = getSupabaseClient();
       const { data } = await client
         .from("account_deletion_requests")
         .select("id,status,reason,created_at,updated_at")
@@ -82,7 +82,7 @@ export default function AccountDeletePage() {
     setStatusMessage(null);
 
     try {
-      const client = getSupabaseClient({ deviceId });
+      const client = getSupabaseClient();
       const { data: sessionData, error: sessionError } = await client.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (sessionError || !accessToken) {

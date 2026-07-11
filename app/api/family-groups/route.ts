@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 
 import { getRateLimitKey, isUuidLike, noStoreHeaders, readJsonObject } from "@/lib/request-security";
 import {
+  getAuthenticatedServerUser,
   getServerSupabaseAdminClient,
-  getServerSupabaseUserClient,
   isMissingServerSupabaseConfigError,
 } from "@/lib/supabase-server";
+import { isAnonymousSupabaseUser } from "@/lib/supabase-session";
 import type { FamilyGroupRecord, FamilyMemberRecord } from "@/types";
 
 const MAX_MEMBERS = 4;
 const MAX_REQUESTS_PER_WINDOW = 30;
 const REQUEST_WINDOW_MS = 60_000;
-const DEVICE_ID_PATTERN = /^[0-9A-Za-z._:-]{1,96}$/;
 const INVITE_CODE_PATTERN = /^[A-Z0-9]{4,12}$/;
 const requestStore = new Map<string, { count: number; startedAt: number }>();
 
@@ -27,7 +28,6 @@ interface FamilyGroupRow {
 
 interface FamilyMemberRow {
   id: string;
-  device_id: string;
   display_name: string;
   role: "owner" | "member";
   created_at: string;
@@ -37,42 +37,12 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ message }, { status, headers: noStoreHeaders() });
 }
 
-function normalizeDeviceId(value: string | null): string | null {
-  const trimmed = value?.trim();
-  return trimmed && DEVICE_ID_PATTERN.test(trimmed) ? trimmed : null;
-}
-
 function normalizeText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
 function normalizeInviteCode(value: unknown): string {
   return typeof value === "string" ? value.trim().toUpperCase() : "";
-}
-
-function getBearerToken(request: Request): string | null {
-  const authorizationHeader = request.headers.get("authorization");
-  if (!authorizationHeader?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-  return accessToken || null;
-}
-
-async function getAuthenticatedUserId(request: Request): Promise<string | null> {
-  const accessToken = getBearerToken(request);
-  if (!accessToken) {
-    return null;
-  }
-
-  const client = getServerSupabaseUserClient();
-  const { data, error } = await client.auth.getUser(accessToken);
-  if (error || !data.user?.id) {
-    return null;
-  }
-
-  return data.user.id;
 }
 
 function isRateLimited(request: Request): boolean {
@@ -92,7 +62,7 @@ function toFamilyGroup(group: FamilyGroupRow, members: FamilyMemberRow[]): Famil
   const normalizedMembers: FamilyMemberRecord[] = members
     .filter((member) => member.role === "owner" || member.role === "member")
     .map((member) => ({
-      id: member.id || member.device_id,
+      id: member.id,
       name: member.display_name,
       role: member.role,
       joinedAt: member.created_at,
@@ -113,7 +83,7 @@ function toFamilyGroup(group: FamilyGroupRow, members: FamilyMemberRow[]): Famil
 async function fetchMembers(client: ReturnType<typeof getServerSupabaseAdminClient>, groupId: string) {
   const { data, error } = await client
     .from("family_members")
-    .select("id, device_id, display_name, role, created_at")
+    .select("id, display_name, role, created_at")
     .eq("family_group_id", groupId)
     .order("created_at", { ascending: true });
 
@@ -124,11 +94,12 @@ async function fetchMembers(client: ReturnType<typeof getServerSupabaseAdminClie
   return (data ?? []) as FamilyMemberRow[];
 }
 
-async function createFamilyGroup(body: Record<string, unknown>, deviceId: string, userId: string | null) {
+async function createFamilyGroup(body: Record<string, unknown>, userId: string) {
   const groupId = normalizeText(body.groupId, 80);
   const name = normalizeText(body.groupName, 40) || "우리 가족 냉장고";
   const inviteCode = normalizeInviteCode(body.inviteCode);
   const ownerName = normalizeText(body.displayName, 24) || "나";
+  const legacyOwnerDeviceId = `signed:${randomUUID()}`;
 
   if (!isUuidLike(groupId) || !INVITE_CODE_PATTERN.test(inviteCode)) {
     return jsonError("가족 냉장고 정보를 확인해 주세요.", 400);
@@ -140,7 +111,7 @@ async function createFamilyGroup(body: Record<string, unknown>, deviceId: string
     .insert({
       id: groupId,
       owner_user_id: userId,
-      owner_device_id: deviceId,
+      owner_device_id: legacyOwnerDeviceId,
       name,
       invite_code: inviteCode,
     })
@@ -159,7 +130,7 @@ async function createFamilyGroup(body: Record<string, unknown>, deviceId: string
     .insert({
       family_group_id: groupId,
       user_id: userId,
-      device_id: deviceId,
+      device_id: legacyOwnerDeviceId,
       display_name: ownerName,
       role: "owner",
     });
@@ -176,7 +147,7 @@ async function createFamilyGroup(body: Record<string, unknown>, deviceId: string
   );
 }
 
-async function joinFamilyGroup(body: Record<string, unknown>, deviceId: string, userId: string | null) {
+async function joinFamilyGroup(body: Record<string, unknown>, userId: string) {
   const inviteCode = normalizeInviteCode(body.inviteCode);
   const displayName = normalizeText(body.displayName, 24) || "가족";
   if (!INVITE_CODE_PATTERN.test(inviteCode)) {
@@ -203,9 +174,7 @@ async function joinFamilyGroup(body: Record<string, unknown>, deviceId: string, 
     .select("id,role")
     .eq("family_group_id", groupId);
 
-  existingMemberQuery = userId
-    ? existingMemberQuery.eq("user_id", userId)
-    : existingMemberQuery.eq("device_id", deviceId).is("user_id", null);
+  existingMemberQuery = existingMemberQuery.eq("user_id", userId);
 
   const { data: existingMember, error: existingError } = await existingMemberQuery.maybeSingle();
 
@@ -236,7 +205,7 @@ async function joinFamilyGroup(body: Record<string, unknown>, deviceId: string, 
       .insert({
         family_group_id: groupId,
         user_id: userId,
-        device_id: deviceId,
+        device_id: `signed:${randomUUID()}`,
         display_name: displayName,
         role: "member",
       })
@@ -266,22 +235,24 @@ export async function POST(request: Request) {
     return jsonError("요청이 많습니다. 잠시 후 다시 시도해 주세요.", 429);
   }
 
-  const deviceId = normalizeDeviceId(request.headers.get("x-device-id"));
-  if (!deviceId) {
-    return jsonError("기기 정보를 확인해 주세요.", 400);
-  }
-
-  const body = await readJsonObject(request);
-  const action = body?.action as FamilyAction | undefined;
-  if (!body || (action !== "create" && action !== "join")) {
-    return jsonError("요청 정보를 확인해 주세요.", 400);
-  }
-
   try {
-    const userId = await getAuthenticatedUserId(request);
+    const user = await getAuthenticatedServerUser(request.headers.get("authorization"));
+    if (!user) {
+      return jsonError("로그인이 필요합니다.", 401);
+    }
+    if (isAnonymousSupabaseUser(user)) {
+      return jsonError("가족 공유는 일반 계정 로그인이 필요합니다.", 403);
+    }
+
+    const body = await readJsonObject(request);
+    const action = body?.action as FamilyAction | undefined;
+    if (!body || (action !== "create" && action !== "join")) {
+      return jsonError("요청 정보를 확인해 주세요.", 400);
+    }
+
     return action === "create"
-      ? await createFamilyGroup(body, deviceId, userId)
-      : await joinFamilyGroup(body, deviceId, userId);
+      ? await createFamilyGroup(body, user.id)
+      : await joinFamilyGroup(body, user.id);
   } catch (error) {
     if (isMissingServerSupabaseConfigError(error)) {
       return jsonError("가족 공유 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.", 503);

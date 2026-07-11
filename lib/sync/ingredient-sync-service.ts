@@ -12,6 +12,7 @@ import {
   type PendingSyncQueueEntry,
 } from "../local-db/schema.ts";
 import { getSupabaseClient } from "../supabase.ts";
+import { ensureSignedSupabaseUser, isAnonymousSupabaseUser } from "../supabase-session.ts";
 import {
   clearPendingSync,
   listPendingSyncEntries,
@@ -23,6 +24,7 @@ import type {
   IngredientStorageType,
   IngredientUpdatePayload,
 } from "../../types/index.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type ScopedSupabaseQuery = PromiseLike<{
   data: unknown;
@@ -140,11 +142,11 @@ function recordScope(record: LocalIngredientRecord): LocalDataScopeContext {
     : { scope: "personal", familyGroupId: null };
 }
 
-function toRemotePayload(record: LocalIngredientRecord, userId: string | null): RemoteIngredientPayload {
+function toRemotePayload(record: LocalIngredientRecord, userId: string): RemoteIngredientPayload {
   return {
     id: record.id,
     device_id: record.deviceId,
-    user_id: userId ?? record.userId,
+    user_id: userId,
     ...(record.familyGroupId ? { family_group_id: record.familyGroupId } : {}),
     name: record.name,
     category: record.category,
@@ -166,17 +168,11 @@ function toRemotePayload(record: LocalIngredientRecord, userId: string | null): 
   };
 }
 
-async function getCurrentUserId(deviceId: string): Promise<string | null> {
-  const client = getSupabaseClient({ deviceId });
-  const { data } = await client.auth.getUser();
-  return data.user?.id ?? null;
-}
-
 async function upsertRemoteIngredient(
+  client: SupabaseClient,
   record: LocalIngredientRecord,
-  userId: string | null,
+  userId: string,
 ): Promise<LocalIngredientRecord> {
-  const client = getSupabaseClient({ deviceId: record.deviceId });
   const payload = toRemotePayload(record, userId);
   const { data, error } = await client
     .from("ingredients")
@@ -205,8 +201,7 @@ async function upsertRemoteIngredient(
   return rowToRecord(data as RawIngredientRow);
 }
 
-async function deleteRemoteIngredient(record: LocalIngredientRecord): Promise<void> {
-  const client = getSupabaseClient({ deviceId: record.deviceId });
+async function deleteRemoteIngredient(client: SupabaseClient, record: LocalIngredientRecord): Promise<void> {
   const scopedQuery = applyIngredientScope(
     client.from("ingredients").delete().eq("id", record.id) as unknown as ScopedSupabaseQuery,
     recordScope(record),
@@ -226,13 +221,16 @@ async function deleteRemoteIngredient(record: LocalIngredientRecord): Promise<vo
   }
 }
 
-async function syncIngredientQueue(deviceId: string): Promise<void> {
+async function syncIngredientQueue(
+  client: SupabaseClient,
+  userId: string,
+  allowFamilyScope: boolean,
+): Promise<void> {
   const entries = await listPendingSyncEntries(LOCAL_DB_STORES.ingredients);
   if (entries.length === 0) {
     return;
   }
 
-  const userId = await getCurrentUserId(deviceId);
   let firstError: unknown = null;
 
   for (const entry of entries) {
@@ -242,13 +240,16 @@ async function syncIngredientQueue(deviceId: string): Promise<void> {
       firstError ??= new Error("동기화 payload를 해석할 수 없습니다.");
       continue;
     }
+    if (record.familyGroupId && !allowFamilyScope) {
+      continue;
+    }
 
     try {
       if (entry.action === "delete") {
-        await deleteRemoteIngredient(record);
+        await deleteRemoteIngredient(client, record);
         await hardDeleteLocalIngredient(entry.recordId);
       } else {
-        const synced = await upsertRemoteIngredient(record, userId);
+        const synced = await upsertRemoteIngredient(client, record, userId);
         await upsertLocalIngredient(synced);
       }
       await clearPendingSync(LOCAL_DB_STORES.ingredients, entry.recordId);
@@ -264,10 +265,9 @@ async function syncIngredientQueue(deviceId: string): Promise<void> {
 }
 
 async function fetchRemoteIngredients(
-  deviceId: string,
+  client: SupabaseClient,
   scopeContext: LocalDataScopeContext,
 ): Promise<LocalIngredientRecord[]> {
-  const client = getSupabaseClient({ deviceId });
   const scopedQuery = applyIngredientScope(
     client.from("ingredients").select("*").order("created_at", { ascending: false }) as unknown as ScopedSupabaseQuery,
     scopeContext,
@@ -303,10 +303,22 @@ export async function syncIngredientsWithSupabase(
   deviceId: string,
   scopeContext: LocalDataScopeContext,
 ): Promise<LocalIngredientRecord[]> {
-  await syncIngredientQueue(deviceId);
+  const client = getSupabaseClient();
+  let signedUser;
+  try {
+    signedUser = await ensureSignedSupabaseUser(client);
+  } catch {
+    return await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true });
+  }
+
+  if (!signedUser || (scopeContext.scope === "family" && isAnonymousSupabaseUser(signedUser))) {
+    return await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true });
+  }
+
+  await syncIngredientQueue(client, signedUser.id, !isAnonymousSupabaseUser(signedUser));
   const [localRecords, remoteRecords] = await Promise.all([
     listLocalIngredients(deviceId, scopeContext, { includeDeleted: true }),
-    fetchRemoteIngredients(deviceId, scopeContext),
+    fetchRemoteIngredients(client, scopeContext),
   ]);
   const merged = mergeIngredientRecords(localRecords, remoteRecords) as LocalIngredientRecord[];
   return await replaceScopedLocalIngredients(deviceId, scopeContext, merged);

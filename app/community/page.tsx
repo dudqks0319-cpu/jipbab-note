@@ -6,9 +6,9 @@ import { Heart, MessageCircle, RefreshCw, Send, ShieldCheck, Trash2 } from 'luci
 
 import { useCommunity } from '@/hooks/useCommunity'
 import { useIngredients } from '@/hooks/useIngredients'
-import { getDeviceId } from '@/lib/device-id'
 import { isCommunityEnabled } from '@/lib/release-flags'
 import { getSupabaseClient } from '@/lib/supabase'
+import { isPermanentSupabaseUser } from '@/lib/supabase-session'
 
 const MAX_COMMUNITY_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 const ALLOWED_COMMUNITY_IMAGE_TYPES: Record<string, 'png' | 'jpg' | 'webp'> = {
@@ -114,10 +114,12 @@ function CommunityEnabledPage() {
     }
 
     try {
-      const deviceId = getDeviceId()
-      const client = getSupabaseClient({ deviceId })
+      const client = getSupabaseClient()
       const { data: authData } = await client.auth.getUser()
-      const ownerPrefix = authData.user?.id ?? deviceId
+      if (!isPermanentSupabaseUser(authData.user)) {
+        throw new Error('permanent_session_required')
+      }
+      const ownerPrefix = authData.user.id
       const filePath = `${ownerPrefix}/${Date.now()}-${crypto.randomUUID()}.${extension}`
       const { error: uploadError } = await client.storage
         .from('community-images')

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient, type User } from "@supabase/supabase-js";
 
 import { getRateLimitKey, isUuidLike, noStoreHeaders } from "@/lib/request-security";
+import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 
 const MAX_RECIPE_ID_LENGTH = 120;
 const REQUEST_WINDOW_MS = 60_000;
@@ -87,7 +88,7 @@ async function getAuthenticatedUser(request: Request): Promise<{ user: User; tok
   }
 
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) {
+  if (error || !isPermanentSupabaseUser(data.user)) {
     return null;
   }
 

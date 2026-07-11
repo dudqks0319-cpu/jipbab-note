@@ -1,14 +1,14 @@
 // 이 파일은 레시피별 댓글 조회와 로그인 사용자 댓글 작성을 처리합니다.
 import { NextResponse } from "next/server";
 import { createClient, type User } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
 
 import { getRateLimitKey, noStoreHeaders, readJsonObject } from "@/lib/request-security";
+import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 import type { RecipeCommentRecord } from "@/types";
 
 const MAX_CONTENT_LENGTH = 500;
 const MAX_RECIPE_ID_LENGTH = 120;
-const MAX_DEVICE_ID_LENGTH = 96;
-const DEVICE_ID_PATTERN = /^[0-9A-Za-z._:-]+$/;
 const REQUEST_WINDOW_MS = 60_000;
 const MAX_GET_REQUESTS = 120;
 const MAX_POST_REQUESTS = 12;
@@ -47,14 +47,6 @@ function normalizeRecipeId(value: string): string | null {
   const decoded = safeDecodeURIComponent(value);
   const trimmed = decoded?.trim() ?? "";
   return trimmed.length > 0 && trimmed.length <= MAX_RECIPE_ID_LENGTH ? trimmed : null;
-}
-
-function normalizeDeviceId(value: string | null): string {
-  const trimmed = value?.trim() ?? "";
-  if (!trimmed || trimmed.length > MAX_DEVICE_ID_LENGTH || !DEVICE_ID_PATTERN.test(trimmed)) {
-    return "authenticated";
-  }
-  return trimmed;
 }
 
 function normalizeContent(value: unknown): string | null {
@@ -128,7 +120,7 @@ async function getAuthenticatedUser(request: Request): Promise<{ user: User; tok
   }
 
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) {
+  if (error || !isPermanentSupabaseUser(data.user)) {
     return null;
   }
 
@@ -235,7 +227,6 @@ export async function POST(
     return jsonError("댓글은 1자 이상 500자 이하로 입력해주세요.", 400);
   }
 
-  const deviceId = normalizeDeviceId(request.headers.get("x-device-id"));
   const client = createAnonClient(auth.token);
   if (!client) {
     return jsonError("댓글 설정을 확인 중입니다. 잠시 후 다시 시도해주세요.", 503);
@@ -245,7 +236,7 @@ export async function POST(
     .from("recipe_comments")
     .insert({
       recipe_id: recipeId,
-      device_id: deviceId,
+      device_id: `signed:${randomUUID()}`,
       user_id: auth.user.id,
       author_name: resolveAuthorName(auth.user),
       content,

@@ -7,34 +7,39 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 
 ## 현재 차단
 
-- Supabase live schema/RLS: production에 `20260527093000_add_family_scoped_fridge_shopping.sql`이 아직 적용되지 않아 live `ingredients`와 `shopping_items` schema cache에 `family_group_id`가 없습니다. `pnpm release:external-status`의 Supabase live read/write/RLS 단계가 family ingredient/shopping member insert에서 HTTP 400 `PGRST204`로 막힙니다.
-- Supabase Storage path policy: production Storage에서 `community-images` guest cross-prefix upload가 아직 성공합니다. `20260526093000_harden_community_image_storage.sql` 적용과 Storage policy cache 반영 확인이 필요합니다.
+- Supabase migration history: remote 기록은 `20260508143719`에서 멈추지만 이후 일부 SQL은 운영에 수동 적용된 흔적이 있다. live schema와 로컬 migration을 대조해 이력을 복구하기 전에는 `supabase db push` 또는 SQL bundle 실행을 하지 않는다.
+- Phase 0/1/2 DB rollout: publication/auth migrations, Phase 1 schema/catalog, `20260710160000_add_distributed_api_rate_limits.sql`은 로컬 검증만 완료됐고 운영에는 미적용이다. 현재 운영의 미검수 레시피 노출과 device-header 권한 경로는 앱/DB 동시 rollout 전까지 남으며, capture/restore와 분산 RPC의 staging PostgreSQL 실행 증거가 아직 없다.
 - 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
 - Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
-- App Store Connect/TestFlight: 최신 `pnpm check:store-console-confirmation -- --platform=appstore`에서는 build `2026060803`이 PASS입니다. 다만 제출 직전에는 같은 명령 또는 App Store Connect API로 현재 build와 내부 TestFlight 그룹을 다시 확인합니다.
+- App Store Connect/TestFlight: 2026-07-10 `pnpm check:store-console-confirmation -- --platform=appstore` 재확인에서 build `2026062602`가 `VALID`이고 내부 TestFlight 그룹이 존재했습니다. 제출 직전에는 같은 명령 또는 App Store Connect API로 다시 확인합니다.
 
 브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](<repo>/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
 
-## 0. Supabase live schema/RLS 해제
+## 0. Supabase migration history·백업·Phase 0/1/2 staging 검증
 
 운영자가 먼저 해야 할 일:
 
-- Supabase SQL Editor 또는 migration pipeline에서 아래 새 migration을 production에 적용합니다.
-- `supabase/migrations/20260527093000_add_family_scoped_fridge_shopping.sql`
-- `supabase/migrations/20260526093000_harden_community_image_storage.sql`
+- live schema에서 `20260521160347` 이후 로컬 migration 각각의 실제 적용 상태를 확인하고 remote migration history를 안전하게 복구합니다.
+- 출력이나 공유 로그에 DB 연결 자격증명이 노출되지 않는 경로로 복원 가능한 운영 백업을 만들고 실제 복원 절차를 확인합니다.
+- staging에 `supabase/migrations/20260710130000_gate_recipe_publication.sql`, `supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql`, `supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql`, `supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql`을 순서대로 적용합니다.
+- staging에서 version capture/edit/restore 왕복, 같은 recipe 안의 step-ingredient 무결성, alias 유일성, non-destructive rollback을 실제 PostgreSQL로 검증합니다.
+- staging에서 무서명 요청, 위조 `x-device-id`, 다른 signed user, anonymous user의 family/community write가 모두 차단되는지 확인합니다.
+- staging 서버에 32자 이상의 server-only `API_RATE_LIMIT_HMAC_SECRET`을 설정하고 목록·상세·추천 API의 정상, `429`, `503`, 잘못된 입력 경로를 검증합니다. 자세한 계약은 `docs/api-v1-operations.md`를 따릅니다.
+- 운영에는 migration history와 백업 확인 후 Phase 0 두 migration과 matching app build를 먼저 함께 적용합니다. Phase 1 두 migration과 Phase 2 rate-limit migration은 staging 복원 시험과 API cutover 계획이 승인된 뒤 별도 rollout합니다. `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED`는 abuse controls가 준비될 때까지 `false`로 유지합니다.
 - 기존 migration 파일은 수정하지 않습니다.
-- 적용 후 PostgREST schema cache가 갱신될 때까지 기다립니다.
 
 SQL Editor에 붙여 넣을 정확한 bundle은 아래 명령으로 출력합니다.
 
+확인 전 `pnpm release:supabase-live-unblock-sql`은 의도적으로 실패합니다. 아래 acknowledgement는 실제 확인을 마친 운영자만 설정합니다.
+
 ```bash
-pnpm release:supabase-live-unblock-sql
+SUPABASE_MIGRATION_HISTORY_RECONCILED=1 SUPABASE_BACKUP_VERIFIED=1 pnpm release:supabase-live-unblock-sql
 ```
 
 그 다음 실행:
 
 ```bash
-pnpm release:supabase-live-unblock-check
+SUPABASE_MIGRATION_HISTORY_RECONCILED=1 SUPABASE_BACKUP_VERIFIED=1 pnpm release:supabase-live-unblock-check
 pnpm release:external-status
 ```
 
@@ -49,8 +54,9 @@ pnpm check:supabase-storage-live
 확인할 항목:
 
 - `check:supabase-release`가 `family fridge and shopping rows are member-scoped`를 PASS로 표시
-- `check:supabase-live`에서 family ingredient/shopping member insert, joiner read, non-member isolation PASS
-- `check:supabase-storage-live`에서 cross-prefix upload blocked PASS
+- `check:supabase-live`에서 unsigned/device-header 접근 0건, signed owner readback, cross-user 차단, family member read, non-member 차단 PASS
+- `check:supabase-storage-live`에서 unauthenticated upload와 cross-prefix upload 차단, permanent user auth UID prefix upload PASS
+- `/api/recipes`가 검수 증거 없는 레시피를 0건 반환
 
 ## 1. 실기기 QA 해제
 
@@ -97,7 +103,7 @@ pnpm release:capture-ios-real-device-qa
 - JipbabNote 앱 레코드를 엽니다.
 - 직접 URL: `https://appstoreconnect.apple.com/teams/d0f73d2e-b3a6-49ef-938f-4639fea25fee/apps/6762567054/testflight/ios`
 - 앱 메뉴가 `jipbab-note`인지 확인합니다.
-- iOS build `2026060803` 처리 완료 상태를 확인합니다.
+- iOS build `2026062602` 처리 완료 상태를 확인합니다.
 - 내부 테스터 그룹이 이 빌드를 설치할 수 있는지 확인합니다.
 
 완료 후 [store-console-confirmation.md](<repo>/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.

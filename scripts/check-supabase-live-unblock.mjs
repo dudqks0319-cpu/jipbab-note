@@ -2,10 +2,12 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 const requiredMigrations = [
-  "supabase/migrations/20260527093000_add_family_scoped_fridge_shopping.sql",
-  "supabase/migrations/20260526093000_harden_community_image_storage.sql",
-  "supabase/migrations/20260528010000_fix_family_member_rls_recursion.sql",
+  "supabase/migrations/20260710130000_gate_recipe_publication.sql",
+  "supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql",
 ];
+
+const migrationHistoryReconciled = process.env.SUPABASE_MIGRATION_HISTORY_RECONCILED === "1";
+const backupVerified = process.env.SUPABASE_BACKUP_VERIFIED === "1";
 
 const checks = [
   {
@@ -61,6 +63,12 @@ console.log("Supabase live unblock check");
 console.log("Required production migrations:");
 for (const relativePath of requiredMigrations) {
   console.log(`- ${relativePath}`);
+}
+
+if (!migrationHistoryReconciled || !backupVerified) {
+  console.log("\nBLOCKED: migration history reconciliation and restorable backup evidence are required");
+  console.log("Set SUPABASE_MIGRATION_HISTORY_RECONCILED=1 and SUPABASE_BACKUP_VERIFIED=1 only after verification.");
+  process.exit(1);
 }
 
 if (missingMigrations.length > 0) {

@@ -9,6 +9,7 @@ const playStoreGateSource = readFileSync("scripts/check-playstore-submit-readine
 const playStoreExternalSource = readFileSync("scripts/check-playstore-external-status.mjs", "utf8");
 const appStoreGateSource = readFileSync("scripts/check-appstore-submit-readiness.mjs", "utf8");
 const appStoreExternalSource = readFileSync("scripts/check-appstore-external-status.mjs", "utf8");
+const androidArtifactSource = readFileSync("scripts/check-android-release-artifact.mjs", "utf8");
 
 test("Play Store submission gates are wired into package scripts", () => {
   assert.equal(
@@ -55,4 +56,13 @@ test("platform-specific submission gates stay separated", () => {
   assert.match(playStoreGateSource, /check-playstore-external-status/);
   assert.match(playStoreExternalSource, /--platform=android/);
   assert.match(playStoreExternalSource, /--platform=play/);
+});
+
+test("compact remote-shell AABs are verified by structure and HTTPS runtime URL", () => {
+  assert.match(androidArtifactSource, /compactRemoteShellEntries/);
+  assert.match(androidArtifactSource, /base\/assets\/public\/runtime-app-config\.json/);
+  assert.match(androidArtifactSource, /base\/dex\/classes\.dex/);
+  assert.match(androidArtifactSource, /base\/manifest\/AndroidManifest\.xml/);
+  assert.match(androidArtifactSource, /startsWith\("https:\/\/"\)/);
+  assert.match(androidArtifactSource, /compact remote shell AAB/);
 });

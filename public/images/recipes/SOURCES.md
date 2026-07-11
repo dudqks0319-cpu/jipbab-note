@@ -33,6 +33,12 @@ These images were generated in-house for Korean home-cooking recipe cards. They 
 - `jipbab-curated/tomato-egg-stirfry.png`: cropped from in-house generated 15-dish contact sheet, added 2026-05-06
 - `generated/*.png`: in-house generated finished-dish food photos for the expanded beginner recipe library, added 2026-06-10.
 - `beginner-food-photos/*.png`: generated in-house with the installed image generation skill for core beginner recipe thumbnails, added 2026-06-10. These are finished-dish food photos only; they are not recipe cards, posters, UI screenshots, SVG stand-ins, marketplace images, restaurant photos, blog images, or competitor assets.
+- `beginner-food-photos/beginner-004-egg-drop-soup.png`: in-house generated finished-dish photo for 달걀국, added 2026-06-11.
+- `beginner-food-photos/beginner-016-ham-vegetable-fried-rice.png`: in-house generated finished-dish photo for 햄야채볶음밥, added 2026-06-11.
+- `beginner-food-photos/beginner-034-gamja-guk.png`: in-house generated finished-dish photo for 감자국, added 2026-06-11.
+- `beginner-food-photos/beginner-047-tuna-kimchi-jjigae.png`: in-house generated finished-dish photo for 참치김치찌개, added 2026-06-11.
+- `beginner-food-photos/beginner-049-spam-kimchi-bokkeum.png`: in-house generated finished-dish photo for 스팸김치볶음, added 2026-06-11.
+- `beginner-food-photos/beginner-052-eomuk-tang.png`: in-house generated finished-dish photo for 어묵탕, added 2026-06-11.
 
 Contact-sheet source for the 2026-05-06 batch:
 `/Users/jyb-m3max/.codex/generated_images/019df2bf-9026-7b63-a35b-0c6f3014de26/ig_0f255b6fbfd4f4910169fb0dd6e19c8191a307ed8c93f8db98.png`.

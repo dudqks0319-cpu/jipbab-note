@@ -28,7 +28,7 @@ test("iOS cable QA evidence check is part of App Store external status", () => {
 test("iOS cable QA evidence check validates build identity and cable launch proof", () => {
   assert.match(source, /CURRENT_PROJECT_VERSION/);
   assert.match(source, /com\.jipbab\.note/);
-  assert.match(source, /2026060803/);
+  assert.match(source, /2026062602/);
   assert.match(source, /launch-home\.json/);
   assert.match(source, /launch-home\.log/);
   assert.match(source, /processes-after-launch\.txt/);

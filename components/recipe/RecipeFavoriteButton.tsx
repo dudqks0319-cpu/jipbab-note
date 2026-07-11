@@ -4,12 +4,14 @@
 import { Heart } from 'lucide-react'
 
 import { useFavorites } from '@/hooks/useFavorites'
+import type { RecipePublicationEvidence } from '@/types'
 
 type RecipeFavoriteButtonProps = {
   id: string
   name: string
   category: string
   thumbnailUrl: string | null
+  publicationEvidence: RecipePublicationEvidence
 }
 
 export default function RecipeFavoriteButton({
@@ -17,6 +19,7 @@ export default function RecipeFavoriteButton({
   name,
   category,
   thumbnailUrl,
+  publicationEvidence,
 }: RecipeFavoriteButtonProps) {
   const { isFavorite, toggleFavorite } = useFavorites()
   const favorite = isFavorite(id)
@@ -30,6 +33,7 @@ export default function RecipeFavoriteButton({
           name,
           category,
           thumbnailUrl,
+          publicationEvidence,
         })
       }
       className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"

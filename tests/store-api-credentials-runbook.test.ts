@@ -24,7 +24,7 @@ test("store API credentials runbook covers App Store Connect API env", () => {
   assert.match(runbook, /APP_STORE_CONNECT_API_ISSUER_ID/);
   assert.match(runbook, /APP_STORE_CONNECT_API_PRIVATE_KEY_PATH/);
   assert.match(runbook, /APP_STORE_CONNECT_BUNDLE_ID=com\.jipbab\.note/);
-  assert.match(runbook, /APP_STORE_CONNECT_BUILD_VERSION=2026060803/);
+  assert.match(runbook, /APP_STORE_CONNECT_BUILD_VERSION=2026062602/);
   assert.match(runbook, /AuthKey_<KEY_ID>\.p8/);
   assert.match(runbook, /\.env\.store-api\.local/);
 });

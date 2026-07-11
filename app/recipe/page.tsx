@@ -3,14 +3,14 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users } from 'lucide-react'
+import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
 
+import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
 import { CURATED_JIPBAB_RECIPES } from '@/lib/curated-recipes'
 import {
   RECIPE_QUICK_FILTERS,
   getReadinessBadge,
-  isBeginnerVerifiedRecipe,
   matchesRecipeQuickFilter,
   type RecipeQuickFilter,
 } from '@/lib/recipe-list-labels'
@@ -32,16 +32,10 @@ import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import type { RecipeApiV1Sort } from '@/lib/recipe-api-v1-client'
+import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
-const FALLBACK_RECIPE_IMAGE =
-  '/images/recipes/kimchi-fried-rice.png'
-const RECIPE_FALLBACK_IMAGES = [
-  '/images/recipes/jipbab-curated/doenjang-jjigae-basic.png',
-  '/images/recipes/jipbab-curated/gyeran-mari-basic.png',
-  '/images/recipes/jipbab-curated/dubu-jorim-basic.png',
-  '/images/recipes/soy-garlic-chicken.png',
-] as const
 const curatedRecipeMeta = new Map(
   CURATED_JIPBAB_RECIPES.map((recipe) => [recipe.id, recipe]),
 )
@@ -50,11 +44,9 @@ const DISPLAY_CATEGORY_QUICK_FILTERS: Partial<Record<DisplayRecipeCategory, Reci
   '10분요리': 'quick',
 }
 const DISPLAY_CATEGORY_LABEL_LINES: Partial<Record<DisplayRecipeCategory, string[]>> = {
-  '김치/밥 요리': ['김치/밥', '요리'],
-  '두부/저렴 재료': ['두부/저렴', '재료'],
-  '참치캔/스팸/햄/어묵': ['참치캔/', '스팸/햄/', '어묵'],
-  '전자레인지/노불': ['전자레인지', '노불'],
-  '도시락/반찬': ['도시락', '반찬'],
+  '밥·한 그릇': ['밥·한', '그릇'],
+  '찌개·전골': ['찌개', '전골'],
+  '간식·디저트': ['간식', '디저트'],
 }
 
 function toRealRecipeCategory(category: DisplayRecipeCategory): RecipeCategory {
@@ -67,6 +59,21 @@ function getDisplayCategoryLabelLines(category: DisplayRecipeCategory): string[]
 
 export default function RecipePage() {
   const isAppStoreDemo = useDemoMode()
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [quickFilter, setQuickFilter] = useState<RecipeQuickFilter>('all')
+  const [difficultyFilter, setDifficultyFilter] = useState<RecipeDifficultyListFilter>('all')
+  const [timeFilter, setTimeFilter] = useState<RecipeTimeListFilter>('all')
+  const [toolFilter, setToolFilter] = useState<RecipeToolListFilter>('all')
+  const [fridgeFilter, setFridgeFilter] = useState<RecipeFridgeListFilter>('all')
+  const [sortMode, setSortMode] = useState<RecipeListSortMode>('recommended')
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [urlStateReady, setUrlStateReady] = useState(false)
+  const apiSort: RecipeApiV1Sort = {
+    recommended: 'recommended',
+    missing: 'least-missing',
+    'beginner-score': 'recommended',
+    time: 'fastest',
+  }[sortMode] as RecipeApiV1Sort
   const {
     recipes,
     loading,
@@ -83,19 +90,21 @@ export default function RecipePage() {
     nextPage,
     prevPage,
     refresh,
-  } = useRecipes()
+  } = useRecipes(24, {
+    enabled: urlStateReady,
+    sort: apiSort,
+    difficulty: difficultyFilter === 'level-1' ? 1 : null,
+    maxTotalTime: timeFilter === 'all' ? null : Number(timeFilter),
+    maxMissingIngredients: fridgeFilter === 'ready' ? 0 : fridgeFilter === 'almost' ? 2 : null,
+  })
 
   const { favorites, isFavorite, toggleFavorite } = useFavorites()
-  const [favoritesOnly, setFavoritesOnly] = useState(false)
-  const [quickFilter, setQuickFilter] = useState<RecipeQuickFilter>('all')
-  const [difficultyFilter, setDifficultyFilter] = useState<RecipeDifficultyListFilter>('all')
-  const [timeFilter, setTimeFilter] = useState<RecipeTimeListFilter>('all')
-  const [toolFilter, setToolFilter] = useState<RecipeToolListFilter>('all')
-  const [fridgeFilter, setFridgeFilter] = useState<RecipeFridgeListFilter>('all')
-  const [sortMode, setSortMode] = useState<RecipeListSortMode>('recommended')
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
-  const baseRecipes = isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipes
+  const baseRecipes = useMemo(
+    () => filterPublicationApprovedRecipes(isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipes),
+    [isAppStoreDemo, recipes],
+  )
   const visibleTotalCount = isAppStoreDemo ? baseRecipes.length : Math.max(totalCount, baseRecipes.length)
+  const publicationEmpty = visibleTotalCount === 0 && !searchQuery && selectedCategory === '전체' && !favoritesOnly
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
   useEffect(() => {
@@ -104,7 +113,59 @@ export default function RecipePage() {
     if (linkedQuery?.trim()) {
       setSearchQuery(linkedQuery.trim())
     }
-  }, [setSearchQuery])
+    const category = params.get('category')
+    if (category && DISPLAY_RECIPE_CATEGORIES.includes(category as DisplayRecipeCategory)) {
+      setSelectedCategory(toRealRecipeCategory(category as DisplayRecipeCategory))
+    }
+    const quick = params.get('quick')
+    if (quick && RECIPE_QUICK_FILTERS.some((item) => item.id === quick)) {
+      setQuickFilter(quick as RecipeQuickFilter)
+    }
+    const difficulty = params.get('difficulty')
+    if (difficulty && RECIPE_DIFFICULTY_FILTERS.some((item) => item.id === difficulty)) {
+      setDifficultyFilter(difficulty as RecipeDifficultyListFilter)
+    }
+    const time = params.get('time')
+    if (time && RECIPE_TIME_FILTERS.some((item) => item.id === time)) {
+      setTimeFilter(time as RecipeTimeListFilter)
+    }
+    const tool = params.get('tool')
+    if (tool && RECIPE_TOOL_FILTERS.some((item) => item.id === tool)) {
+      setToolFilter(tool as RecipeToolListFilter)
+    }
+    const fridge = params.get('fridge')
+    if (fridge && RECIPE_FRIDGE_FILTERS.some((item) => item.id === fridge)) {
+      setFridgeFilter(fridge as RecipeFridgeListFilter)
+    }
+    const sort = params.get('sort')
+    if (sort && RECIPE_LIST_SORT_OPTIONS.some((item) => item.id === sort)) {
+      setSortMode(sort as RecipeListSortMode)
+    }
+    setFavoritesOnly(params.get('favorites') === '1')
+    setShowAdvancedFilters(params.get('advanced') === '1')
+    setUrlStateReady(true)
+  }, [setSearchQuery, setSelectedCategory])
+
+  useEffect(() => {
+    if (!urlStateReady) return
+    const url = new URL(window.location.href)
+    const setOrDelete = (key: string, value: string, fallback: string) => {
+      if (value === fallback) url.searchParams.delete(key)
+      else url.searchParams.set(key, value)
+    }
+    setOrDelete('q', searchQuery.trim(), '')
+    url.searchParams.delete('ingredient')
+    setOrDelete('category', selectedCategory, '전체')
+    setOrDelete('quick', quickFilter, 'all')
+    setOrDelete('difficulty', difficultyFilter, 'all')
+    setOrDelete('time', timeFilter, 'all')
+    setOrDelete('tool', toolFilter, 'all')
+    setOrDelete('fridge', fridgeFilter, 'all')
+    setOrDelete('sort', sortMode, 'recommended')
+    setOrDelete('favorites', favoritesOnly ? '1' : '0', '0')
+    setOrDelete('advanced', showAdvancedFilters ? '1' : '0', '0')
+    window.history.replaceState(window.history.state, '', url)
+  }, [difficultyFilter, favoritesOnly, fridgeFilter, quickFilter, searchQuery, selectedCategory, showAdvancedFilters, sortMode, timeFilter, toolFilter, urlStateReady])
 
   const filteredRecipes = useMemo(() => {
     const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
@@ -198,6 +259,22 @@ export default function RecipePage() {
           </button>
         </div>
       </section>
+
+      {error && !isAppStoreDemo ? (
+        <section className="px-5 pt-3" role="alert">
+          <div className="rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-4 py-4 text-sm font-semibold text-[#d94d19]">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={refresh}
+              className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2f2117] px-4 text-[12px] font-black text-white"
+            >
+              <RefreshCw size={14} />
+              다시 시도
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid grid-cols-3 gap-2 px-5 pt-3">
         {visibleCategories.map((category) => {
@@ -316,16 +393,30 @@ export default function RecipePage() {
             <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>
           </div>
         ) : error && !isAppStoreDemo ? (
-          <div className="rounded-[16px] bg-[#fff0e4] px-4 py-5 text-sm font-semibold text-[#d94d19]">{error}</div>
+          <div className="sr-only">{error}</div>
         ) : filteredRecipes.length === 0 ? (
           <div className="rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
-            <p className="text-sm font-black text-[#4b3929]">조건에 맞는 레시피가 없습니다.</p>
+            <p className="text-sm font-black text-[#4b3929]">
+              {publicationEmpty ? '현재 공개 가능한 레시피를 준비 중이에요.' : '조건에 맞는 레시피가 없습니다.'}
+            </p>
             <p className="mt-1 text-xs text-[#8f7f70]">
-              {selectedCategory !== '전체'
+              {publicationEmpty
+                ? '검수, 출처 확인과 실제 조리를 마친 레시피만 보여드려요.'
+                : selectedCategory !== '전체'
                 ? `${selectedCategory} 카테고리에 표시할 레시피가 아직 없습니다.`
                 : '검색어나 즐겨찾기 조건을 다시 확인해 주세요.'}
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {publicationEmpty ? (
+                <button
+                  type="button"
+                  onClick={refresh}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2f2117] px-4 text-[12px] font-black text-white"
+                >
+                  <RefreshCw size={14} />
+                  다시 확인
+                </button>
+              ) : null}
               {selectedCategory !== '전체' ? (
                 <button
                   type="button"
@@ -366,22 +457,19 @@ export default function RecipePage() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {filteredRecipes.map((recipe, index) => {
+            {filteredRecipes.map((recipe) => {
               const favorite = isFavorite(recipe.id)
-              const coverImage =
-                recipe.thumbnailUrl ||
-                RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] ||
-                FALLBACK_RECIPE_IMAGE
+              const coverImage = recipe.thumbnailUrl
               const isGeneratedRecipeImage = isBeginnerRecipeGeneratedImage(coverImage)
               const curated = curatedRecipeMeta.get(recipe.id)
-              const minutes = curated?.cookingTime ?? 15 + (index % 4) * 5
-              const servings = curated?.servings ? `${curated.servings}인분` : index % 3 === 0 ? '1인분' : index % 3 === 1 ? '2인분' : '2-3인분'
+              const minutes = recipe.totalMinutes
+              const servings = recipe.servings
               const readyLabel = getReadinessBadge(
                 recipe.missingIngredients.length,
                 recipe.matchedIngredients.length,
                 curated?.trustLabel,
               )
-              const beginnerVerified = isBeginnerVerifiedRecipe(curated)
+              const beginnerVerified = recipe.publicationEvidence?.reviewedForBeginner === true
               const recommendationReason = 'recommendationReason' in recipe && typeof recipe.recommendationReason === 'string'
                 ? recipe.recommendationReason
                 : readyLabel.text
@@ -389,16 +477,19 @@ export default function RecipePage() {
               return (
                 <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
                   <div className="flex gap-3 p-2.5">
-                    <Link href={`/recipe/${recipe.id}`} className="relative h-[86px] w-[96px] shrink-0 overflow-hidden rounded-[13px] bg-[#eadcc9]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={coverImage}
-                        alt={recipe.name}
-                        onError={(event) => {
-                          event.currentTarget.src = RECIPE_FALLBACK_IMAGES[index % RECIPE_FALLBACK_IMAGES.length] || FALLBACK_RECIPE_IMAGE
-                        }}
-                        className={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
-                      />
+                    <Link href={`/recipe/${recipe.id}`} className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#9b8979]">
+                      <span className="grid place-items-center gap-1 text-[10px] font-black">
+                        <Utensils size={18} />
+                        이미지 없음
+                      </span>
+                      {coverImage ? (
+                        <RecipeImage
+                          src={coverImage}
+                          alt={recipe.name}
+                          className="absolute inset-0"
+                          imageClassName={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
+                        />
+                      ) : null}
                     </Link>
 
                     <div className="min-w-0 flex-1 py-1">
@@ -406,11 +497,11 @@ export default function RecipePage() {
                         <Link href={`/recipe/${recipe.id}`} className="min-w-0">
                           <h2 className="line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
                           <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">
-                          {recipe.category} · {recipe.method}
+                            {recipe.category}{recipe.method ? ` · ${recipe.method}` : ''}
                           </p>
-                          {curated ? (
-                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#a66a17]">
-                              {curated.featuredReason}
+                          {recipe.summary ? (
+                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#7d6d5f]">
+                              {recipe.summary}
                             </p>
                           ) : null}
                         </Link>
@@ -421,6 +512,7 @@ export default function RecipePage() {
                               name: recipe.name,
                               category: recipe.category,
                               thumbnailUrl: recipe.thumbnailUrl,
+                              publicationEvidence: recipe.publicationEvidence,
                             })
                           }
                           aria-label={`${recipe.name} 즐겨찾기 토글`}
@@ -433,11 +525,11 @@ export default function RecipePage() {
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#7d6d5f]">
                         <span className="inline-flex items-center gap-1">
                           <Clock3 size={12} />
-                          {minutes}분
+                          {typeof minutes === 'number' ? `${minutes}분` : '시간 미표시'}
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <Users size={12} />
-                          {servings}
+                          {typeof servings === 'number' ? `${servings}인분` : '인분 미표시'}
                         </span>
                         <span className="inline-flex items-center gap-1 text-[#d94d19]">
                           <Star size={12} className="fill-[#f0a51c] text-[#f0a51c]" />

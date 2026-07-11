@@ -20,6 +20,7 @@ import {
 
 import StarterActionCard from '@/components/home/StarterActionCard'
 import TodayActionCard from '@/components/home/TodayActionCard'
+import RecipeImage from '@/components/recipe/RecipeImage'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFamilyShare } from '@/hooks/useFamilyShare'
 import { useIngredients } from '@/hooks/useIngredients'
@@ -32,18 +33,16 @@ import {
   rankRecipeRecommendations,
 } from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
-import { filterBeginnerHomeRecipes } from '@/lib/beginner-recipe-contract'
-import { CURATED_RECIPE_RECORDS, ONBOARDING_RECIPE_10_NAMES, RELEASE_RECIPE_30_NAMES } from '@/lib/curated-recipes'
 import { buildHomeHref } from '@/lib/home-actions'
 import { getIngredientDisplayName } from '@/lib/ingredient-display'
 import { withNormalizedIngredientStorage } from '@/lib/ingredient-storage'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import { resolveIngredientCatalogIds } from '@/lib/recipe-api-v1-client'
+import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday, getIngredientPhotoUrl } from '@/lib/utils'
 import type { IngredientRecord } from '@/types'
 
-const FALLBACK_RECIPE_IMAGE =
-  '/images/recipes/kimchi-fried-rice.png'
 const HOME_FRIDGE_IMAGE = '/images/fridge-freezer-board-animated.png'
 
 type StorageCounts = {
@@ -72,50 +71,7 @@ export default function HomePage() {
     familyGroupId: group?.id ?? null,
     enabled: Boolean(group),
   })
-  const {
-    recipes: recipeCatalog,
-    loading: recipesLoading,
-    error: recipesError,
-    refresh: refreshRecipes,
-  } = useRecipeCatalog(12)
-  const { uncheckedCount } = useShopping()
-
   const displayIngredients = isAppStoreDemo ? APPSTORE_DEMO_INGREDIENTS : ingredients
-  const displayRecipeCatalog = isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipeCatalog
-  const displayUncheckedCount = isAppStoreDemo
-    ? APPSTORE_DEMO_SHOPPING_ITEMS.filter((item) => !item.checked).length
-    : uncheckedCount
-  const onboardingRecipeCatalog = useMemo(() => {
-    const byName = new Map(CURATED_RECIPE_RECORDS.map((recipe) => [recipe.name, recipe]))
-    return ONBOARDING_RECIPE_10_NAMES
-      .map((recipeName) => byName.get(recipeName))
-      .filter((recipe): recipe is (typeof CURATED_RECIPE_RECORDS)[number] => Boolean(recipe))
-  }, [])
-  const releaseRecipeCatalog = useMemo(() => {
-    const byName = new Map(CURATED_RECIPE_RECORDS.map((recipe) => [recipe.name, recipe]))
-    return RELEASE_RECIPE_30_NAMES
-      .map((recipeName) => byName.get(recipeName))
-      .filter((recipe): recipe is (typeof CURATED_RECIPE_RECORDS)[number] => Boolean(recipe))
-  }, [])
-  const beginnerHomeRecipeCatalog = useMemo(() => {
-    if (isAppStoreDemo) {
-      return displayRecipeCatalog
-    }
-
-    const safeRecipes = filterBeginnerHomeRecipes(displayRecipeCatalog)
-    const onboardingRecipeIds = new Set(onboardingRecipeCatalog.map((recipe) => recipe.id))
-    const releaseRecipeIds = new Set(releaseRecipeCatalog.map((recipe) => recipe.id))
-    const mergedHomeRecipes = [
-      ...onboardingRecipeCatalog,
-      ...releaseRecipeCatalog.filter((recipe) => !onboardingRecipeIds.has(recipe.id)),
-      ...safeRecipes.filter((recipe) => !onboardingRecipeIds.has(recipe.id) && !releaseRecipeIds.has(recipe.id)),
-    ]
-
-    return mergedHomeRecipes.length > 0
-      ? mergedHomeRecipes
-      : filterBeginnerHomeRecipes(CURATED_RECIPE_RECORDS).slice(0, 30)
-  }, [displayRecipeCatalog, isAppStoreDemo, onboardingRecipeCatalog, releaseRecipeCatalog])
-
   const activeDisplayIngredients = useMemo(
     () =>
       displayIngredients
@@ -123,6 +79,36 @@ export default function HomePage() {
         .map(withNormalizedIngredientStorage),
     [displayIngredients],
   )
+  const recipeIngredientIds = useMemo(
+    () => resolveIngredientCatalogIds(activeDisplayIngredients.map((item) => item.name)),
+    [activeDisplayIngredients],
+  )
+  const {
+    recipes: recipeCatalog,
+    loading: recipesLoading,
+    error: recipesError,
+    refresh: refreshRecipes,
+  } = useRecipeCatalog(12, { ingredientIds: recipeIngredientIds, sort: 'recommended' })
+  const { uncheckedCount } = useShopping()
+
+  const displayRecipeCatalog = useMemo(
+    () => filterPublicationApprovedRecipes(isAppStoreDemo ? APPSTORE_DEMO_RECIPES : recipeCatalog),
+    [isAppStoreDemo, recipeCatalog],
+  )
+  const displayUncheckedCount = isAppStoreDemo
+    ? APPSTORE_DEMO_SHOPPING_ITEMS.filter((item) => !item.checked).length
+    : uncheckedCount
+  const beginnerHomeRecipeCatalog = useMemo(() => {
+    if (isAppStoreDemo) return displayRecipeCatalog
+    return displayRecipeCatalog.filter(
+      (recipe) =>
+        typeof recipe.difficultyLevel === 'number' &&
+        recipe.difficultyLevel <= 2 &&
+        typeof recipe.totalMinutes === 'number' &&
+        recipe.totalMinutes <= 20 &&
+        (recipe.requiredTools?.length ?? Number.POSITIVE_INFINITY) <= 3,
+    )
+  }, [displayRecipeCatalog, isAppStoreDemo])
   const activeFamilyIngredients = useMemo(
     () => familyIngredients.filter((item) => !item.consumedAt && !item.discardedAt),
     [familyIngredients],
@@ -223,7 +209,8 @@ export default function HomePage() {
 
   const isLoading = ingredientsLoading || recipesLoading
   const isEmptyFridge = activeDisplayIngredients.length === 0
-  const shouldShowStarterAction = isEmptyFridge || (!isLoading && !topRecipe)
+  const shouldShowStarterAction = isEmptyFridge
+  const hasPublishedRecipes = beginnerHomeRecipeCatalog.length > 0
   const shouldShowEmptyHome = isEmptyFridge
   const syncErrorMessage = !isAppStoreDemo ? ingredientsError?.message ?? recipesError : null
   const handleRetrySync = () => {
@@ -271,6 +258,8 @@ export default function HomePage() {
             starterIngredientNames={STARTER_INGREDIENT_NAMES}
             storageCounts={storageCounts}
           />
+        ) : !hasPublishedRecipes && !isLoading ? (
+          <RecipePublicationEmptyCard onRetry={refreshRecipes} />
         ) : (
           <TodayActionCard
             demoMode={isAppStoreDemo}
@@ -635,21 +624,24 @@ function RecipeHomeCard({
     hash: 'shopping-assistant',
     params: scope === 'family' ? { scope } : undefined,
   })
-  const thumbnailUrl = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE
+  const thumbnailUrl = recipe.thumbnailUrl
   const isGeneratedRecipeImage = isBeginnerRecipeGeneratedImage(thumbnailUrl)
   return (
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-[#ecd5bd]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={thumbnailUrl}
-            alt={recipe.name}
-            onError={(event) => {
-              event.currentTarget.src = FALLBACK_RECIPE_IMAGE
-            }}
-            className={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
-          />
+          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+            <Utensils size={18} />
+            이미지 없음
+          </span>
+          {thumbnailUrl ? (
+            <RecipeImage
+              src={thumbnailUrl}
+              alt={recipe.name}
+              className="absolute inset-0"
+              imageClassName={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
+            />
+          ) : null}
         </div>
       </Link>
       <div className="px-2.5 py-2">
@@ -659,11 +651,11 @@ function RecipeHomeCard({
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
           <span className="inline-flex items-center gap-1">
             <Clock3 size={10} />
-            {recipe.totalMinutes ?? 10}분
+            {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '시간 미표시'}
           </span>
           <span className="inline-flex items-center gap-1 text-[#a66a17]">
             <Star size={10} className="shrink-0 fill-[#f0a51c] text-[#f0a51c]" />
-            {typeof recipe.beginnerScore === 'number' ? recipe.beginnerScore : '쉬움'}
+            {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
           </span>
         </div>
         <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
@@ -731,20 +723,42 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
   return (
     <div className="jipbab-panel col-span-full rounded-[16px] px-4 py-4">
       <p className="text-[13px] font-black text-[#2f2117]">
-        {hasIngredients ? '오늘 만들 메뉴를 다시 찾을게요.' : '재료만 골라도 추천이 열려요.'}
+        {hasIngredients ? '현재 공개 가능한 레시피를 준비 중이에요.' : '재료만 골라도 추천이 열려요.'}
       </p>
       <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#8f7f70]">
         {hasIngredients
-          ? '재료를 더 넣거나 조건을 좁히면 바로 가능한 메뉴가 더 잘 나와요.'
+          ? '검수와 출처 확인을 마친 레시피만 보여드려요. 준비가 끝나면 바로 추천할게요.'
           : '냉장고에 있는 것부터 눌러보세요. 수량은 나중에 정리해도 괜찮아요.'}
       </p>
       <Link
         href={buildHomeHref(hasIngredients ? '/recipe' : '/fridge?add=1', { demoMode })}
         className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-[#ea5a1f] px-4 text-[12px] font-black text-white"
       >
-        {hasIngredients ? '메뉴 더 찾기' : '재료 고르기'}
+        {hasIngredients ? '레시피 화면 확인' : '재료 고르기'}
       </Link>
     </div>
+  )
+}
+
+function RecipePublicationEmptyCard({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
+      <p className="text-[12px] font-bold text-[#d94d19]">레시피 검수 중</p>
+      <h2 className="mt-2 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">
+        현재 공개 가능한 레시피를 준비 중이에요.
+      </h2>
+      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
+        출처, 계량, 안전 안내와 실제 조리 확인을 마친 레시피만 추천합니다.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white"
+      >
+        <RefreshCw size={16} />
+        다시 확인
+      </button>
+    </section>
   )
 }
 

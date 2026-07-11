@@ -34,7 +34,8 @@ test("beginner goal readiness audits the user-visible completion surfaces", () =
   assert.match(source, /filterBeginnerHomeRecipes/);
   assert.match(source, /RecipeCookMode/);
   assert.match(source, /RecipeShoppingAssistant/);
-  assert.match(source, /부서졌을 때/);
+  assert.match(source, /getPublicRecipeDetailV1/);
+  assert.match(source, /step\.recoveryTip/);
   assert.match(source, /TodayActionCard/);
   assert.match(source, /StarterActionCard/);
   assert.match(source, /buildHomeHref/);

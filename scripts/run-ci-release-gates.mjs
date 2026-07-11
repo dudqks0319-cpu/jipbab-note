@@ -18,6 +18,16 @@ const checks = [
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
   },
   {
+    name: "phase1-data-contract",
+    command: "node",
+    args: ["scripts/check-phase-1-data-contract.mjs"],
+  },
+  {
+    name: "api-v1-contract",
+    command: "node",
+    args: ["scripts/check-api-v1-contract.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],

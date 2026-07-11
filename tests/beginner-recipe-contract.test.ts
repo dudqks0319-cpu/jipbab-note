@@ -161,11 +161,11 @@ test("unsafe reference content is rejected from home recommendations", () => {
   );
 });
 
-test("home page filters recommendations through beginner contract", () => {
+test("home page uses publication-gated API v1 recommendations without curated fallback", () => {
   const homeSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(homeSource, /filterBeginnerHomeRecipes/);
-  assert.match(homeSource, /ONBOARDING_RECIPE_10_NAMES/);
+  assert.match(homeSource, /useRecipeCatalog\(12, \{ ingredientIds: recipeIngredientIds/);
+  assert.match(homeSource, /resolveIngredientCatalogIds/);
   assert.match(homeSource, /beginnerHomeRecipeCatalog/);
-  assert.match(homeSource, /불 없이|전자레인지|팬 1개/);
+  assert.doesNotMatch(homeSource, /CURATED_RECIPE_RECORDS|ONBOARDING_RECIPE_10_NAMES/);
 });

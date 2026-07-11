@@ -1,6 +1,61 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-06-30 KST
+Updated: 2026-07-11 KST
+
+## 2026-07-11 Phase 4 조리 모드
+
+- API v1의 초 단위·timer preset을 보존하고 절대 종료 시각 기반 timer로 바꿔 background/foreground 복귀 시 실제 남은 시간을 재계산한다.
+- 레시피별 단계 진행, 현재 단계, timer, 완료, 난이도 피드백을 versioned local state로 저장·복원한다. screen wake lock, 종료 진동·소리, aria-live, semantic progressbar를 추가했다.
+- 실제 390px 임시 하네스에서 2초 timer 완료, 3단계 100%, 완료 피드백, reload 복원을 확인하고 하네스를 제거했다. 최종 소스 `pnpm test` 343/343, production build 38 pages/routes 통과.
+- 서버 동기화 progress/feedback API, 실제 v2 상세 정상 경로, iOS/Android background·화면 잠금·진동·소리 실기기 검증은 staging 데이터와 기기 준비 전까지 미완료다.
+- Evidence: `docs/phase-4-cook-mode-report.md`, `output/ui-evidence/phase4-cook-mode-restored-390.png`.
+
+## 2026-07-11 Phase 3 프런트엔드 API v1 전환
+
+- 홈·목록·상세·장보기 흐름을 publication-gated API v1 단일 경로로 전환했다. non-demo 홈과 목록의 legacy `/api/recipes`, local cache, curated fallback은 제거했다.
+- 홈은 냉장고 재료를 exact ingredient catalog ID로 전달한다. 목록은 API 정렬·시간·부족 재료 필터와 cursor를 연결하고 검색·정규 카테고리·필터·정렬 상태를 URL에서 복원한다.
+- 목록 카테고리 레일은 Phase 1의 15개 정규 카테고리를 사용한다. 상세는 정규 재료·대체재·단계·안전·복구·보관·출처만 표시하며 임의 기본 사진과 일반 팁을 제거했다.
+- 검증: `pnpm test` 339/339, focused Phase 3 tests, `pnpm build` 38 pages/routes, OpenNext Cloudflare bundle, CI-safe 12/12, local release 11/11, security gate, production HTTP redacted 503 + Retry-After, 정확한 360/390/430 URL 복원·503 모바일 캡처, 390px 상세 공개 불가 캡처.
+- 현재 정상 결과가 503인 이유는 production/staging migration과 `API_RATE_LIMIT_HMAC_SECRET`이 미적용이기 때문이다. 정상 200 UI, pagination, 상세·장보기 실데이터 경로는 검수된 v2 staging fixture 전까지 완료로 주장하지 않는다.
+- DB migration, secret 등록, recipe 승인, production deploy는 수행하지 않았다.
+- Evidence: `docs/phase-3-frontend-integration-report.md`, `docs/phase-3-debug-audit.md`, `output/ui-evidence/phase3-recipe-360.png`, `output/ui-evidence/phase3-detail-unavailable-390.png`.
+
+## 2026-07-10 Phase 2 API v1·분산 레이트 리밋
+
+- Added fail-closed v1 endpoints for recipe list, normalized recipe detail, and evidence-based recommendations. Service-role queries and application assembly both require schema v2 plus approval, beginner review, actual cooking, food safety, image-rights, source, and publication evidence.
+- Added opaque keyset cursors, bounded filters and JSON bodies, common success/error envelopes, request IDs, non-cacheable responses, and redacted dependency failures. Search `_` and other SQL wildcard syntax are rejected rather than passed into `ilike`.
+- Added `20260710160000_add_distributed_api_rate_limits.sql`: HMAC-pseudonymized, atomic fixed-window counters with RLS, fixed `search_path`, and service-role-only RPC execution. Production fails closed with retryable 503 when the secret or RPC is unavailable; only non-production has a bounded in-memory fallback.
+- Verification: `pnpm test` 339/339, focused API tests 21/21, API contract 14/14, Supabase release 145/145, release security 3/3, CI-safe gates 12/12, local release gates 11/11, Next production build with all three v1 routes, and OpenNext Cloudflare build.
+- HTTP manual QA confirmed 400 for unsafe query/cursor/id/body, 413 for an oversized body, 429 with `Retry-After`, and redacted 503 dependency responses. A production `next start` run without the HMAC secret returned fail-closed 503 for list, detail, and recommendations.
+- No DB migration, secret registration, deployment, recipe approval, or UI cutover was performed. Healthy 200 paths against PostgreSQL remain blocked until migration history, backup, isolated staging, and a reviewed v2 fixture are available.
+- Evidence: `docs/phase-2-api-v1-report.md`, `docs/phase-2-debug-audit.md`, `docs/api-v1-operations.md`.
+
+## 2026-07-10 Phase 1 레시피 데이터 계약·dry run
+
+- Additive migrations `20260710150000_add_recipe_v2_schema_and_versioning.sql` and `20260710151000_seed_phase1_ingredient_catalog.sql` now define 15 canonical dish categories, normalized ingredients/substitutions/steps/step-ingredient links, internal reviews, and complete recipe version snapshots. Legacy JSONB remains intact and authoritative until a recipe explicitly reaches `schema_version = 2`.
+- The app-owned ingredient catalog is synchronized as 173 stable catalog rows and 258 globally unique exact aliases. `파` and `양파` have different canonical owners; the duplicate `불고기용 소고기` alias was removed from the generic beef item.
+- Version capture and restore require service role, fixed `search_path`, and an expected current version. The rollback disables the mutation RPCs and keeps tables, catalog rows, normalized data, and snapshots instead of dropping evidence.
+- A fresh read-only live dry run inspected 1,152 rows: 0 complete v2 candidates, 1,148 legacy string-ingredient rows, 4 missing ingredient arrays, 1,151 rows missing complete step-v2 fields, 105 unresolved `국&찌개` categories, and 0 linked source rows. No row was mutated or promoted.
+- `docs/beginner-recipe-review-rubric.md` defines a 100-point editorial rubric while keeping source, safety, image rights, actual cooking, reviewer, and review date as non-substitutable hard gates.
+- Verification: `pnpm test` 318/318, `pnpm test:content`, Phase 1 data contract 25/25, Supabase release contract 141/141, runtime publication/signed-session integration, CI-safe gates 11/11, local release gates 10/10, release security 3/3, Next build 36 routes, and OpenNext Cloudflare build.
+- Local PostgreSQL and Docker are unavailable, so SQL capture/restore execution is not claimed. Both migrations require migration-history reconciliation, a restorable backup, and staging execution before production. Neither migration was applied or deployed.
+- Evidence: `docs/phase-1-data-contract.md`, `docs/phase-1-migration-dry-run.md`, `docs/phase-1-migration-dry-run.csv`, and `docs/phase-1-ingredient-catalog.csv`.
+
+## 2026-07-10 Phase 0 공식 원본·레시피 인벤토리 감사
+
+- Current source HEAD is `efd86133c12bb509bb8eedbd033bfed98d24b250` on `ux/home-today-action-v2`, synchronized with public `origin` (`dudqks0319-cpu/jipbab-note`). Public `main` is 33 commits behind.
+- Vercel project `jipbab-note-app` remains Git-linked to the stale private repository `dudqks0319-cpu/jipbab-note-app/main`, while the active production deployment `dpl_GEJgsnCvRuofgWg82z74Wdw2UR9K` is `READY` at source SHA `efd8613`. This is a P0 reproducibility mismatch.
+- Supabase project `JipbabNote` (`xqelabiwtjntwrjqcteo`) is `ACTIVE_HEALTHY`; live anon REST checks pass.
+- Live inventory contains 1,152 `recipes` rows and 0 `recipe_sources` rows. None has `reviewed_for_beginner = true`; 1,146 lack difficulty, cooking time, and servings. Plan-compliant publishable count is 0.
+- Generated `docs/recipe-inventory.csv`, `docs/recipe-inventory.md`, and `docs/recipe-source-ledger.csv`. Local runtime catalog is tracked separately at 186 rows; its code-declared publish/review flags are not treated as actual cooking-test evidence.
+- Security review found a P0 guest identity flaw: caller-supplied `x-device-id` can act as bearer authorization when a victim device ID is disclosed. The local code and migration now remove that trust path, but production remains exposed until the signed-session migration and matching app build are rolled out together.
+- Local P0 publication gating is now implemented across RLS, `/api/recipes`, cached/local/demo/favorite catalogs, home/family recommendations, and direct detail URLs. The public API no longer contains a live MFDS fallback.
+- The fail-closed migration is `20260710130000_gate_recipe_publication.sql`; its manual rollback keeps both recipes and source rows private. Neither SQL file has been applied to production.
+- The signed guest contract is implemented in `20260710140000_replace_device_guest_auth_with_signed_sessions.sql`: private rows use only a verified `auth.uid()`, family/community/comment/image writes require a permanent user, anonymous-to-existing-account transfer proves both tokens through a service-role-only RPC, and `app.current_device_id()` is fail-closed. The rollback disables signed guest cloud access without restoring device-header authorization. This migration is also not applied to production.
+- `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED` defaults to `false`; it must stay off until Supabase anonymous sign-ins, abuse controls, cleanup, and rollout monitoring are configured.
+- Verification at this checkpoint, including the later Phase 1 additions: `pnpm test` with 318/318 unit tests, targeted signed-session negative tests 8/8, `pnpm test:integration` with publication 0건 plus unsigned family/merge 401, `pnpm test:content`, `pnpm check:supabase-release` 141/141, `pnpm release:security-check`, `pnpm release:ci-static-check` 11/11, `pnpm release:check` 10/10, `pnpm build` with 36 routes, and `pnpm cloudflare:build`. Earlier 360/390/430 publication browser evidence remains valid; production DB and deployment checks are still intentionally not claimed.
+- No GitHub branch move, Vercel relink, domain change, Supabase mutation, production deploy, or recipe approval was performed in this audit.
+- Evidence: `docs/official-production-sources.md`, `docs/phase-0-baseline-2026-07-10.md`, `docs/recipe-inventory.md`.
 
 ## 2026-06-30 App Store 출시 앱 원격 WebView production UX 갱신
 
@@ -658,7 +713,7 @@ Updated: 2026-06-30 KST
   - `output/jipbab-note-android-smoke-dns-20260519.png`
   - `output/jipbab-note-android-shopping-20260519.png`
 
-## External state
+## Historical external state (2026-05 snapshot; superseded by later entries above)
 
 - Cloudflare Workers candidate: updated on 2026-05-30 KST from branch `cloudflare-workers-setup` at commit `f954c22` (`feat(recipes): add beginner scene image sets`). Deployment succeeded with Worker version `052d9079-ec6c-49e7-8ac0-818606e40647` at `<cloudflare-worker-url>`.
 - Beginner recipe scene images: pass on 2026-05-30 KST. The app now uses generated per-recipe scene sets under `public/images/recipes/beginner-scenes/`: `cover.svg`, `ingredients.svg`, `tools.svg`, and `step-01.svg` through `step-04.svg` for all 120 beginner recipes. Cloudflare asset checks returned HTTP 200 for `/images/recipes/beginner-scenes/beginner-001/cover.svg` and `/images/recipes/beginner-scenes/beginner-001/step-01.svg`.

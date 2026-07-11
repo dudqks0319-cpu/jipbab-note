@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react'
 
+import RecipeImage from '@/components/recipe/RecipeImage'
 import { buildHomeHref, getTodayActionPrimaryCta, getTodayActionSecondaryCta } from '@/lib/home-actions'
 import { getEssentialMissingIngredients } from '@/lib/matching'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
-
-const FALLBACK_RECIPE_IMAGE = '/images/recipes/kimchi-fried-rice.png'
 
 export type TodayActionRecipe = {
   id: string
@@ -65,7 +64,7 @@ export default function TodayActionCard({
     missingCount,
     recipeId: recipe.id,
   })
-  const thumbnailUrl = recipe.thumbnailUrl || FALLBACK_RECIPE_IMAGE
+  const thumbnailUrl = recipe.thumbnailUrl
   const isGeneratedRecipeImage = isBeginnerRecipeGeneratedImage(thumbnailUrl)
   const toolLabel = getPrimaryToolLabel(recipe)
   const reason = getTodayRecommendationReason({
@@ -91,15 +90,18 @@ export default function TodayActionCard({
           aria-label={`${recipe.name} 레시피 보기`}
           className="relative block h-28 overflow-hidden rounded-[18px] bg-[#fff7ed]"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={thumbnailUrl}
-            alt={recipe.name}
-            onError={(event) => {
-              event.currentTarget.src = FALLBACK_RECIPE_IMAGE
-            }}
-            className={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
-          />
+          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+            <Utensils size={18} />
+            이미지 없음
+          </span>
+          {thumbnailUrl ? (
+            <RecipeImage
+              src={thumbnailUrl}
+              alt={recipe.name}
+              className="absolute inset-0"
+              imageClassName={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
+            />
+          ) : null}
         </Link>
       </div>
 
@@ -133,7 +135,9 @@ export default function TodayActionCard({
               <Clock3 size={11} />
               시간
             </dt>
-            <dd className="mt-0.5 text-[13px] font-black text-white">{recipe.totalMinutes ?? 10}분</dd>
+            <dd className="mt-0.5 text-[13px] font-black text-white">
+              {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '미표시'}
+            </dd>
           </div>
           <div className="rounded-[14px] bg-white/10 px-2 py-2">
             <dt className="flex items-center justify-center gap-1 text-[10px] font-bold text-[#ffd8a8]">
@@ -180,7 +184,7 @@ function getPrimaryToolLabel(recipe: Pick<TodayActionRecipe, 'requiredTools' | '
 
   const primaryTool = recipe.requiredTools?.[0]?.trim()
   if (!primaryTool) {
-    return '간단'
+    return '미표시'
   }
 
   if (primaryTool.includes('프라이팬')) {

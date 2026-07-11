@@ -3,10 +3,18 @@ import path from "node:path";
 
 const cwd = process.cwd();
 const migrationPaths = [
-  "supabase/migrations/20260526093000_harden_community_image_storage.sql",
-  "supabase/migrations/20260527093000_add_family_scoped_fridge_shopping.sql",
-  "supabase/migrations/20260528010000_fix_family_member_rls_recursion.sql",
+  "supabase/migrations/20260710130000_gate_recipe_publication.sql",
+  "supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql",
 ];
+
+const migrationHistoryReconciled = process.env.SUPABASE_MIGRATION_HISTORY_RECONCILED === "1";
+const backupVerified = process.env.SUPABASE_BACKUP_VERIFIED === "1";
+
+if (!migrationHistoryReconciled || !backupVerified) {
+  console.error("BLOCKED: reconcile Supabase migration history and verify a restorable backup first.");
+  console.error("Required acknowledgements: SUPABASE_MIGRATION_HISTORY_RECONCILED=1 and SUPABASE_BACKUP_VERIFIED=1");
+  process.exit(1);
+}
 
 const missing = migrationPaths.filter((relativePath) => !existsSync(path.join(cwd, relativePath)));
 if (missing.length > 0) {
@@ -17,7 +25,7 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log("-- 집밥노트 Supabase live unblock SQL bundle");
+console.log("-- 집밥노트 Phase 0 publication and signed-session SQL bundle");
 console.log("-- Apply in this order through the Supabase SQL Editor or migration pipeline.");
 console.log("-- Do not edit historical migration files; apply this output as an operator action.");
 console.log("-- After applying, run:");

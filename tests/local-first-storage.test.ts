@@ -104,9 +104,10 @@ test("pending local shopping updates beat newer remote rows until sync completes
   assert.equal(merged[0]?.checked, true);
 });
 
-test("recipe hook uses local recipe cache before falling back to the network result", () => {
+test("recipe hook uses the publication-gated API v1 without a stale local fallback", () => {
   const recipeHook = readFileSync(new URL("../hooks/useRecipes.ts", import.meta.url), "utf8");
 
-  assert.match(recipeHook, /listCachedRecipePage/);
-  assert.match(recipeHook, /cacheRecipes/);
+  assert.match(recipeHook, /fetchRecipeListV1/);
+  assert.match(recipeHook, /recipeApiV1CardToRecord/);
+  assert.doesNotMatch(recipeHook, /listCachedRecipePage|cacheRecipes|CURATED_RECIPE_RECORDS/);
 });

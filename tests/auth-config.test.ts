@@ -298,17 +298,17 @@ test("useAuth reuses the shared Supabase client factory", () => {
   const source = readFileSync(new URL("../hooks/useAuth.ts", import.meta.url), "utf8");
 
   assert.match(source, /import \{ clearSupabaseAuthStorage, getSupabaseClient \} from "@\/lib\/supabase";/);
-  assert.match(source, /return getSupabaseClient\(\{ deviceId \}\);/);
+  assert.match(source, /return getSupabaseClient\(\);/);
   assert.doesNotMatch(source, /createClient\(/);
   assert.doesNotMatch(source, /authClientCache/);
 });
 
-test("browser Supabase client is a singleton and injects device id per request", () => {
+test("browser Supabase client is a singleton and never injects device identity", () => {
   const source = readFileSync(new URL("../lib/supabase.ts", import.meta.url), "utf8");
 
   assert.match(source, /let clientCache: SupabaseClient \| null = null;/);
-  assert.match(source, /let latestDeviceId: string \| null = null;/);
-  assert.match(source, /headers\.set\("x-device-id", latestDeviceId\);/);
+  assert.doesNotMatch(source, /latestDeviceId/);
+  assert.doesNotMatch(source, /x-device-id/i);
   assert.match(source, /flowType:\s*"pkce"/);
   assert.match(source, /detectSessionInUrl:\s*false/);
   assert.doesNotMatch(source, /new Map<string, SupabaseClient>/);
@@ -417,7 +417,7 @@ test("community hook uses the shared Supabase client factory", () => {
   const source = readFileSync(new URL("../hooks/useCommunity.ts", import.meta.url), "utf8");
 
   assert.match(source, /import \{ getSupabaseClient \} from "@\/lib\/supabase";/);
-  assert.match(source, /return getSupabaseClient\(\{ deviceId \}\);/);
+  assert.match(source, /return getSupabaseClient\(\);/);
   assert.doesNotMatch(source, /createClient\(/);
   assert.doesNotMatch(source, /communityClientCache/);
 });

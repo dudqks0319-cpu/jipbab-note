@@ -11,6 +11,7 @@ import {
   upsertFavoriteRecipe,
 } from "@/lib/local-db/favorites-repository";
 import { LOCAL_DB_STORES } from "@/lib/local-db/schema";
+import { isRecipePublicationEvidenceApproved } from "@/lib/recipe-publication";
 import type { FavoriteRecipeSummary } from "@/types";
 
 type FavoriteSeed = Omit<FavoriteRecipeSummary, "savedAt">;
@@ -28,7 +29,12 @@ export function useFavorites(): UseFavoritesResult {
   const [favorites, setFavorites] = useState<FavoriteRecipeSummary[]>([]);
 
   const refreshFavorites = useCallback(async (): Promise<void> => {
-    setFavorites(await listFavoriteRecipes());
+    const storedFavorites = await listFavoriteRecipes();
+    setFavorites(
+      storedFavorites.filter((favorite) =>
+        isRecipePublicationEvidenceApproved(favorite.publicationEvidence),
+      ),
+    );
   }, []);
 
   useEffect(() => {

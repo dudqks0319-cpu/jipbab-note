@@ -25,7 +25,7 @@ function getStepTools(step: RecipeDetailStep): string[] {
   const tools = ["프라이팬", "냄비", "전자레인지", "도마", "칼", "볼", "주걱", "채망"].filter((tool) =>
     source.includes(tool),
   );
-  return tools.length > 0 ? tools.slice(0, 3) : ["조리도구 확인"];
+  return tools.slice(0, 3);
 }
 
 function getHeatLabel(step: RecipeDetailStep): string | null {

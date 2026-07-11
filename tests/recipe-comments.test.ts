@@ -25,10 +25,11 @@ test("recipe comments API requires login for writes and hides deleted comments",
   const detailPage = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
 
   assert.match(listRoute, /getAuthenticatedUser/);
+  assert.match(listRoute, /isPermanentSupabaseUser/);
   assert.match(listRoute, /로그인하면 댓글을 남길 수 있어요/);
   assert.match(listRoute, /MAX_CONTENT_LENGTH = 500/);
-  assert.match(listRoute, /normalizeDeviceId/);
-  assert.match(listRoute, /DEVICE_ID_PATTERN/);
+  assert.match(listRoute, /device_id: `signed:\$\{randomUUID\(\)\}`/);
+  assert.doesNotMatch(listRoute, /x-device-id/);
   assert.match(listRoute, /safeDecodeURIComponent/);
   assert.match(listRoute, /\.eq\("status", "visible"\)/);
   assert.match(deleteRoute, /status: "deleted"/);

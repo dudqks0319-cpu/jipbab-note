@@ -12,14 +12,14 @@ If browser access keeps failing, use [store-api-credentials-runbook.md](<repo>/d
 
 - App Store Connect/TestFlight: confirmed
 - Bundle ID: com.jipbab.note
-- iOS build: 2026060803
+- iOS build: 2026062602
 - TestFlight processing: confirmed
 - Internal tester availability: confirmed
 - Evidence owner: app operator
-- Evidence date: 2026-06-25
-- App Store Connect evidence date: 2026-06-25
-- App Store Connect evidence artifacts: <repo>/output/release-evidence/2026-06-24T23-44-54-537Z-store-console
-- Notes: Xcode archive/export/upload succeeded for build `2026060803`, and the App Store Connect API check confirmed build `2026060803` is `VALID` with an internal TestFlight group. API key `Jipbab Codex Check` is used through ignored local `.release-secrets/` and `.env.store-api.local`; credential values are not recorded here. Earlier browser/API evidence for build `2026052001` remains historical only.
+- Evidence date: 2026-07-10
+- App Store Connect evidence date: 2026-07-10
+- App Store Connect evidence artifacts: <repo>/output/release-evidence/2026-07-10T04-02-31-522Z-store-console
+- Notes: App Store Connect API reconfirmed build `2026062602` is `VALID` with an internal TestFlight group. The local upload candidate is `ios/build/export-2026062602/App.ipa`; credential values are not recorded. Build `2026060803` evidence remains historical only.
 
 ## Google Play Console / Internal Testing
 
@@ -31,7 +31,7 @@ If browser access keeps failing, use [store-api-credentials-runbook.md](<repo>/d
 - Evidence date: pending
 - Play Console evidence date: pending
 - Play Console evidence artifacts: pending
-- Notes: Latest 2026-06-25 KST `pnpm release:capture-store-console` still reports App Store Connect/TestFlight pass for build `2026060803` and Google Play Console internal testing blocked. Play Console work remains an account ownership, payment, and verification decision and was not automated. The latest store-console packet records iOS IPA `ios/build/export-2026060803/App.ipa` sha256 `c8b9da612c3e5c7d49d7c7b5b390e3156df95e09a7b7910bb9645122f2c6d440`; Android internal testing remains pending until the Play Console app record and API credentials are set up.
+- Notes: The 2026-07-10 packet confirms App Store build `2026062602` and keeps Google Play internal testing blocked. The 3,052,392-byte signed AAB passes the compact remote-shell structure, HTTPS runtime URL, and signature checks; upload and internal-track processing are still not confirmed in Play Console.
 
 ## Unblock Checklist
 
@@ -39,7 +39,7 @@ If browser access keeps failing, use [store-api-credentials-runbook.md](<repo>/d
 
 - Sign in to App Store Connect in Chrome.
 - Open the JipbabNote app record for bundle `com.jipbab.note`.
-- Confirm uploaded build `2026060803` has finished processing in TestFlight.
+- Confirm uploaded build `2026062602` has finished processing in TestFlight.
 - Add or confirm an internal tester group can install the build.
 - Change the three App Store Connect confirmation lines above to `confirmed` only after observing the actual app record.
 - Optional API automation requires `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and `APP_STORE_CONNECT_API_PRIVATE_KEY_PATH`.

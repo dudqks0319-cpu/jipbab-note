@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { MessageCircle, Trash2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
-import { getDeviceId } from "@/lib/device-id";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { RecipeCommentRecord } from "@/types";
 
@@ -99,7 +98,6 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
         headers: {
           "content-type": "application/json",
           authorization: `Bearer ${accessToken}`,
-          "x-device-id": getDeviceId(),
         },
         body: JSON.stringify({ content: trimmed }),
       });

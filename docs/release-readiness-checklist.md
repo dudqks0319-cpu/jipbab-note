@@ -25,6 +25,7 @@ pnpm release:check
 - [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live read/write/RLS + Storage path policy check까지 통과 확인
 - [ ] warning 항목을 검토하고 수동 QA 범위에 반영
 - [ ] `Curated beginner recipes`, `Beginner recipe guidance`, `Recipe image provenance`, `Ingredient catalog coverage` PASS 확인
+- [ ] `pnpm check:phase1-data-contract` 실행: 스키마 v2, 카테고리, 카탈로그·별칭, 버전 복원 계약, dry-run 대기열 PASS 확인
 - [ ] `iOS Capacitor config`, `iOS Info.plist`, `iOS SPM package`, `Runtime app config` PASS 확인
 - [ ] `Android manifest`, `Android Capacitor config`, `Android release identity`, `Android upload signing` PASS 확인
 - [ ] `Supabase release contract check`에서 required tables/RLS/policies/partner_links 권한 PASS 확인
@@ -97,6 +98,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED=false` 유지 또는 익명 로그인 남용 방지 설정과 함께 명시적으로 활성화
 - [ ] `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] `ADMIN_EMAILS`
 - [ ] `NEXT_PUBLIC_SUPPORT_EMAIL`

@@ -12,6 +12,7 @@ import {
 } from "../local-db/schema.ts";
 import { mergeShoppingItems } from "../shopping-sync.ts";
 import { getSupabaseClient } from "../supabase.ts";
+import { ensureSignedSupabaseUser, isAnonymousSupabaseUser } from "../supabase-session.ts";
 import { withTimeout } from "../ingredient-sync.ts";
 import {
   clearPendingSync,
@@ -21,6 +22,7 @@ import {
 import type {
   IngredientCategory,
 } from "../../types/index.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const SHOPPING_SYNC_TIMEOUT_MS = 3500;
 
@@ -130,11 +132,11 @@ function recordScope(record: LocalShoppingItem): LocalDataScopeContext {
     : { scope: "personal", familyGroupId: null };
 }
 
-function toRemotePayload(item: LocalShoppingItem, userId: string | null): RemoteShoppingPayload {
+function toRemotePayload(item: LocalShoppingItem, userId: string): RemoteShoppingPayload {
   return {
     id: item.id,
     device_id: item.deviceId,
-    user_id: userId ?? item.userId,
+    user_id: userId,
     ...(item.familyGroupId ? { family_group_id: item.familyGroupId } : {}),
     name: item.name,
     quantity: item.quantity,
@@ -146,17 +148,11 @@ function toRemotePayload(item: LocalShoppingItem, userId: string | null): Remote
   };
 }
 
-async function getCurrentUserId(deviceId: string): Promise<string | null> {
-  const client = getSupabaseClient({ deviceId });
-  const { data } = await client.auth.getUser();
-  return data.user?.id ?? null;
-}
-
 async function upsertRemoteShoppingItem(
+  client: SupabaseClient,
   item: LocalShoppingItem,
-  userId: string | null,
+  userId: string,
 ): Promise<LocalShoppingItem> {
-  const client = getSupabaseClient({ deviceId: item.deviceId });
   const payload = toRemotePayload(item, userId);
   const { data, error } = await client
     .from("shopping_items")
@@ -185,8 +181,7 @@ async function upsertRemoteShoppingItem(
   return rowToItem(data as RawShoppingRow);
 }
 
-async function deleteRemoteShoppingItem(item: LocalShoppingItem): Promise<void> {
-  const client = getSupabaseClient({ deviceId: item.deviceId });
+async function deleteRemoteShoppingItem(client: SupabaseClient, item: LocalShoppingItem): Promise<void> {
   const scopedQuery = applyShoppingScope(
     client.from("shopping_items").delete().eq("id", item.id) as unknown as ScopedSupabaseQuery,
     recordScope(item),
@@ -206,13 +201,16 @@ async function deleteRemoteShoppingItem(item: LocalShoppingItem): Promise<void> 
   }
 }
 
-async function syncShoppingQueue(deviceId: string): Promise<void> {
+async function syncShoppingQueue(
+  client: SupabaseClient,
+  userId: string,
+  allowFamilyScope: boolean,
+): Promise<void> {
   const entries = await listPendingSyncEntries(LOCAL_DB_STORES.shoppingItems);
   if (entries.length === 0) {
     return;
   }
 
-  const userId = await getCurrentUserId(deviceId);
   let firstError: unknown = null;
 
   for (const entry of entries) {
@@ -222,13 +220,16 @@ async function syncShoppingQueue(deviceId: string): Promise<void> {
       firstError ??= new Error("동기화 payload를 해석할 수 없습니다.");
       continue;
     }
+    if (item.familyGroupId && !allowFamilyScope) {
+      continue;
+    }
 
     try {
       if (entry.action === "delete") {
-        await deleteRemoteShoppingItem(item);
+        await deleteRemoteShoppingItem(client, item);
         await hardDeleteLocalShoppingItem(entry.recordId);
       } else {
-        const synced = await upsertRemoteShoppingItem(item, userId);
+        const synced = await upsertRemoteShoppingItem(client, item, userId);
         await upsertLocalShoppingItem(synced);
       }
       await clearPendingSync(LOCAL_DB_STORES.shoppingItems, entry.recordId);
@@ -244,10 +245,9 @@ async function syncShoppingQueue(deviceId: string): Promise<void> {
 }
 
 async function fetchRemoteShoppingItems(
-  deviceId: string,
+  client: SupabaseClient,
   scopeContext: LocalDataScopeContext,
 ): Promise<LocalShoppingItem[]> {
-  const client = getSupabaseClient({ deviceId });
   const scopedQuery = applyShoppingScope(
     client
       .from("shopping_items")
@@ -286,10 +286,22 @@ export async function syncShoppingWithSupabase(
   deviceId: string,
   scopeContext: LocalDataScopeContext,
 ): Promise<LocalShoppingItem[]> {
-  await syncShoppingQueue(deviceId);
+  const client = getSupabaseClient();
+  let signedUser;
+  try {
+    signedUser = await ensureSignedSupabaseUser(client);
+  } catch {
+    return await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true });
+  }
+
+  if (!signedUser || (scopeContext.scope === "family" && isAnonymousSupabaseUser(signedUser))) {
+    return await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true });
+  }
+
+  await syncShoppingQueue(client, signedUser.id, !isAnonymousSupabaseUser(signedUser));
   const [localItems, remoteItems] = await Promise.all([
     listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true }),
-    fetchRemoteShoppingItems(deviceId, scopeContext),
+    fetchRemoteShoppingItems(client, scopeContext),
   ]);
   const merged = mergeShoppingItems(localItems, remoteItems) as LocalShoppingItem[];
   return await replaceScopedLocalShoppingItems(deviceId, scopeContext, merged);

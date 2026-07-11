@@ -73,6 +73,64 @@ export async function readJsonObject(request: Request): Promise<Record<string, u
   }
 }
 
+export type BoundedJsonObjectResult =
+  | { status: "ok"; value: Record<string, unknown> }
+  | { status: "invalid" }
+  | { status: "too_large" };
+
+export async function readBoundedJsonObject(
+  request: Request,
+  maxBytes: number,
+): Promise<BoundedJsonObjectResult> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) {
+    throw new TypeError("maxBytes must be a positive safe integer");
+  }
+
+  const declaredLength = request.headers.get("content-length");
+  if (declaredLength && /^\d+$/.test(declaredLength) && Number(declaredLength) > maxBytes) {
+    return { status: "too_large" };
+  }
+  if (!request.body) {
+    return { status: "invalid" };
+  }
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel();
+        return { status: "too_large" };
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return { status: "invalid" };
+  }
+
+  const payload = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    payload.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(payload);
+    const value = JSON.parse(text) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return { status: "invalid" };
+    }
+    return { status: "ok", value: value as Record<string, unknown> };
+  } catch {
+    return { status: "invalid" };
+  }
+}
+
 export function noStoreHeaders(): HeadersInit {
   return {
     "Cache-Control": "no-store",

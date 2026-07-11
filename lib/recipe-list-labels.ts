@@ -47,16 +47,19 @@ export function matchesRecipeQuickFilter(
     return recipe.missingIngredients.length === 1;
   }
   if (quickFilter === "beginner") {
-    return isBeginnerVerifiedRecipe(curated);
+    return recipe.publicationEvidence?.reviewedForBeginner === true || isBeginnerVerifiedRecipe(curated);
   }
   if (quickFilter === "quick") {
-    return typeof curated?.cookingTime === "number" && curated.cookingTime <= 10;
+    return (
+      (typeof recipe.totalMinutes === "number" && recipe.totalMinutes <= 10) ||
+      (typeof curated?.cookingTime === "number" && curated.cookingTime <= 10)
+    );
   }
   if (quickFilter === "no-fire") {
-    return curated?.noFire === true;
+    return recipe.noFire === true || curated?.noFire === true;
   }
   if (quickFilter === "microwave") {
-    return curated?.microwave === true;
+    return recipe.microwave === true || curated?.microwave === true;
   }
   return true;
 }

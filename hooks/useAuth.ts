@@ -7,12 +7,16 @@ import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { getDeviceId } from "@/lib/device-id";
 import { migrateDeviceData } from "@/lib/migrate-device-data";
+import {
+  captureAnonymousSessionForMerge,
+  mergePendingAnonymousUserData,
+} from "@/lib/anonymous-user-merge";
 import { clearSupabaseAuthStorage, getSupabaseClient } from "@/lib/supabase";
+import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 import {
   buildAuthCallbackUrl,
   buildEmailConfirmationRedirectUrl,
   buildNativeAuthBridgeUrl,
-  buildNativeAuthCallbackUrl,
   isNativeAuthCallbackUrl,
   normalizeAuthNextPath,
 } from "@/lib/auth-redirect";
@@ -111,13 +115,17 @@ function buildProviderOptions(): ResolvedAuthProviderOption[] {
   });
 }
 
-function createAuthClient(deviceId: string): SupabaseClient | null {
+function createAuthClient(): SupabaseClient | null {
   if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
     return null;
   }
 
   // Auth도 lib/supabase.ts의 캐시된 client를 사용해서 GoTrueClient 중복 생성을 줄입니다.
-  return getSupabaseClient({ deviceId });
+  return getSupabaseClient();
+}
+
+function visibleAuthUser(user: User | null | undefined): User | null {
+  return isPermanentSupabaseUser(user) ? user : null;
 }
 
 function resolveUserDisplayName(user: User | null): string {
@@ -455,6 +463,8 @@ async function exchangeNativeOAuthCallbackUrl(
     throw exchangeError;
   }
 
+  await mergePendingAnonymousUserData(client);
+
   return normalizeAuthNextPath(callbackUrl.searchParams.get("next") ?? fallbackNextPath);
 }
 
@@ -492,11 +502,11 @@ export function useAuth(): UseAuthResult {
 
   const runMigration = useCallback(
     async (nextUser: User | null) => {
-      if (!nextUser) {
+      if (!isPermanentSupabaseUser(nextUser)) {
         return;
       }
 
-      const client = createAuthClient(deviceId);
+      const client = createAuthClient();
       if (!client) {
         return;
       }
@@ -511,7 +521,6 @@ export function useAuth(): UseAuthResult {
 
       try {
         const result = await migrateDeviceData({
-          client,
           deviceId,
           userId: nextUser.id,
         });
@@ -528,7 +537,7 @@ export function useAuth(): UseAuthResult {
   );
 
   const refreshUser = useCallback(async () => {
-    const client = createAuthClient(deviceId);
+    const client = createAuthClient();
     if (!client) {
       setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
@@ -540,15 +549,15 @@ export function useAuth(): UseAuthResult {
       return;
     }
 
-    setUser(data.user ?? null);
-    if (data.user) {
+    setUser(visibleAuthUser(data.user));
+    if (isPermanentSupabaseUser(data.user)) {
       await runMigration(data.user);
     }
-  }, [deviceId, runMigration]);
+  }, [runMigration]);
 
   const signInWithProvider = useCallback(
     async (provider: OAuthProvider) => {
-      const client = createAuthClient(deviceId);
+      const client = createAuthClient();
       if (!client) {
         setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
         return;
@@ -566,6 +575,7 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
+        await captureAnonymousSessionForMerge(client);
         const nextPath = "/mypage";
         const redirectTo = shouldUseNativeOAuth()
           ? buildNativeAuthBridgeUrl(window.location.origin, nextPath)
@@ -598,12 +608,12 @@ export function useAuth(): UseAuthResult {
         setSigningIn(false);
       }
     },
-    [deviceId, providers],
+    [providers],
   );
 
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
-      const client = createAuthClient(deviceId);
+      const client = createAuthClient();
       if (!client) {
         setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
         return { ok: false };
@@ -613,6 +623,7 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
+        await captureAnonymousSessionForMerge(client);
         const { data, error: signInError } = await client.auth.signInWithPassword({
           email: email.trim(),
           password,
@@ -622,9 +633,10 @@ export function useAuth(): UseAuthResult {
           throw signInError;
         }
 
-        const sessionUser = data.session?.user ?? null;
+        await mergePendingAnonymousUserData(client);
+        const sessionUser = visibleAuthUser(data.session?.user);
         setUser(sessionUser);
-        if (sessionUser) {
+        if (isPermanentSupabaseUser(sessionUser)) {
           await runMigration(sessionUser);
         }
         return { ok: true };
@@ -636,12 +648,12 @@ export function useAuth(): UseAuthResult {
         setSigningIn(false);
       }
     },
-    [deviceId, runMigration],
+    [runMigration],
   );
 
   const signUpWithEmail = useCallback(
     async (email: string, password: string, nickname?: string) => {
-      const client = createAuthClient(deviceId);
+      const client = createAuthClient();
       if (!client) {
         setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
         return { ok: false, requiresEmailConfirmation: false };
@@ -651,6 +663,7 @@ export function useAuth(): UseAuthResult {
       setError(null);
 
       try {
+        await captureAnonymousSessionForMerge(client);
         const displayName = nickname?.trim();
         const { data, error: signUpError } = await client.auth.signUp({
           email: email.trim(),
@@ -675,9 +688,10 @@ export function useAuth(): UseAuthResult {
           return { ok: false, requiresEmailConfirmation: false };
         }
 
-        const sessionUser = data.session?.user ?? null;
+        await mergePendingAnonymousUserData(client);
+        const sessionUser = visibleAuthUser(data.session?.user);
         setUser(sessionUser);
-        if (sessionUser) {
+        if (isPermanentSupabaseUser(sessionUser)) {
           await runMigration(sessionUser);
           return { ok: true, requiresEmailConfirmation: false };
         }
@@ -690,11 +704,11 @@ export function useAuth(): UseAuthResult {
         setSigningIn(false);
       }
     },
-    [deviceId, runMigration],
+    [runMigration],
   );
 
   const signOut = useCallback(async () => {
-    const client = createAuthClient(deviceId);
+    const client = createAuthClient();
     if (!client) {
       setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
       return;
@@ -712,10 +726,10 @@ export function useAuth(): UseAuthResult {
     migratedKeyRef.current.clear();
     setMigrationResult(null);
     setUser(null);
-  }, [deviceId]);
+  }, []);
 
   useEffect(() => {
-    const client = createAuthClient(deviceId);
+    const client = createAuthClient();
     if (!client) {
       setLoading(false);
       setError(toAuthError(AUTH_UNAVAILABLE_MESSAGE, "config"));
@@ -743,10 +757,11 @@ export function useAuth(): UseAuthResult {
         }
       }
 
-      setUser(data.user ?? null);
+      const nextVisibleUser = visibleAuthUser(data.user);
+      setUser(nextVisibleUser);
       setLoading(false);
 
-      if (data.user) {
+      if (isPermanentSupabaseUser(data.user)) {
         await runMigration(data.user);
       }
     };
@@ -754,7 +769,7 @@ export function useAuth(): UseAuthResult {
     void initialize();
 
     const { data: subscription } = client.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
+      const nextUser = visibleAuthUser(session?.user);
       setUser(nextUser);
 
       if (!nextUser) {
@@ -762,14 +777,16 @@ export function useAuth(): UseAuthResult {
         return;
       }
 
-      void runMigration(nextUser);
+      if (isPermanentSupabaseUser(nextUser)) {
+        void runMigration(nextUser);
+      }
     });
 
     return () => {
       isMounted = false;
       subscription.subscription.unsubscribe();
     };
-  }, [deviceId, runMigration]);
+  }, [runMigration]);
 
   return {
     user,

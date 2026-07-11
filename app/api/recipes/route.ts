@@ -1,14 +1,16 @@
-// 이 파일은 식약처 조리식품 레시피 OpenAPI를 서버에서 호출해 앱용 데이터로 정규화합니다.
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 import { CURATED_JIPBAB_RECIPES } from '@/lib/curated-recipes'
 import { isBeginnerVerifiedRecipe } from '@/lib/recipe-list-labels'
+import {
+  isDatabaseRecipePublicationApproved,
+  isRecipePublicationApproved,
+  toRecipePublicationEvidence,
+} from '@/lib/recipe-publication'
 import { getRateLimitKey, normalizeHttpUrl } from '@/lib/request-security'
-import type { RecipeCategoryCounts } from '@/types'
+import type { RecipeCategoryCounts, RecipePublicationEvidence } from '@/types'
 
-const SERVICE_ID = 'COOKRCP01'
-const BASE_URL = 'https://openapi.foodsafetykorea.go.kr/api'
 const DEFAULT_PAGE = 1
 const DEFAULT_SIZE = 24
 const MAX_SIZE = 100
@@ -53,35 +55,6 @@ const CATEGORY_ALLOWLIST = new Set([
 const QUERY_PATTERN = /^[0-9A-Za-z가-힣\s\-_/(),.&]+$/
 const requestStore = new Map<string, { count: number; startedAt: number }>()
 
-type MfdsResult = {
-  CODE?: string
-  MSG?: string
-}
-
-type MfdsRecipeRow = {
-  RCP_SEQ?: string
-  RCP_NM?: string
-  RCP_WAY2?: string
-  RCP_PAT2?: string
-  INFO_ENG?: string
-  ATT_FILE_NO_MAIN?: string
-  ATT_FILE_NO_MK?: string
-  RCP_PARTS_DTLS?: string
-  HASH_TAG?: string
-  [key: string]: string | undefined
-}
-
-type MfdsServiceData = {
-  RESULT?: MfdsResult
-  total_count?: string
-  row?: MfdsRecipeRow[]
-}
-
-type MfdsResponse = {
-  COOKRCP01?: MfdsServiceData
-  RESULT?: MfdsResult
-}
-
 type RecipeDto = {
   id: string
   name: string
@@ -91,6 +64,9 @@ type RecipeDto = {
   thumbnailUrl: string | null
   ingredients: string
   hashTag: string
+  difficultyLevel?: number | null
+  totalMinutes?: number | null
+  publicationEvidence?: RecipePublicationEvidence | null
 }
 
 type SupabaseRecipeRow = {
@@ -100,7 +76,29 @@ type SupabaseRecipeRow = {
   category: string | null
   thumbnail_url: string | null
   ingredients: unknown
+  steps: unknown
+  tools: unknown
   source: string | null
+  source_id: string | null
+  review_status: string
+  reviewed_for_beginner: boolean
+  beginner_reviewed_at: string | null
+  actual_cooking_tested: boolean
+  actual_cooking_tested_at: string | null
+  food_safety_reviewed: boolean
+  food_safety_reviewed_at: string | null
+  image_rights_status: string
+  image_rights_reviewed_at: string | null
+  source_reviewed_at: string | null
+  reviewer: string | null
+  published_at: string | null
+  difficulty: number | null
+  servings_base: number | null
+  prep_time_minutes: number | null
+  cook_time_minutes: number | null
+  total_time_minutes: number | null
+  storage_guide: string | null
+  reheating_guide: string | null
 }
 
 const toPositiveInt = (value: string | null, fallback: number) => {
@@ -153,7 +151,7 @@ const getCuratedCategoryCounts = (query: string | null): RecipeCategoryCounts =>
   const normalizedQuery = query?.trim().toLowerCase() ?? ''
   const counts: RecipeCategoryCounts = { 전체: 0 }
   for (const recipe of CURATED_JIPBAB_RECIPES) {
-    if (recipe.publishStatus && recipe.publishStatus !== 'published') {
+    if (!isRecipePublicationApproved(recipe)) {
       continue
     }
     const matchesQuery = !normalizedQuery ||
@@ -210,22 +208,6 @@ const isRateLimited = (key: string): boolean => {
 
   requestStore.set(key, { ...current, count: current.count + 1 })
   return false
-}
-
-const buildFilterSegment = (query: string | null, category: string | null) => {
-  const filters: string[] = []
-  const trimmedQuery = query?.trim()
-  const normalizedCategory = normalizeCategory(category)
-
-  if (trimmedQuery) {
-    filters.push(`RCP_NM=${encodeURIComponent(trimmedQuery)}`)
-  }
-  if (normalizedCategory) {
-    filters.push(`RCP_PAT2=${encodeURIComponent(normalizedCategory)}`)
-  }
-
-  if (filters.length === 0) return ''
-  return `/${filters.join('&')}`
 }
 
 const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
@@ -306,19 +288,6 @@ const formatIngredientDisplayText = (rawIngredients: string): string => {
   return normalizeIngredientDisplayItems(splitIngredientDisplayText(rawIngredients)).join(', ')
 }
 
-const rowToRecipe = (row: MfdsRecipeRow): RecipeDto => {
-  return {
-    id: row.RCP_SEQ ?? '',
-    name: row.RCP_NM?.trim() ?? '이름 없음',
-    category: normalizeDisplayCategory(row.RCP_PAT2),
-    method: row.RCP_WAY2?.trim() ?? '정보 없음',
-    calories: row.INFO_ENG?.trim() ?? '-',
-    thumbnailUrl: normalizeRecipeImageUrl(row.ATT_FILE_NO_MK || row.ATT_FILE_NO_MAIN || null),
-    ingredients: formatIngredientDisplayText(row.RCP_PARTS_DTLS?.trim() ?? ''),
-    hashTag: row.HASH_TAG?.trim() ?? '',
-  }
-}
-
 const parseMethodAndCalories = (description: string | null): Pick<RecipeDto, 'method' | 'calories'> => {
   if (!description) {
     return { method: '정보 없음', calories: '-' }
@@ -354,17 +323,22 @@ const stringifyIngredients = (value: unknown): string => {
   return ''
 }
 
-const supabaseRowToRecipe = (row: SupabaseRecipeRow): RecipeDto => {
+const supabaseRowToRecipe = (row: SupabaseRecipeRow): RecipeDto | null => {
+  const publicationEvidence = toRecipePublicationEvidence(row)
+  if (!publicationEvidence) return null
   const parsed = parseMethodAndCalories(row.description)
   return {
     id: row.id,
-    name: row.title?.trim() || '이름 없음',
+    name: row.title.trim(),
     category: normalizeDisplayCategory(row.category),
     method: parsed.method,
     calories: parsed.calories,
     thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
     ingredients: stringifyIngredients(row.ingredients),
     hashTag: '',
+    difficultyLevel: row.difficulty,
+    totalMinutes: row.total_time_minutes,
+    publicationEvidence,
   }
 }
 
@@ -387,8 +361,15 @@ const fetchRecipesFromSupabase = async (
 
     let request = client
       .from('recipes')
-      .select('id,title,description,category,thumbnail_url,ingredients,source', { count: 'exact' })
-      .order('created_at', { ascending: false })
+      .select('id,title,description,category,thumbnail_url,ingredients,steps,tools,source,source_id,review_status,reviewed_for_beginner,beginner_reviewed_at,actual_cooking_tested,actual_cooking_tested_at,food_safety_reviewed,food_safety_reviewed_at,image_rights_status,image_rights_reviewed_at,source_reviewed_at,reviewer,published_at,difficulty,servings_base,prep_time_minutes,cook_time_minutes,total_time_minutes,storage_guide,reheating_guide', { count: 'exact' })
+      .eq('review_status', 'approved')
+      .eq('reviewed_for_beginner', true)
+      .eq('actual_cooking_tested', true)
+      .eq('food_safety_reviewed', true)
+      .in('image_rights_status', ['approved', 'no_image_approved'])
+      .not('source_id', 'is', null)
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
       .range(from, to)
 
     if (query) {
@@ -405,9 +386,13 @@ const fetchRecipesFromSupabase = async (
     }
 
     const rows = Array.isArray(data) ? (data as SupabaseRecipeRow[]) : []
+    const recipes = rows
+      .filter(isDatabaseRecipePublicationApproved)
+      .map(supabaseRowToRecipe)
+      .filter((recipe): recipe is RecipeDto => recipe !== null)
     return {
-      recipes: rows.map(supabaseRowToRecipe),
-      totalCount: Number.isFinite(count ?? 0) ? (count ?? 0) : rows.length,
+      recipes,
+      totalCount: recipes.length === rows.length && Number.isFinite(count ?? 0) ? (count ?? 0) : recipes.length,
     }
   } catch (error) {
     console.error('Supabase recipes 조회 실패', error)
@@ -429,6 +414,13 @@ const fetchRecipeCategoryCountsFromSupabase = async (
     let request = client
       .from('recipes')
       .select('title,category')
+      .eq('review_status', 'approved')
+      .eq('reviewed_for_beginner', true)
+      .eq('actual_cooking_tested', true)
+      .eq('food_safety_reviewed', true)
+      .in('image_rights_status', ['approved', 'no_image_approved'])
+      .not('source_id', 'is', null)
+      .not('published_at', 'is', null)
       .limit(1000)
 
     if (query) {
@@ -464,8 +456,6 @@ export async function GET(request: Request) {
   const page = toPositiveInt(searchParams.get('page'), DEFAULT_PAGE)
   const size = Math.min(toPositiveInt(searchParams.get('size'), DEFAULT_SIZE), MAX_SIZE)
   const includeCounts = searchParams.get('includeCounts') === '1'
-  const start = (page - 1) * size + 1
-  const end = start + size - 1
   let query: string | null
   try {
     query = sanitizeQuery(searchParams.get('q'))
@@ -494,80 +484,13 @@ export async function GET(request: Request) {
     })
   }
 
-  const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        recipes: dbResult?.recipes ?? [],
-        totalCount: dbResult?.totalCount ?? 0,
-        page,
-        size,
-        categoryCounts,
-        code: 'NO-API-KEY',
-        message:
-          '레시피 API 키가 없어 저장된 데이터만 표시합니다. MFDS_API_KEY(권장) 또는 FOODSAFETY_API_KEY를 설정해 주세요.',
-      },
-      { status: 200 },
-    )
-  }
-
-  const filterSegment = buildFilterSegment(query, category)
-
-  const endpoint = `${BASE_URL}/${apiKey}/${SERVICE_ID}/json/${start}/${end}${filterSegment}`
-
-  try {
-    const response = await fetch(endpoint, {
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { message: `식약처 API 호출 실패 (${response.status})` },
-        { status: 502 },
-      )
-    }
-
-    const payload = (await response.json()) as MfdsResponse
-    const serviceData = payload.COOKRCP01
-    const result = serviceData?.RESULT ?? payload.RESULT
-    const rows = serviceData?.row ?? []
-    const totalCount = Number(serviceData?.total_count ?? rows.length ?? 0)
-    const recipes = rows.map(rowToRecipe)
-    const responseCategoryCounts = includeCounts
-      ? mergeCategoryCounts(categoryCounts, countRecipeCategories(recipes))
-      : undefined
-
-    if (!serviceData) {
-      return NextResponse.json(
-        {
-          recipes: [],
-          totalCount: 0,
-          page,
-          size,
-          categoryCounts: responseCategoryCounts,
-          code: result?.CODE ?? 'NO_DATA',
-          message: result?.MSG ?? '응답에 COOKRCP01 데이터가 없습니다.',
-        },
-        { status: 200 },
-      )
-    }
-
-    return NextResponse.json({
-      recipes,
-      totalCount,
-      page,
-      size,
-      categoryCounts: responseCategoryCounts,
-      code: result?.CODE ?? 'INFO-000',
-      message: result?.MSG ?? '정상 처리되었습니다.',
-    })
-  } catch (error) {
-    console.error('MFDS API 요청 실패', error)
-    return NextResponse.json(
-      {
-        message: '레시피 정보를 가져오는 중 오류가 발생했습니다.',
-      },
-      { status: 500 },
-    )
-  }
+  return NextResponse.json({
+    recipes: [],
+    totalCount: 0,
+    page,
+    size,
+    categoryCounts,
+    code: 'NO-PUBLISHED-RECIPES',
+    message: '현재 공개 가능한 레시피를 준비 중이에요.',
+  })
 }

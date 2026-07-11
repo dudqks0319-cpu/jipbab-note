@@ -19,6 +19,7 @@ test("CI static release gate runs only repository-local deterministic release ch
   assert.match(ciGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-local-mode-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-phase-1-data-contract\.mjs/);
   assert.match(ciGateSource, /--experimental-strip-types/);
   assert.match(ciGateSource, /scripts\/check-supabase-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-partner-links\.mjs/);

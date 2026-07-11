@@ -4,7 +4,10 @@ import { test } from "node:test";
 
 const hookSource = readFileSync("hooks/useFamilyShare.ts", "utf8");
 const apiSource = readFileSync("app/api/family-groups/route.ts", "utf8");
-const migrationSource = readFileSync("supabase/migrations/20260521160347_add_family_group_rpc.sql", "utf8");
+const signedSessionMigrationSource = readFileSync(
+  "supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql",
+  "utf8",
+);
 const familyScopeMigrationSource = readFileSync("supabase/migrations/20260527093000_add_family_scoped_fridge_shopping.sql", "utf8");
 const familyRlsRecursionMigrationSource = readFileSync(
   "supabase/migrations/20260528010000_fix_family_member_rls_recursion.sql",
@@ -49,32 +52,34 @@ test("family invite join does not create a fake local group before cloud lookup"
 test("family API binds authenticated requests to Supabase user identity", () => {
   assert.match(hookSource, /getSupabaseClient/);
   assert.match(hookSource, /auth\.getSession\(\)/);
-  assert.match(hookSource, /headers\.Authorization = `Bearer \$\{accessToken\}`/);
-  assert.match(hookSource, /headers: await buildFamilyRequestHeaders\(deviceId\)/);
-  assert.match(apiSource, /getServerSupabaseUserClient/);
-  assert.match(apiSource, /getAuthenticatedUserId/);
-  assert.match(apiSource, /Bearer /);
+  assert.match(hookSource, /Authorization: `Bearer \$\{accessToken\}`/);
+  assert.match(hookSource, /headers: await buildFamilyRequestHeaders\(\)/);
+  assert.match(apiSource, /getAuthenticatedServerUser/);
+  assert.match(apiSource, /isAnonymousSupabaseUser/);
   assert.match(apiSource, /owner_user_id: userId/);
   assert.match(apiSource, /user_id: userId/);
   assert.match(apiSource, /\.eq\("user_id", userId\)/);
-  assert.match(apiSource, /\.eq\("device_id", deviceId\)\.is\("user_id", null\)/);
+  assert.doesNotMatch(apiSource, /x-device-id/);
+  assert.doesNotMatch(apiSource, /\.is\("user_id", null\)/);
 });
 
-test("family invite RPC validates device identity and max member count", () => {
-  assert.match(migrationSource, /security definer/);
-  assert.match(migrationSource, /missing_device_id/);
-  assert.match(migrationSource, /family_group_full/);
-  assert.match(migrationSource, /family_group_access_denied/);
-  assert.match(migrationSource, /values \(\n\s+group_id_input,\n\s+acting_user_id/);
-  assert.match(migrationSource, /for update/);
+test("family invite RPC requires permanent signed identity and max member count", () => {
+  assert.match(signedSessionMigrationSource, /security definer/);
+  assert.match(signedSessionMigrationSource, /permanent_user_required/);
+  assert.match(signedSessionMigrationSource, /family_group_full/);
+  assert.match(signedSessionMigrationSource, /family_group_access_denied/);
+  assert.match(signedSessionMigrationSource, /acting_user_id uuid := \(select auth\.uid\(\)\)/);
+  assert.match(signedSessionMigrationSource, /for update/);
   assert.match(
-    migrationSource,
-    /grant execute on function public\.join_family_group_by_invite_code\(text, text\) to anon, authenticated/,
+    signedSessionMigrationSource,
+    /grant execute on function public\.join_family_group_by_invite_code\(text, text\) to authenticated/,
   );
   assert.match(
-    migrationSource,
-    /grant execute on function public\.get_family_group_members\(uuid\) to anon, authenticated/,
+    signedSessionMigrationSource,
+    /grant execute on function public\.get_family_group_members\(uuid\) to authenticated/,
   );
+  assert.doesNotMatch(signedSessionMigrationSource, /grant execute[^;]+to anon/);
+  assert.doesNotMatch(signedSessionMigrationSource, /acting_device_id/);
 });
 
 test("family fridge and shopping scopes are member-only additions", () => {
@@ -106,7 +111,9 @@ test("family recommendation UI uses scoped family ingredients", () => {
   assert.match(shoppingHookSource, /scope\?: ShoppingScope/);
   assert.match(shoppingHookSource, /familyGroupId\?: string \| null/);
   assert.match(familyPageSource, /scope: group \? "family" : "personal"/);
-  assert.match(familyPageSource, /rankRecipeRecommendations\(filterBeginnerHomeRecipes\(CURATED_RECIPE_RECORDS\), ingredients\)/);
+  assert.match(familyPageSource, /filterPublicationApprovedRecipes\(CURATED_RECIPE_RECORDS\)/);
+  assert.match(familyPageSource, /rankRecipeRecommendations\(/);
+  assert.match(familyPageSource, /filterBeginnerHomeRecipes\(/);
   assert.match(familyPageSource, /\?scope=family#shopping-assistant/);
 });
 

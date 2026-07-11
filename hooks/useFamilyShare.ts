@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
 import { getSupabaseClient } from "@/lib/supabase";
+import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 import type { FamilyGroupRecord, FamilyMemberRecord } from "@/types";
 
 const STORAGE_KEY = "jipbab-note-family-group";
@@ -65,23 +66,17 @@ function safeWriteFamilyGroup(group: FamilyGroupRecord | null): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(group));
 }
 
-async function buildFamilyRequestHeaders(deviceId: string): Promise<Record<string, string>> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "x-device-id": deviceId,
-  };
-
-  try {
-    const { data } = await getSupabaseClient({ deviceId }).auth.getSession();
-    const accessToken = data.session?.access_token?.trim();
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
-    }
-  } catch {
-    return headers;
+async function buildFamilyRequestHeaders(): Promise<Record<string, string>> {
+  const { data, error } = await getSupabaseClient().auth.getSession();
+  const accessToken = data.session?.access_token?.trim();
+  if (error || !accessToken || !isPermanentSupabaseUser(data.session?.user)) {
+    throw new Error("permanent_session_required");
   }
 
-  return headers;
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
+  };
 }
 
 export function useFamilyShare() {
@@ -115,7 +110,7 @@ export function useFamilyShare() {
     try {
       const response = await fetch("/api/family-groups", {
         method: "POST",
-        headers: await buildFamilyRequestHeaders(deviceId),
+        headers: await buildFamilyRequestHeaders(),
         body: JSON.stringify({
           action: "create",
           groupId: nextGroup.id,
@@ -152,7 +147,7 @@ export function useFamilyShare() {
     try {
       const response = await fetch("/api/family-groups", {
         method: "POST",
-        headers: await buildFamilyRequestHeaders(deviceId),
+        headers: await buildFamilyRequestHeaders(),
         body: JSON.stringify({
           action: "join",
           inviteCode: normalizedCode,
@@ -172,7 +167,7 @@ export function useFamilyShare() {
       setStatusMessage("");
       setError("초대코드를 확인하지 못했어요. 코드, 로그인, 네트워크 상태를 확인해 주세요.");
     }
-  }, [deviceId, saveGroup]);
+  }, [saveGroup]);
 
   const addLocalMember = useCallback((memberName: string) => {
     if (!group) return;

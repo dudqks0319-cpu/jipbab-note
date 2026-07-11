@@ -51,20 +51,11 @@ function requiredEnv(env, key) {
   return value;
 }
 
-function createAnonClient(supabaseUrl, anonKey, deviceId) {
-  const fetchWithDeviceHeader = (input, init = {}) => {
-    const headers = new Headers(init.headers);
-    headers.set("x-device-id", deviceId);
-    return fetch(input, { ...init, headers });
-  };
-
+function createPublicClient(supabaseUrl, anonKey) {
   return createClient(supabaseUrl, anonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
-    },
-    global: {
-      fetch: fetchWithDeviceHeader,
     },
   });
 }
@@ -86,54 +77,92 @@ async function run() {
   const supabaseUrl = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_URL");
   const anonKey = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_ANON_KEY");
   const serviceRoleKey = requiredEnv(env, "SUPABASE_SERVICE_ROLE_KEY");
-  const deviceId = `release-storage-${Date.now()}`;
-  const ownPath = `${deviceId}/${randomUUID()}.png`;
-  const blockedPath = `other-${deviceId}/${randomUUID()}.png`;
+  const testIdentity = randomUUID();
+  const testEmail = `storage-check-${testIdentity}@example.invalid`;
+  const testPassword = `Storage-${randomUUID()}-Aa1!`;
   const imageBlob = new Blob([new Uint8Array([137, 80, 78, 71])], {
     type: "image/png",
   });
   const results = [];
 
-  const anon = createAnonClient(supabaseUrl, anonKey, deviceId);
+  const publicClient = createPublicClient(supabaseUrl, anonKey);
   const admin = createAdminClient(supabaseUrl, serviceRoleKey);
-
-  const ownUpload = await anon.storage
-    .from(BUCKET_ID)
-    .upload(ownPath, imageBlob, {
-      contentType: "image/png",
-      upsert: false,
-    });
-
-  if (ownUpload.error) {
-    addResult(
-      results,
-      "fail",
-      "own path upload",
-      `expected owner-prefixed upload to succeed; got ${ownUpload.error.statusCode ?? "unknown"}`,
-    );
-  } else {
-    addResult(results, "pass", "own path upload", "owner-prefixed guest upload succeeded");
+  const created = await admin.auth.admin.createUser({
+    email: testEmail,
+    password: testPassword,
+    email_confirm: true,
+  });
+  if (created.error || !created.data.user) {
+    throw new Error("Storage test user creation failed");
   }
 
-  const crossPrefixUpload = await anon.storage
-    .from(BUCKET_ID)
-    .upload(blockedPath, imageBlob, {
-      contentType: "image/png",
-      upsert: false,
+  const userId = created.data.user.id;
+  const ownPath = `${userId}/${randomUUID()}.png`;
+  const blockedPath = `other-${userId}/${randomUUID()}.png`;
+  const publicPath = `public-${testIdentity}/${randomUUID()}.png`;
+
+  try {
+    const publicUpload = await publicClient.storage
+      .from(BUCKET_ID)
+      .upload(publicPath, imageBlob, {
+        contentType: "image/png",
+        upsert: false,
+      });
+
+    if (publicUpload.error) {
+      addResult(results, "pass", "unauthenticated upload blocked", "public upload was denied");
+    } else {
+      addResult(results, "fail", "unauthenticated upload blocked", "public upload unexpectedly succeeded");
+    }
+
+    const signedClient = createPublicClient(supabaseUrl, anonKey);
+    const signedIn = await signedClient.auth.signInWithPassword({
+      email: testEmail,
+      password: testPassword,
     });
+    if (signedIn.error || !signedIn.data.user) {
+      throw new Error("Storage test user sign-in failed");
+    }
 
-  if (crossPrefixUpload.error) {
-    addResult(results, "pass", "cross-prefix upload blocked", "guest upload outside device prefix was denied");
-  } else {
-    addResult(
-      results,
-      "fail",
-      "cross-prefix upload blocked",
-      "guest upload outside device prefix succeeded; apply the Storage path policy migration",
-    );
+    const ownUpload = await signedClient.storage
+      .from(BUCKET_ID)
+      .upload(ownPath, imageBlob, {
+        contentType: "image/png",
+        upsert: false,
+      });
+
+    if (ownUpload.error) {
+      addResult(
+        results,
+        "fail",
+        "own path upload",
+        `expected owner-prefixed upload to succeed; got ${ownUpload.error.statusCode ?? "unknown"}`,
+      );
+    } else {
+      addResult(results, "pass", "own path upload", "owner-prefixed permanent upload succeeded");
+    }
+
+    const crossPrefixUpload = await signedClient.storage
+      .from(BUCKET_ID)
+      .upload(blockedPath, imageBlob, {
+        contentType: "image/png",
+        upsert: false,
+      });
+
+    if (crossPrefixUpload.error) {
+      addResult(results, "pass", "cross-prefix upload blocked", "signed upload outside auth uid prefix was denied");
+    } else {
+      addResult(
+        results,
+        "fail",
+        "cross-prefix upload blocked",
+        "signed upload outside auth uid prefix succeeded; apply the signed-session policy migration",
+      );
+    }
+  } finally {
+    await admin.storage.from(BUCKET_ID).remove([ownPath, blockedPath, publicPath]);
+    await admin.auth.admin.deleteUser(userId);
   }
-
-  await admin.storage.from(BUCKET_ID).remove([ownPath, blockedPath]);
 
   const passes = results.filter((result) => result.level === "pass");
   const failures = results.filter((result) => result.level === "fail");

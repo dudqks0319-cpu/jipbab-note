@@ -7,6 +7,7 @@ import { LoaderCircle } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { normalizeAuthNextPath } from "@/lib/auth-redirect";
+import { mergePendingAnonymousUserData } from "@/lib/anonymous-user-merge";
 import { getSupabaseClient } from "@/lib/supabase";
 
 function getCallbackErrorMessage(caught: unknown): string {
@@ -65,6 +66,7 @@ function AuthCallbackContent() {
         if (error) {
           throw error;
         }
+        await mergePendingAnonymousUserData(client);
         router.replace(next);
       } catch (caught) {
         setErrorMessage(getCallbackErrorMessage(caught));

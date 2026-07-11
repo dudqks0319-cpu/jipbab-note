@@ -205,6 +205,7 @@ export interface DeviceDataMigrationResult {
   totalMigratedCount: number;
   localMigratedCount: number;
   tableResults: DeviceDataMigrationTableResult[];
+  remoteMigrationMode?: "legacy_table_claim" | "signed_session_sync";
 }
 
 export type CommunityDataSource = "supabase" | "local";
@@ -294,6 +295,15 @@ export const RECIPE_CATEGORIES = [
   "일식",
   "분식",
   "디저트",
+  "밥·한 그릇",
+  "국",
+  "찌개·전골",
+  "달걀",
+  "두부",
+  "고기",
+  "해산물",
+  "면",
+  "간식·디저트",
   "기타",
 ] as const;
 
@@ -303,14 +313,21 @@ export type RecipeQueryCategory = Exclude<RecipeCategory, "전체">;
 
 export const DISPLAY_RECIPE_CATEGORIES = [
   "전체",
-  "계란요리",
-  "김치/밥 요리",
-  "두부/저렴 재료",
-  "참치캔/스팸/햄/어묵",
-  "국/찌개",
-  "면요리",
-  "전자레인지/노불",
-  "도시락/반찬",
+  "밥·한 그릇",
+  "국",
+  "찌개·전골",
+  "반찬",
+  "달걀",
+  "두부",
+  "고기",
+  "해산물",
+  "면",
+  "분식",
+  "양식",
+  "중식",
+  "일식",
+  "간식·디저트",
+  "기타",
   "초보가능",
   "10분요리",
 ] as const;
@@ -347,6 +364,36 @@ export type RecipePublishStatus =
   | "published"
   | "hidden";
 
+export type RecipeReviewStatus =
+  | "imported"
+  | "normalizing"
+  | "editorial_review"
+  | "beginner_review"
+  | "cooking_test"
+  | "approved"
+  | "needs_revision"
+  | "rejected"
+  | "archived";
+
+export type RecipeImageRightsStatus = "unverified" | "approved" | "no_image_approved" | "rejected";
+
+export interface RecipePublicationEvidence {
+  reviewStatus: "approved";
+  reviewedForBeginner: true;
+  beginnerReviewedAt: string;
+  actualCookingTested: true;
+  actualCookingTestedAt: string;
+  foodSafetyReviewed: true;
+  foodSafetyReviewedAt: string;
+  imageRightsStatus: "approved" | "no_image_approved";
+  imageRightsReviewedAt: string;
+  sourceRecorded: true;
+  sourceReviewedAt: string;
+  publishedAt: string;
+  reviewer: string;
+  requirementsVerified: true;
+}
+
 export type RecipeHeatLevel = "불 없음" | "약불" | "중약불" | "중불" | "강불";
 
 export interface RecipeHomeCardCopy {
@@ -380,6 +427,7 @@ export interface RecipeRecord {
   id: string;
   slug?: string;
   title?: string;
+  summary?: string | null;
   name: string;
   category: string;
   method: string;
@@ -390,6 +438,7 @@ export interface RecipeRecord {
   difficultyLevel?: RecipeDifficultyLevel | null;
   beginnerScore?: number | null;
   totalMinutes?: number | null;
+  servings?: number | null;
   activeMinutes?: number | null;
   requiredTools?: string[];
   homeCardCopy?: string | RecipeHomeCardCopy | null;
@@ -400,6 +449,7 @@ export interface RecipeRecord {
   safety?: BeginnerRecipeSafety | null;
   releaseTier?: RecipeReleaseTier | null;
   publishStatus?: RecipePublishStatus | null;
+  publicationEvidence?: RecipePublicationEvidence | null;
 }
 
 export interface RecipeListResponse {
@@ -432,6 +482,9 @@ export interface RecipeDetailStep {
   imageUrl: string | null;
   heat?: RecipeHeatLevel | string | null;
   minutes?: number | null;
+  durationSecondsMin?: number | null;
+  durationSecondsMax?: number | null;
+  timerPresetSeconds?: number | null;
   beginnerTip?: string | null;
   visualCue?: string | null;
   commonMistake?: string | null;
@@ -468,6 +521,7 @@ export interface RecipeDetailRecord extends RecipeRecord {
   beginnerSummary?: string | null;
   measurementTips?: string[];
   successCheck?: string | null;
+  safetyNotes?: string[];
   storageTip?: string | null;
   reheatTip?: string | null;
   fallbackMeal?: string | null;
@@ -511,6 +565,7 @@ export interface FavoriteRecipeSummary {
   category: string;
   thumbnailUrl: string | null;
   savedAt: string;
+  publicationEvidence?: RecipePublicationEvidence | null;
 }
 
 export interface QuantityValueParts {

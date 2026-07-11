@@ -88,6 +88,7 @@
 
 - `pnpm validate:recipes`
 - `pnpm check:beginner-goal-readiness`
+- `pnpm check:phase1-data-contract`
 - `pnpm check:beginner-mobile-evidence`
 - `pnpm test:unit`
 - `pnpm exec tsc --noEmit`

@@ -1,11 +1,16 @@
-// 이 파일은 로그인 직후 디바이스 데이터를 계정 데이터로 이전하는 유틸리티입니다.
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import { getDeviceId } from "@/lib/device-id";
-import type { DeviceDataMigrationResult, DeviceDataMigrationTableResult } from "@/types";
+import { getDeviceId } from "./device-id.ts";
+import { putLocalRecords, readAllFromStore } from "./local-db/index.ts";
+import {
+  LOCAL_DB_STORES,
+  type FavoriteRecipeRecord,
+  type FridgeEventRecord,
+  type LocalIngredientRecord,
+  type LocalShoppingItem,
+  type PendingSyncQueueEntry,
+} from "./local-db/schema.ts";
+import type { DeviceDataMigrationResult, DeviceDataMigrationTableResult } from "../types/index.ts";
 
 interface MigrateDeviceDataOptions {
-  client: SupabaseClient;
   userId: string;
   deviceId?: string;
 }
@@ -26,115 +31,6 @@ const LOCAL_STORAGE_KEYS = [
   "jipbab-note-community-comments",
   "jipbab-note-community-likes",
 ] as const;
-
-function normalizeMessage(value: unknown, fallback: string): string {
-  if (value instanceof Error && value.message.trim()) {
-    return value.message;
-  }
-  if (typeof value === "string" && value.trim()) {
-    return value;
-  }
-  return fallback;
-}
-
-function isMissingTableError(value: unknown): boolean {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const candidate = value as { code?: string; message?: string; details?: string | null };
-  const code = candidate.code?.toUpperCase();
-  if (code === "PGRST205" || code === "42P01") {
-    return true;
-  }
-
-  const joined = `${candidate.message ?? ""} ${candidate.details ?? ""}`.toLowerCase();
-  return (
-    joined.includes("does not exist") ||
-    joined.includes("could not find the table") ||
-    joined.includes("schema cache")
-  );
-}
-
-async function migrateSingleTable(
-  client: SupabaseClient,
-  tableName: (typeof TABLES_TO_MIGRATE)[number],
-  deviceId: string,
-  userId: string,
-): Promise<DeviceDataMigrationTableResult> {
-  try {
-    const { data: existsRows, error: selectError } = await client
-      .from(tableName)
-      .select("id")
-      .eq("device_id", deviceId)
-      .is("user_id", null)
-      .limit(1);
-
-    if (selectError) {
-      if (isMissingTableError(selectError)) {
-        return {
-          table: tableName,
-          migratedCount: 0,
-          skipped: true,
-          reason: "테이블이 없어 이전을 건너뛰었습니다.",
-        };
-      }
-
-      return {
-        table: tableName,
-        migratedCount: 0,
-        skipped: false,
-        reason: normalizeMessage(selectError, `${tableName} 조회 실패`),
-      };
-    }
-
-    if (!existsRows || existsRows.length === 0) {
-      return {
-        table: tableName,
-        migratedCount: 0,
-        skipped: false,
-      };
-    }
-
-    const { data: updatedRows, error: updateError } = await client
-      .from(tableName)
-      .update({ user_id: userId })
-      .eq("device_id", deviceId)
-      .is("user_id", null)
-      .select("id");
-
-    if (updateError) {
-      if (isMissingTableError(updateError)) {
-        return {
-          table: tableName,
-          migratedCount: 0,
-          skipped: true,
-          reason: "테이블이 없어 이전을 건너뛰었습니다.",
-        };
-      }
-
-      return {
-        table: tableName,
-        migratedCount: 0,
-        skipped: false,
-        reason: normalizeMessage(updateError, `${tableName} 이전 실패`),
-      };
-    }
-
-    return {
-      table: tableName,
-      migratedCount: updatedRows?.length ?? 0,
-      skipped: false,
-    };
-  } catch (caught) {
-    return {
-      table: tableName,
-      migratedCount: 0,
-      skipped: false,
-      reason: normalizeMessage(caught, `${tableName} 이전 중 예외 발생`),
-    };
-  }
-}
 
 function migrateLocalStorageKey(storageKey: string, deviceId: string, userId: string): number {
   if (typeof window === "undefined") {
@@ -184,6 +80,74 @@ function migrateLocalStorageKey(storageKey: string, deviceId: string, userId: st
   }
 }
 
+function withOwnedUserId<T extends { deviceId?: string | null; userId?: string | null }>(
+  record: T,
+  deviceId: string,
+  userId: string,
+): { record: T; migrated: boolean } {
+  if (record.deviceId !== deviceId || record.userId) {
+    return { record, migrated: false };
+  }
+
+  return {
+    record: { ...record, userId },
+    migrated: true,
+  };
+}
+
+async function migrateLocalDatabase(deviceId: string, userId: string): Promise<number> {
+  let migratedCount = 0;
+
+  const ingredientRows = await readAllFromStore<LocalIngredientRecord>(LOCAL_DB_STORES.ingredients);
+  const nextIngredients = ingredientRows.map((row) => {
+    const result = withOwnedUserId(row, deviceId, userId);
+    migratedCount += Number(result.migrated);
+    return result.record;
+  });
+  await putLocalRecords(LOCAL_DB_STORES.ingredients, nextIngredients);
+
+  const shoppingRows = await readAllFromStore<LocalShoppingItem>(LOCAL_DB_STORES.shoppingItems);
+  const nextShoppingRows = shoppingRows.map((row) => {
+    const result = withOwnedUserId(row, deviceId, userId);
+    migratedCount += Number(result.migrated);
+    return result.record;
+  });
+  await putLocalRecords(LOCAL_DB_STORES.shoppingItems, nextShoppingRows);
+
+  const favoriteRows = await readAllFromStore<FavoriteRecipeRecord>(LOCAL_DB_STORES.favoriteRecipes);
+  const nextFavoriteRows = favoriteRows.map((row) => {
+    const result = withOwnedUserId(row, deviceId, userId);
+    migratedCount += Number(result.migrated);
+    return result.record;
+  });
+  await putLocalRecords(LOCAL_DB_STORES.favoriteRecipes, nextFavoriteRows);
+
+  const eventRows = await readAllFromStore<FridgeEventRecord>(LOCAL_DB_STORES.fridgeEvents);
+  const nextEventRows = eventRows.map((row) => {
+    const result = withOwnedUserId(row, deviceId, userId);
+    migratedCount += Number(result.migrated);
+    return result.record;
+  });
+  await putLocalRecords(LOCAL_DB_STORES.fridgeEvents, nextEventRows);
+
+  const queueRows = await readAllFromStore<PendingSyncQueueEntry>(LOCAL_DB_STORES.pendingSyncQueue);
+  const nextQueueRows = queueRows.map((entry) => {
+    try {
+      const payload = JSON.parse(entry.payloadJson) as Record<string, unknown>;
+      if (payload.deviceId !== deviceId || (typeof payload.userId === "string" && payload.userId.trim())) {
+        return entry;
+      }
+      migratedCount += 1;
+      return { ...entry, payloadJson: JSON.stringify({ ...payload, userId }) };
+    } catch {
+      return entry;
+    }
+  });
+  await putLocalRecords(LOCAL_DB_STORES.pendingSyncQueue, nextQueueRows);
+
+  return migratedCount;
+}
+
 export async function migrateDeviceData(options: MigrateDeviceDataOptions): Promise<DeviceDataMigrationResult> {
   const resolvedDeviceId = options.deviceId?.trim() || getDeviceId();
 
@@ -200,21 +164,22 @@ export async function migrateDeviceData(options: MigrateDeviceDataOptions): Prom
     };
   }
 
-  const tablePromises = TABLES_TO_MIGRATE.map((table) =>
-    migrateSingleTable(options.client, table, resolvedDeviceId, options.userId)
-  );
-  const tableResults = await Promise.all(tablePromises);
+  const tableResults: DeviceDataMigrationTableResult[] = TABLES_TO_MIGRATE.map((table) => ({
+    table,
+    migratedCount: 0,
+    skipped: true,
+    reason: "원격 데이터는 서명된 세션 UID로만 동기화하며, 이 함수는 로컬 데이터만 이전합니다.",
+  }));
 
-  let localMigratedCount = 0;
+  let localMigratedCount = await migrateLocalDatabase(resolvedDeviceId, options.userId);
   for (const key of LOCAL_STORAGE_KEYS) {
     localMigratedCount += migrateLocalStorageKey(key, resolvedDeviceId, options.userId);
   }
 
-  const remoteMigratedCount = tableResults.reduce((sum, item) => sum + item.migratedCount, 0);
-
   return {
-    totalMigratedCount: remoteMigratedCount + localMigratedCount,
+    totalMigratedCount: localMigratedCount,
     localMigratedCount,
     tableResults,
+    remoteMigrationMode: "signed_session_sync",
   };
 }
