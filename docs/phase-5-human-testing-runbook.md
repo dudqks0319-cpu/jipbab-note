@@ -115,6 +115,8 @@ output/phase5-human-evidence/
 
 각 비대기 행은 같은 레시피 버전, 익명 검수자 코드, 검수 시각, 0~100점, 판정, 메모, 실제 증거 경로를 가져야 한다. `legal_source=approved`에는 DB recipe UUID와 source record UUID가 모두 필요하다.
 
+`image_rights`는 로컬 실행 패킷에서 독립 하드 게이트로 유지하지만 현재 DB의 `recipe_reviews.review_type`에 직접 넣지 않는다. 운영 반영 시 승인 결과는 `recipes.image_rights_status`, `image_rights_reviewed_at`에 기록하고 증거 참조는 대응하는 `legal_source` 검수 기록에 연결한다.
+
 ## 실행 순서
 
 ```bash

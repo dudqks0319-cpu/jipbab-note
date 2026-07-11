@@ -160,8 +160,8 @@ phase5_core20:
   image_rights_human_review_count: 0
   approved_for_publication_count: 0
   detailed_recipe_rewrites: "프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥"
-  phase5_test_status: "verified_core_9_of_9_and_human_evidence_contract_8_of_8"
-  full_unit_test_status: "verified_361_of_361"
+  phase5_test_status: "verified_core_9_of_9_and_human_evidence_contract_9_of_9"
+  full_unit_test_status: "verified_362_of_362"
   content_gate_status: "verified"
   production_build_status: "not_reverified_sandbox_port_block_then_external_execution_rejected_by_usage_limit"
   last_verified_build_status: "phase0_to_phase4_a1b7e0f_38_routes"
@@ -208,7 +208,7 @@ migration_history:
 local_checks:
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_361_of_361"
+    status: "current_pass_362_of_362"
     evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"

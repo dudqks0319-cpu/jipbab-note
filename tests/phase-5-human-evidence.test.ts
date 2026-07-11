@@ -14,6 +14,7 @@ import {
 
 const cwd = process.cwd();
 const releaseGateSource = readFileSync("scripts/run-release-gates.mjs", "utf8");
+const humanTestingRunbook = readFileSync("docs/phase-5-human-testing-runbook.md", "utf8");
 
 function rewriteCsv(
   text: string,
@@ -130,6 +131,14 @@ test("Phase 5 사람 증거 검증기는 실제 로컬 출시 게이트에 연�
   assert.match(releaseGateSource, /phase5-human-evidence/u);
   assert.match(releaseGateSource, /scripts\/check-phase-5-human-evidence\.mjs/u);
   assert.match(releaseGateSource, /--experimental-strip-types/u);
+});
+
+test("image rights 로컬 검수는 현재 DB 허용 review_type과 올바르게 매핑된다", () => {
+  assert.match(humanTestingRunbook, /recipe_reviews\.review_type/u);
+  assert.match(humanTestingRunbook, /직접 넣지 않는다/u);
+  assert.match(humanTestingRunbook, /recipes\.image_rights_status/u);
+  assert.match(humanTestingRunbook, /image_rights_reviewed_at/u);
+  assert.match(humanTestingRunbook, /legal_source/u);
 });
 
 test("같은 버전의 실제 조리와 사람 검수 4종이 모두 유효해야 20개가 후보가 된다", () => {

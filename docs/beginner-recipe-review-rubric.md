@@ -90,3 +90,4 @@ Date: 2026-07-10
 - 완료 판정: `pnpm check:phase5-human-evidence`
 
 조리 시도는 `attempt_id`로 추가하며 이전 실패를 삭제하지 않는다. 검증기는 같은 레시피 버전의 최신 조리 시도와 4개 사람 검수가 모두 승인되고 실제 증거 경로와 DB recipe/source UUID가 확인될 때만 발행 후보로 센다.
+로컬 `image_rights` 행은 독립 검수 증거이며 DB 반영 시 `recipe_reviews.review_type`으로 직접 삽입하지 않고 `recipes.image_rights_status`, `image_rights_reviewed_at`과 대응 `legal_source` 증거 참조에 연결한다.
