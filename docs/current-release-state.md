@@ -2,6 +2,16 @@
 
 Updated: 2026-07-11 KST
 
+## 2026-07-11 Phase 6 모바일 접근성·LCP
+
+- 구현 커밋 `f9866d659804b2be04c29c46084b3085ba15bca8`에서 홈과 공통 인터랙션의 44px 터치 타깃 하한, 사용자 확대 허용, 포커스 시 보이는 본문 건너뛰기 링크와 main landmark, reduced-motion 대응을 추가했다.
+- `pnpm check:phase6-accessibility`는 app/components의 인터랙션 태그 214개와 계약 8개를 검사해 실패 0건으로 통과한다.
+- Chrome DevTools Protocol로 정확한 360/390/430px viewport를 강제한 production runtime에서 각 너비의 보이는 컨트롤 17개, 44px 미만 0개, 가로 overflow 0, focus 시 44px skip link를 확인했다.
+- 홈에서 같은 냉장고 이미지를 렌더링하는 세 above-fold 경로에 eager/high fetch priority를 적용한 뒤 LCP 경고가 사라졌다.
+- 검증: 전체 unit 368/368, production build 38/38 routes, release gate 12개 통과와 Phase 5 사람 증거 0/20 한 항목의 의도된 실패.
+- 이 체크포인트는 아직 Vercel production과 Supabase production에 배포하지 않았다. CDP 스크린샷은 `output/ui-evidence/phase6-accessibility-home-{360,390,430}-cdp.png`에 로컬 증거로만 보관한다.
+- Evidence: `docs/phase-6-mobile-accessibility-report.md`.
+
 ## 2026-07-11 Phase 6 SECURITY DEFINER 권한 보강
 
 - 구현 커밋 `c5e06f4d7771fc88529e789319f0145024548c22`에서 migration `20260711113000_harden_security_definer_privileges.sql`과 fail-closed rollback을 추가했다.

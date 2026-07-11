@@ -12,13 +12,13 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase6_security_definer_hardened_human_cooking_blocked"
+  phase: "phase6_accessibility_security_hardened_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "c5e06f4d7771fc88529e789319f0145024548c22"
+  git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_security_checkpoint_committed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/current-release-state.md"
+  dirty_state: "phase6_accessibility_checkpoint_committed"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/current-release-state.md"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -195,21 +195,33 @@ phase5_vercel_preview:
 phase6_quality_security:
   implementation_git_sha: "c5e06f4d7771fc88529e789319f0145024548c22"
   report: "docs/phase-6-security-definer-review.md"
+  accessibility_implementation_git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
+  accessibility_report: "docs/phase-6-mobile-accessibility-report.md"
+  accessibility_static_status: "verified_214_tags_8_contracts_zero_failures"
+  accessibility_runtime_status: "verified_exact_360_390_430"
+  accessibility_runtime_visible_controls_per_width: 17
+  accessibility_runtime_undersized_controls: 0
+  accessibility_runtime_horizontal_overflow: 0
+  accessibility_zoom_status: "verified_enabled"
+  accessibility_skip_link_status: "verified_visible_on_focus_44px"
+  reduced_motion_status: "verified"
+  home_lcp_hint_status: "verified_warning_resolved"
   migration: "20260711113000_harden_security_definer_privileges.sql"
   rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql"
   security_definer_contract_status: "verified_14_of_14"
   security_definer_effective_count: 11
   removed_unused_security_definer_count: 1
   focused_security_test_status: "verified_29_of_29"
-  full_unit_test_status: "verified_366_of_366"
+  full_unit_test_status: "verified_368_of_368"
   supabase_contract_status: "verified_146_of_146"
   integration_status: "verified_zero_unreviewed_exposed_and_signed_session_negative_paths"
   release_security_status: "verified_4_of_4"
   production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
-  release_gate_status: "11_pass_1_expected_fail_phase5_human_evidence"
+  release_gate_status: "12_pass_1_expected_fail_phase5_human_evidence"
   isolated_postgres_execution_status: "blocked_no_docker_or_psql"
   production_migration_status: "not_applied"
   production_deploy_status: "not_deployed"
+  accessibility_production_deploy_status: "not_deployed"
   p0_p1_claim: "not_complete_external_and_human_evidence_blockers_remain"
 
 phase0_to_phase4_vercel_deployment:
@@ -246,6 +258,14 @@ migration_history:
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
+  - name: "Phase 6 mobile accessibility static contract"
+    command: "pnpm check:phase6-accessibility"
+    status: "current_pass_214_tags_8_contracts_zero_failures"
+    evidence: "docs/phase-6-mobile-accessibility-report.md"
+  - name: "Phase 6 exact mobile viewport runtime"
+    command: "pnpm capture:phase6-accessibility"
+    status: "current_pass_360_390_430_zero_undersized_zero_overflow"
+    evidence: "output/ui-evidence/phase6-accessibility-home-{360,390,430}-cdp.png"
   - name: "Phase 6 SECURITY DEFINER contract"
     command: "pnpm check:security-definer"
     status: "current_pass_14_of_14"
@@ -260,8 +280,8 @@ local_checks:
     evidence: "pnpm-lock.yaml"
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_362_of_362"
-    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts"
+    status: "current_pass_368_of_368"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
@@ -284,7 +304,7 @@ local_checks:
     evidence: "output/ui-evidence/2026-07-10-publication-empty-list-390.png"
   - name: "Recipe publication RLS contract"
     command: "pnpm check:supabase-release"
-    status: "current_pass_145_of_145"
+    status: "current_pass_146_of_146"
     evidence: "supabase/migrations/20260710130000_gate_recipe_publication.sql, supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql, supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql"
   - name: "API v1 contract"
     command: "pnpm check:api-v1-contract"
@@ -316,7 +336,7 @@ local_checks:
     evidence: "docs/current-release-state.md"
   - name: "Local release gates"
     command: "pnpm release:check"
-    status: "current_pass_11_of_11"
+    status: "current_pass_12_with_1_expected_phase5_human_evidence_failure"
     evidence: "docs/current-release-state.md"
   - name: "Release security gate"
     command: "pnpm release:security-check"
