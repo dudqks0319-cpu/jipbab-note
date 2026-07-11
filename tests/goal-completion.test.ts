@@ -111,3 +111,10 @@ test("goal completion check runs the beginner recipe expansion gates", () => {
   assert.match(source, /beginnerMobileEvidenceCheck\.evidence/);
   assert.match(source, /초보자 모바일 화면 증거/);
 });
+
+test("goal completion check requires Phase 5 actual cooking and human review evidence", () => {
+  assert.match(source, /scripts\/check-phase-5-human-evidence\.mjs/);
+  assert.match(source, /phase5HumanEvidenceCheck\.evidence/);
+  assert.match(source, /핵심 20개 실제 조리·사람 검수 증거/);
+  assert.match(source, /phase-5-human-testing-runbook\.md/);
+});

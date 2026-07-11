@@ -29,13 +29,19 @@ export const PHASE5_CORE_20_SELECTIONS = [
 
 const VAGUE_PHRASES = ["적당히", "노릇하게", "익을 때까지"];
 const BITMAP_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
-const COOKING_TEMPLATE_PATH = "docs/phase-5-actual-cooking-template.csv";
-const COOKING_TEMPLATE_COLUMNS = [
+export const PHASE5_COOKING_TEMPLATE_PATH = "docs/phase-5-actual-cooking-template.csv";
+export const PHASE5_HUMAN_REVIEW_TEMPLATE_PATH = "docs/phase-5-human-review-template.csv";
+export const PHASE5_HUMAN_REVIEW_TYPES = ["beginner", "food_safety", "legal_source", "image_rights"];
+export const PHASE5_COOKING_TEMPLATE_COLUMNS = [
   "order",
   "requested_title",
   "selected_title",
   "recipe_id",
   "recipe_version",
+  "attempt_id",
+  "app_build_sha",
+  "test_surface",
+  "test_device",
   "test_date",
   "tester_code",
   "heat_source",
@@ -51,6 +57,22 @@ const COOKING_TEMPLATE_COLUMNS = [
   "image_change",
   "evidence_path",
   "status",
+];
+export const PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS = [
+  "order",
+  "requested_title",
+  "selected_title",
+  "recipe_id",
+  "recipe_version",
+  "review_type",
+  "reviewer_code",
+  "reviewed_at",
+  "score",
+  "result",
+  "notes",
+  "evidence_path",
+  "db_recipe_id",
+  "source_record_id",
 ];
 
 function nonBlank(value) {
@@ -204,7 +226,7 @@ function toCsv(columns, rows) {
   return `${columns.join(",")}\n${rows.map((row) => columns.map((column) => csvValue(row[column])).join(",")).join("\n")}\n`;
 }
 
-function parseCsvRows(text) {
+export function parseCsvRows(text) {
   const rows = [];
   let row = [];
   let cell = "";
@@ -245,21 +267,83 @@ function cookingTemplateIsCompatible(text, audits) {
   const [header, ...rows] = parsedRows;
   const dataRows = rows.filter((values) => values.some(Boolean));
   if (
-    header.length !== COOKING_TEMPLATE_COLUMNS.length ||
-    !header.every((column, index) => column === COOKING_TEMPLATE_COLUMNS[index]) ||
+    header.length !== PHASE5_COOKING_TEMPLATE_COLUMNS.length ||
+    !header.every((column, index) => column === PHASE5_COOKING_TEMPLATE_COLUMNS[index]) ||
+    dataRows.length < audits.length
+  ) {
+    return false;
+  }
+  const auditsByRecipeId = new Map(audits.map((audit) => [audit.recipe.id, audit]));
+  const presentRecipeIds = new Set();
+  const rowsMatch = dataRows.every((values) => {
+    const audit = auditsByRecipeId.get(values[3]);
+    if (!audit) return false;
+    presentRecipeIds.add(audit.recipe.id);
+    return (
+      values.length === PHASE5_COOKING_TEMPLATE_COLUMNS.length &&
+      values[0] === String(audit.order) &&
+      values[1] === audit.requestedTitle &&
+      values[2] === audit.selectedTitle
+    );
+  });
+  return rowsMatch && audits.every((audit) => presentRecipeIds.has(audit.recipe.id));
+}
+
+function cookingTemplateIsEmptyPending(text, audits) {
+  const parsedRows = parseCsvRows(text);
+  if (!parsedRows || parsedRows.length === 0) return false;
+  const [header, ...rows] = parsedRows;
+  const dataRows = rows.filter((values) => values.some(Boolean));
+  if (
+    header.length < 5 ||
+    !header.slice(0, 4).every((column, index) => column === PHASE5_COOKING_TEMPLATE_COLUMNS[index]) ||
+    !header.includes("status") ||
     dataRows.length !== audits.length
   ) {
     return false;
   }
+  return dataRows.every((values, index) => {
+    const audit = audits[index];
+    const identityMatches =
+      values[0] === String(audit.order) &&
+      values[1] === audit.requestedTitle &&
+      values[2] === audit.selectedTitle &&
+      values[3] === audit.recipe.id;
+    const evidenceIsEmpty = header.every(
+      (column, columnIndex) =>
+        columnIndex < 4 || values[columnIndex] === "" || (column === "status" && values[columnIndex] === "pending"),
+    );
+    return identityMatches && evidenceIsEmpty;
+  });
+}
 
-  return dataRows.every(
-    (values, index) =>
-      values.length === COOKING_TEMPLATE_COLUMNS.length &&
-      values[0] === String(audits[index].order) &&
-      values[1] === audits[index].requestedTitle &&
-      values[2] === audits[index].selectedTitle &&
-      values[3] === audits[index].recipe.id,
+function humanReviewTemplateIsCompatible(text, audits) {
+  const parsedRows = parseCsvRows(text);
+  if (!parsedRows || parsedRows.length === 0) return false;
+  const [header, ...rows] = parsedRows;
+  const dataRows = rows.filter((values) => values.some(Boolean));
+  const expectedRows = audits.flatMap((audit) =>
+    PHASE5_HUMAN_REVIEW_TYPES.map((reviewType) => ({ audit, reviewType })),
   );
+  if (
+    header.length !== PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS.length ||
+    !header.every((column, index) => column === PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS[index]) ||
+    dataRows.length !== expectedRows.length
+  ) {
+    return false;
+  }
+
+  return dataRows.every((values, index) => {
+    const expected = expectedRows[index];
+    return (
+      values.length === PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS.length &&
+      values[0] === String(expected.audit.order) &&
+      values[1] === expected.audit.requestedTitle &&
+      values[2] === expected.audit.selectedTitle &&
+      values[3] === expected.audit.recipe.id &&
+      values[5] === expected.reviewType
+    );
+  });
 }
 
 function auditCsv(audits) {
@@ -308,13 +392,17 @@ function auditCsv(audits) {
 
 function cookingTemplateCsv(audits) {
   return toCsv(
-    COOKING_TEMPLATE_COLUMNS,
+    PHASE5_COOKING_TEMPLATE_COLUMNS,
     audits.map((audit) => ({
       order: audit.order,
       requested_title: audit.requestedTitle,
       selected_title: audit.selectedTitle,
       recipe_id: audit.recipe.id,
       recipe_version: "",
+      attempt_id: "",
+      app_build_sha: "",
+      test_surface: "",
+      test_device: "",
       test_date: "",
       tester_code: "",
       heat_source: "",
@@ -331,6 +419,30 @@ function cookingTemplateCsv(audits) {
       evidence_path: "",
       status: "pending",
     })),
+  );
+}
+
+function humanReviewTemplateCsv(audits) {
+  return toCsv(
+    PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS,
+    audits.flatMap((audit) =>
+      PHASE5_HUMAN_REVIEW_TYPES.map((reviewType) => ({
+        order: audit.order,
+        requested_title: audit.requestedTitle,
+        selected_title: audit.selectedTitle,
+        recipe_id: audit.recipe.id,
+        recipe_version: "",
+        review_type: reviewType,
+        reviewer_code: "",
+        reviewed_at: "",
+        score: "",
+        result: "pending",
+        notes: "",
+        evidence_path: "",
+        db_recipe_id: "",
+        source_record_id: "",
+      })),
+    ),
   );
 }
 
@@ -356,7 +468,8 @@ export function buildPhase5Artifacts(cwd = process.cwd()) {
     files: {
       "docs/phase-5-core-20-audit.csv": auditCsv(audits),
       "docs/phase-5-core-20-audit.md": auditMarkdown(audits),
-      [COOKING_TEMPLATE_PATH]: cookingTemplateCsv(audits),
+      [PHASE5_COOKING_TEMPLATE_PATH]: cookingTemplateCsv(audits),
+      [PHASE5_HUMAN_REVIEW_TEMPLATE_PATH]: humanReviewTemplateCsv(audits),
     },
   };
 }
@@ -365,11 +478,20 @@ export function writePhase5Artifacts(cwd = process.cwd()) {
   const artifacts = buildPhase5Artifacts(cwd);
   for (const [relativePath, content] of Object.entries(artifacts.files)) {
     const absolutePath = path.join(cwd, relativePath);
-    if (relativePath === COOKING_TEMPLATE_PATH && existsSync(absolutePath)) {
+    const isCookingTemplate = relativePath === PHASE5_COOKING_TEMPLATE_PATH;
+    const isHumanReviewTemplate = relativePath === PHASE5_HUMAN_REVIEW_TEMPLATE_PATH;
+    if ((isCookingTemplate || isHumanReviewTemplate) && existsSync(absolutePath)) {
       const existingTemplate = readFileSync(absolutePath, "utf8");
-      if (!cookingTemplateIsCompatible(existingTemplate, artifacts.audits)) {
+      const isCompatible = isCookingTemplate
+        ? cookingTemplateIsCompatible(existingTemplate, artifacts.audits)
+        : humanReviewTemplateIsCompatible(existingTemplate, artifacts.audits);
+      if (!isCompatible) {
+        if (isCookingTemplate && cookingTemplateIsEmptyPending(existingTemplate, artifacts.audits)) {
+          writeFileSync(absolutePath, content, "utf8");
+          continue;
+        }
         throw new Error(
-          `Phase 5 actual cooking evidence is incompatible with the current selection; reconcile it manually: ${relativePath}`,
+          `Phase 5 human evidence is incompatible with the current selection; reconcile it manually: ${relativePath}`,
         );
       }
       continue;
@@ -386,8 +508,11 @@ export function checkPhase5Artifacts(cwd = process.cwd()) {
       const absolutePath = path.join(cwd, relativePath);
       if (!existsSync(absolutePath)) return true;
       const actual = readFileSync(absolutePath, "utf8");
-      if (relativePath === COOKING_TEMPLATE_PATH) {
+      if (relativePath === PHASE5_COOKING_TEMPLATE_PATH) {
         return !cookingTemplateIsCompatible(actual, artifacts.audits);
+      }
+      if (relativePath === PHASE5_HUMAN_REVIEW_TEMPLATE_PATH) {
+        return !humanReviewTemplateIsCompatible(actual, artifacts.audits);
       }
       return actual !== expected;
     })

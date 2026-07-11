@@ -17,7 +17,7 @@ candidate:
   build_number: "2026062602"
   git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase5_core20_checkpoint_committed"
+  dirty_state: "phase5_human_evidence_gate_changes_pending_commit"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -144,6 +144,9 @@ phase5_core20:
   audit: "docs/phase-5-core-20-audit.md"
   audit_csv: "docs/phase-5-core-20-audit.csv"
   actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
+  human_review_template: "docs/phase-5-human-review-template.csv"
+  human_testing_runbook: "docs/phase-5-human-testing-runbook.md"
+  human_evidence_check_command: "pnpm check:phase5-human-evidence"
   selected_recipe_count: 20
   exact_or_named_variant_count: 16
   substitute_count: 4
@@ -156,15 +159,18 @@ phase5_core20:
   image_rights_human_review_count: 0
   approved_for_publication_count: 0
   detailed_recipe_rewrites: "프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥"
-  phase5_test_status: "verified_7_of_7_including_evidence_preservation_and_incompatible_template_fail_closed"
-  full_unit_test_status: "verified_350_of_350"
+  phase5_test_status: "verified_core_9_of_9_and_human_evidence_contract_8_of_8"
+  full_unit_test_status: "verified_361_of_361"
   content_gate_status: "verified"
   production_build_status: "not_reverified_sandbox_port_block_then_external_execution_rejected_by_usage_limit"
   last_verified_build_status: "phase0_to_phase4_a1b7e0f_38_routes"
   secret_hygiene_status: "verified_no_tracked_env_or_release_secret_files"
   dependency_audit_status: "not_reverified_registry_dns_enotfound_dependencies_and_lockfile_unchanged"
   publication_status: "blocked_missing_human_evidence_and_db_source_links"
-  actual_cooking_template_preservation: "verified_existing_compatible_records_preserved_incompatible_selection_fails_closed"
+  human_evidence_status: "expected_blocked_actual_cooking_0_beginner_0_food_safety_0_legal_source_0_image_rights_0_publication_0_invalid_records_0"
+  actual_cooking_template_preservation: "verified_append_only_attempts_preserved_latest_attempt_controls_current_decision"
+  release_gate_status: "11_pass_1_expected_fail_phase5_human_evidence"
+  goal_gate_status: "phase5_human_evidence_missing_goal_not_complete"
 
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
@@ -201,23 +207,27 @@ migration_history:
 local_checks:
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_350_of_350"
-    evidence: "tests/phase-5-core-recipe-audit.test.ts"
+    status: "current_pass_361_of_361"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
     evidence: "docs/recipe-inventory.md, docs/phase-1-data-contract.md"
   - name: "Phase 5 core 20 editorial and evidence audit"
     command: "pnpm check:phase5-core-audit"
-    status: "current_pass_7_of_7_editorial_20_of_20_score_90_plus_publication_0_of_20"
-    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-actual-cooking-template.csv"
+    status: "current_pass_9_of_9_editorial_20_of_20_score_90_plus_publication_0_of_20"
+    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-actual-cooking-template.csv, docs/phase-5-human-review-template.csv"
+  - name: "Phase 5 actual cooking and human evidence gate"
+    command: "pnpm check:phase5-human-evidence"
+    status: "expected_blocked_0_of_20_invalid_records_0"
+    evidence: "docs/phase-5-human-testing-runbook.md"
   - name: "Phase 1 recipe data contract"
     command: "pnpm check:phase1-data-contract"
     status: "current_pass_25_of_25"
     evidence: "docs/phase-1-migration-dry-run.md"
   - name: "Recipe publication integration"
     command: "pnpm test:integration"
-    status: "current_pass_zero_unreviewed_exposed"
+    status: "current_attempt_blocked_sandbox_listen_eperm_previous_evidence_pass_zero_unreviewed_exposed"
     evidence: "output/ui-evidence/2026-07-10-publication-empty-list-390.png"
   - name: "Recipe publication RLS contract"
     command: "pnpm check:supabase-release"
@@ -387,7 +397,7 @@ blockers:
     status: "open"
     title: "Core 20 automatic editorial scores and local bitmap checks pass, but actual cooking, beginner, food-safety, legal-source, image-rights, and DB source-link evidence are 0/20."
     owner: "ContentQA+BeginnerTesters+FoodSafety+Legal"
-    evidence: "docs/phase-5-core-20-audit.md"
+    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-human-testing-runbook.md"
     due: "before_any_phase5_recipe_publication"
   - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
     severity: "P0"
@@ -476,5 +486,5 @@ blockers:
 
 next_action:
   owner: "ContentQA+BeginnerTesters"
-  command: "Run Wave 1 actual cooking tests from docs/phase-5-actual-cooking-template.csv and record successes, failures, safety issues, copy changes, image changes, and evidence paths."
+  command: "Run Wave 1 from docs/phase-5-human-testing-runbook.md, append cooking attempts to docs/phase-5-actual-cooking-template.csv, record four human reviews in docs/phase-5-human-review-template.csv, then run pnpm check:phase5-human-evidence."
   description: "Do not publish or set human-review flags from code. Record failed attempts as well as successful attempts, then route evidence to separate beginner, food-safety, legal-source, and image-rights reviewers before any DB publication change."

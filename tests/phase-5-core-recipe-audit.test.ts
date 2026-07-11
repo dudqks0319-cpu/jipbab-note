@@ -6,9 +6,13 @@ import { test } from "node:test";
 
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
 import {
+  PHASE5_COOKING_TEMPLATE_COLUMNS,
+  PHASE5_COOKING_TEMPLATE_PATH,
   PHASE5_CORE_20_SELECTIONS,
+  PHASE5_HUMAN_REVIEW_TEMPLATE_PATH,
   buildPhase5Artifacts,
   checkPhase5Artifacts,
+  parseCsvRows,
   writePhase5Artifacts,
 } from "../scripts/generate-phase-5-core-recipe-audit.mjs";
 
@@ -88,11 +92,17 @@ test("커밋된 Phase 5 감사 산출물은 현재 소스와 일치한다", () =
 
 test("감사 재생성은 입력된 실제 조리 증거를 덮어쓰지 않는다", () => {
   const tempRoot = mkdtempSync(path.join(tmpdir(), "jipbab-phase5-"));
-  const templatePath = path.join(tempRoot, "docs/phase-5-actual-cooking-template.csv");
+  const templatePath = path.join(tempRoot, PHASE5_COOKING_TEMPLATE_PATH);
   mkdirSync(path.dirname(templatePath), { recursive: true });
 
   const emptyTemplate = buildPhase5Artifacts(cwd).files["docs/phase-5-actual-cooking-template.csv"];
-  const populatedTemplate = emptyTemplate.replace("beginner-recipe-001,,", "beginner-recipe-001,v1,");
+  const firstAttempt = emptyTemplate.replace("beginner-recipe-001,,", "beginner-recipe-001,v1,");
+  const parsed = parseCsvRows(firstAttempt);
+  assert.ok(parsed);
+  const [header, firstRow] = parsed;
+  const appendedRow = [...firstRow];
+  appendedRow[header.indexOf("attempt_id")] = "attempt-retest";
+  const populatedTemplate = `${firstAttempt.trimEnd()}\n${appendedRow.join(",")}\n`;
   assert.notEqual(populatedTemplate, emptyTemplate);
   writeFileSync(templatePath, populatedTemplate, "utf8");
 
@@ -100,6 +110,56 @@ test("감사 재생성은 입력된 실제 조리 증거를 덮어쓰지 않는�
     writePhase5Artifacts(tempRoot);
     assert.equal(readFileSync(templatePath, "utf8"), populatedTemplate);
     assert.deepEqual(checkPhase5Artifacts(tempRoot).stale, []);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("감사 재생성은 입력된 사람 검수 기록도 덮어쓰지 않는다", () => {
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "jipbab-phase5-"));
+  const templatePath = path.join(tempRoot, PHASE5_HUMAN_REVIEW_TEMPLATE_PATH);
+  mkdirSync(path.dirname(templatePath), { recursive: true });
+
+  const emptyTemplate = buildPhase5Artifacts(cwd).files[PHASE5_HUMAN_REVIEW_TEMPLATE_PATH];
+  const populatedTemplate = emptyTemplate.replace(
+    "beginner-recipe-001,,beginner",
+    "beginner-recipe-001,v1,beginner",
+  );
+  assert.notEqual(populatedTemplate, emptyTemplate);
+  writeFileSync(templatePath, populatedTemplate, "utf8");
+
+  try {
+    writePhase5Artifacts(tempRoot);
+    assert.equal(readFileSync(templatePath, "utf8"), populatedTemplate);
+    assert.deepEqual(checkPhase5Artifacts(tempRoot).stale, []);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("증거가 없는 이전 조리 템플릿은 새 계약으로만 안전하게 갱신한다", () => {
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "jipbab-phase5-"));
+  const templatePath = path.join(tempRoot, "docs/phase-5-actual-cooking-template.csv");
+  mkdirSync(path.dirname(templatePath), { recursive: true });
+
+  const currentTemplate = buildPhase5Artifacts(cwd).files[PHASE5_COOKING_TEMPLATE_PATH];
+  const parsed = parseCsvRows(currentTemplate);
+  assert.ok(parsed);
+  const removedColumns = new Set(["attempt_id", "app_build_sha", "test_surface", "test_device"]);
+  const keptIndexes = PHASE5_COOKING_TEMPLATE_COLUMNS.map((column, index) => ({ column, index }))
+    .filter(({ column }) => !removedColumns.has(column))
+    .map(({ index }) => index);
+  const legacyTemplate = `${parsed
+    .map((values) => keptIndexes.map((index) => values[index] ?? "").join(","))
+    .join("\n")}\n`;
+  writeFileSync(templatePath, legacyTemplate, "utf8");
+
+  try {
+    writePhase5Artifacts(tempRoot);
+    assert.equal(
+      readFileSync(templatePath, "utf8"),
+      buildPhase5Artifacts(tempRoot).files["docs/phase-5-actual-cooking-template.csv"],
+    );
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -118,7 +178,7 @@ test("현재 선택과 맞지 않는 실제 조리 기록은 덮어쓰지 않고
   try {
     assert.throws(
       () => writePhase5Artifacts(tempRoot),
-      /actual cooking evidence is incompatible/u,
+      /human evidence is incompatible/u,
     );
     assert.equal(readFileSync(templatePath, "utf8"), incompatibleTemplate);
   } finally {

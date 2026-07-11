@@ -10,11 +10,15 @@ Updated: 2026-07-11 KST
 - 계획서가 수치까지 지정한 프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥을 계량·팬/냄비 크기·불 세기·시간·완료 신호·실수·복구·보관·재가열 기준으로 보강했다. 특히 계란말이가 일반 부침 문장으로 생성되던 결함을 고쳤다.
 - 인간 실제 조리 테스트, 초보자 검수, 식품 안전 검수, 법무 출처 검수, 이미지 권리 검수 증거는 각각 0/20이다. 따라서 Phase 5 공개 승인도 0/20이며 코드의 `published`, `reviewedForBeginner`, 자동 점수와 테스트 성공을 인간 증거로 승격하지 않았다.
 - 실제 조리 기록용 `docs/phase-5-actual-cooking-template.csv`를 추가했다. 익명 테스터 코드, 열원·조리도구, 실제 시간, 실패 단계·이유, 안전 문제, 문장·이미지 수정, 증거 경로를 성공/실패 모두 기록한다.
-- `pnpm phase5:audit`는 호환되는 실제 조리 기록을 보존한다. 선택 목록과 맞지 않는 기록은 자동 수정하거나 지우지 않고 오류로 중단한다.
-- 검증: `pnpm test` 350/350, `pnpm test:content`, Phase 5 전용 7/7, TypeScript, 레시피 176개·큐레이션 186개 계약이 통과했다. 비밀파일/추적 secret 2개 보안 항목은 통과했다.
+- `docs/phase-5-human-review-template.csv`와 `docs/phase-5-human-testing-runbook.md`를 추가해 초보자·식품 안전·출처·이미지 권리 검수를 20개 각각 별도 기록하도록 했다. 조리 CSV는 `attempt_id` 기반 재시험 행을 추가할 수 있고 가장 최근 시도가 현재 판정이므로 실패 뒤 성공 또는 성공 뒤 실패를 지우지 않는다.
+- `pnpm phase5:audit`는 호환되는 조리·사람 검수 기록을 보존한다. 선택 목록과 맞지 않는 기록은 자동 수정하거나 지우지 않고 오류로 중단한다.
+- `pnpm check:phase5-human-evidence`는 실제 증거 파일, 같은 레시피 버전, 익명 코드, 시각, 앱 SHA·기기, 안전 판정, DB recipe/source UUID를 검사한다. 현재 실제 조리와 4개 사람 검수는 모두 0/20, 잘못된 행은 0건이며 의도대로 `BLOCKED`다.
+- `pnpm release:check`는 기존 로컬 게이트 11개를 통과하고 Phase 5 사람 증거 게이트 1개에서만 실패한다. `pnpm release:goal-check`에도 같은 하드 게이트가 연결돼 자동 점수만으로 목표를 완료할 수 없다.
+- 검증: `pnpm test` 361/361, `pnpm test:content`, Phase 5 core 9/9, 사람 증거 계약 8/8, TypeScript, 레시피 176개·큐레이션 186개 계약이 통과했다. 비밀파일/추적 secret 2개 보안 항목은 통과했다.
+- `pnpm test:integration` 현재 재실행은 샌드박스가 `127.0.0.1:4317` listen을 `EPERM`으로 막아 서버 시작 전에 중단됐다. 앱 판정 실패로 승격하지 않았으며 외부 실행 가능한 환경에서 재검증해야 한다.
 - 현재 Phase 5 체크포인트의 production build 재검증은 Turbopack의 샌드박스 포트 차단 뒤 외부 실행 승인이 Codex 사용 한도로 거절되어 수행하지 못했다. 마지막 배포 후보 `a1b7e0f`의 38-route build는 통과했지만 이 Phase 5 체크포인트의 build 증거로 대체하지 않는다.
 - production dependency audit은 샌드박스 DNS가 `registry.npmjs.org`를 해석하지 못해 실행되지 않았다. 의존성·락파일은 변경하지 않았고, 이 잔여 검증은 네트워크 가능한 실행 환경에서 다시 수행해야 한다.
-- Evidence: `docs/phase-5-core-20-audit.md`, `docs/phase-5-core-20-audit.csv`, `docs/phase-5-actual-cooking-template.csv`.
+- Evidence: `docs/phase-5-core-20-audit.md`, `docs/phase-5-core-20-audit.csv`, `docs/phase-5-actual-cooking-template.csv`, `docs/phase-5-human-review-template.csv`, `docs/phase-5-human-testing-runbook.md`.
 
 ## 2026-07-11 Phase 0~4 GitHub·Vercel production 배포
 

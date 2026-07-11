@@ -207,6 +207,10 @@ const beginnerGoalReadinessCheck = runLocalCheck("node --experimental-strip-type
 const beginnerMobileEvidenceCheck = runLocalCheck("node scripts/check-beginner-mobile-evidence.mjs", [
   "scripts/check-beginner-mobile-evidence.mjs",
 ]);
+const phase5HumanEvidenceCheck = runLocalCheck("node --experimental-strip-types scripts/check-phase-5-human-evidence.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-phase-5-human-evidence.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -265,6 +269,14 @@ addResult(
   "초보자 모바일 화면 증거",
   beginnerMobileEvidenceCheck.evidence,
   "360/390/430px 홈/목록/상세/장보기 스크린샷을 다시 캡처한 뒤 pnpm check:beginner-mobile-evidence 재실행",
+);
+
+addResult(
+  results,
+  phase5HumanEvidenceCheck.status,
+  "핵심 20개 실제 조리·사람 검수 증거",
+  phase5HumanEvidenceCheck.evidence,
+  "docs/phase-5-human-testing-runbook.md에 따라 실제 조리와 초보자·식품 안전·출처·이미지 권리 검수를 완료한 뒤 pnpm check:phase5-human-evidence 재실행",
 );
 
 addResult(

@@ -81,3 +81,12 @@ Date: 2026-07-10
 - `source_reviewed_at`, `reviewer`, `published_at`
 
 값을 채우는 작업은 service role 또는 승인된 관리자 경로에서만 수행한다. 공개 정책은 점수 자체가 아니라 위 증거 필드와 완전한 v2 콘텐츠를 검사한다.
+
+## Phase 5 운영 패킷
+
+- 실제 조리 시도: `docs/phase-5-actual-cooking-template.csv`
+- 초보자·식품 안전·출처·이미지 권리 검수: `docs/phase-5-human-review-template.csv`
+- 테스트 절차와 개인정보 최소화: `docs/phase-5-human-testing-runbook.md`
+- 완료 판정: `pnpm check:phase5-human-evidence`
+
+조리 시도는 `attempt_id`로 추가하며 이전 실패를 삭제하지 않는다. 검증기는 같은 레시피 버전의 최신 조리 시도와 4개 사람 검수가 모두 승인되고 실제 증거 경로와 DB recipe/source UUID가 확인될 때만 발행 후보로 센다.
