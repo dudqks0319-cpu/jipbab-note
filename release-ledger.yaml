@@ -15,9 +15,9 @@ candidate:
   phase: "phase6_e2e_negative_accessibility_security_hardened_happy_path_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "1c91aa814ffc80182b73d390c768e574aaf25c51"
+  git_sha: "f90f0679821443f07ee7fd019885f89d97ef3e7d"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_e2e_checkpoint_committed_pending_preview"
+  dirty_state: "phase6_e2e_preview_deployment_record_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -214,6 +214,7 @@ phase6_quality_security:
   e2e_demo_recipe_api_request_count: 0
   e2e_full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
   e2e_offline_status: "blocked_real_device_and_offline_harness_required"
+  e2e_preview_deploy_status: "deployed_ready_verified_12_of_12"
   migration: "20260711113000_harden_security_definer_privileges.sql"
   rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql"
   security_definer_contract_status: "verified_14_of_14"
@@ -252,6 +253,28 @@ phase6_vercel_preview:
   api_v1_cache_control: "no-store"
   api_v1_request_id_present: true
   exact_mobile_runtime_status: "verified_360_390_430_17_controls_each_zero_undersized_zero_overflow"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
+
+phase6_e2e_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  implementation_git_sha: "1c91aa814ffc80182b73d390c768e574aaf25c51"
+  deployed_git_sha: "f90f0679821443f07ee7fd019885f89d97ef3e7d"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT"
+  deployment_url: "https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  e2e_negative_runtime_status: "verified_12_of_12"
+  demo_recipe_api_request_count: 0
+  runtime_error_fatal_log_count: 0
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
   production_promoted: false
   production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
 

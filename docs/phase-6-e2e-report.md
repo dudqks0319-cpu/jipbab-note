@@ -74,6 +74,10 @@ Screenshot: `output/ui-evidence/phase6-e2e-guest-negative-390.png` (로컬 ignor
 - `pnpm release:ci-static-check`: 14/14
 - `pnpm release:check`: 13 pass, Phase 5 사람 증거 0/20 한 항목만 expected fail
 - implementation commit: `1c91aa814ffc80182b73d390c768e574aaf25c51`
+- report/deployed commit: `f90f0679821443f07ee7fd019885f89d97ef3e7d`
+- Vercel Preview: `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT`, `https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app`, `READY`
+- Preview에서도 E2E negative runtime 12/12, demo API v1 request 0건, error/fatal runtime log 0건을 확인했다.
+- Preview API v1은 dependency 미준비 상태를 redacted 503과 `Retry-After: 60`, `no-store`, request ID로 반환했다.
 
 ## 남은 위험과 다음 증거
 

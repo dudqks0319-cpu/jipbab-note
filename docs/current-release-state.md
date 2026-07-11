@@ -5,10 +5,13 @@ Updated: 2026-07-11 KST
 ## 2026-07-11 Phase 6 브라우저 E2E·데모 네트워크
 
 - 구현 커밋 `1c91aa814ffc80182b73d390c768e574aaf25c51`에서 dependency 없는 Chrome CDP 실행기와 8개 E2E 정적 계약을 추가했다.
+- 보고서 체크포인트 `f90f0679821443f07ee7fd019885f89d97ef3e7d`까지 GitHub에 push하고, Vercel Preview `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT` (`https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`이고 source SHA는 `f90f0679821443f07ee7fd019885f89d97ef3e7d`다.
 - fresh 390px Chrome profile에서 게스트 첫 화면, 계란·두부 저장, reload 복원, 추천·목록·상세 fail-closed, family/merge 인증 거부, account-delete 입력 거부까지 runtime 12/12를 확인했다.
+- 같은 12개 runtime check를 새 Preview에서 다시 실행해 통과했다. Vercel error/fatal runtime log는 0건이다.
 - demo query 판별 전에 API가 시작되던 원인을 `isDemoMode`와 `ready` 분리로 고쳤다. 데모 홈과 레시피 목록의 `/api/v1/*` resource request는 각각 0건이다.
 - 전체 unit 370/370, integration pass, production build 38/38 routes, CI-safe 14/14가 통과한다. local release gate는 13개 통과하고 Phase 5 사람 증거 0/20 한 항목만 의도대로 실패한다.
 - 공개 승인 staging recipe가 없으므로 추천 성공 → 상세 → 장보기 → 조리 → 타이머 → 완료 happy path, 로그인/병합 성공, authenticated account deletion, offline 복구는 완료로 주장하지 않는다.
+- API v1은 production migration과 HMAC secret 미적용으로 예상된 redacted 503, `Retry-After: 60`, `Cache-Control: no-store`, `X-Request-Id`를 반환한다. production alias는 승격하지 않았다.
 - Evidence: `docs/phase-6-e2e-report.md`, `output/ui-evidence/phase6-e2e-guest-negative-390.png`.
 
 ## 2026-07-11 Phase 6 GitHub·Vercel Preview 배포
