@@ -4,7 +4,7 @@ Updated: 2026-07-11 KST
 
 ## 2026-07-11 Phase 5 핵심 20개 레시피 편집 감사
 
-- Phase 5 기본 콘텐츠는 `b3774145285077290c04c2d91515f12981beb4f3`, 실제 조리 증거 보존 수정은 `992e2ced41db4df47c4b5dff1182d630ca2425d5`, 사람 검수 실행 패킷과 출시 하드 게이트를 포함한 현재 구현 체크포인트는 `1d77369b6c9ca55cb0278f0183256e1f71aab668`다. 이 커밋들은 사람 검증·DB 공개·production 배포 승인을 뜻하지 않는다.
+- Phase 5 기본 콘텐츠는 `b3774145285077290c04c2d91515f12981beb4f3`, 실제 조리 증거 보존 수정은 `992e2ced41db4df47c4b5dff1182d630ca2425d5`, 사람 검수 실행 패킷과 출시 하드 게이트는 `1d77369b6c9ca55cb0278f0183256e1f71aab668`, 현재 검증 체크포인트는 `3d01c1b13627265b38429d6736c12e7e55bc5795`다. 이 커밋들은 사람 검증·DB 공개·production 배포 승인을 뜻하지 않는다.
 - 계획서의 핵심 20개를 현재 로컬 카탈로그에 매핑했다. 정확한 메뉴 또는 명시적 조리 변형 16개, 정확한 후보가 없는 유사 대체 4개이며 대체 이유를 `docs/phase-5-core-20-audit.csv`에 고정했다.
 - 자동 편집 감사에서 20/20이 90점 이상이고, 20/20의 로컬 비트맵 파일이 존재한다. 이 점수는 기본 구조, 재료·계량, 단계 실행 가능성, 초보자 언어·복구, 식품 안전·보관, 출처·이미지 권리의 코드 기반 사전 검사다.
 - 계획서가 수치까지 지정한 프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥을 계량·팬/냄비 크기·불 세기·시간·완료 신호·실수·복구·보관·재가열 기준으로 보강했다. 특히 계란말이가 일반 부침 문장으로 생성되던 결함을 고쳤다.
@@ -15,9 +15,9 @@ Updated: 2026-07-11 KST
 - `pnpm check:phase5-human-evidence`는 실제 증거 파일, 같은 레시피 버전, 익명 코드, 시각, 앱 SHA·기기, 안전 판정, DB recipe/source UUID를 검사한다. 현재 실제 조리와 4개 사람 검수는 모두 0/20, 잘못된 행은 0건이며 의도대로 `BLOCKED`다.
 - `pnpm release:check`는 기존 로컬 게이트 11개를 통과하고 Phase 5 사람 증거 게이트 1개에서만 실패한다. `pnpm release:goal-check`에도 같은 하드 게이트가 연결돼 자동 점수만으로 목표를 완료할 수 없다.
 - 검증: `pnpm test` 362/362, `pnpm test:content`, Phase 5 core 9/9, 사람 증거 계약 9/9, TypeScript, 레시피 176개·큐레이션 186개 계약이 통과했다. 비밀파일/추적 secret 2개 보안 항목은 통과했다.
-- `pnpm test:integration` 현재 재실행은 샌드박스가 `127.0.0.1:4317` listen을 `EPERM`으로 막아 서버 시작 전에 중단됐다. 앱 판정 실패로 승격하지 않았으며 외부 실행 가능한 환경에서 재검증해야 한다.
-- 현재 Phase 5 체크포인트의 production build 재검증은 Turbopack의 샌드박스 포트 차단 뒤 외부 실행 승인이 Codex 사용 한도로 거절되어 수행하지 못했다. 마지막 배포 후보 `a1b7e0f`의 38-route build는 통과했지만 이 Phase 5 체크포인트의 build 증거로 대체하지 않는다.
-- production dependency audit은 샌드박스 DNS가 `registry.npmjs.org`를 해석하지 못해 실행되지 않았다. 의존성·락파일은 변경하지 않았고, 이 잔여 검증은 네트워크 가능한 실행 환경에서 다시 수행해야 한다.
+- `pnpm test:integration`은 실제 Next.js 서버에서 미검수 레시피 0개 노출, 상세 fail-closed 문구, 위조 device header와 잘못된 anonymous token의 401 음성 경로를 통과했다. 이전 문구에 고정된 stale assertion 한 줄을 현재 공개 불변 조건으로 고쳤다.
+- `pnpm install --frozen-lockfile`은 lockfile 변경 없이 완료됐고, 현재 Phase 5 체크포인트의 `pnpm build`는 Next.js 16.2.6 Turbopack으로 compile·TypeScript·38/38 routes를 통과했다.
+- `pnpm release:security-check`는 production dependency audit에서 moderate 이상 알려진 취약점 0건, secret ignore 규칙, tracked secret 부재까지 3/3 통과했다. 의존성과 lockfile은 변경하지 않았다.
 - Evidence: `docs/phase-5-core-20-audit.md`, `docs/phase-5-core-20-audit.csv`, `docs/phase-5-actual-cooking-template.csv`, `docs/phase-5-human-review-template.csv`, `docs/phase-5-human-testing-runbook.md`.
 
 ## 2026-07-11 Phase 0~4 GitHub·Vercel production 배포

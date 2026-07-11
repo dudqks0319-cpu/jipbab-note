@@ -15,9 +15,9 @@ candidate:
   phase: "phase5_core20_editorial_verified_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
+  git_sha: "3d01c1b13627265b38429d6736c12e7e55bc5795"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase5_human_evidence_gate_checkpoint_committed"
+  dirty_state: "phase5_verified_checkpoint_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -141,7 +141,8 @@ phase4_cook_mode:
 phase5_core20:
   base_content_git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
   evidence_preservation_git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
-  implementation_git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
+  human_evidence_gate_git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
+  implementation_git_sha: "3d01c1b13627265b38429d6736c12e7e55bc5795"
   audit: "docs/phase-5-core-20-audit.md"
   audit_csv: "docs/phase-5-core-20-audit.csv"
   actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
@@ -163,10 +164,10 @@ phase5_core20:
   phase5_test_status: "verified_core_9_of_9_and_human_evidence_contract_9_of_9"
   full_unit_test_status: "verified_362_of_362"
   content_gate_status: "verified"
-  production_build_status: "not_reverified_sandbox_port_block_then_external_execution_rejected_by_usage_limit"
-  last_verified_build_status: "phase0_to_phase4_a1b7e0f_38_routes"
+  production_build_status: "verified_current_checkpoint_next_16_2_6_turbopack_38_of_38_routes"
+  last_verified_build_status: "phase5_3d01c1b_38_routes"
   secret_hygiene_status: "verified_no_tracked_env_or_release_secret_files"
-  dependency_audit_status: "not_reverified_registry_dns_enotfound_dependencies_and_lockfile_unchanged"
+  dependency_audit_status: "verified_no_known_production_vulnerabilities_at_moderate_or_higher_dependencies_and_lockfile_unchanged"
   publication_status: "blocked_missing_human_evidence_and_db_source_links"
   human_evidence_status: "expected_blocked_actual_cooking_0_beginner_0_food_safety_0_legal_source_0_image_rights_0_publication_0_invalid_records_0"
   actual_cooking_template_preservation: "verified_append_only_attempts_preserved_latest_attempt_controls_current_decision"
@@ -206,6 +207,10 @@ migration_history:
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
+  - name: "Frozen dependency installation"
+    command: "pnpm install --frozen-lockfile"
+    status: "current_pass_lockfile_unchanged"
+    evidence: "pnpm-lock.yaml"
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
     status: "current_pass_362_of_362"
@@ -228,7 +233,7 @@ local_checks:
     evidence: "docs/phase-1-migration-dry-run.md"
   - name: "Recipe publication integration"
     command: "pnpm test:integration"
-    status: "current_attempt_blocked_sandbox_listen_eperm_previous_evidence_pass_zero_unreviewed_exposed"
+    status: "current_pass_zero_unreviewed_exposed_and_signed_session_negative_paths"
     evidence: "output/ui-evidence/2026-07-10-publication-empty-list-390.png"
   - name: "Recipe publication RLS contract"
     command: "pnpm check:supabase-release"
@@ -389,8 +394,8 @@ security:
     status: "not_applicable"
     evidence: "No payment flow in current release ledger."
   dependency_audit:
-    status: "current_run_blocked_registry_dns_dependencies_and_lockfile_unchanged"
-    evidence: "pnpm release:security-check local secret checks passed; registry audit returned ENOTFOUND"
+    status: "current_pass_no_known_production_vulnerabilities_at_moderate_or_higher"
+    evidence: "pnpm release:security-check passed 3 of 3"
 
 blockers:
   - id: "P0-JIPBAB-PHASE5-HUMAN-EVIDENCE"
