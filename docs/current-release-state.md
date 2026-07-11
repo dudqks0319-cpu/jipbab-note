@@ -2,6 +2,15 @@
 
 Updated: 2026-07-11 KST
 
+## 2026-07-11 Phase 6 브라우저 E2E·데모 네트워크
+
+- 구현 커밋 `1c91aa814ffc80182b73d390c768e574aaf25c51`에서 dependency 없는 Chrome CDP 실행기와 8개 E2E 정적 계약을 추가했다.
+- fresh 390px Chrome profile에서 게스트 첫 화면, 계란·두부 저장, reload 복원, 추천·목록·상세 fail-closed, family/merge 인증 거부, account-delete 입력 거부까지 runtime 12/12를 확인했다.
+- demo query 판별 전에 API가 시작되던 원인을 `isDemoMode`와 `ready` 분리로 고쳤다. 데모 홈과 레시피 목록의 `/api/v1/*` resource request는 각각 0건이다.
+- 전체 unit 370/370, integration pass, production build 38/38 routes, CI-safe 14/14가 통과한다. local release gate는 13개 통과하고 Phase 5 사람 증거 0/20 한 항목만 의도대로 실패한다.
+- 공개 승인 staging recipe가 없으므로 추천 성공 → 상세 → 장보기 → 조리 → 타이머 → 완료 happy path, 로그인/병합 성공, authenticated account deletion, offline 복구는 완료로 주장하지 않는다.
+- Evidence: `docs/phase-6-e2e-report.md`, `output/ui-evidence/phase6-e2e-guest-negative-390.png`.
+
 ## 2026-07-11 Phase 6 GitHub·Vercel Preview 배포
 
 - 구현 `f9866d659804b2be04c29c46084b3085ba15bca8`과 접근성 체크포인트 `ce855a6f7ba1396513bf9d2a258850a5f44e9a25`를 `origin/ux/home-today-action-v2`에 push했다.
