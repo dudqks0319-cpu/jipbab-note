@@ -40,8 +40,8 @@ test("home fridge preview reserves the final cell for the hidden count", () => {
   assert.deepEqual(fifteenCells.at(-1), { kind: "overflow", count: 4 });
 });
 
-test("home fridge preview compacts long and frozen-prefixed ingredient names", () => {
-  assert.equal(getHomeFridgeIngredientDisplayName("냉동브로콜리"), "브로콜…");
+test("home fridge preview compacts long names and removes the frozen prefix", () => {
+  assert.equal(getHomeFridgeIngredientDisplayName("냉동브로콜리"), "브로콜리");
   assert.equal(getHomeFridgeIngredientDisplayName("방울토마토"), "방울토…");
   assert.equal(getHomeFridgeIngredientDisplayName("계란"), "계란");
 });
