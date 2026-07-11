@@ -15,9 +15,9 @@ candidate:
   phase: "phase5_core20_editorial_verified_human_cooking_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
+  git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase5_human_evidence_gate_changes_pending_commit"
+  dirty_state: "phase5_human_evidence_gate_checkpoint_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -140,7 +140,8 @@ phase4_cook_mode:
 
 phase5_core20:
   base_content_git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
-  implementation_git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
+  evidence_preservation_git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
+  implementation_git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
   audit: "docs/phase-5-core-20-audit.md"
   audit_csv: "docs/phase-5-core-20-audit.csv"
   actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
