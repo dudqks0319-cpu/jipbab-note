@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "title": "집밥노트 24~36개월 유아식 콘텐츠 팩",
+  "status": "draft_only_do_not_publish",
+  "generatedAt": "2026-07-11",
+  "ageScopeMonths": {
+    "min": 24,
+    "max": 36
+  },
+  "publicationWarning": "실제 조리, 식품 안전, 아동식, 출처, 이미지 권리 검수 전 운영 공개 금지",
+  "sharedPrinciples": [
+    "수량은 시작 제공량 예시이며 섭취량을 강제하지 않는다.",
+    "월령보다 씹기·삼키기 발달과 의료진 안내를 우선한다.",
+    "식사 중 바르게 앉히고 보호자가 가까이에서 지켜본다.",
+    "아이 몫을 먼저 덜고 어른 간을 나중에 한다.",
+    "둥글고 단단한 모양, 질긴 덩어리, 통견과류, 팝콘을 피한다.",
+    "먹다 남긴 음식은 재보관하지 않는다."
+  ],
+  "recipes": [
+    {
+      "slug": "soft-tofu-egg-rice-bowl",
+      "title": "부드러운 두부달걀덮밥",
+      "summary": "연두부와 완전히 익힌 달걀을 촉촉하게 끓여 밥에 얹는 한 그릇 유아식",
+      "audience": "toddler",
+      "stageCode": "toddler_24_36",
+      "minAgeMonths": 24,
+      "maxAgeMonths": 36,
+      "mealTypes": ["breakfast", "lunch", "dinner"],
+      "textureLevel": "soft_bite",
+      "servingLabel": "아이 1회 시작 제공량 예시",
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 8,
+      "totalTimeMinutes": 13,
+      "activeTimeMinutes": 10,
+      "difficulty": 1,
+      "tools": ["작은 냄비", "칼", "도마"],
+      "ingredients": [
+        {"name": "밥", "display": "80g", "prepNote": "큰 덩어리를 가볍게 풀기", "optional": false, "allergenCodes": []},
+        {"name": "연두부", "display": "50g", "prepNote": "숟가락으로 작게 떠두기", "optional": false, "allergenCodes": ["soy"]},
+        {"name": "달걀", "display": "1개", "prepNote": "충분히 풀기", "optional": false, "allergenCodes": ["egg"]},
+        {"name": "애호박", "display": "15g", "prepNote": "아주 잘게 다지기", "optional": false, "allergenCodes": []},
+        {"name": "물", "display": "60ml", "prepNote": "", "optional": false, "allergenCodes": []}
+      ],
+      "steps": [
+        {"order": 1, "title": "애호박 익히기", "action": "물과 애호박을 넣고 부드럽게 익힌다.", "heat": "중약불", "minutes": 4, "visualCue": "애호박이 투명하고 쉽게 눌린다.", "safetyNote": "큰 조각이 남지 않게 한다.", "commonMistake": "물이 빨리 줄어든다.", "rescueTip": "물 1큰술을 추가한다.", "familySplitPoint": false},
+        {"order": 2, "title": "두부 넣기", "action": "연두부를 넣고 숟가락으로 작게 부순다.", "heat": "약불", "minutes": 1, "visualCue": "두부가 고르게 퍼지고 따뜻해진다.", "safetyNote": "큰 두부 덩어리를 확인한다.", "commonMistake": "너무 세게 저어 물처럼 된다.", "rescueTip": "크게 두세 번만 섞는다.", "familySplitPoint": false},
+        {"order": 3, "title": "달걀 완전 가열", "action": "달걀을 천천히 넣고 투명한 부분이 없도록 익힌다.", "heat": "약불", "minutes": 3, "visualCue": "달걀이 전체적으로 불투명하다.", "safetyNote": "반숙으로 제공하지 않는다.", "commonMistake": "센 불에서 단단해진다.", "rescueTip": "불을 끄고 물 1큰술을 섞는다.", "familySplitPoint": true},
+        {"order": 4, "title": "밥에 얹고 식히기", "action": "밥에 얹어 덩어리를 풀고 먹기 좋은 온도로 식힌다.", "heat": "불 없음", "minutes": 2, "visualCue": "손목 안쪽에 뜨겁지 않다.", "safetyNote": "뜨거운 부분을 고르게 저어 확인한다.", "commonMistake": "밥이 뭉친다.", "rescueTip": "따뜻한 물을 1작은술씩 넣는다.", "familySplitPoint": false}
+      ],
+      "allergenCodes": ["egg", "soy"],
+      "nutritionRoles": ["grain", "protein", "vegetable"],
+      "sodiumStrategy": "child_portion_first",
+      "servingShapeNotes": [{"ingredientName": "애호박", "instruction": "완전히 부드럽게 익혀 잘게 다진다.", "required": true}],
+      "familySplitSupported": true,
+      "familySplitInstruction": "달걀이 완전히 익은 뒤 아이 몫을 덜고 어른 몫만 별도로 간한다.",
+      "freezerFriendlyCandidate": false,
+      "freezerQualityDays": null,
+      "storagePolicyCode": "young_child_rice",
+      "storageGuide": "빠르게 식혀 냉장 시 24시간 안에 사용한다. 먹다 남긴 부분은 폐기한다.",
+      "reheatingGuide": "한 번만 전체가 충분히 뜨거워지도록 데운 뒤 고르게 저어 식힌다.",
+      "pickyEatingTip": "두부가 낯설면 밥 한쪽에 소량만 보여주고 섞을지는 아이가 선택하게 한다.",
+      "caregiverNote": "월령보다 아이의 씹기·삼키기 발달과 의료진 안내를 우선하고, 식사 중 바르게 앉혀 가까이에서 지켜본다.",
+      "safetyNotes": [],
+      "sourceReferences": [
+        {"referenceType": "official_guidance", "provider": "American Academy of Pediatrics / HealthyChildren", "title": "Feeding and Nutrition: Your Two-Year-Old", "url": "https://www.healthychildren.org/English/ages-stages/toddler/nutrition/Pages/Feeding-and-Nutrition-Your-Two-Year-Old.aspx", "usedFor": "가족식 전환, 반응적 식사, 질식 위험", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "CDC", "title": "Choking Hazards", "url": "https://www.cdc.gov/infant-toddler-nutrition/foods-and-drinks/choking-hazards.html", "usedFor": "질식 위험 음식과 제공 형태", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Preparing food safely for babies", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/preparing-food-safely/", "usedFor": "자르기·부드럽게 익히기·가시 제거", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Storing and reheating food", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/storing-and-reheating-food/", "usedFor": "냉각·냉장·해동·재가열 정책", "rights": "원문·이미지 복사 없이 원칙만 요약"}
+      ],
+      "publication": {"publishStatus": "draft", "reviewStatus": "editorial_review", "reviewedForBeginner": false, "actualCookingTested": false, "foodSafetyReviewed": false, "childFeedingReviewed": false, "imageRightsStatus": "unverified", "requirementsVerified": false, "publishedAt": null}
+    },
+    {
+      "slug": "beef-broccoli-moist-rice-bowl",
+      "title": "소고기 브로콜리 촉촉덮밥",
+      "summary": "잘게 풀어 익힌 소고기와 푹 익힌 브로콜리를 촉촉하게 졸인 덮밥",
+      "audience": "toddler",
+      "stageCode": "toddler_24_36",
+      "minAgeMonths": 24,
+      "maxAgeMonths": 36,
+      "mealTypes": ["lunch", "dinner"],
+      "textureLevel": "soft_bite",
+      "servingLabel": "아이 1회 시작 제공량 예시",
+      "prepTimeMinutes": 7,
+      "cookTimeMinutes": 10,
+      "totalTimeMinutes": 17,
+      "activeTimeMinutes": 12,
+      "difficulty": 1,
+      "tools": ["작은 팬", "칼", "도마"],
+      "ingredients": [
+        {"name": "밥", "display": "80g", "prepNote": "덩어리 풀기", "optional": false, "allergenCodes": []},
+        {"name": "다진 소고기", "display": "30g", "prepNote": "큰 힘줄 제거", "optional": false, "allergenCodes": ["beef"]},
+        {"name": "브로콜리", "display": "20g", "prepNote": "데친 뒤 잘게 다지기", "optional": false, "allergenCodes": []},
+        {"name": "양파", "display": "10g", "prepNote": "잘게 다지기", "optional": false, "allergenCodes": []},
+        {"name": "물", "display": "70ml", "prepNote": "", "optional": false, "allergenCodes": []}
+      ],
+      "steps": [
+        {"order": 1, "title": "소고기 풀어 익히기", "action": "소고기와 물 2큰술을 넣고 잘게 풀어 익힌다.", "heat": "중약불", "minutes": 4, "visualCue": "붉은 부분 없이 잘게 흩어진다.", "safetyNote": "힘줄과 큰 덩어리를 제거한다.", "commonMistake": "고기가 뭉친다.", "rescueTip": "물을 더 넣고 주걱 끝으로 누른다.", "familySplitPoint": false},
+        {"order": 2, "title": "채소 부드럽게 익히기", "action": "양파와 브로콜리, 남은 물을 넣고 뚜껑을 덮는다.", "heat": "약불", "minutes": 5, "visualCue": "브로콜리가 숟가락으로 쉽게 으깨진다.", "safetyNote": "단단한 줄기를 남기지 않는다.", "commonMistake": "물이 졸아붙는다.", "rescueTip": "물 1큰술을 추가한다.", "familySplitPoint": false},
+        {"order": 3, "title": "촉촉하게 마무리", "action": "전체를 섞어 부드러운 상태로 맞춘다.", "heat": "약불", "minutes": 1, "visualCue": "재료가 촉촉하게 모인다.", "safetyNote": "고기 덩어리를 다시 확인한다.", "commonMistake": "너무 되직하다.", "rescueTip": "따뜻한 물을 1작은술씩 넣는다.", "familySplitPoint": true},
+        {"order": 4, "title": "밥에 얹어 식히기", "action": "밥에 얹고 작은 한입 크기로 섞어 식힌다.", "heat": "불 없음", "minutes": 2, "visualCue": "뜨거운 김이 거의 없다.", "safetyNote": "한입을 크게 주지 않는다.", "commonMistake": "재료가 흩어진다.", "rescueTip": "밥과 가볍게 섞는다.", "familySplitPoint": false}
+      ],
+      "allergenCodes": ["beef"],
+      "nutritionRoles": ["grain", "protein", "iron_source", "vegetable"],
+      "sodiumStrategy": "child_portion_first",
+      "servingShapeNotes": [
+        {"ingredientName": "소고기", "instruction": "힘줄을 제거하고 완전히 익혀 잘게 흩어지게 한다.", "required": true},
+        {"ingredientName": "브로콜리", "instruction": "쉽게 으깨질 만큼 익혀 잘게 다진다.", "required": true}
+      ],
+      "familySplitSupported": true,
+      "familySplitInstruction": "아이 몫을 덜어낸 뒤 어른 몫만 간한다.",
+      "freezerFriendlyCandidate": false,
+      "freezerQualityDays": null,
+      "storagePolicyCode": "young_child_rice",
+      "storageGuide": "빠르게 식혀 냉장 시 24시간 안에 사용한다.",
+      "reheatingGuide": "한 번만 충분히 데운 뒤 고르게 식힌다.",
+      "pickyEatingTip": "브로콜리를 숨기지 말고 익숙한 밥과 소량을 나란히 둔다.",
+      "caregiverNote": "월령보다 아이의 씹기·삼키기 발달과 의료진 안내를 우선하고, 식사 중 바르게 앉혀 가까이에서 지켜본다.",
+      "safetyNotes": [],
+      "sourceReferences": [
+        {"referenceType": "official_guidance", "provider": "American Academy of Pediatrics / HealthyChildren", "title": "Feeding and Nutrition: Your Two-Year-Old", "url": "https://www.healthychildren.org/English/ages-stages/toddler/nutrition/Pages/Feeding-and-Nutrition-Your-Two-Year-Old.aspx", "usedFor": "가족식 전환, 반응적 식사, 질식 위험", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "CDC", "title": "Choking Hazards", "url": "https://www.cdc.gov/infant-toddler-nutrition/foods-and-drinks/choking-hazards.html", "usedFor": "질식 위험 음식과 제공 형태", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Preparing food safely for babies", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/preparing-food-safely/", "usedFor": "자르기·부드럽게 익히기·가시 제거", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Storing and reheating food", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/storing-and-reheating-food/", "usedFor": "냉각·냉장·해동·재가열 정책", "rights": "원문·이미지 복사 없이 원칙만 요약"}
+      ],
+      "publication": {"publishStatus": "draft", "reviewStatus": "editorial_review", "reviewedForBeginner": false, "actualCookingTested": false, "foodSafetyReviewed": false, "childFeedingReviewed": false, "imageRightsStatus": "unverified", "requirementsVerified": false, "publishedAt": null}
+    },
+    {
+      "slug": "chicken-zucchini-moist-rice",
+      "title": "닭고기 애호박 촉촉밥",
+      "summary": "힘줄을 정리한 닭고기와 애호박을 물을 조금 넣어 부드럽게 익힌 밥",
+      "audience": "toddler",
+      "stageCode": "toddler_24_36",
+      "minAgeMonths": 24,
+      "maxAgeMonths": 36,
+      "mealTypes": ["lunch", "dinner"],
+      "textureLevel": "soft_bite",
+      "servingLabel": "아이 1회 시작 제공량 예시",
+      "prepTimeMinutes": 7,
+      "cookTimeMinutes": 10,
+      "totalTimeMinutes": 17,
+      "activeTimeMinutes": 12,
+      "difficulty": 1,
+      "tools": ["작은 팬", "칼", "도마"],
+      "ingredients": [
+        {"name": "밥", "display": "80g", "prepNote": "덩어리 풀기", "optional": false, "allergenCodes": []},
+        {"name": "다진 닭안심", "display": "30g", "prepNote": "힘줄 제거", "optional": false, "allergenCodes": ["chicken"]},
+        {"name": "애호박", "display": "20g", "prepNote": "잘게 다지기", "optional": false, "allergenCodes": []},
+        {"name": "당근", "display": "10g", "prepNote": "아주 잘게 다지기", "optional": true, "allergenCodes": []},
+        {"name": "물", "display": "70ml", "prepNote": "", "optional": false, "allergenCodes": []}
+      ],
+      "steps": [
+        {"order": 1, "title": "닭고기 익히기", "action": "닭고기와 물 2큰술을 넣고 잘게 풀어 익힌다.", "heat": "중약불", "minutes": 5, "visualCue": "속까지 흰색이고 분홍색이 없다.", "safetyNote": "힘줄을 제거하고 완전히 익힌다.", "commonMistake": "고기가 뭉친다.", "rescueTip": "물을 더 넣고 눌러 푼다.", "familySplitPoint": false},
+        {"order": 2, "title": "채소 익히기", "action": "애호박과 선택 당근, 남은 물을 넣고 뚜껑을 덮는다.", "heat": "약불", "minutes": 5, "visualCue": "당근도 쉽게 부서진다.", "safetyNote": "단단한 당근 조각을 남기지 않는다.", "commonMistake": "채소가 덜 익는다.", "rescueTip": "물 1큰술과 함께 2분 더 익힌다.", "familySplitPoint": false},
+        {"order": 3, "title": "밥 섞기", "action": "밥을 넣고 촉촉하게 섞는다.", "heat": "약불", "minutes": 1, "visualCue": "밥과 재료가 촉촉하고 큰 덩어리가 없다.", "safetyNote": "고기와 채소 크기를 다시 확인한다.", "commonMistake": "팬에 붙는다.", "rescueTip": "물을 1작은술씩 넣는다.", "familySplitPoint": true},
+        {"order": 4, "title": "식혀 제공하기", "action": "아이 몫을 덜어 충분히 식힌다.", "heat": "불 없음", "minutes": 2, "visualCue": "손목 안쪽에 뜨겁지 않다.", "safetyNote": "앉아서 먹도록 하고 지켜본다.", "commonMistake": "많은 양을 담는다.", "rescueTip": "소량부터 제공한다.", "familySplitPoint": false}
+      ],
+      "allergenCodes": ["chicken"],
+      "nutritionRoles": ["grain", "protein", "vegetable"],
+      "sodiumStrategy": "child_portion_first",
+      "servingShapeNotes": [
+        {"ingredientName": "닭고기", "instruction": "힘줄을 제거하고 잘게 풀어 완전히 익힌다.", "required": true},
+        {"ingredientName": "당근", "instruction": "아주 작게 다지고 쉽게 으깨질 만큼 익힌다.", "required": true}
+      ],
+      "familySplitSupported": true,
+      "familySplitInstruction": "아이 몫을 덜고 어른 몫만 간한다.",
+      "freezerFriendlyCandidate": false,
+      "freezerQualityDays": null,
+      "storagePolicyCode": "young_child_rice",
+      "storageGuide": "빠르게 식혀 냉장 시 24시간 안에 사용한다.",
+      "reheatingGuide": "한 번만 충분히 데운 뒤 고르게 식힌다.",
+      "pickyEatingTip": "당근을 선택 재료로 두고 애호박부터 익숙하게 제공한다.",
+      "caregiverNote": "월령보다 아이의 씹기·삼키기 발달과 의료진 안내를 우선하고, 식사 중 바르게 앉혀 가까이에서 지켜본다.",
+      "safetyNotes": [],
+      "sourceReferences": [
+        {"referenceType": "official_guidance", "provider": "American Academy of Pediatrics / HealthyChildren", "title": "Feeding and Nutrition: Your Two-Year-Old", "url": "https://www.healthychildren.org/English/ages-stages/toddler/nutrition/Pages/Feeding-and-Nutrition-Your-Two-Year-Old.aspx", "usedFor": "가족식 전환, 반응적 식사, 질식 위험", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "CDC", "title": "Choking Hazards", "url": "https://www.cdc.gov/infant-toddler-nutrition/foods-and-drinks/choking-hazards.html", "usedFor": "질식 위험 음식과 제공 형태", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Preparing food safely for babies", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/preparing-food-safely/", "usedFor": "자르기·부드럽게 익히기·가시 제거", "rights": "원문·이미지 복사 없이 원칙만 요약"},
+        {"referenceType": "official_guidance", "provider": "NHS", "title": "Storing and reheating food", "url": "https://www.nhs.uk/best-start-in-life/baby/weaning/safe-weaning/storing-and-reheating-food/", "usedFor": "냉각·냉장·해동·재가열 정책", "rights": "원문·이미지 복사 없이 원칙만 요약"}
+      ],
+      "publication": {"publishStatus": "draft", "reviewStatus": "editorial_review", "reviewedForBeginner": false, "actualCookingTested": false, "foodSafetyReviewed": false, "childFeedingReviewed": false, "imageRightsStatus": "unverified", "requirementsVerified": false, "publishedAt": null}
+    }
+  ]
+}
