@@ -174,6 +174,24 @@ phase5_core20:
   release_gate_status: "11_pass_1_expected_fail_phase5_human_evidence"
   goal_gate_status: "phase5_human_evidence_missing_goal_not_complete"
 
+phase5_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  deployed_git_sha: "be66b5f6abacadd48c5b8cf7de6c26afe7652c29"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_EZdssB9T4Zv3FQCSrW6oQCnpq2Fq"
+  deployment_url: "https://jipbab-note-cjbhtp2a0-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_and_db_source_links_missing"
+
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
   content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"

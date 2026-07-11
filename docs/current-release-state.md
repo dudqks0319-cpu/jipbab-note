@@ -18,6 +18,7 @@ Updated: 2026-07-11 KST
 - `pnpm test:integration`은 실제 Next.js 서버에서 미검수 레시피 0개 노출, 상세 fail-closed 문구, 위조 device header와 잘못된 anonymous token의 401 음성 경로를 통과했다. 이전 문구에 고정된 stale assertion 한 줄을 현재 공개 불변 조건으로 고쳤다.
 - `pnpm install --frozen-lockfile`은 lockfile 변경 없이 완료됐고, 현재 Phase 5 체크포인트의 `pnpm build`는 Next.js 16.2.6 Turbopack으로 compile·TypeScript·38/38 routes를 통과했다.
 - `pnpm release:security-check`는 production dependency audit에서 moderate 이상 알려진 취약점 0건, secret ignore 규칙, tracked secret 부재까지 3/3 통과했다. 의존성과 lockfile은 변경하지 않았다.
+- GitHub 원격 브랜치는 `be66b5f6abacadd48c5b8cf7de6c26afe7652c29`까지 동기화했다. 같은 체크포인트를 Vercel Preview deployment `dpl_EZdssB9T4Zv3FQCSrW6oQCnpq2Fq` (`https://jipbab-note-cjbhtp2a0-youngbeens-projects.vercel.app`)로 배포했고 상태는 `READY`다. 원격 빌드도 38/38 routes를 통과했으며 `/`와 `/recipe`는 HTTP 200, `/api/v1/recipes?limit=1`은 예상된 redacted 503과 `Retry-After: 60`, `Cache-Control: no-store`, `X-Request-Id`를 반환한다. 사람 증거 0/20이므로 production alias는 기존 Phase 0~4 deployment에 유지하고 Preview를 승격하지 않았다.
 - Evidence: `docs/phase-5-core-20-audit.md`, `docs/phase-5-core-20-audit.csv`, `docs/phase-5-actual-cooking-template.csv`, `docs/phase-5-human-review-template.csv`, `docs/phase-5-human-testing-runbook.md`.
 
 ## 2026-07-11 Phase 0~4 GitHub·Vercel production 배포
