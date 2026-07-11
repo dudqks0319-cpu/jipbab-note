@@ -3,13 +3,22 @@
 
 import { useEffect, useState } from "react";
 
-export function useDemoMode(): boolean {
-  const [isDemoMode, setIsDemoMode] = useState(false);
+export type DemoModeState = {
+  isDemoMode: boolean;
+  ready: boolean;
+};
+
+export function useDemoModeState(): DemoModeState {
+  const [state, setState] = useState<DemoModeState>({ isDemoMode: false, ready: false });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setIsDemoMode(params.get("demo") === "appstore");
+    setState({ isDemoMode: params.get("demo") === "appstore", ready: true });
   }, []);
 
-  return isDemoMode;
+  return state;
+}
+
+export function useDemoMode(): boolean {
+  return useDemoModeState().isDemoMode;
 }

@@ -62,7 +62,8 @@ test("QA UX links and labels keep fridge to recipe flow explicit", () => {
 test("app store demo mode avoids first-render hydration mismatch", () => {
   const demoModeSource = readFileSync(new URL("../hooks/useDemoMode.ts", import.meta.url), "utf8");
 
-  assert.match(demoModeSource, /useState\(false\)/);
+  assert.match(demoModeSource, /isDemoMode: false, ready: false/);
+  assert.match(demoModeSource, /isDemoMode: params\.get\("demo"\) === "appstore", ready: true/);
   assert.match(demoModeSource, /useEffect/);
   assert.doesNotMatch(demoModeSource, /useMemo/);
 });

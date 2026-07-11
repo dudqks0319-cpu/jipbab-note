@@ -21,7 +21,7 @@ import {
 import StarterActionCard from '@/components/home/StarterActionCard'
 import TodayActionCard from '@/components/home/TodayActionCard'
 import RecipeImage from '@/components/recipe/RecipeImage'
-import { useDemoMode } from '@/hooks/useDemoMode'
+import { useDemoModeState } from '@/hooks/useDemoMode'
 import { useFamilyShare } from '@/hooks/useFamilyShare'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useRecipeCatalog } from '@/hooks/useRecipes'
@@ -52,7 +52,7 @@ type StorageCounts = {
 }
 
 export default function HomePage() {
-  const isAppStoreDemo = useDemoMode()
+  const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
   const {
     ingredients,
     loading: ingredientsLoading,
@@ -88,7 +88,11 @@ export default function HomePage() {
     loading: recipesLoading,
     error: recipesError,
     refresh: refreshRecipes,
-  } = useRecipeCatalog(12, { ingredientIds: recipeIngredientIds, sort: 'recommended' })
+  } = useRecipeCatalog(12, {
+    ingredientIds: recipeIngredientIds,
+    sort: 'recommended',
+    enabled: demoModeReady && !isAppStoreDemo,
+  })
   const { uncheckedCount } = useShopping()
 
   const displayRecipeCatalog = useMemo(

@@ -164,7 +164,8 @@ test("unsafe reference content is rejected from home recommendations", () => {
 test("home page uses publication-gated API v1 recommendations without curated fallback", () => {
   const homeSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(homeSource, /useRecipeCatalog\(12, \{ ingredientIds: recipeIngredientIds/);
+  assert.match(homeSource, /useRecipeCatalog\(12, \{[\s\S]{0,180}ingredientIds: recipeIngredientIds/);
+  assert.match(homeSource, /enabled: demoModeReady && !isAppStoreDemo/);
   assert.match(homeSource, /resolveIngredientCatalogIds/);
   assert.match(homeSource, /beginnerHomeRecipeCatalog/);
   assert.doesNotMatch(homeSource, /CURATED_RECIPE_RECORDS|ONBOARDING_RECIPE_10_NAMES/);

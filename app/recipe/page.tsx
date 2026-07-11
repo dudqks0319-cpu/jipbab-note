@@ -28,7 +28,7 @@ import {
   type RecipeTimeListFilter,
   type RecipeToolListFilter,
 } from '@/lib/recipe-list-filters'
-import { useDemoMode } from '@/hooks/useDemoMode'
+import { useDemoModeState } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
@@ -58,7 +58,7 @@ function getDisplayCategoryLabelLines(category: DisplayRecipeCategory): string[]
 }
 
 export default function RecipePage() {
-  const isAppStoreDemo = useDemoMode()
+  const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [quickFilter, setQuickFilter] = useState<RecipeQuickFilter>('all')
   const [difficultyFilter, setDifficultyFilter] = useState<RecipeDifficultyListFilter>('all')
@@ -91,7 +91,7 @@ export default function RecipePage() {
     prevPage,
     refresh,
   } = useRecipes(24, {
-    enabled: urlStateReady,
+    enabled: urlStateReady && demoModeReady && !isAppStoreDemo,
     sort: apiSort,
     difficulty: difficultyFilter === 'level-1' ? 1 : null,
     maxTotalTime: timeFilter === 'all' ? null : Number(timeFilter),

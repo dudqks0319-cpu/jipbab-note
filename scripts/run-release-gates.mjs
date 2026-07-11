@@ -18,6 +18,11 @@ const checks = [
     args: ["scripts/check-phase-6-mobile-accessibility.mjs"],
   },
   {
+    name: "phase6-e2e-contract",
+    command: "node",
+    args: ["scripts/check-phase-6-e2e-contract.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],

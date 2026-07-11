@@ -321,7 +321,9 @@ const sourceChecks = [
     terms: [
       "TodayActionCard",
       "StarterActionCard",
-      "useRecipeCatalog(12, { ingredientIds: recipeIngredientIds",
+      "useRecipeCatalog(12, {",
+      "ingredientIds: recipeIngredientIds",
+      "enabled: demoModeReady && !isAppStoreDemo",
       "resolveIngredientCatalogIds",
       "rankRecipeRecommendations",
       "beginnerHomeRecipeCatalog",
