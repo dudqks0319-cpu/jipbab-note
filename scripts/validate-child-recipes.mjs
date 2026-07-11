@@ -57,7 +57,7 @@ const INGREDIENT_ALLERGEN_RULES = [
   { pattern: /닭고기|닭안심|생닭/, code: "chicken" },
   { pattern: /토마토/, code: "tomato" },
   { pattern: /생선|연어|흰살생선/, code: "fish" },
-  { pattern: /새우|게|조개/, code: "shellfish" },
+  { pattern: /새우|대게|꽃게|게살|게맛살|크래미|조개/, code: "shellfish" },
 ];
 
 function text(value) {
