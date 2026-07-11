@@ -1,0 +1,3 @@
+export const CHILD_MEALS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_CHILD_MEALS === 'true'
+export const TODDLER_MEALS_ENABLED =
+  CHILD_MEALS_ENABLED && process.env.NEXT_PUBLIC_ENABLE_TODDLER_MEALS === 'true'
