@@ -4,7 +4,7 @@ Updated: 2026-07-11 KST
 
 ## 2026-07-11 Phase 5 핵심 20개 레시피 편집 감사
 
-- Phase 5 구현 체크포인트는 content commit `b3774145285077290c04c2d91515f12981beb4f3`이다. 이 커밋은 사람 검증·DB 공개·production 배포 승인을 뜻하지 않는다.
+- Phase 5 기본 콘텐츠는 `b3774145285077290c04c2d91515f12981beb4f3`, 실제 조리 증거 보존 수정까지 포함한 현재 구현 체크포인트는 `992e2ced41db4df47c4b5dff1182d630ca2425d5`다. 이 커밋들은 사람 검증·DB 공개·production 배포 승인을 뜻하지 않는다.
 - 계획서의 핵심 20개를 현재 로컬 카탈로그에 매핑했다. 정확한 메뉴 또는 명시적 조리 변형 16개, 정확한 후보가 없는 유사 대체 4개이며 대체 이유를 `docs/phase-5-core-20-audit.csv`에 고정했다.
 - 자동 편집 감사에서 20/20이 90점 이상이고, 20/20의 로컬 비트맵 파일이 존재한다. 이 점수는 기본 구조, 재료·계량, 단계 실행 가능성, 초보자 언어·복구, 식품 안전·보관, 출처·이미지 권리의 코드 기반 사전 검사다.
 - 계획서가 수치까지 지정한 프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥을 계량·팬/냄비 크기·불 세기·시간·완료 신호·실수·복구·보관·재가열 기준으로 보강했다. 특히 계란말이가 일반 부침 문장으로 생성되던 결함을 고쳤다.
@@ -12,7 +12,7 @@ Updated: 2026-07-11 KST
 - 실제 조리 기록용 `docs/phase-5-actual-cooking-template.csv`를 추가했다. 익명 테스터 코드, 열원·조리도구, 실제 시간, 실패 단계·이유, 안전 문제, 문장·이미지 수정, 증거 경로를 성공/실패 모두 기록한다.
 - `pnpm phase5:audit`는 호환되는 실제 조리 기록을 보존한다. 선택 목록과 맞지 않는 기록은 자동 수정하거나 지우지 않고 오류로 중단한다.
 - 검증: `pnpm test` 350/350, `pnpm test:content`, Phase 5 전용 7/7, TypeScript, 레시피 176개·큐레이션 186개 계약이 통과했다. 비밀파일/추적 secret 2개 보안 항목은 통과했다.
-- 현재 diff의 production build 재검증은 Turbopack의 샌드박스 포트 차단 뒤 외부 실행 승인이 Codex 사용 한도로 거절되어 수행하지 못했다. 마지막 배포 후보 `a1b7e0f`의 38-route build는 통과했지만 이 Phase 5 diff의 build 증거로 대체하지 않는다.
+- 현재 Phase 5 체크포인트의 production build 재검증은 Turbopack의 샌드박스 포트 차단 뒤 외부 실행 승인이 Codex 사용 한도로 거절되어 수행하지 못했다. 마지막 배포 후보 `a1b7e0f`의 38-route build는 통과했지만 이 Phase 5 체크포인트의 build 증거로 대체하지 않는다.
 - production dependency audit은 샌드박스 DNS가 `registry.npmjs.org`를 해석하지 못해 실행되지 않았다. 의존성·락파일은 변경하지 않았고, 이 잔여 검증은 네트워크 가능한 실행 환경에서 다시 수행해야 한다.
 - Evidence: `docs/phase-5-core-20-audit.md`, `docs/phase-5-core-20-audit.csv`, `docs/phase-5-actual-cooking-template.csv`.
 
