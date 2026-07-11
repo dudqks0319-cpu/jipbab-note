@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "status": "generation_pending_review",
+  "policy": {
+    "externalImageReuseAllowed": false,
+    "generatedImageProductionUseAllowedWithoutHumanReview": false,
+    "actualCookingPhotoPreferred": true,
+    "requiredAspectRatio": "4:3",
+    "minimumSize": "1200x900"
+  },
+  "images": [
+    {"slug":"soft-tofu-egg-rice-bowl","targetPath":"public/images/child-meals/toddler-24-36/soft-tofu-egg-rice-bowl.webp","status":"pending"},
+    {"slug":"beef-broccoli-moist-rice-bowl","targetPath":"public/images/child-meals/toddler-24-36/beef-broccoli-moist-rice-bowl.webp","status":"pending"},
+    {"slug":"chicken-zucchini-moist-rice","targetPath":"public/images/child-meals/toddler-24-36/chicken-zucchini-moist-rice.webp","status":"pending"},
+    {"slug":"tomato-egg-rice","targetPath":"public/images/child-meals/toddler-24-36/tomato-egg-rice.webp","status":"pending"},
+    {"slug":"mushroom-vegetable-steamed-egg","targetPath":"public/images/child-meals/toddler-24-36/mushroom-vegetable-steamed-egg.webp","status":"pending"},
+    {"slug":"pumpkin-tofu-rice","targetPath":"public/images/child-meals/toddler-24-36/pumpkin-tofu-rice.webp","status":"pending"},
+    {"slug":"banana-oat-egg-flat-pancake","targetPath":"public/images/child-meals/toddler-24-36/banana-oat-egg-flat-pancake.webp","status":"pending"},
+    {"slug":"sweet-potato-cheese-soft-toast","targetPath":"public/images/child-meals/toddler-24-36/sweet-potato-cheese-soft-toast.webp","status":"pending"},
+    {"slug":"soft-apple-oatmeal","targetPath":"public/images/child-meals/toddler-24-36/soft-apple-oatmeal.webp","status":"pending"},
+    {"slug":"tofu-banana-soft-pancake","targetPath":"public/images/child-meals/toddler-24-36/tofu-banana-soft-pancake.webp","status":"pending"},
+    {"slug":"child-first-beef-radish-soup","targetPath":"public/images/child-meals/toddler-24-36/child-first-beef-radish-soup.webp","status":"pending"},
+    {"slug":"child-first-chicken-potato-stew","targetPath":"public/images/child-meals/toddler-24-36/child-first-chicken-potato-stew.webp","status":"pending"}
+  ]
+}
