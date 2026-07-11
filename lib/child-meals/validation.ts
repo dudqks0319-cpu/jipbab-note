@@ -89,8 +89,8 @@ export function isChildGuidanceAgeEligible(
 }
 
 export function hasExcludedChildAllergen(
-  guidance: Pick<RecipeChildGuidance, "allergenCodes">,
-  excludedAllergenCodes: ChildAllergenCode[],
+  guidance: { allergenCodes: readonly ChildAllergenCode[] },
+  excludedAllergenCodes: readonly ChildAllergenCode[],
 ): boolean {
   if (excludedAllergenCodes.length === 0) return false;
   const excluded = new Set(excludedAllergenCodes);
