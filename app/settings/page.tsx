@@ -147,7 +147,7 @@ export default function SettingsPage() {
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
-          <Link href="/mypage" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
+          <Link href="/mypage" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
             <ChevronLeft size={18} />
           </Link>
           <h1 className="text-center text-[16px] font-black text-[#2f2117]">설정</h1>
@@ -191,7 +191,7 @@ export default function SettingsPage() {
                 key={item.day}
                 type="button"
                 onClick={() => toggleExpiryReminderDay(item.day)}
-                className={`min-h-10 rounded-[12px] border px-2 text-[12px] font-black ${
+                className={`min-h-11 rounded-[12px] border px-2 text-[12px] font-black ${
                   settings.expiryReminderDays.includes(item.day)
                     ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                     : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'

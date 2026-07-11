@@ -59,7 +59,7 @@ export default function MealPlanPage() {
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
-          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="홈으로 돌아가기">
+          <Link href="/" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="홈으로 돌아가기">
             <ChevronLeft size={18} />
           </Link>
           <h1 className="text-center text-[16px] font-black text-[#2f2117]">주간 식단</h1>

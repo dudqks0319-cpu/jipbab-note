@@ -190,7 +190,7 @@ function CommunityEnabledPage() {
             onClick={() => {
               void refreshCommunity()
             }}
-            className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]"
+            className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]"
             aria-label="커뮤니티 새로고침"
           >
             <RefreshCw size={16} />
@@ -320,7 +320,7 @@ function CommunityEnabledPage() {
                       onClick={() => {
                         void deletePost(post.id)
                       }}
-                      className="rounded-full p-2 text-[#b5a493]"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]"
                       aria-label={`${post.title} 삭제`}
                     >
                       <Trash2 size={15} />

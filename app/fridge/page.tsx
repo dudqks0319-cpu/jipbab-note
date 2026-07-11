@@ -692,7 +692,7 @@ export default function FridgePage() {
           <button
             type="button"
             onClick={() => setViewMode('inventory')}
-            className={`min-h-10 rounded-[11px] text-[12px] font-black ${
+            className={`min-h-11 rounded-[11px] text-[12px] font-black ${
               viewMode === 'inventory'
                 ? 'bg-[#2f2117] text-white'
                 : 'text-[#7d6d5f]'
@@ -703,7 +703,7 @@ export default function FridgePage() {
           <button
             type="button"
             onClick={() => setViewMode('browse')}
-            className={`min-h-10 rounded-[11px] text-[12px] font-black ${
+            className={`min-h-11 rounded-[11px] text-[12px] font-black ${
               viewMode === 'browse'
                 ? 'bg-[#2f2117] text-white'
                 : 'text-[#7d6d5f]'
@@ -770,7 +770,7 @@ export default function FridgePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`min-h-10 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
+                className={`min-h-11 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
                   activeTab === tab
                     ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                     : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -846,7 +846,7 @@ export default function FridgePage() {
                       onClick={() => {
                         void handleAddCatalogIngredient(item)
                       }}
-                      className={`mt-2 flex min-h-10 w-full items-center justify-center rounded-[12px] text-[12px] font-black ${
+                      className={`mt-2 flex min-h-11 w-full items-center justify-center rounded-[12px] text-[12px] font-black ${
                         alreadyAdded
                           ? 'cursor-default bg-[#f2eee7] text-[#a99a8a]'
                           : 'bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.16)]'
@@ -1003,7 +1003,7 @@ export default function FridgePage() {
                           <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
                           <Link
                             href={`/recipe?q=${encodeURIComponent(item.name)}`}
-                            className="mt-2 inline-flex min-h-8 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19]"
+                            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19]"
                           >
                             이 재료로 요리
                           </Link>
@@ -1016,7 +1016,7 @@ export default function FridgePage() {
                           <button
                             onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
                             aria-label={`${item.name} 메뉴 열기`}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
                           >
                             <MoreVertical size={15} />
                           </button>
@@ -1116,7 +1116,7 @@ export default function FridgePage() {
                   resetForm()
                 }}
                 aria-label="모달 닫기"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100"
               >
                 <X size={18} className="text-gray-500" />
               </button>

@@ -21,7 +21,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f4eee5]">
       <div className="mx-auto flex h-[100dvh] w-full min-w-0 max-w-[430px] flex-col overflow-hidden border-x border-[#ead9c6] bg-[#fbf6ee] shadow-[0_18px_50px_rgba(82,59,35,0.16)]">
+        <a
+          href="#main-content"
+          className="sr-only z-[60] min-h-11 min-w-11 items-center justify-center rounded-xl bg-[#2f2117] px-4 text-sm font-black text-white focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:flex"
+        >
+          본문으로 건너뛰기
+        </a>
         <main
+          id="main-content"
+          tabIndex={-1}
           className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto"
           onTouchStart={(event) => {
             const touch = event.changedTouches[0]

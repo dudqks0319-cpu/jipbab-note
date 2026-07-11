@@ -270,7 +270,7 @@ export default function RecipeShoppingAssistant({
           <button
             type="button"
             onClick={() => setSelectedScope("personal")}
-            className={`min-h-10 rounded-[11px] text-xs font-black ${
+            className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === "personal"
                 ? "bg-[#2f2117] text-white"
                 : "text-[#7d6d5f]"
@@ -282,7 +282,7 @@ export default function RecipeShoppingAssistant({
             type="button"
             onClick={() => setSelectedScope("family")}
             disabled={!group}
-            className={`min-h-10 rounded-[11px] text-xs font-black ${
+            className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === "family"
                 ? "bg-[#2f2117] text-white"
                 : "text-[#7d6d5f] disabled:text-[#c5b4a1]"
@@ -310,7 +310,7 @@ export default function RecipeShoppingAssistant({
               <button
                 type="button"
                 onClick={retrySync}
-                className="mt-2 inline-flex min-h-9 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
+                className="mt-2 inline-flex min-h-11 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
               >
                 <RefreshCw size={13} />
                 재시도
@@ -344,7 +344,7 @@ export default function RecipeShoppingAssistant({
                     type="button"
                     onClick={() => toggleMissingIngredient(ingredient)}
                     disabled={alreadyInShopping}
-                    className={`min-h-10 max-w-full rounded-[14px] border px-3 py-2 text-left text-[12px] font-black ${
+                    className={`min-h-11 max-w-full rounded-[14px] border px-3 py-2 text-left text-[12px] font-black ${
                       checked
                         ? "border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]"
                         : "border-[#eadcc9] bg-white text-[#7d6d5f] disabled:bg-[#f4ece3] disabled:text-[#b5a493]"

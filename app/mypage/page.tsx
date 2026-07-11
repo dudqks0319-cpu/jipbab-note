@@ -68,10 +68,10 @@ export default function MyPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Link href="/settings#notifications" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="알림 설정">
+            <Link href="/settings#notifications" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="알림 설정">
               <Bell size={17} />
             </Link>
-            <Link href="/settings" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="설정">
+            <Link href="/settings" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="설정">
               <Settings size={17} />
             </Link>
           </div>

@@ -36,7 +36,7 @@ export default function RecipeFavoriteButton({
           publicationEvidence,
         })
       }
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
       aria-label={favorite ? `${name} 찜 해제` : `${name} 찜하기`}
     >
       <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />

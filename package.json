@@ -52,6 +52,8 @@
     "release:capture-store-console": "node scripts/capture-store-console-confirmation-packet.mjs",
     "release:security-check": "node scripts/check-release-security.mjs",
     "check:security-definer": "node scripts/check-security-definer-contract.mjs",
+    "check:phase6-accessibility": "node scripts/check-phase-6-mobile-accessibility.mjs",
+    "capture:phase6-accessibility": "node scripts/capture-phase-6-mobile-accessibility.mjs",
     "release:ci-static-check": "node scripts/run-ci-release-gates.mjs",
     "release:external-status": "node scripts/check-external-release-status.mjs",
     "release:appstore-external-status": "node scripts/check-appstore-external-status.mjs",

@@ -28,7 +28,7 @@ export default function Header() {
       <Link
         href="/settings#notifications"
         aria-label="알림 보기"
-        className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-mint-100 bg-white shadow-soft"
+        className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-mint-100 bg-white shadow-soft"
       >
         <Bell size={18} className="text-mint-500" />
         <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-400" />

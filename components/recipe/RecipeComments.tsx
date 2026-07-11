@@ -232,7 +232,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
                         onClick={() => {
                           void deleteComment(comment.id);
                         }}
-                        className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]"
                         aria-label="내 댓글 삭제"
                       >
                         <Trash2 size={13} />

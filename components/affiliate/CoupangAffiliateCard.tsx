@@ -45,7 +45,7 @@ export default function CoupangAffiliateCard({
             href={affiliateUrl}
             target="_blank"
             rel="sponsored noopener noreferrer"
-            className="mt-3 inline-flex min-h-10 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-4 text-[13px] font-black text-white"
+            className="mt-3 inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-4 text-[13px] font-black text-white"
           >
             <ExternalLink size={14} />
             쿠팡에서 보기

@@ -106,7 +106,7 @@ export default function RecipeImportPage() {
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
-          <Link href="/recipe" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="레시피로 돌아가기">
+          <Link href="/recipe" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="레시피로 돌아가기">
             <ChevronLeft size={18} />
           </Link>
           <h1 className="text-center text-[16px] font-black text-[#2f2117]">레시피 가져오기</h1>
@@ -160,7 +160,7 @@ export default function RecipeImportPage() {
                   <p className="truncate text-sm font-black text-[#2f2117]">{item.title}</p>
                   <p className="truncate text-[11px] font-semibold text-[#8f7f70]">Safari에서 열기 · {item.url}</p>
                 </a>
-                <button type="button" onClick={() => removeRecipe(item.id)} className="rounded-full p-2 text-[#b5a493]" aria-label={`${item.title} 삭제`}>
+                <button type="button" onClick={() => removeRecipe(item.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]" aria-label={`${item.title} 삭제`}>
                   <Trash2 size={14} />
                 </button>
               </div>

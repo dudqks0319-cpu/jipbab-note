@@ -227,7 +227,7 @@ export default function RecipePage() {
           <button
             type="button"
             onClick={() => setFavoritesOnly((prev) => !prev)}
-            className={`flex h-10 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
+            className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
               favoritesOnly
                 ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                 : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -254,7 +254,7 @@ export default function RecipePage() {
             placeholder="레시피 검색"
             className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
           />
-          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-9 w-9 shrink-0 items-center justify-center text-[#9f8d7a]">
+          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-11 w-11 shrink-0 items-center justify-center text-[#9f8d7a]">
             <RefreshCw size={15} />
           </button>
         </div>
@@ -314,7 +314,7 @@ export default function RecipePage() {
             key={filter.id}
             type="button"
             onClick={() => setQuickFilter(filter.id)}
-            className={`min-h-8 rounded-full border px-2 py-1.5 text-[11px] font-black transition-all ${
+            className={`min-h-11 rounded-full border px-2 py-1.5 text-[11px] font-black transition-all ${
               quickFilter === filter.id
                 ? 'border-[#2f6fec] bg-[#eef4ff] text-[#2f6fec]'
                 : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -331,7 +331,7 @@ export default function RecipePage() {
             type="button"
             aria-expanded={showAdvancedFilters}
             onClick={() => setShowAdvancedFilters((current) => !current)}
-            className="flex min-h-10 w-full items-center justify-between gap-3 text-left text-[12px] font-black text-[#4b3929]"
+            className="flex min-h-11 w-full items-center justify-between gap-3 text-left text-[12px] font-black text-[#4b3929]"
           >
             <span className="inline-flex items-center gap-2">
               <SlidersHorizontal size={14} className="text-[#d94d19]" />
@@ -372,7 +372,7 @@ export default function RecipePage() {
                 <select
                   value={sortMode}
                   onChange={(event) => setSortMode(event.target.value as RecipeListSortMode)}
-                  className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
+                  className="min-h-11 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
                 >
                   {RECIPE_LIST_SORT_OPTIONS.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -516,7 +516,7 @@ export default function RecipePage() {
                             })
                           }
                           aria-label={`${recipe.name} 즐겨찾기 토글`}
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#fff7ed] text-[#7d6d5f]"
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7ed] text-[#7d6d5f]"
                         >
                           <Bookmark size={15} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
                         </button>
@@ -571,7 +571,7 @@ export default function RecipePage() {
         <button
           onClick={prevPage}
           disabled={page <= 1 || loading}
-          className="min-h-10 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           이전
         </button>
@@ -582,7 +582,7 @@ export default function RecipePage() {
         <button
           onClick={nextPage}
           disabled={page >= totalPages || loading}
-          className="min-h-10 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
         >
           다음
         </button>
@@ -608,7 +608,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-10 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
+        className="min-h-11 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
       >
         {options.map((option) => (
           <option key={option.id} value={option.id}>

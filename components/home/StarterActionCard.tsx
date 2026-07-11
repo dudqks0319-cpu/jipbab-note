@@ -76,7 +76,8 @@ export default function StarterActionCard({
                 src={FRIDGE_IMAGE_SRC}
                 alt=""
                 fill
-                priority
+                loading="eager"
+                fetchPriority="high"
                 sizes="(max-width: 430px) 310px, 350px"
                 className="object-contain object-center p-2"
               />
@@ -113,7 +114,7 @@ export default function StarterActionCard({
                   type="button"
                   onClick={() => toggleIngredient(name)}
                   aria-pressed={selected}
-                  className={`min-h-10 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
+                  className={`min-h-11 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
                     selected
                       ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                       : 'border-[#eadcc9] bg-white text-[#4b3929]'

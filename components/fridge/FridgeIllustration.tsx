@@ -289,7 +289,7 @@ function ZoneOverlay({
       {overflowCount > 0 ? (
         <Link
           href="/fridge"
-          className="flex min-h-8 items-center justify-center rounded-[12px] border border-dashed border-white/85 bg-[#2f2117]/82 px-2 text-[10px] font-black text-white shadow-[0_7px_14px_rgba(47,33,23,0.16)]"
+          className="flex min-h-11 items-center justify-center rounded-[12px] border border-dashed border-white/85 bg-[#2f2117]/82 px-2 text-[10px] font-black text-white shadow-[0_7px_14px_rgba(47,33,23,0.16)]"
         >
           +{overflowCount}개
         </Link>
@@ -359,7 +359,7 @@ export default function FridgeIllustration({
               type="button"
               aria-pressed={selectedStorage === storageType}
               onClick={() => onSelectStorage(storageType)}
-              className={`min-h-10 rounded-[11px] px-2 text-[11px] font-black ${
+              className={`min-h-11 rounded-[11px] px-2 text-[11px] font-black ${
                 selectedStorage === storageType ? "bg-[#2f2117] text-white" : "text-[#7d6d5f]"
               }`}
             >
@@ -374,7 +374,8 @@ export default function FridgeIllustration({
           src={FRIDGE_IMAGE_SRC}
           alt=""
           fill
-          priority
+          loading="eager"
+          fetchPriority="high"
           sizes="(max-width: 430px) 100vw, 390px"
           className="object-cover"
         />

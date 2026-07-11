@@ -355,7 +355,7 @@ export default function HomePage() {
                   <h2 className="text-[16px] font-black text-[#2f2117]">{section.title}</h2>
                   <p className="mt-1 text-[11px] font-semibold leading-4 text-[#8f7f70]">{section.subtitle}</p>
                 </div>
-                <Link href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} className="inline-flex min-h-9 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
+                <Link href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
                   전체
                 </Link>
               </div>
@@ -399,7 +399,7 @@ export default function HomePage() {
                 {familyRecipeSection?.subtitle ?? '가족 냉장고를 만들면 가족 재료 기준으로 쉬운 메뉴를 추천해요.'}
               </p>
             </div>
-            <Link href={buildHomeHref('/family', { demoMode: isAppStoreDemo })} className="inline-flex min-h-9 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
+            <Link href={buildHomeHref('/family', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
               가족
             </Link>
           </div>
@@ -411,7 +411,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => void listFamilyIngredients()}
-                className="mt-2 inline-flex min-h-9 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
+                className="mt-2 inline-flex min-h-11 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
               >
                 <RefreshCw size={13} />
                 재시도
@@ -489,6 +489,8 @@ function HomeFridgePreview({
         alt="냉장실과 냉동실이 함께 보이는 내 냉장고"
         width={887}
         height={1774}
+        loading="eager"
+        fetchPriority="high"
         sizes="(max-width: 430px) 318px, 360px"
         className="h-auto w-full"
       />
@@ -668,13 +670,13 @@ function RecipeHomeCard({
           <div className="mt-2 grid grid-cols-[1fr_1fr] gap-1.5">
             <Link
               href={recipeHref}
-              className="flex min-h-9 items-center justify-center rounded-[11px] bg-[#2f2117] px-2 text-[11px] font-black text-white"
+              className="flex min-h-11 items-center justify-center rounded-[11px] bg-[#2f2117] px-2 text-[11px] font-black text-white"
             >
               지금 만들기
             </Link>
             <Link
               href={shoppingHref}
-              className="flex min-h-9 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[11px] font-black text-[#d94d19]"
+              className="flex min-h-11 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[11px] font-black text-[#d94d19]"
             >
               <ShoppingBasket size={11} />
               장보기

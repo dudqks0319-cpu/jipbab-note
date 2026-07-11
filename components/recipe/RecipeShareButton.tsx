@@ -40,7 +40,7 @@ export default function RecipeShareButton({ recipeName, recipeId }: RecipeShareB
       onClick={() => {
         void shareRecipe();
       }}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
       aria-label="카카오톡 또는 시스템 공유로 레시피 공유"
     >
       <Share2 size={17} />

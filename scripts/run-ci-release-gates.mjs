@@ -13,6 +13,11 @@ const checks = [
     args: ["scripts/check-local-mode-release.mjs"],
   },
   {
+    name: "phase6-mobile-accessibility",
+    command: "node",
+    args: ["scripts/check-phase-6-mobile-accessibility.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],

@@ -145,7 +145,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   return (
     <div className="min-h-full bg-[#fbf6ee] px-5 pb-8">
       <section className="mobile-safe-top">
-        <Link href="/welcome" className="flex h-9 w-9 items-center justify-center rounded-full text-[#2f2117]" aria-label="인증 시작 화면으로 돌아가기">
+        <Link href="/welcome" className="flex h-11 w-11 items-center justify-center rounded-full text-[#2f2117]" aria-label="인증 시작 화면으로 돌아가기">
           <ArrowLeft size={20} />
         </Link>
       </section>

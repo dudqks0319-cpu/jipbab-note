@@ -64,7 +64,7 @@ export default function FamilyPage() {
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
-          <Link href="/mypage" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
+          <Link href="/mypage" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
             <ChevronLeft size={18} />
           </Link>
           <h1 className="text-center text-[16px] font-black text-[#2f2117]">가족 냉장고</h1>
@@ -159,7 +159,7 @@ export default function FamilyPage() {
                   onClick={() => {
                     void navigator.clipboard?.writeText(group.inviteCode);
                   }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fff0e4] text-[#d94d19]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fff0e4] text-[#d94d19]"
                   aria-label="초대코드 복사"
                 >
                   <Copy size={17} />
@@ -182,7 +182,7 @@ export default function FamilyPage() {
                       <p className="mt-0.5 text-[11px] font-bold text-[#9f8d7a]">{member.role === "owner" ? "대표" : "가족"}</p>
                     </div>
                     {member.role === "member" ? (
-                      <button type="button" onClick={() => removeMember(member.id)} className="p-2 text-[#b5a493]" aria-label={`${member.name} 제거`}>
+                      <button type="button" onClick={() => removeMember(member.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]" aria-label={`${member.name} 제거`}>
                         <Trash2 size={15} />
                       </button>
                     ) : null}

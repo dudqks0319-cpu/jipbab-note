@@ -531,10 +531,10 @@ export default function ShoppingPage() {
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <button type="button" onClick={shareList} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
+            <button type="button" onClick={shareList} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
               <Share2 size={15} />
             </button>
-            <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
+            <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="min-h-11 rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
               + 직접 추가
             </button>
           </div>
@@ -549,7 +549,7 @@ export default function ShoppingPage() {
           <button
             type="button"
             onClick={() => setSelectedScope('personal')}
-            className={`min-h-10 rounded-[11px] text-xs font-black ${
+            className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === 'personal' ? 'bg-[#2f2117] text-white' : 'text-[#7d6d5f]'
             }`}
           >
@@ -559,7 +559,7 @@ export default function ShoppingPage() {
             type="button"
             onClick={() => setSelectedScope('family')}
             disabled={!group}
-            className={`min-h-10 rounded-[11px] text-xs font-black ${
+            className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === 'family'
                 ? 'bg-[#2f2117] text-white'
                 : 'text-[#7d6d5f] disabled:text-[#c5b4a1]'
@@ -826,7 +826,7 @@ export default function ShoppingPage() {
                         key={storageType}
                         type="button"
                         onClick={() => setFridgeStorageType(storageType)}
-                        className={`min-h-9 rounded-[11px] border px-2 text-[11px] font-black ${
+                        className={`min-h-11 rounded-[11px] border px-2 text-[11px] font-black ${
                           fridgeStorageType === storageType
                             ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
                             : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
@@ -847,7 +847,7 @@ export default function ShoppingPage() {
                           key={preset.days}
                           type="button"
                           onClick={() => setFridgeExpiryDays(preset.days)}
-                          className={`min-h-9 rounded-[11px] border px-1 text-[11px] font-black ${
+                          className={`min-h-11 rounded-[11px] border px-1 text-[11px] font-black ${
                             fridgeExpiryDays === preset.days
                               ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
                               : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
@@ -881,7 +881,7 @@ export default function ShoppingPage() {
                     onClick={() => {
                       void addCheckedItemsToFridge()
                     }}
-                    className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[12px] bg-[#2f2117] px-3 text-[12px] font-black text-white"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#2f2117] px-3 text-[12px] font-black text-white"
                   >
                     <Refrigerator size={15} />
                     구매완료 {checkedItems.length}개 냉장고에 반영
@@ -965,7 +965,7 @@ function ShoppingCatalogCard({
         href={purchaseLink.href}
         target="_blank"
         rel={externalLinkRel(purchaseLink.isPartnerLink)}
-        className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-1 rounded-[10px] bg-white px-2 text-[11px] font-black text-[#d94d19]"
+        className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-[10px] bg-white px-2 text-[11px] font-black text-[#d94d19]"
         aria-label={`${item.name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
       >
         <ExternalLink size={12} />
@@ -1045,7 +1045,7 @@ function ShoppingRow({
             href={purchaseLink.href}
             target="_blank"
             rel={externalLinkRel(purchaseLink.isPartnerLink)}
-            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+            className="inline-flex h-11 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
             aria-label={`${name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
           >
             <ExternalLink size={12} />
@@ -1056,12 +1056,12 @@ function ShoppingRow({
         <button
           type="button"
           onClick={onAddToFridge}
-          className="inline-flex h-8 shrink-0 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
+          className="inline-flex h-11 shrink-0 items-center rounded-full bg-[#2f2117] px-2.5 text-[11px] font-black text-white"
         >
           {addToFridgeLabel}
         </button>
       )}
-      <button type="button" onClick={onRemove} className="rounded-full p-2 text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
+      <button type="button" onClick={onRemove} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />
       </button>
     </div>
