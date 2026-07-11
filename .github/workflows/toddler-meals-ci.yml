@@ -1,0 +1,63 @@
+name: Toddler Meals CI
+
+on:
+  push:
+    branches:
+      - 'feat/toddler-meals**'
+  pull_request:
+    paths:
+      - 'app/toddler-meals/**'
+      - 'components/child-meals/**'
+      - 'components/home/CompactFridgeIngredientGrid.tsx'
+      - 'components/home/StarterActionCard.tsx'
+      - 'content/child-meals/**'
+      - 'hooks/useChildMeal**'
+      - 'lib/child-meals/**'
+      - 'lib/home-fridge-preview.ts'
+      - 'scripts/validate-child-recipes.mjs'
+      - 'supabase/migrations/20260712*.sql'
+      - 'supabase/rollbacks/20260712*.sql'
+      - 'tests/child-*.test.ts'
+      - 'tests/home-fridge-preview-contract.test.ts'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: toddler-meals-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate toddler recipe content
+        run: pnpm child-content:validate
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Production build
+        run: pnpm build
