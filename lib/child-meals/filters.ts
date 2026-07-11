@@ -2,11 +2,11 @@ import type {
   ChildAllergenCode,
   ChildMealType,
   ChildTexturePreference,
-} from './types'
+} from './types.ts'
 import {
   hasExcludedChildAllergen,
   isChildGuidanceAgeEligible,
-} from './validation'
+} from './validation.ts'
 
 export interface ChildMealFilterableRecipe {
   minAgeMonths: number
