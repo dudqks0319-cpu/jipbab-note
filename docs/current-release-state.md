@@ -2,6 +2,17 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 6 관측성·분석 계약 Preview
+
+- 구현 커밋 `c21b4ae8116836075b33090818b4a68e348c9d1f`를 격리 브랜치 `origin/agent/phase6-observability-analytics`에 push했다. 기본 작업 폴더의 미완성 아동식 변경은 이 커밋과 배포에서 제외했다.
+- 세 API v1 라우트는 공통 응답기에서 request ID, 공통 envelope, 1회성 운영 완료 로그를 함께 기록한다. 허용 메타데이터는 `request_id`, 정규화한 `endpoint`, `status`, `latency_ms`, 선택적 `error_code`, `deployment_sha`뿐이며 raw URL·query·body·email·token·free text는 기록하지 않는다.
+- 계획서의 제품 이벤트 33개를 이름·공통 속성·bounded measurement allowlist로 고정했다. 제품 분석은 기본 비활성이고 명시적 동의와 transport가 모두 없으면 전송하지 않는다. vendor, retention, consent 정책 승인 전에는 외부 분석 수집을 연결하지 않는다.
+- 최종 Vercel Preview는 `dpl_GmLZTPWPhbhaSmKaJLtLpYTs4bD5` (`https://jipbab-note-2wvccgmvm-youngbeens-projects.vercel.app`)이며 상태는 `READY`다. 깨끗한 `c21b4ae` checkout에 runtime/build `DEPLOYMENT_SHA`를 명시해 배포했다. 원격 build는 compile, TypeScript, 38/38 routes를 통과했다.
+- 배포 후 `/`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 production migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`를 반환한다. Vercel runtime log는 허용된 구조화 필드만 포함하고 `deployment_sha`가 위 구현 SHA와 정확히 일치한다.
+- 검증: 관련 테스트 14/14, 관측성 정적 계약 16/16, API v1 계약 14/14, 전체 unit 383/383, CI-safe release gate 16/16, release security 4/4, integration pass, production build 38/38 routes, 로컬·Preview HTTP 수동 QA 통과.
+- Phase 5 사람 증거 0/20, 운영 DB migration history·backup·rollback 검증, 운영 env, iOS/Android 산출물과 실기기 QA가 남아 있어 production alias는 승격하지 않았다. 제품 분석 외부 전송과 운영 알림 destination도 아직 연결하지 않았다.
+- Evidence: `docs/phase-6-observability-incident-response.md`.
+
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
 - 성능 게이트 구현 `1c2d353237220153aa943dbbc76dad1cfc9ea7fd`와 iOS 동기화 회귀 수정 `d25691a594cb02a832ee502f17c687d23a1250e9`를 `origin/ux/home-today-action-v2`에 push했다.
