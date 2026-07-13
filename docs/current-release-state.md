@@ -2,6 +2,16 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 6 제품·레시피 분석 리포트
+
+- 구현 커밋 `aea2ec9d4b476a9afc57645871009de73af2663e`에서 계획서의 제품 전환, D7 재방문, 레시피 시작·완료·중단·실패·실제 조리시간·장보기 추가율, API 오류율·지연시간·배포 SHA를 로컬 HTML/JSON으로 집계한다.
+- JSONL 경계는 허용 키, 정규 timestamp, bounded 값만 수락한다. 세션 ID는 집계에만 사용하고 결과에는 포함하지 않으며, malformed 입력 오류도 원문이나 식별값 대신 줄 번호만 남긴다.
+- 제품 분석 전송은 계속 기본 비활성이다. 외부 vendor, 네트워크 전송, 새 의존성은 추가하지 않았고 합성 QA fixture는 실제 사용자 지표나 레시피 공개 승인 증거로 사용하지 않는다.
+- 인앱 브라우저에서 현재 Vercel Preview의 실제 집밥노트 홈·냉장고·레시피·장보기 화면을 확인했다. 계란·두부의 로컬 냉장고 저장과 장보기 추가는 동작했고, 레시피는 운영 migration과 server env 미적용 상태에서 redacted 점검 화면으로 fail-closed했다.
+- 검증: 분석 계약 18/18, 집중 테스트 17/17, 전체 unit 392/392, CI-safe release gate 17/17, release security 4/4, integration pass, TypeScript pass, lint 오류 0건, production build 38/38 routes. 390px CSS 계약과 1280px 브라우저 렌더의 가로 overflow 0을 확인했다.
+- 이 변경은 내부 운영 증거 생성기와 분석 입력 검증 경계이므로 Vercel Preview 앱에는 새 분석 화면을 노출하지 않는다. 사용자에게 보이는 탭은 실제 집밥노트 Preview를 유지한다.
+- Evidence: `docs/phase-6-analytics-dashboard.md`, `output/phase6-analytics/phase6-analytics-dashboard.{json,html}`. `output/`은 로컬 재생성 증거이며 Git에는 커밋하지 않는다.
+
 ## 2026-07-13 Phase 6 관측성·분석 계약 Preview
 
 - 구현 커밋 `c21b4ae8116836075b33090818b4a68e348c9d1f`를 격리 브랜치 `origin/agent/phase6-observability-analytics`에 push했다. 기본 작업 폴더의 미완성 아동식 변경은 이 커밋과 배포에서 제외했다.
