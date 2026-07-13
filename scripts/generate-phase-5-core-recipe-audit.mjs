@@ -7,7 +7,7 @@ import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
 
 export const PHASE5_CORE_20_SELECTIONS = [
   { order: 1, requestedTitle: "간장계란밥", selectedTitle: "간장계란밥", replacementReason: null },
-  { order: 2, requestedTitle: "계란볶음밥", selectedTitle: "햄야채볶음밥", replacementReason: "정확한 제목 후보가 없어 계란을 포함한 초보자용 볶음밥으로 대체" },
+  { order: 2, requestedTitle: "계란볶음밥", selectedTitle: "계란볶음밥", replacementReason: null },
   { order: 3, requestedTitle: "참치김치볶음밥", selectedTitle: "참치김치볶음밥", replacementReason: null },
   { order: 4, requestedTitle: "김치볶음밥", selectedTitle: "김치볶음밥", replacementReason: null },
   { order: 5, requestedTitle: "계란말이", selectedTitle: "프라이팬 계란말이", replacementReason: null },
@@ -21,11 +21,11 @@ export const PHASE5_CORE_20_SELECTIONS = [
   { order: 13, requestedTitle: "미역국", selectedTitle: "미역국", replacementReason: null },
   { order: 14, requestedTitle: "북엇국", selectedTitle: "북엇국", replacementReason: null },
   { order: 15, requestedTitle: "제육볶음", selectedTitle: "제육볶음", replacementReason: null },
-  { order: 16, requestedTitle: "간장불고기", selectedTitle: "간장마늘 닭조림", replacementReason: "정확한 제목 후보가 없어 간장 양념 단백질 메인 요리로 대체" },
+  { order: 16, requestedTitle: "간장불고기", selectedTitle: "간장불고기", replacementReason: null },
   { order: 17, requestedTitle: "잔치국수", selectedTitle: "잔치국수", replacementReason: null },
-  { order: 18, requestedTitle: "떡볶이", selectedTitle: "떡국떡달걀국", replacementReason: "정확한 제목 후보가 없어 같은 떡국떡을 쓰는 초보자용 메뉴로 대체" },
+  { order: 18, requestedTitle: "떡볶이", selectedTitle: "떡볶이", replacementReason: null },
   { order: 19, requestedTitle: "토마토달걀볶음", selectedTitle: "토마토달걀볶음", replacementReason: null },
-  { order: 20, requestedTitle: "닭가슴살 채소볶음", selectedTitle: "닭가슴살양배추덮밥", replacementReason: "정확한 제목 후보가 없어 닭가슴살과 채소를 볶는 한 그릇 메뉴로 대체" },
+  { order: 20, requestedTitle: "닭가슴살 채소볶음", selectedTitle: "닭가슴살 채소볶음", replacementReason: null },
 ];
 
 const VAGUE_PHRASES = ["적당히", "노릇하게", "익을 때까지"];

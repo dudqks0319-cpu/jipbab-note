@@ -17,6 +17,11 @@ import {
   type GemmaStatus,
 } from '@/lib/gemma'
 import { scheduleDeviceExpiryNotifications } from '@/lib/notifications'
+import {
+  getProductAnalyticsConsent,
+  setProductAnalyticsConsent,
+} from '@/lib/product-analytics'
+import type { ProductAnalyticsConsent } from '@/lib/analytics/product-events'
 import { RECIPE_CATEGORIES, type IngredientUnitSystem } from '@/types'
 
 const toggleItems: Array<{
@@ -68,6 +73,11 @@ export default function SettingsPage() {
   const [gemmaError, setGemmaError] = useState('')
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationBusy, setNotificationBusy] = useState(false)
+  const [analyticsConsent, setAnalyticsConsentState] = useState<ProductAnalyticsConsent>('pending')
+
+  useEffect(() => {
+    setAnalyticsConsentState(getProductAnalyticsConsent())
+  }, [])
 
   useEffect(() => {
     if (!GEMMA_SETTINGS_ENABLED) {
@@ -172,6 +182,52 @@ export default function SettingsPage() {
             </button>
           ))}
           <SettingLink title="고객센터" value="" href="/support" />
+        </div>
+      </section>
+
+      <section className="px-5 pt-4">
+        <div className="jipbab-panel rounded-[16px] px-4 py-4">
+          <h2 className="text-[15px] font-black text-[#2f2117]">선택 분석 데이터</h2>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+            앱 개선용 익명 사용 흐름만 허용합니다. 레시피 제목, 자유 입력, 이메일, 전화번호는 수집하지 않으며
+            거부해도 모든 핵심 기능을 사용할 수 있습니다. 현재는 승인된 외부 분석 벤더가 없어 기기 내 이벤트
+            브리지까지만 동작합니다.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="선택 분석 데이터 동의">
+            <button
+              type="button"
+              aria-pressed={analyticsConsent === 'granted'}
+              onClick={() => {
+                setProductAnalyticsConsent('granted')
+                setAnalyticsConsentState('granted')
+              }}
+              className={`min-h-12 rounded-[13px] border px-3 text-[12px] font-black ${
+                analyticsConsent === 'granted'
+                  ? 'border-[#3d7b38] bg-[#eef6df] text-[#315f2d]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+              }`}
+            >
+              익명 분석 허용
+            </button>
+            <button
+              type="button"
+              aria-pressed={analyticsConsent === 'denied'}
+              onClick={() => {
+                setProductAnalyticsConsent('denied')
+                setAnalyticsConsentState('denied')
+              }}
+              className={`min-h-12 rounded-[13px] border px-3 text-[12px] font-black ${
+                analyticsConsent === 'denied'
+                  ? 'border-[#8f7f70] bg-[#f1e4d7] text-[#5e4e40]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+              }`}
+            >
+              거부·동의 철회
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] font-bold text-[#8f7f70]" aria-live="polite">
+            현재 상태: {analyticsConsent === 'granted' ? '허용' : analyticsConsent === 'denied' ? '거부' : '결정 전'}
+          </p>
         </div>
       </section>
 

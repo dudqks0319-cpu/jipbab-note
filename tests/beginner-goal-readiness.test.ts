@@ -8,6 +8,7 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
 };
 const source = readFileSync("scripts/check-beginner-goal-readiness.mjs", "utf8");
 const mobileEvidenceSource = readFileSync("scripts/check-beginner-mobile-evidence.mjs", "utf8");
+const happyCaptureSource = readFileSync("scripts/capture-phase-6-e2e-happy.mjs", "utf8");
 const curatedGuidanceSource = readFileSync("scripts/check-curated-beginner-guidance.mjs", "utf8");
 const releaseReadinessSource = readFileSync("scripts/release-readiness-check.mjs", "utf8");
 
@@ -59,6 +60,11 @@ test("beginner mobile evidence checker validates captured mobile widths", () => 
   assert.match(mobileEvidenceSource, /jipbab-recipe-detail-shopping-390\.png/);
   assert.match(mobileEvidenceSource, /readUInt32BE\(16\)/);
   assert.match(mobileEvidenceSource, /expected width/);
+  assert.match(happyCaptureSource, /captureBeginnerMobileSet/);
+  assert.match(happyCaptureSource, /jipbab-home-360-beginner-family\.png/);
+  assert.match(happyCaptureSource, /jipbab-recipe-430-filters-final\.png/);
+  assert.match(happyCaptureSource, /jipbab-recipe-detail-cook-390\.png/);
+  assert.match(happyCaptureSource, /jipbab-recipe-detail-shopping-430\.png/);
 });
 
 test("release readiness checks generated curated beginner guidance data", () => {

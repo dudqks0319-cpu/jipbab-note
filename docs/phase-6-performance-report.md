@@ -47,6 +47,8 @@ PHASE6_PERFORMANCE_URL=<preview-url> pnpm capture:phase6-performance
 pnpm check:phase6-performance
 ```
 
+회귀 기준은 `docs/phase-6-performance-baseline.json`에 고정한다. 2026-07-13 증거에 전체 transfer만 있어 해당 값에는 +15% 예산을 즉시 적용한다. JS·이미지·요청 수·long task 기준은 다음 승인된 populated-data 측정에서 값을 채울 때까지 `missingBaselines`로 명시하며, 값이 없는 기준을 통과로 가장하지 않는다. TTFB 800ms, hydration 오류 0, console 오류 0, unexpected network 오류 0은 절대 예산으로 항상 검사한다.
+
 ## 연계 검증
 
 - Phase 6 성능 정적 계약: 11/11

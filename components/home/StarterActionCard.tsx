@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Plus, Refrigerator, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { buildHomeHref } from '@/lib/home-actions'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
@@ -31,6 +31,7 @@ export default function StarterActionCard({
   storageCounts,
 }: StarterActionCardProps) {
   const [selectedNames, setSelectedNames] = useState<string[]>([])
+  const onboardingViewedRef = useRef(false)
   const visibleStarterNames = starterIngredientNames.slice(0, 8)
   const selectedNameSet = new Set(selectedNames)
   const hasSelection = selectedNames.length > 0
@@ -43,6 +44,12 @@ export default function StarterActionCard({
   const summaryText = storageCounts
     ? `냉장 ${storageCounts.cold} · 냉동 ${storageCounts.frozen} · 실온 ${storageCounts.room}`
     : null
+
+  useEffect(() => {
+    if (hasIngredients || onboardingViewedRef.current) return
+    onboardingViewedRef.current = true
+    trackProductAnalyticsEvent('onboarding_viewed')
+  }, [hasIngredients])
 
   const toggleIngredient = (name: string) => {
     setSelectedNames((prev) => (
@@ -167,6 +174,9 @@ export default function StarterActionCard({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={buildHomeHref('/fridge?add=1', { demoMode })}
+            onClick={() => {
+              if (!hasIngredients) trackProductAnalyticsEvent('onboarding_skipped')
+            }}
             className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] px-2 text-center text-[13px] font-bold text-[#7d6d5f] transition-colors hover:bg-[#fff0e4]"
           >
             <Plus size={14} />

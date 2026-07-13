@@ -28,6 +28,6 @@ test("Phase 6 performance static contract passes", () => {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /Contracts checked: 11/);
+  assert.match(result.stdout, /Contracts checked: 12/);
   assert.match(result.stdout, /Failures: 0/);
 });

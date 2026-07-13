@@ -28,6 +28,11 @@ const checks = [
     args: ["scripts/check-phase-6-performance-budget.mjs"],
   },
   {
+    name: "repository-binary-inventory",
+    command: "node",
+    args: ["scripts/audit-repository-binaries.mjs"],
+  },
+  {
     name: "phase6-observability",
     command: "node",
     args: ["scripts/check-phase-6-observability.mjs"],

@@ -19,6 +19,7 @@ import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { parseBulkIngredientInput } from '@/lib/bulk-ingredient-input'
 import { getIngredientCatalog, searchIngredientCatalog } from '@/lib/ingredient-catalog'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
+import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 import {
   STARTER_INGREDIENT_TEMPLATES,
   buildStarterIngredientPayloads,
@@ -302,6 +303,7 @@ export default function FridgePage() {
   const openAddModal = useCallback(() => {
     resetForm()
     setShowAddModal(true)
+    trackProductAnalyticsEvent('ingredient_add_started')
   }, [resetForm])
 
   const suggestionTotal = useMemo(
@@ -441,6 +443,7 @@ export default function FridgePage() {
 
     if (editingId) {
       await updateIngredient(editingId, payload)
+      trackProductAnalyticsEvent('ingredient_updated')
       setSaveMessage('수정했어요.')
       resetForm()
       setShowAddModal(false)
@@ -463,9 +466,11 @@ export default function FridgePage() {
           expiryDate: payload.expiryDate ?? duplicate.expiryDate,
           memo: mergeMemoDisplay(duplicate.memo, payload.memo),
         }))
+        trackProductAnalyticsEvent('ingredient_updated')
         setSaveMessage(`${duplicate.name}에 합쳤어요. 다음 재료를 바로 추가할 수 있어요.`)
       } else {
         await addIngredient(payload)
+        trackProductAnalyticsEvent('ingredient_added')
         setSaveMessage(`${payload.name} 저장 완료. 이어서 다음 재료를 추가하세요.`)
       }
       setForm((prev) => ({
@@ -499,6 +504,7 @@ export default function FridgePage() {
         discardedAt: null,
         memo: mergeMemoDisplay(duplicate.memo, memo),
       }))
+      trackProductAnalyticsEvent('ingredient_updated')
       setSaveMessage(`${item.name}은 이미 있어요. 기존 재료에 표시했어요.`)
       return
     }
@@ -511,6 +517,7 @@ export default function FridgePage() {
       expiryDate: null,
       memo,
     })
+    trackProductAnalyticsEvent('ingredient_added')
     setSaveMessage(`${item.name}을 냉장고에 담았어요.`)
   }
 
@@ -522,6 +529,7 @@ export default function FridgePage() {
     }
 
     await Promise.all(payloads.map((payload) => addIngredient(payload)))
+    trackProductAnalyticsEvent('ingredient_added', { ingredientCount: payloads.length })
     setSaveMessage(`국민 재료 ${payloads.length}개를 냉장고에 담았어요.`)
   }
 
@@ -563,6 +571,12 @@ export default function FridgePage() {
     }
 
     setBulkInput('')
+    if (addedCount > 0) {
+      trackProductAnalyticsEvent('ingredient_added', { ingredientCount: addedCount })
+    }
+    if (mergedCount > 0) {
+      trackProductAnalyticsEvent('ingredient_updated', { ingredientCount: mergedCount })
+    }
     setSaveMessage(
       `일괄 입력 완료: ${addedCount}개 추가, ${mergedCount}개 병합${
         parsed.skippedLines.length > 0 ? `, ${parsed.skippedLines.length}줄 건너뜀` : ''
@@ -576,6 +590,7 @@ export default function FridgePage() {
       discardedAt: null,
       memo: mergeMemoDisplay(item.memo, '소진 기록'),
     }))
+    trackProductAnalyticsEvent('ingredient_consumed')
     setMenuOpenId(null)
     setSaveMessage(`${item.name}을 소진 처리했어요. 삭제하지 않고 기록에 남깁니다.`)
   }
@@ -641,6 +656,7 @@ export default function FridgePage() {
 
   const handleDelete = async (id: string) => {
     await deleteIngredient(id)
+    trackProductAnalyticsEvent('ingredient_discarded')
     setMenuOpenId(null)
   }
 

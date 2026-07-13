@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { buildHomeHref, getTodayActionPrimaryCta, getTodayActionSecondaryCta } from '@/lib/home-actions'
@@ -35,14 +35,28 @@ export default function TodayActionCard({
   isLoading,
   recipe,
 }: TodayActionCardProps) {
+  const emptyEventSentRef = useRef(false)
+
   useEffect(() => {
-    if (!recipe) return
+    if (!recipe) {
+      if (!isLoading && !emptyEventSentRef.current) {
+        emptyEventSentRef.current = true
+        trackProductAnalyticsEvent('recommendation_empty', { resultCount: 0 })
+      }
+      return
+    }
+    emptyEventSentRef.current = false
     trackProductAnalyticsEvent('recommendation_result_viewed', {
       recipeId: recipe.id,
       missingCount: getEssentialMissingIngredients(recipe.missingIngredients).length,
       resultCount: 1,
     })
-  }, [recipe])
+  }, [isLoading, recipe])
+
+  const trackRecommendationClick = () => {
+    if (!recipe) return
+    trackProductAnalyticsEvent('recommendation_clicked', { recipeId: recipe.id })
+  }
 
   if (isLoading && !recipe) {
     return (
@@ -100,6 +114,7 @@ export default function TodayActionCard({
         </div>
         <Link
           href={recipeHref}
+          onClick={trackRecommendationClick}
           aria-label={`${recipe.name} 레시피 보기`}
           className="relative block h-28 overflow-hidden rounded-[18px] bg-[#fff7ed]"
         >
@@ -164,6 +179,7 @@ export default function TodayActionCard({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={primaryCta.href}
+            onClick={trackRecommendationClick}
             data-testid="today-primary-cta"
             className="flex min-h-12 min-w-0 items-center justify-center rounded-[15px] bg-[#ea5a1f] px-2 text-center text-[14px] font-black leading-4 text-white shadow-[0_10px_20px_rgba(234,90,31,0.22)]"
           >
@@ -171,6 +187,7 @@ export default function TodayActionCard({
           </Link>
           <Link
             href={secondaryCta.href}
+            onClick={trackRecommendationClick}
             data-testid="today-secondary-cta"
             className="flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-[15px] border border-white/15 bg-white/10 px-2 text-center text-[12px] font-black leading-4 text-[#ffe7c9]"
           >

@@ -23,6 +23,31 @@ const fixtureToken = process.env.PHASE6_E2E_FIXTURE_TOKEN?.trim()
 const fixtureRecipeId = "00000000-0000-4000-8000-0000000006e1";
 const chromePath = resolveChromeExecutable();
 const evidenceDir = path.resolve("output/ui-evidence");
+const beginnerEvidenceRoot = process.env.BEGINNER_MOBILE_EVIDENCE_ROOT
+  ? path.resolve(process.env.BEGINNER_MOBILE_EVIDENCE_ROOT)
+  : path.resolve(process.cwd(), "..");
+const beginnerEvidencePaths = {
+  home: [
+    [360, "jipbab-home-360-beginner-family.png"],
+    [390, "jipbab-home-390-beginner-family.png"],
+    [430, "jipbab-home-430-beginner-family.png"],
+  ],
+  recipeList: [
+    [360, "jipbab-recipe-360-filters-final.png"],
+    [390, "jipbab-recipe-390-filters-final.png"],
+    [430, "jipbab-recipe-430-filters-final.png"],
+  ],
+  recipeDetailCook: [
+    [360, "jipbab-recipe-detail-cook-360.png"],
+    [390, "jipbab-recipe-detail-cook-390.png"],
+    [430, "jipbab-recipe-detail-cook-430.png"],
+  ],
+  recipeDetailShopping: [
+    [360, "jipbab-recipe-detail-shopping-360.png"],
+    [390, "jipbab-recipe-detail-shopping-390.png"],
+    [430, "jipbab-recipe-detail-shopping-430.png"],
+  ],
+};
 const artifactPaths = {
   mobile: path.join(evidenceDir, "phase6-e2e-mobile-390.png"),
   desktop: path.join(evidenceDir, "phase6-e2e-desktop-1280.png"),
@@ -200,6 +225,40 @@ async function captureScreenshot(client, outputPath) {
   writeFileSync(outputPath, Buffer.from(screenshot.data, "base64"));
 }
 
+async function captureBeginnerMobileSet(client, screenshots, scrollSelector = null) {
+  for (const [width, fileName] of screenshots) {
+    await client.send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height: 844,
+      deviceScaleFactor: 1,
+      mobile: true,
+      screenWidth: width,
+      screenHeight: 844,
+    });
+    if (scrollSelector) {
+      await evaluate(client, `(selector) => {
+        document.querySelector(selector)?.scrollIntoView({ block: 'start' });
+        return true;
+      }`, [scrollSelector]);
+    } else {
+      await evaluate(client, `() => {
+        scrollTo({ top: 0, behavior: 'instant' });
+        return true;
+      }`);
+    }
+    await sleep(250);
+    await captureScreenshot(client, path.join(beginnerEvidenceRoot, fileName));
+  }
+  await client.send("Emulation.setDeviceMetricsOverride", {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true,
+    screenWidth: 390,
+    screenHeight: 844,
+  });
+}
+
 const bodyIncludes = `(text) => document.body?.innerText.includes(text) ?? false`;
 const testIdIncludes = `(testId, text) => document.querySelector('[data-testid="' + testId + '"]')?.textContent?.includes(text) ?? false`;
 const clickTestId = `(testId) => {
@@ -219,6 +278,7 @@ const fillTestId = `(testId, value) => {
 }`;
 
 mkdirSync(evidenceDir, { recursive: true });
+mkdirSync(beginnerEvidenceRoot, { recursive: true });
 const checks = [];
 const networkLog = [];
 const consoleLog = [];
@@ -372,6 +432,15 @@ try {
   assert.equal(await evaluate(client, clickTestId, ["starter-submit"]), true);
   await waitForBrowserCondition(client, "fixture recommendation", bodyIncludes, ["계란 두부 한 팬"]);
   checks.push("fresh_guest_saved", "recommendation_result_visible");
+  await captureBeginnerMobileSet(client, beginnerEvidencePaths.home);
+  checks.push("beginner_home_mobile_evidence_captured");
+
+  await navigate(client, `${origin}/recipe`);
+  await waitForBrowserCondition(client, "fixture recipe list", bodyIncludes, ["기술 E2E 전용 레시피"]);
+  await captureBeginnerMobileSet(client, beginnerEvidencePaths.recipeList);
+  checks.push("beginner_recipe_list_mobile_evidence_captured");
+  await navigate(client, `${origin}/`);
+  await waitForBrowserCondition(client, "fixture recommendation restored", bodyIncludes, ["계란 두부 한 팬"]);
 
   const recommendationApi = await evaluate(client, `async (recipeId) => {
     const response = await fetch('/api/v1/recommendations', {
@@ -402,6 +471,12 @@ try {
   checks.push("detail_opened", "servings_scaled");
 
   await waitForBrowserCondition(client, "one missing ingredient", bodyIncludes, ["필수 부족 재료 1개"]);
+  await captureBeginnerMobileSet(
+    client,
+    beginnerEvidencePaths.recipeDetailShopping,
+    '[data-testid="missing-ingredients-add"]',
+  );
+  checks.push("beginner_recipe_detail_shopping_mobile_evidence_captured");
   assert.equal(await evaluate(client, clickTestId, ["missing-ingredients-add"]), true);
   await waitForBrowserCondition(client, "shopping add", bodyIncludes, ["내 장보기에 1개를 추가했어요."]);
   checks.push("missing_ingredient_added");
@@ -419,6 +494,9 @@ try {
   await waitForBrowserCondition(client, "recipe detail restored", bodyIncludes, ["기술 E2E 전용 레시피"]);
 
   assert.equal(await evaluate(client, clickTestId, ["recipe-start-cooking"]), true);
+  await waitForBrowserCondition(client, "cook mode visible", bodyIncludes, ["조리 모드"]);
+  await captureBeginnerMobileSet(client, beginnerEvidencePaths.recipeDetailCook, "#cook-mode");
+  checks.push("beginner_recipe_detail_cook_mobile_evidence_captured");
   assert.equal(await evaluate(client, clickTestId, ["cook-timer-toggle"]), true);
   await waitForBrowserCondition(client, "30 second timer running", testIdIncludes, ["cook-timer-toggle", "일시정지"]);
   assert.equal(await evaluate(client, clickTestId, ["cook-timer-toggle"]), true);
@@ -544,5 +622,6 @@ console.log(`Origin: ${origin}`);
 console.log(`Checks passed: ${checks.length}`);
 for (const check of checks) console.log(`- ${check}`);
 console.log(`Artifacts: ${evidenceDir}`);
+console.log(`Beginner mobile artifacts: ${beginnerEvidenceRoot}`);
 console.log("\nPASS");
 console.log("- technical fixture happy path passed without counting it as human review evidence");

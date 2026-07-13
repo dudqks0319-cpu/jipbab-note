@@ -76,3 +76,12 @@ These poster/detail assets were generated locally from project scripts and in-ho
 - Do not use competitor app screenshots or recipe photos.
 - Do not use blog, marketplace, social media, or restaurant images unless a license is documented here.
 - New recipe images must include source type, generation method or license URL, author if required, and the date added.
+
+## Phase 5 exact-menu covers
+
+The following finished-dish covers were generated in-house on 2026-07-14 with the installed OpenAI image generation skill from app-owned menu specifications. They are representative cover images only and do not count as actual-cooking, food-safety, or human-review evidence.
+
+- `phase5-core/egg-fried-rice.png`: 계란볶음밥; generated from a menu-specific food-photo prompt; no external source image.
+- `phase5-core/soy-beef-bulgogi.png`: 간장불고기; generated from a menu-specific food-photo prompt; no external source image.
+- `phase5-core/tteokbokki.png`: 떡볶이; generated from a menu-specific food-photo prompt; no external source image.
+- `phase5-core/chicken-breast-vegetable-stir-fry.png`: 닭가슴살 채소볶음; generated from a menu-specific food-photo prompt; no external source image.

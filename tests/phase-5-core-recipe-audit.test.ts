@@ -26,10 +26,14 @@ function recipeText(title: string): string {
   return JSON.stringify(recipe);
 }
 
-test("Phase 5 핵심 목록은 20개의 고유 후보와 4개의 명시적 대체만 사용한다", () => {
+test("Phase 5 핵심 목록은 20개의 고유한 정확한 메뉴 후보만 사용한다", () => {
   assert.equal(PHASE5_CORE_20_SELECTIONS.length, 20);
   assert.equal(new Set(PHASE5_CORE_20_SELECTIONS.map((selection) => selection.selectedTitle)).size, 20);
-  assert.equal(PHASE5_CORE_20_SELECTIONS.filter((selection) => selection.replacementReason).length, 4);
+  assert.equal(PHASE5_CORE_20_SELECTIONS.filter((selection) => selection.replacementReason).length, 0);
+  for (const exactTitle of ["계란볶음밥", "간장불고기", "떡볶이", "닭가슴살 채소볶음"]) {
+    const selection = PHASE5_CORE_20_SELECTIONS.find((candidate) => candidate.requestedTitle === exactTitle);
+    assert.equal(selection?.selectedTitle, exactTitle);
+  }
 });
 
 test("Phase 5 후보는 현재 카탈로그에서 정확히 한 번씩 해석된다", () => {

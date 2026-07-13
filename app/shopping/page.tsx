@@ -15,6 +15,7 @@ import { useShopping } from '@/hooks/useShopping'
 import { getCoupangPurchaseLink } from '@/lib/external-links'
 import { getIngredientCatalog } from '@/lib/ingredient-catalog'
 import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
+import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 import {
   buildIngredientPayloadFromShoppingItem,
   buildMergedIngredientPayloadFromShoppingItem,
@@ -431,6 +432,7 @@ export default function ShoppingPage() {
     if (result.mergedCount > 0) {
       setStatusMessage(`${normalizedName} 수량을 기존 장보기 항목과 합쳤어요.`)
     } else if (result.addedCount > 0) {
+      trackProductAnalyticsEvent('shopping_item_added', { ingredientCount: result.addedCount })
       setStatusMessage(result.source === 'local'
         ? `${normalizedName}을 이 기기에 임시 저장했어요. 로그인하면 클라우드에 동기화됩니다.`
         : `${normalizedName}을 장보기 목록에 추가했어요.`)
@@ -479,6 +481,13 @@ export default function ShoppingPage() {
     }
   }
 
+  const handleToggleShoppingItem = async (item: ShoppingItem) => {
+    await toggleItem(item.id)
+    if (!item.checked) {
+      trackProductAnalyticsEvent('shopping_item_checked', { ingredientCount: 1 })
+    }
+  }
+
   const addShoppingItemToFridge = async (item: ShoppingItem) => {
     const expiryDate = getDateAfterDays(fridgeExpiryDays)
     const parsedUnitPrice = unitPrice.trim() ? Number(unitPrice.trim()) : null
@@ -503,6 +512,7 @@ export default function ShoppingPage() {
       if (!item.checked) {
         await toggleItem(item.id)
       }
+      trackProductAnalyticsEvent('shopping_item_moved_to_fridge', { ingredientCount: 1 })
       setStatusMessage(`${item.name}을 기존 냉장고 재료와 합쳤어요.`)
       return
     }
@@ -511,6 +521,7 @@ export default function ShoppingPage() {
     if (!item.checked) {
       await toggleItem(item.id)
     }
+    trackProductAnalyticsEvent('shopping_item_moved_to_fridge', { ingredientCount: 1 })
     setStatusMessage(`${item.name}을 냉장고에 추가했어요. 보관 ${fridgeStorageType}, 유통기한 ${expiryDate}로 저장했습니다.`)
   }
 
@@ -738,7 +749,7 @@ export default function ShoppingPage() {
                       category={item.category}
                       quantity={item.quantity || '수량 미정'}
                       checked={false}
-                      onToggle={() => toggleItem(item.id)}
+                      onToggle={() => void handleToggleShoppingItem(item)}
                       onRemove={() => removeItem(item.id)}
                       onAddToFridge={() => addShoppingItemToFridge(item)}
                       partnerLinks={partnerLinks}
@@ -825,7 +836,7 @@ export default function ShoppingPage() {
                     category={item.category}
                     quantity={item.quantity || '수량 미정'}
                     checked
-                    onToggle={() => toggleItem(item.id)}
+                    onToggle={() => void handleToggleShoppingItem(item)}
                     onRemove={() => removeItem(item.id)}
                     onAddToFridge={() => addShoppingItemToFridge(item)}
                     partnerLinks={partnerLinks}

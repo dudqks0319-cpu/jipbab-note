@@ -31,6 +31,16 @@ export default function RecipeIngredientList({
     })
   }, [ingredients.length, isTestFixture, recipeId])
 
+  const changeServings = (nextServings: number) => {
+    const boundedServings = Math.max(1, Math.min(12, nextServings))
+    setServings(boundedServings)
+    trackProductAnalyticsEvent('serving_changed', {
+      recipeId,
+      ingredientCount: boundedServings,
+      source: isTestFixture ? 'technical_fixture' : 'publication_api',
+    })
+  }
+
   return (
     <section id="ingredients" className="scroll-mt-24 px-5 py-8">
       <div className="flex items-end justify-between gap-3 border-b-2 border-[#2d2d2d] pb-3">
@@ -41,7 +51,7 @@ export default function RecipeIngredientList({
         <div className="flex items-center gap-1 rounded-full border border-[#ded7ce] bg-[#faf8f5] p-1" aria-label="인분 변경">
           <button
             type="button"
-            onClick={() => setServings((current) => Math.max(1, current - 1))}
+            onClick={() => changeServings(servings - 1)}
             disabled={servings <= 1}
             data-testid="recipe-servings-decrease"
             className="flex h-11 w-11 items-center justify-center rounded-full text-[#5d554d] disabled:opacity-40"
@@ -54,7 +64,7 @@ export default function RecipeIngredientList({
           </span>
           <button
             type="button"
-            onClick={() => setServings((current) => Math.min(12, current + 1))}
+            onClick={() => changeServings(servings + 1)}
             disabled={servings >= 12}
             data-testid="recipe-servings-increase"
             className="flex h-11 w-11 items-center justify-center rounded-full text-[#5d554d] disabled:opacity-40"

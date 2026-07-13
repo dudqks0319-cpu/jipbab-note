@@ -5,8 +5,8 @@
 ## 결과
 
 - 후보: **20개**
-- 정확한 메뉴 또는 명시적 조리 변형: **16개**
-- 정확한 후보 부재로 유사 메뉴 대체: **4개**
+- 정확한 메뉴 또는 명시적 조리 변형: **20개**
+- 정확한 후보 부재로 유사 메뉴 대체: **0개**
 - 자동 편집 점수 90점 이상: **20개**
 - 로컬 비트맵 파일 확인: **20개**
 - 인간 실제 조리 테스트 증거: **0/20개**
@@ -21,7 +21,7 @@
 | 순서 | 계획 메뉴 | 선택 메뉴 | 로컬 ID | 콘텐츠 버전 | 대체 사유 | 자동 점수 | 이미지 | 하드 게이트 |
 |---:|---|---|---|---|---|---:|---|---|
 | 1 | 간장계란밥 | 간장계란밥 | beginner-recipe-001 | phase5-sha256-dd141b3aea37971fd87f5543 | - | 92 | local_bitmap_present | blocked |
-| 2 | 계란볶음밥 | 햄야채볶음밥 | beginner-recipe-016 | phase5-sha256-5772fbfe271dc47b11937983 | 정확한 제목 후보가 없어 계란을 포함한 초보자용 볶음밥으로 대체 | 94 | local_bitmap_present | blocked |
+| 2 | 계란볶음밥 | 계란볶음밥 | phase5-egg-fried-rice | phase5-sha256-f7fe72bf845504580f0d75d9 | - | 95 | local_bitmap_present | blocked |
 | 3 | 참치김치볶음밥 | 참치김치볶음밥 | beginner-recipe-014 | phase5-sha256-50cee2d05424d0c52c681b89 | - | 95 | local_bitmap_present | blocked |
 | 4 | 김치볶음밥 | 김치볶음밥 | beginner-recipe-013 | phase5-sha256-4634e1198ea1fb6bf1bff91e | - | 91 | local_bitmap_present | blocked |
 | 5 | 계란말이 | 프라이팬 계란말이 | beginner-recipe-003 | phase5-sha256-de9601e4ac96f0e217d95b53 | - | 95 | local_bitmap_present | blocked |
@@ -35,11 +35,11 @@
 | 13 | 미역국 | 미역국 | beginner-recipe-064 | phase5-sha256-d007cf5ede24cc05fce1529a | - | 94 | local_bitmap_present | blocked |
 | 14 | 북엇국 | 북엇국 | beginner-recipe-065 | phase5-sha256-ac52ac5cb538d80d8fba0136 | - | 94 | local_bitmap_present | blocked |
 | 15 | 제육볶음 | 제육볶음 | curated-jeyuk-bokkeum | phase5-sha256-4f5fc1865f74ddec1a08e644 | - | 92 | local_bitmap_present | blocked |
-| 16 | 간장불고기 | 간장마늘 닭조림 | curated-soy-garlic-chicken | phase5-sha256-ee98f684f52f895cbc97b8d0 | 정확한 제목 후보가 없어 간장 양념 단백질 메인 요리로 대체 | 92 | local_bitmap_present | blocked |
+| 16 | 간장불고기 | 간장불고기 | phase5-soy-beef-bulgogi | phase5-sha256-5a51ed406fd4defebafb2018 | - | 92 | local_bitmap_present | blocked |
 | 17 | 잔치국수 | 잔치국수 | beginner-recipe-081 | phase5-sha256-f57edf8fd0e6ebdb1e954280 | - | 94 | local_bitmap_present | blocked |
-| 18 | 떡볶이 | 떡국떡달걀국 | beginner-recipe-070 | phase5-sha256-d35dc27ffe18658115506afb | 정확한 제목 후보가 없어 같은 떡국떡을 쓰는 초보자용 메뉴로 대체 | 94 | local_bitmap_present | blocked |
+| 18 | 떡볶이 | 떡볶이 | phase5-tteokbokki | phase5-sha256-1b0f27fca9ee4bf28737dc15 | - | 95 | local_bitmap_present | blocked |
 | 19 | 토마토달걀볶음 | 토마토달걀볶음 | beginner-recipe-006 | phase5-sha256-b0647712d0aa38bfe7b28198 | - | 91 | local_bitmap_present | blocked |
-| 20 | 닭가슴살 채소볶음 | 닭가슴살양배추덮밥 | beginner-recipe-170 | phase5-sha256-d7f0ee7deda1ab90d230b1da | 정확한 제목 후보가 없어 닭가슴살과 채소를 볶는 한 그릇 메뉴로 대체 | 94 | local_bitmap_present | blocked |
+| 20 | 닭가슴살 채소볶음 | 닭가슴살 채소볶음 | phase5-chicken-breast-vegetable-stir-fry | phase5-sha256-1782009ac57683905cc79119 | - | 95 | local_bitmap_present | blocked |
 
 ## 점수 해석
 

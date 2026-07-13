@@ -151,7 +151,12 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     signaledTimerRef.current = activeTimer.endsAt
     setTimerAnnouncement(`${activeTimer.stepIndex}단계 타이머가 끝났습니다.`)
     playCompletionSignal(audioContextRef.current)
-  }, [activeTimer, remainingSeconds])
+    trackProductAnalyticsEvent('timer_completed', {
+      recipeId,
+      stepIndex: activeTimer.stepIndex,
+      durationSeconds: activeTimer.durationSeconds,
+    })
+  }, [activeTimer, recipeId, remainingSeconds])
 
   useEffect(() => () => {
     if (audioContextRef.current) void audioContextRef.current.close()
@@ -238,6 +243,13 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
       return
     }
     setNow(Date.now())
+    if (!timerPaused) {
+      trackProductAnalyticsEvent('timer_paused', {
+        recipeId,
+        stepIndex: step.index,
+        durationSeconds: remainingSeconds,
+      })
+    }
     setActiveTimer((current) => timerPaused
       ? resumeRecipeCookTimer(current)
       : pauseRecipeCookTimer(current))
@@ -259,6 +271,16 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
   const startCooking = () => {
     setHasStarted(true)
     trackProductAnalyticsEvent('cooking_started', { recipeId, stepIndex: 1 })
+    trackProductAnalyticsEvent('cooking_step_viewed', { recipeId, stepIndex: steps[0]?.index ?? 1 })
+  }
+
+  const selectStep = (nextIndex: number) => {
+    const boundedIndex = Math.max(0, Math.min(steps.length - 1, nextIndex))
+    setActiveStepIndex(boundedIndex)
+    trackProductAnalyticsEvent('cooking_step_viewed', {
+      recipeId,
+      stepIndex: steps[boundedIndex]?.index ?? boundedIndex + 1,
+    })
   }
 
   return (
@@ -309,9 +331,9 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
             {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">망했어요: {activeStep.rescueTip}</p> : null}
           </div>
           <div className="mt-4 grid grid-cols-[0.8fr_1.2fr_0.8fr] gap-2">
-            <button type="button" data-testid="cook-previous-step" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] text-[12px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전</button>
+            <button type="button" data-testid="cook-previous-step" onClick={() => selectStep(activeStepIndex - 1)} disabled={activeStepIndex === 0} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] text-[12px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전</button>
             <button type="button" data-testid="cook-complete-step" onClick={() => toggleStep(activeStep.index)} className={`flex min-h-12 items-center justify-center gap-2 rounded-[14px] text-[13px] font-black text-white ${checkedSteps.has(activeStep.index) ? 'bg-[#3d7b38]' : 'bg-[#2f2117]'}`}><Check size={15} /> {checkedSteps.has(activeStep.index) ? '완료됨' : '완료 체크'}</button>
-            <button type="button" data-testid="cook-next-step" onClick={() => setActiveStepIndex((current) => Math.min(steps.length - 1, current + 1))} disabled={activeStepIndex >= steps.length - 1} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] bg-[#ea5a1f] text-[12px] font-black text-white disabled:opacity-40">다음 <ChevronRight size={15} /></button>
+            <button type="button" data-testid="cook-next-step" onClick={() => selectStep(activeStepIndex + 1)} disabled={activeStepIndex >= steps.length - 1} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] bg-[#ea5a1f] text-[12px] font-black text-white disabled:opacity-40">다음 <ChevronRight size={15} /></button>
           </div>
           {activeTimerSeconds ? (
             <button type="button" data-testid="cook-timer-toggle" onClick={() => toggleTimer(activeStep)} className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-[13px] bg-[#fff0e4] px-3 text-[13px] font-black text-[#d94d19]">
@@ -331,7 +353,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
         {hasStarted && showAllSteps ? (
           <div className="mt-3 space-y-2">
             {steps.map((step) => (
-              <button key={step.index} type="button" onClick={() => { setActiveStepIndex(steps.findIndex((candidate) => candidate.index === step.index)); setShowAllSteps(false) }} className="flex min-h-12 w-full items-start gap-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-left">
+              <button key={step.index} type="button" onClick={() => { selectStep(steps.findIndex((candidate) => candidate.index === step.index)); setShowAllSteps(false) }} className="flex min-h-12 w-full items-start gap-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-left">
                 <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${checkedSteps.has(step.index) ? 'border-[#3d7b38] bg-[#3d7b38] text-white' : 'border-[#c9b7a4] text-[#8f7f70]'}`}>{checkedSteps.has(step.index) ? <Check size={13} /> : step.index}</span>
                 <span className="text-sm font-semibold leading-6 text-[#4b3929]">{step.description}</span>
               </button>

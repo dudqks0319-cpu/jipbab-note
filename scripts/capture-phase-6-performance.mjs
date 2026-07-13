@@ -20,13 +20,23 @@ const runCount = Number(process.env.PHASE6_PERFORMANCE_RUNS ?? 3);
 const settleMilliseconds = Number(process.env.PHASE6_PERFORMANCE_SETTLE_MS ?? 4_000);
 const evidenceDir = path.resolve("output/performance-evidence");
 const evidencePath = path.join(evidenceDir, "phase6-performance-lab.json");
+const baselinePath = path.resolve("docs/phase-6-performance-baseline.json");
 
 const budgets = Object.freeze({
   lcpMilliseconds: 2_500,
   cls: 0.1,
   inpMilliseconds: 200,
   searchInputMilliseconds: 100,
+  ttfbMilliseconds: 800,
+  totalTransferIncreaseRatio: 0.15,
+  jsTransferIncreaseRatio: 0.1,
+  imageTransferIncreaseRatio: 0.15,
+  requestCountIncreaseRatio: 0.15,
+  totalLongTaskIncreaseRatio: 0.15,
+  longTaskThresholdMilliseconds: 50,
 });
+
+const regressionBaseline = JSON.parse(readFileSync(baselinePath, "utf8"));
 
 const device = Object.freeze({
   width: 390,
@@ -339,8 +349,16 @@ function summarizeResources(entries, navigation) {
     transferBytes: entry.transferSize,
   }));
   const navigationTransferBytes = navigation?.transferSize ?? 0;
+  const jsTransferBytes = resources
+    .filter((resource) => resource.initiatorType === "script" || /\.m?js(?:\?|$)/.test(resource.name))
+    .reduce((total, resource) => total + resource.transferBytes, 0);
+  const imageTransferBytes = resources
+    .filter((resource) => resource.initiatorType === "img" || /\.(?:avif|gif|jpe?g|png|webp)(?:\?|$)/i.test(resource.name))
+    .reduce((total, resource) => total + resource.transferBytes, 0);
   return {
     count: resources.length,
+    jsTransferBytes,
+    imageTransferBytes,
     totalDecodedBodyBytes:
       (navigation?.decodedBodySize ?? 0) +
       resources.reduce((total, resource) => total + resource.decodedBodyBytes, 0),
@@ -525,9 +543,13 @@ async function captureRun(debugPort, route, runNumber) {
         snapshot.searchInputLatency === null ? null : round(snapshot.searchInputLatency),
       longTaskCount: snapshot.longTasks.length,
       totalLongTaskMilliseconds: round(longTaskDuration),
+      longTaskOver50Count: snapshot.longTasks.filter(
+        (entry) => entry.duration >= budgets.longTaskThresholdMilliseconds,
+      ).length,
       resources: summarizeResources(snapshot.resources, snapshot.navigation),
       unsupportedObservers: snapshot.unsupported,
       consoleErrorCount: consoleErrors.length,
+      hydrationErrorCount: consoleErrors.filter((message) => /hydration/i.test(message)).length,
       consoleErrors: consoleErrors.slice(0, 5),
       expectedDependencyErrorCount: expectedDependencyFailures.length,
       expectedDependencyErrors: expectedDependencyFailures.slice(0, 5),
@@ -618,8 +640,31 @@ const routeSummaries = routes.map((route) => {
       routeResults.map((result) => result.resources.totalTransferBytes),
       0.75,
     ),
+    jsTransferP75Bytes: percentile(
+      routeResults.map((result) => result.resources.jsTransferBytes),
+      0.75,
+    ),
+    imageTransferP75Bytes: percentile(
+      routeResults.map((result) => result.resources.imageTransferBytes),
+      0.75,
+    ),
+    requestCountP75: percentile(
+      routeResults.map((result) => result.resources.count),
+      0.75,
+    ),
+    totalLongTaskP75Milliseconds: round(
+      percentile(routeResults.map((result) => result.totalLongTaskMilliseconds), 0.75),
+    ),
+    longTaskOver50P75Count: percentile(
+      routeResults.map((result) => result.longTaskOver50Count),
+      0.75,
+    ),
     consoleErrorCount: routeResults.reduce(
       (total, result) => total + result.consoleErrorCount,
+      0,
+    ),
+    hydrationErrorCount: routeResults.reduce(
+      (total, result) => total + result.hydrationErrorCount,
       0,
     ),
     expectedDependencyErrorCount: routeResults.reduce(
@@ -659,6 +704,14 @@ const searchInputP75Milliseconds = searchResults.length
   : null;
 
 const failures = [];
+const missingBaselines = [];
+const regressionMetrics = [
+  ["transferP75Bytes", "totalTransferBytes", budgets.totalTransferIncreaseRatio],
+  ["jsTransferP75Bytes", "jsTransferBytes", budgets.jsTransferIncreaseRatio],
+  ["imageTransferP75Bytes", "imageTransferBytes", budgets.imageTransferIncreaseRatio],
+  ["requestCountP75", "requestCount", budgets.requestCountIncreaseRatio],
+  ["totalLongTaskP75Milliseconds", "totalLongTaskMilliseconds", budgets.totalLongTaskIncreaseRatio],
+];
 for (const summary of routeSummaries) {
   if (summary.lcpP75Milliseconds > budgets.lcpMilliseconds) {
     failures.push(
@@ -668,13 +721,31 @@ for (const summary of routeSummaries) {
   if (summary.clsP75 > budgets.cls) {
     failures.push(`${summary.route} CLS p75 ${summary.clsP75} > ${budgets.cls}`);
   }
+  if (summary.ttfbP75Milliseconds > budgets.ttfbMilliseconds) {
+    failures.push(`${summary.route} TTFB p75 ${summary.ttfbP75Milliseconds}ms > ${budgets.ttfbMilliseconds}ms`);
+  }
   if (summary.consoleErrorCount > 0) {
     failures.push(`${summary.route} emitted ${summary.consoleErrorCount} console errors`);
+  }
+  if (summary.hydrationErrorCount > 0) {
+    failures.push(`${summary.route} emitted ${summary.hydrationErrorCount} hydration errors`);
   }
   if (summary.unexpectedNetworkErrorCount > 0) {
     failures.push(
       `${summary.route} emitted ${summary.unexpectedNetworkErrorCount} unexpected network errors`,
     );
+  }
+  const baseline = regressionBaseline.routes?.[summary.route];
+  for (const [summaryKey, baselineKey, allowedIncreaseRatio] of regressionMetrics) {
+    const baselineValue = baseline?.[baselineKey];
+    if (!Number.isFinite(baselineValue)) {
+      missingBaselines.push(`${summary.route}.${baselineKey}`);
+      continue;
+    }
+    const maximum = baselineValue * (1 + allowedIncreaseRatio);
+    if (summary[summaryKey] > maximum) {
+      failures.push(`${summary.route} ${summaryKey} ${summary[summaryKey]} > baseline ${baselineValue} +${allowedIncreaseRatio * 100}%`);
+    }
   }
 }
 if (interactionP75Milliseconds === null) {
@@ -704,6 +775,7 @@ const evidence = {
   interactionP75Milliseconds,
   searchInputP75Milliseconds,
   failures,
+  missingBaselines,
   results,
 };
 writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
@@ -713,12 +785,13 @@ console.log(`Origin: ${targetOrigin}`);
 console.log(`Profile: 390x844, CPU ${device.cpuSlowdownMultiplier}x, 1.6 Mbps / 150ms RTT`);
 for (const summary of routeSummaries) {
   console.log(
-    `- ${summary.route}: LCP p75=${summary.lcpP75Milliseconds}ms, CLS p75=${summary.clsP75}, FCP p75=${summary.fcpP75Milliseconds}ms, TTFB p75=${summary.ttfbP75Milliseconds}ms, transfer p75=${summary.transferP75Bytes}B, console errors=${summary.consoleErrorCount}, unexpected network errors=${summary.unexpectedNetworkErrorCount}, expected dependency errors=${summary.expectedDependencyErrorCount}, expected platform errors=${summary.expectedPlatformErrorCount}`,
+    `- ${summary.route}: LCP p75=${summary.lcpP75Milliseconds}ms, CLS p75=${summary.clsP75}, FCP p75=${summary.fcpP75Milliseconds}ms, TTFB p75=${summary.ttfbP75Milliseconds}ms, transfer p75=${summary.transferP75Bytes}B, JS=${summary.jsTransferP75Bytes}B, image=${summary.imageTransferP75Bytes}B, requests=${summary.requestCountP75}, long tasks=${summary.totalLongTaskP75Milliseconds}ms, console errors=${summary.consoleErrorCount}, hydration errors=${summary.hydrationErrorCount}, unexpected network errors=${summary.unexpectedNetworkErrorCount}, expected dependency errors=${summary.expectedDependencyErrorCount}, expected platform errors=${summary.expectedPlatformErrorCount}`,
   );
 }
 console.log(`- interaction p75=${interactionP75Milliseconds ?? "missing"}ms`);
 console.log(`- search input paint p75=${searchInputP75Milliseconds ?? "missing"}ms`);
 console.log(`Evidence: ${evidencePath}`);
+console.log(`Missing regression baselines: ${missingBaselines.length}`);
 console.log(`Failures: ${failures.length}`);
 
 if (failures.length > 0) {

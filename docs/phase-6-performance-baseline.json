@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-13T00:00:00.000+09:00",
+  "source": "docs/phase-6-performance-report.md",
+  "measurementClass": "repeatable_mobile_lab_guard_not_field_p75",
+  "routes": {
+    "guest-home": {
+      "totalTransferBytes": 394222,
+      "jsTransferBytes": null,
+      "imageTransferBytes": null,
+      "requestCount": null,
+      "totalLongTaskMilliseconds": null
+    },
+    "demo-recipe-list": {
+      "totalTransferBytes": 518711,
+      "jsTransferBytes": null,
+      "imageTransferBytes": null,
+      "requestCount": null,
+      "totalLongTaskMilliseconds": null
+    },
+    "demo-shopping": {
+      "totalTransferBytes": 273868,
+      "jsTransferBytes": null,
+      "imageTransferBytes": null,
+      "requestCount": null,
+      "totalLongTaskMilliseconds": null
+    }
+  }
+}

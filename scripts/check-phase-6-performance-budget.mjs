@@ -5,6 +5,7 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-performance.mjs", "utf8");
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
+const baseline = JSON.parse(readFileSync("docs/phase-6-performance-baseline.json", "utf8"));
 
 const contracts = [
   {
@@ -42,7 +43,13 @@ const contracts = [
       captureSource.includes("lcpMilliseconds: 2_500") &&
       captureSource.includes("cls: 0.1") &&
       captureSource.includes("inpMilliseconds: 200") &&
-      captureSource.includes("searchInputMilliseconds: 100"),
+      captureSource.includes("searchInputMilliseconds: 100") &&
+      captureSource.includes("ttfbMilliseconds: 800") &&
+      captureSource.includes("totalTransferIncreaseRatio: 0.15") &&
+      captureSource.includes("jsTransferIncreaseRatio: 0.1") &&
+      captureSource.includes("imageTransferIncreaseRatio: 0.15") &&
+      captureSource.includes("requestCountIncreaseRatio: 0.15") &&
+      captureSource.includes("totalLongTaskIncreaseRatio: 0.15"),
   },
   {
     name: "repeatable p75 sampling",
@@ -81,6 +88,17 @@ const contracts = [
       captureSource.includes('requestUrl.startsWith("https://vercel.live/")'),
   },
   {
+    name: "resource, long task, and hydration regression evidence",
+    pass:
+      captureSource.includes("jsTransferP75Bytes") &&
+      captureSource.includes("imageTransferP75Bytes") &&
+      captureSource.includes("requestCountP75") &&
+      captureSource.includes("longTaskOver50P75Count") &&
+      captureSource.includes("hydrationErrorCount") &&
+      captureSource.includes("missingBaselines") &&
+      baseline.schemaVersion === 1,
+  },
+  {
     name: "local and CI release gate wiring",
     pass:
       localGate.includes("scripts/check-phase-6-performance-budget.mjs") &&
@@ -101,4 +119,4 @@ if (failures.length > 0) {
 }
 
 console.log("\nPASS");
-console.log("- mobile lab profile, plan budgets, failure classification, interaction timing, and release wiring passed");
+console.log("- mobile lab profile, absolute and regression budgets, failure classification, interaction timing, and release wiring passed");

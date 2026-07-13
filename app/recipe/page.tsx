@@ -32,6 +32,7 @@ import { useDemoModeState } from '@/hooks/useDemoMode'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 import type { RecipeApiV1Sort } from '@/lib/recipe-api-v1-client'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
@@ -200,6 +201,9 @@ export default function RecipePage() {
   }, [categoryCounts, quickFilter, selectedCategory])
 
   const handleDisplayCategoryClick = (category: DisplayRecipeCategory) => {
+    trackProductAnalyticsEvent('recipe_filter_applied', {
+      filterId: DISPLAY_CATEGORY_QUICK_FILTERS[category] === 'beginner' ? 'beginner' : 'category',
+    })
     const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
     if (quickFilterForCategory) {
       setSelectedCategory('전체')
@@ -211,6 +215,12 @@ export default function RecipePage() {
     setQuickFilter('all')
     setSelectedCategory(selectedCategory === realCategory ? '전체' : realCategory)
   }
+
+  const handleFilterChange = <T,>(filterId: 'difficulty' | 'time' | 'tools' | 'fridge_fit' | 'sort', setter: (value: T) => void) =>
+    (value: string) => {
+      setter(value as T)
+      trackProductAnalyticsEvent('recipe_filter_applied', { filterId })
+    }
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-28">
@@ -242,6 +252,9 @@ export default function RecipePage() {
           <input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
+            onBlur={() => {
+              if (searchQuery.trim()) trackProductAnalyticsEvent('recipe_search', { resultCount: filteredRecipes.length })
+            }}
             placeholder="레시피 검색"
             className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
           />
@@ -272,7 +285,12 @@ export default function RecipePage() {
           <button
             key={filter.id}
             type="button"
-            onClick={() => setQuickFilter(filter.id)}
+            onClick={() => {
+              setQuickFilter(filter.id)
+              trackProductAnalyticsEvent('recipe_filter_applied', {
+                filterId: filter.id === 'beginner' ? 'beginner' : 'category',
+              })
+            }}
             className={`min-h-11 rounded-full border px-2 py-1.5 text-[12px] font-black transition-all ${
               quickFilter === filter.id
                 ? 'border-[#2f6fec] bg-[#eef4ff] text-[#2f6fec]'
@@ -329,31 +347,31 @@ export default function RecipePage() {
                 label="난이도"
                 value={difficultyFilter}
                 options={RECIPE_DIFFICULTY_FILTERS}
-                onChange={(value) => setDifficultyFilter(value as RecipeDifficultyListFilter)}
+                onChange={handleFilterChange<RecipeDifficultyListFilter>('difficulty', setDifficultyFilter)}
               />
               <FilterSelect
                 label="조리시간"
                 value={timeFilter}
                 options={RECIPE_TIME_FILTERS}
-                onChange={(value) => setTimeFilter(value as RecipeTimeListFilter)}
+                onChange={handleFilterChange<RecipeTimeListFilter>('time', setTimeFilter)}
               />
               <FilterSelect
                 label="도구"
                 value={toolFilter}
                 options={RECIPE_TOOL_FILTERS}
-                onChange={(value) => setToolFilter(value as RecipeToolListFilter)}
+                onChange={handleFilterChange<RecipeToolListFilter>('tools', setToolFilter)}
               />
               <FilterSelect
                 label="냉장고"
                 value={fridgeFilter}
                 options={RECIPE_FRIDGE_FILTERS}
-                onChange={(value) => setFridgeFilter(value as RecipeFridgeListFilter)}
+                onChange={handleFilterChange<RecipeFridgeListFilter>('fridge_fit', setFridgeFilter)}
               />
               <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#7d6d5f]">
                 정렬
                 <select
                   value={sortMode}
-                  onChange={(event) => setSortMode(event.target.value as RecipeListSortMode)}
+                  onChange={(event) => handleFilterChange<RecipeListSortMode>('sort', setSortMode)(event.target.value)}
                   className="min-h-11 w-full rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#4b3929] outline-none"
                 >
                   {RECIPE_LIST_SORT_OPTIONS.map((option) => (
