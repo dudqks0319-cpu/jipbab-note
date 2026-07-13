@@ -1,6 +1,9 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
 
 import { isCoupangPartnerUrl } from "@/lib/partner-links";
+import { trackProductAnalyticsEvent } from "@/lib/product-analytics";
 
 type CoupangAffiliateCardProps = {
   productName: string;
@@ -45,6 +48,7 @@ export default function CoupangAffiliateCard({
             href={affiliateUrl}
             target="_blank"
             rel="sponsored noopener noreferrer"
+            onClick={() => trackProductAnalyticsEvent("affiliate_link_clicked", { source: "recipe_missing_ingredient" })}
             className="mt-3 inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-4 text-[13px] font-black text-white"
           >
             <ExternalLink size={14} />

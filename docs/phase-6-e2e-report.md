@@ -1,88 +1,140 @@
-# Phase 6 브라우저 E2E·데모 네트워크 보고서
+# Phase 6 브라우저 E2E 보고서
 
 Updated: 2026-07-11 KST
 
 ## 결론
 
-현재 운영 계약에서 자동화할 수 있는 게스트 첫 사용, 재료 저장·복원, publication fail-closed, 인증·입력 음성 경로를 fresh Chrome profile에서 검증했다. 총 12개 runtime check가 통과했고 데모 홈과 목록의 `/api/v1/*` 요청은 각각 0건이다.
+Phase 6의 기존 음성 경로 12개와 보호된 기술 fixture의 성공 경로 18개를 실제 Chrome fresh profile에서 자동화했습니다.
 
-이 결과는 계획서의 전체 E2E 완료를 뜻하지 않는다. 공개 승인된 staging 레시피가 0개이므로 추천 성공, 상세, 장보기 추가, 조리 모드, 타이머, 완료 happy path는 실행할 수 없다. 자동 점수나 데모 fixture에 가짜 사람 검수 증거를 붙여 이 차단을 우회하지 않았다.
+- 음성 경로: 로컬·과거 CLI Preview `12/12`
+- 기술 fixture happy path: 현재 로컬 작업 트리 `18/18`
+- 390px 가로 overflow: `0`
+- 390px 보이는 44px 미만 인터랙션: `0`
+- 브라우저 console error: `0`
+- 취소되지 않은 앱 요청 실패·HTTP 4xx/5xx·외부 resource 실패: 각각 `0`
+- 기술 fixture의 사람 검수 집계: `false`
+- Production 승격: `false`
 
-## 변경 전 상태와 원인
+이 결과는 애플리케이션 계층의 전체 연결과 회귀를 검증합니다. 실제 staging DB recipe v2, 인증 성공 경로, 실제 모바일, 핵심 20개 사람 검수는 아직 완료되지 않았으므로 공개 베타와 Production은 계속 차단합니다.
 
-- 브라우저 E2E 실행기와 release gate 계약이 없었다.
-- `useDemoMode()`는 query string을 effect에서 판별하지만 초기값은 `false`뿐이었다. 데이터 훅은 “일반 모드”와 “아직 판별 전”을 구분하지 못해 `?demo=appstore` 첫 렌더에서 recipe API를 한 번 호출했다.
-- Vercel Preview에서 그 요청은 예상된 503이었고 브라우저 console에 실패 resource로 남았다.
-- 최초 E2E assertion은 Playwright 접근성 트리의 합성 이름 `냉장고 2개`를 `body.innerText`의 연속 문자열로 잘못 기대했다. 실제 DOM은 `보관 2개`, `냉장 재료 2개`로 저장 성공 상태를 표시했다.
-- 레시피 검색 input의 Playwright 접근성 이름은 placeholder에서 왔지만 최초 CDP selector는 존재하지 않는 aria-label을 가정했다.
+## 성공 경로 18개
 
-## 변경 파일
+`pnpm capture:phase6-e2e-happy`는 다음을 검증합니다.
 
-- `hooks/useDemoMode.ts`: `isDemoMode`와 `ready`를 분리한 `useDemoModeState()` 추가
-- `app/page.tsx`, `app/recipe/page.tsx`: demo query 판별 전과 demo mode에서 API v1 fetch 차단
-- `scripts/capture-phase-6-e2e-negative.mjs`: fresh Chrome profile 기반 390px runtime E2E
-- `scripts/check-phase-6-e2e-contract.mjs`: 8개 정적 계약
-- `tests/phase-6-e2e-contract.test.ts`: package·release gate wiring 회귀 테스트
-- `scripts/run-release-gates.mjs`, `scripts/run-ci-release-gates.mjs`: Phase 6 E2E 계약 연결
-- 기존 source-shape 테스트와 beginner readiness checker는 새 fetch-readiness 계약을 검증하도록 갱신
+1. fresh guest에서 계란·두부 선택과 저장
+2. 승인된 기술 fixture 추천 노출
+3. 추천 API `200`과 고정 fixture UUID 확인
+4. 레시피 상세 진입
+5. 인분 변경과 계량 표시 변경
+6. 필수 부족 재료 1개 확인
+7. 부족 재료 장보기 추가
+8. 같은 재료 재입력과 수량 병합
+9. 조리 모드 시작
+10. 30초 타이머 시작·일시정지
+11. 새로고침 후 타이머 복원
+12. 1분 30초 타이머 시작·일시정지
+13. 이전 단계 이동
+14. 3단계 조리 완료
+15. 난이도 피드백 저장
+16. 사용 재료 2개 소진 처리
+17. 재접속 후 완료·피드백 복원
+18. 390px 44px/overflow 검사와 390px·1280px screenshot 생성
 
-새 dependency, DB migration, API response shape 변경은 없다.
+실행 결과 JSON에는 `isTestFixture=true`, `humanReviewCounted=false`를 함께 기록합니다.
 
-## 계획서 E2E 시나리오 상태
+## 기존 음성 경로 12개
 
-| # | 시나리오 | 현재 증거 | 상태 |
-| ---: | --- | --- | --- |
-| 1 | 게스트 첫 사용 | fresh profile에서 starter 화면 확인 | 검증됨 |
-| 2 | 재료 등록 | 계란·두부 저장, reload 후 `보관 2개` 복원 | 검증됨 |
-| 3 | 추천 확인 | 미검수 0개 상태에서 publication 안내 | 음성 경로만 검증 |
-| 4 | 레시피 검색 | `q=계란` URL·input 복원과 503 안내 | 음성 경로만 검증 |
-| 5 | 상세 진입 | non-UUID/unapproved 상세 fail-closed | 음성 경로만 검증 |
-| 6 | 장보기 추가 | 공개 승인 recipe fixture 없음 | 차단 |
-| 7 | 조리 시작 | 공개 승인 detail fixture 없음 | 차단 |
-| 8 | 타이머 | unit·Phase 4 하네스는 통과, 이번 E2E에서는 미실행 | 차단 |
-| 9 | 조리 완료 | 공개 승인 detail fixture 없음 | 차단 |
-| 10 | 로그인·데이터 이전 | 위조 device와 invalid merge token 401 | 음성 경로만 검증 |
-| 11 | 오프라인 복구 | 실기기·서비스 워커 기준 미검증 | 차단 |
-| 12 | 계정 삭제 | 잘못된 확인 문구 400/no-store | 음성 경로만 검증 |
+`pnpm capture:phase6-e2e-negative`는 다음을 검증합니다.
 
-## Runtime 결과
+- fresh guest starter 표시
+- 계란·두부 저장
+- 미승인 추천 fail-closed
+- reload 후 재료 복원
+- 검색 URL 복원
+- 미승인 목록 fail-closed
+- 잘못된 상세 fail-closed
+- demo 홈 `/api/v1/*` 요청 0건
+- demo 목록 `/api/v1/*` 요청 0건
+- 잘못된 family token `401`
+- 잘못된 merge token `401`
+- 잘못된 계정 삭제 확인 문구 `400`
 
-`pnpm capture:phase6-e2e-negative`:
+## fixture 보안 경계
 
-- `fresh_guest_starter_visible`
-- `guest_ingredients_saved`
-- `recommendation_fail_closed`
-- `guest_ingredients_restored_after_reload`
-- `recipe_search_url_restored`
-- `recipe_list_fail_closed`
-- `recipe_detail_fail_closed`
-- `demo_home_no_recipe_api`
-- `demo_list_no_recipe_api`
-- `family_auth_rejected`
-- `merge_auth_rejected`
-- `account_delete_input_rejected`
+fixture는 `APP_ENV=staging`, 명시적 enable flag, 12자 이상 임의 서버 검증 문자열, `x-phase6-e2e-fixture` header를 모두 요구합니다. `APP_ENV=production` 또는 `VERCEL_ENV=production`에서는 항상 차단됩니다.
 
-Screenshot: `output/ui-evidence/phase6-e2e-guest-negative-390.png` (로컬 ignored evidence).
+- 고정 UUID namespace
+- `isTestFixture=true`
+- 실제 DB row를 만들지 않음
+- Production 목록·추천·상세에서 사용 금지
+- 사람 검수 CSV·출시 통계에서 제외
+- 기술 fixture 상세에서는 실제 공개 댓글 API를 호출하지 않음
 
-## 검증
+세부 운영 기준은 [phase-6-staging-fixture.md](./phase-6-staging-fixture.md)를 따릅니다.
 
-- E2E static contract: 8/8
-- E2E negative runtime: 12/12
-- `pnpm test`: lint 0 errors, 기존 unused import warning 1건, TypeScript pass, unit 370/370
-- `pnpm test:integration`: 미검수 공개 0건과 signed-session 음성 경로 pass
-- `pnpm build`: Next.js 16.2.6 compile, TypeScript, 38/38 routes pass
-- `pnpm release:ci-static-check`: 14/14
-- `pnpm release:check`: 13 pass, Phase 5 사람 증거 0/20 한 항목만 expected fail
-- implementation commit: `1c91aa814ffc80182b73d390c768e574aaf25c51`
-- report/deployed commit: `f90f0679821443f07ee7fd019885f89d97ef3e7d`
-- Vercel Preview: `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT`, `https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app`, `READY`
-- Preview에서도 E2E negative runtime 12/12, demo API v1 request 0건, error/fatal runtime log 0건을 확인했다.
-- Preview API v1은 dependency 미준비 상태를 redacted 503과 `Retry-After: 60`, `no-store`, request ID로 반환했다.
+## 실행기와 CI
 
-## 남은 위험과 다음 증거
+- `CHROME_PATH` 명시 지원
+- macOS Chrome, Chrome for Testing 자동 탐색
+- Linux Chrome/Chromium 자동 탐색
+- Windows 경로 탐색
+- 마케팅 문구 대신 `data-testid` 사용
+- console·network log 수집
+- 앱 요청·취소 요청·외부 resource 실패를 분리하고 앱 오류를 fail 조건으로 처리
+- 결과·접근성 JSON 생성
+- mobile 390px·desktop 1280px screenshot 생성
+- GitHub Actions runtime E2E 실행
+- PR artifact 14일, 수동 release candidate artifact 90일 보존
 
-- 공개 승인된 recipe v2 staging fixture를 만든 뒤 추천 → 상세 → 장보기 → 조리 → 타이머 → 완료 happy path를 같은 자동화에서 실행해야 한다.
-- 로그인 성공·anonymous merge 성공·authenticated account deletion은 격리된 staging 계정과 정리 절차가 필요하다.
-- 오프라인 복구와 iOS/Android background 동작은 실제 기기 증거가 필요하다.
-- Phase 5 실제 조리·초보자·식품 안전·출처·이미지 권리 검수는 각각 0/20이다.
-- migration history와 backup/rollback rehearsal이 끝나지 않아 Supabase production에는 적용하지 않았다.
+정적 계약은 `11/11`이며 release/CI-safe gate에 연결돼 있습니다.
+
+Pretendard CDN 런타임 의존은 제거하고 한국어 시스템 폰트 스택을 사용해, headless Chrome과 WebView에서 제3자 폰트 네트워크 실패 없이 동작합니다.
+
+## 증거 파일
+
+`output/ui-evidence`에 다음 ignored artifact를 생성합니다.
+
+- `phase6-e2e-guest-negative-390.png`
+- `phase6-e2e-mobile-390.png`
+- `phase6-e2e-desktop-1280.png`
+- `phase6-network-log.json`
+- `phase6-console-log.json`
+- `phase6-e2e-result.json`
+- `phase6-accessibility-summary.json`
+
+## 배포 증거 구분
+
+- 과거 CLI Preview `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT`는 음성 경로 12/12 증거입니다.
+- GitHub HEAD `a96e69d589f0c587267e400d115e3333fd6c059a`와 연결된 공식 Git Preview는 `dpl_9Zz3Zj9N5Van8reEfFc9gyVbBmHb`입니다.
+- 현재 Phase 6.1 happy-path·UX 변경은 위 SHA를 기반으로 한 로컬 작업 트리이며 아직 새 Git Preview에 배포하지 않았습니다.
+- Production alias `https://jipbab-note-app.vercel.app`는 승격하지 않았습니다.
+
+## 아직 완료되지 않은 경로
+
+- DB 기반 staging recipe v2와 API v1 200 성공 경로
+- 실제 staging 로그인, guest merge, 가족 생성·참여·공유
+- 최근 인증을 포함한 계정 삭제 성공 경로
+- 오프라인 조리 저장과 복구 후 동기화
+- iOS·Android background/잠금/종료 후 타이머 복원
+- Capacitor 실제 기기 알림·진동·사운드
+- 핵심 20개 실제 조리·초보자·안전·출처·이미지 권리 검수
+- migration history 정리, backup, staging 적용, rollback rehearsal
+- Production HMAC secret과 API v1 200 확인
+
+따라서 현재 판정은 `기술 fixture happy path PASS / 제품 출시 NO-GO`입니다.
+
+## 최종 로컬 검증
+
+| 검증 | 결과 |
+|---|---|
+| `npm test` | lint·TypeScript·unit `391/391` PASS |
+| `pnpm test:integration` | publication 0개 노출·signed-session 음성 경로 PASS |
+| `pnpm test:content` | 176 recipe validation·186 beginner guidance·Phase 1/5 계약 PASS |
+| `pnpm check:phase6-e2e-contract` | `11/11` PASS |
+| `pnpm capture:phase6-e2e-negative` | `12/12` PASS |
+| `pnpm capture:phase6-e2e-happy` | `18/18` PASS, `humanReviewCounted=false` |
+| `pnpm build` | compile·TypeScript·`38/38` routes PASS |
+| `pnpm release:ci-static-check` | `14/14` PASS, dependency moderate 이상 0건 |
+| `pnpm release:check` | 10개 그룹 PASS, 4개 출시 그룹 BLOCKED |
+
+차단된 4개 그룹은 Phase 5 사람 증거, 로컬 release env와 Capacitor 생성물, iOS archive/IPA, Android AAB입니다. 이 차단은 해제하지 않았고 Production 승격 근거로 사용하지 않습니다.

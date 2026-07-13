@@ -1,43 +1,52 @@
-# 집밥노트 공식 원본·운영 연결 기준
+# 집밥노트 공식 원본·배포 연결 기준
 
-Audited: 2026-07-10 KST
-Status: `P0 mismatch open`
+Updated: 2026-07-11 KST
+Status: `Preview source aligned / Production NO-GO`
 
-이 문서는 현재 파일, GitHub, Vercel, Supabase의 실측값을 분리해 기록한다. 외부 설정을 바꾸기 전까지 “권장 공식 원본”과 “현재 실제 운영 연결”은 같은 것으로 표시하지 않는다.
+이 문서는 GitHub, Vercel Preview, Vercel Production의 역할을 하나의 운영 기준으로 고정합니다. `READY`는 배포 빌드 성공만 뜻하며 제품 출시 승인을 뜻하지 않습니다.
 
-## 현재 확인된 사실
+## 공식 원본
 
-| 표면 | 현재 값 | 판정 |
+| 역할 | 공식 값 | 현재 판정 |
 |---|---|---|
-| 권장 canonical GitHub 저장소 | `dudqks0319-cpu/jipbab-note` | 현재 `origin`, 최신 production SHA 보유 |
-| GitHub 기본 브랜치 | `main` @ `86e2bc2` | 현재 release branch보다 33 commits 뒤 |
-| 현재 release branch | `ux/home-today-action-v2` @ `efd8613` | `origin`과 동기화 |
-| Vercel 프로젝트 | `youngbeens-projects/jipbab-note-app` | active production project |
-| Vercel Git 연결 | private `dudqks0319-cpu/jipbab-note-app`, branch `main` | canonical 후보와 불일치 |
-| 현재 production deployment | `dpl_GEJgsnCvRuofgWg82z74Wdw2UR9K` | `READY`, SHA `efd8613` |
-| 운영 도메인 | `https://jipbab-note-app.vercel.app` | iOS·Android remote WebView도 사용 |
-| 운영 Supabase | `JipbabNote`, ref `xqelabiwtjntwrjqcteo` | `ACTIVE_HEALTHY` |
-| 운영 recipes | 1,152 rows | 현재 RLS로 anon 노출 |
-| 운영 recipe_sources | 0 rows | 출처 FK 연결 없음 |
-| 계획서 기준 공개 가능 recipes | 0 rows | 초보자 검수·출처 ledger·실조리 증거 미충족 |
-| 원격 migration history | `20260508143719`까지 | 이후 로컬 6개와 신규 publication migration 미기록 |
+| GitHub 저장소 | `dudqks0319-cpu/jipbab-note` | 공식 원본 |
+| Release branch | `ux/home-today-action-v2` | Phase 6 작업 브랜치 |
+| 계획서 기준 GitHub HEAD | `a96e69d589f0c587267e400d115e3333fd6c059a` | 로컬 checkout과 일치 확인 |
+| 공식 Preview 프로젝트 | `youngbeens-projects/jipbab-note` | Git Integration Preview 전용 |
+| 공식 Preview deployment | `dpl_9Zz3Zj9N5Van8reEfFc9gyVbBmHb` | `READY` |
+| 공식 Preview source | `git` | 통과 |
+| 공식 Preview Git SHA | `a96e69d589f0c587267e400d115e3333fd6c059a` | GitHub HEAD와 일치 |
+| Production 프로젝트 | `youngbeens-projects/jipbab-note-app` | Production 전용으로 유지 |
+| Production alias | `https://jipbab-note-app.vercel.app` | 기존 배포 유지 |
+| Production 승격 | `false` | 계속 금지 |
 
-현재 production 배포 메타데이터는 `ux/home-today-action-v2`와 `efd8613`을 가리키지만 Vercel 프로젝트의 Git 연결은 오래된 private 저장소 `jipbab-note-app/main`이다. 따라서 현재 배포는 Git integration을 신뢰해 재현할 수 없고, 로컬 CLI 배포에 의존한다.
+현재 작업 트리의 Phase 6.1 변경은 `a96e69d`를 기반으로 한 로컬 변경이며 아직 Git commit이나 Vercel 배포가 아닙니다. 다음 공식 Preview는 변경을 commit한 뒤 그 Git SHA와 Vercel `githubCommitSha`가 정확히 같을 때만 새 기준으로 기록합니다.
 
-`supabase migration list --linked` 결과 원격 이력에는 `20260521160347`부터 `20260530000000`까지 6개 로컬 마이그레이션과 `20260710130000`이 없다. 일부 SQL은 과거 운영에 수동 적용됐다는 별도 증거가 있어 “이력 없음”과 “스키마 없음”을 동일하게 취급하지 않는다. migration history와 실제 live schema를 먼저 대조하기 전에는 `supabase db push`를 실행하지 않는다.
+## 과거 Preview의 역할
 
-## 현재 운영 기준
+| 배포 | 프로젝트/방식 | 역할 |
+|---|---|---|
+| `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT` | `jipbab-note-app`, CLI Preview | Phase 6 음성 경로 12/12의 과거 증거 |
+| `https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app` | 위 CLI Preview URL | 공식 최신 Preview로 사용하지 않음 |
 
-- 운영 도메인과 모바일 shell URL은 `https://jipbab-note-app.vercel.app`으로 유지한다.
-- Supabase 기준 프로젝트는 ref `xqelabiwtjntwrjqcteo` 하나로 고정한다.
-- 레시피 수는 UI의 합산 숫자가 아니라 [recipe-inventory.md](./recipe-inventory.md)와 CSV를 기준으로 기록한다.
-- `published`, `reviewedForBeginner`, validator pass는 실제 초보자 조리 테스트와 구분한다.
-- 검수되지 않은 DB, live MFDS, 로컬 fallback 데이터는 다음 production 배포 전 공개 차단해야 한다.
+CLI Preview는 긴급 진단이나 과거 증거에만 사용합니다. 릴리스 후보의 공식 원본 추적은 `jipbab-note` 프로젝트의 Git Integration 배포만 사용합니다.
 
-## 외부 변경 전 필요한 결정
+## 배포 정책
 
-1. Vercel 프로젝트를 public `jipbab-note`에 다시 연결할지, private `jipbab-note-app`을 유지할지 결정한다.
-2. public `main`을 현재 release branch로 fast-forward한 뒤 production branch로 쓸지 결정한다.
-3. 위 두 작업이 끝날 때까지 GitHub default branch, Vercel production branch, 실제 배포 SHA가 일치한다고 주장하지 않는다.
+1. PR·branch Preview는 `jipbab-note` 프로젝트에서 Git Integration으로 생성합니다.
+2. Preview 승인 전 GitHub commit SHA, Vercel `githubCommitSha`, 저장소, 브랜치, `READY` 상태를 함께 확인합니다.
+3. `jipbab-note-app`은 Production alias를 유지하는 프로젝트로만 취급합니다.
+4. CLI로 만든 배포는 공식 릴리스 후보가 아니며 Production 승격 근거로 사용하지 않습니다.
+5. Full happy path, DB migration/backup/rollback, HMAC secret, 실제 모바일, 핵심 20개 사람 검수가 모두 끝나기 전 Production을 승격하지 않습니다.
 
-이번 Phase 0에서는 GitHub branch 이동, Vercel relink, domain 변경, Supabase 쓰기를 수행하지 않았다.
+## 데이터베이스 상태
+
+2026-07-10 운영 감사에서 Supabase ref `xqelabiwtjntwrjqcteo`의 migration history와 로컬 migration 목록이 일치하지 않았습니다. 이번 Phase 6.1에서는 운영 DB, secret, alias를 변경하지 않았습니다.
+
+- `supabase db push` 금지
+- 운영 migration 적용 금지
+- 운영 fixture 삽입 금지
+- backup과 rollback rehearsal 전 schema 변경 금지
+- 기술 E2E fixture를 사람 검수 또는 공개 승인 통계에 포함 금지
+
+관련 차단 상태는 [현재 출시 상태](./current-release-state.md)와 `release-ledger.yaml`을 기준으로 관리합니다.

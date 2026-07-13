@@ -37,3 +37,15 @@ test("starter payload builder can add only user-selected ingredients", () => {
     ["두부", "참치캔"],
   );
 });
+
+test("starter egg and tofu use accurate non-dairy categories", () => {
+  const payloads = buildStarterIngredientPayloads([], ["계란", "두부"]);
+
+  assert.deepEqual(
+    payloads.map(({ name, category }) => ({ name, category })),
+    [
+      { name: "계란", category: "계란·난류" },
+      { name: "두부", category: "콩·두부" },
+    ],
+  );
+});

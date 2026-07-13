@@ -4,6 +4,7 @@ export type RecipeCookTimer = {
   stepIndex: number;
   endsAt: number;
   durationSeconds: number;
+  pausedRemainingSeconds?: number | null;
 };
 
 export type RecipeCookProgress = {
@@ -24,6 +25,9 @@ export function recipeCookProgressKey(recipeId: string): string {
 
 export function remainingTimerSeconds(timer: RecipeCookTimer | null, now = Date.now()): number {
   if (!timer) return 0;
+  if (Number.isInteger(timer.pausedRemainingSeconds) && Number(timer.pausedRemainingSeconds) >= 0) {
+    return Number(timer.pausedRemainingSeconds);
+  }
   return Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
 }
 
@@ -36,7 +40,29 @@ export function createRecipeCookTimer(
   if (!Number.isInteger(durationSeconds) || durationSeconds < 1 || durationSeconds > MAX_TIMER_SECONDS) {
     return null;
   }
-  return { stepIndex, durationSeconds, endsAt: now + durationSeconds * 1000 };
+  return { stepIndex, durationSeconds, endsAt: now + durationSeconds * 1000, pausedRemainingSeconds: null };
+}
+
+export function pauseRecipeCookTimer(
+  timer: RecipeCookTimer | null,
+  now = Date.now(),
+): RecipeCookTimer | null {
+  if (!timer) return null;
+  const remaining = remainingTimerSeconds(timer, now);
+  return { ...timer, pausedRemainingSeconds: remaining };
+}
+
+export function resumeRecipeCookTimer(
+  timer: RecipeCookTimer | null,
+  now = Date.now(),
+): RecipeCookTimer | null {
+  if (!timer || !Number.isInteger(timer.pausedRemainingSeconds)) return timer;
+  const remaining = Number(timer.pausedRemainingSeconds);
+  return {
+    ...timer,
+    endsAt: now + remaining * 1000,
+    pausedRemainingSeconds: null,
+  };
 }
 
 export function normalizeRecipeCookProgress(
@@ -68,6 +94,14 @@ export function normalizeRecipeCookProgress(
           stepIndex: timerRecord.stepIndex as number,
           endsAt: timerRecord.endsAt,
           durationSeconds: timerRecord.durationSeconds as number,
+          pausedRemainingSeconds:
+            timerRecord.pausedRemainingSeconds === null
+              ? null
+              : Number.isInteger(timerRecord.pausedRemainingSeconds)
+                && Number(timerRecord.pausedRemainingSeconds) >= 0
+                && Number(timerRecord.pausedRemainingSeconds) <= Number(timerRecord.durationSeconds)
+              ? Number(timerRecord.pausedRemainingSeconds)
+              : null,
         }
       : null;
   const feedback = record.feedback === "easy" || record.feedback === "okay" || record.feedback === "hard"

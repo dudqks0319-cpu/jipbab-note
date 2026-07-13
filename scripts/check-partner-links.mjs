@@ -3,7 +3,10 @@ import path from "node:path";
 
 const cwd = process.cwd();
 const docsPath = path.join(cwd, "docs/coupang-partners-links.md");
-const migrationPath = path.join(cwd, "supabase/migrations/20260508133307_add_partner_links.sql");
+const migrationPaths = [
+  path.join(cwd, "supabase/migrations/20260508133307_add_partner_links.sql"),
+  path.join(cwd, "supabase/migrations/20260711170000_reclassify_egg_tofu_catalog.sql"),
+];
 const catalogPath = path.join(cwd, "lib/ingredient-catalog.ts");
 const typesPath = path.join(cwd, "types/index.ts");
 
@@ -92,7 +95,7 @@ function parseCatalogNames(source) {
 }
 
 const docs = readRequired(docsPath);
-const migration = readRequired(migrationPath);
+const migration = migrationPaths.map(readRequired).join("\n");
 const catalog = readRequired(catalogPath);
 const types = readRequired(typesPath);
 

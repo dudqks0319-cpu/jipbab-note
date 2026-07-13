@@ -16,6 +16,10 @@ const seedMigration = readFileSync(
   "supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql",
   "utf8",
 );
+const reclassificationMigration = readFileSync(
+  "supabase/migrations/20260711170000_reclassify_egg_tofu_catalog.sql",
+  "utf8",
+);
 const rollback = readFileSync(
   "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql",
   "utf8",
@@ -125,6 +129,7 @@ test("generated catalog seed and canonical schema match the app-owned source", (
   assert.match(seedMigration, /on conflict \(locale, normalized_alias\) do update/);
   assert.ok(schema.includes(migration.trim()));
   assert.ok(schema.includes(seedMigration.trim()));
+  assert.ok(schema.includes(reclassificationMigration.trim()));
 });
 
 test("Phase 1 relational tables are not exposed directly to app roles", () => {

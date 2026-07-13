@@ -9,33 +9,40 @@ import {
   RecipeApiDependencyError,
 } from "@/lib/recipe-api-v1-repository";
 import { isUuidLike } from "@/lib/request-security";
+import {
+  getPhase6E2EFixtureDetail,
+  shouldUsePhase6E2EFixture,
+} from "@/lib/phase-6-e2e-fixture";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const requestId = createApiRequestId();
-  const rateLimit = await consumeDistributedRateLimit(request, "recipes:detail", {
-    limit: 120,
-    windowSeconds: 60,
-  });
-  if (rateLimit.status === "limited") {
-    return apiV1Error(
-      "RATE_LIMITED",
-      "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
-      429,
-      requestId,
-      { retryAfter: rateLimit.retryAfter },
-    );
-  }
-  if (rateLimit.status === "unavailable") {
-    return apiV1Error(
-      "DEPENDENCY_NOT_READY",
-      "레시피 API를 준비 중입니다.",
-      503,
-      requestId,
-      { retryAfter: rateLimit.retryAfter },
-    );
+  const useFixture = shouldUsePhase6E2EFixture(request.headers);
+  if (!useFixture) {
+    const rateLimit = await consumeDistributedRateLimit(request, "recipes:detail", {
+      limit: 120,
+      windowSeconds: 60,
+    });
+    if (rateLimit.status === "limited") {
+      return apiV1Error(
+        "RATE_LIMITED",
+        "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
+        429,
+        requestId,
+        { retryAfter: rateLimit.retryAfter },
+      );
+    }
+    if (rateLimit.status === "unavailable") {
+      return apiV1Error(
+        "DEPENDENCY_NOT_READY",
+        "레시피 API를 준비 중입니다.",
+        503,
+        requestId,
+        { retryAfter: rateLimit.retryAfter },
+      );
+    }
   }
 
   const { id } = await context.params;
@@ -44,7 +51,9 @@ export async function GET(
   }
 
   try {
-    const recipe = await getPublicRecipeDetailV1(id);
+    const recipe = useFixture
+      ? getPhase6E2EFixtureDetail(id)
+      : await getPublicRecipeDetailV1(id);
     if (!recipe) {
       return apiV1Error("NOT_FOUND", "공개된 레시피를 찾을 수 없습니다.", 404, requestId);
     }

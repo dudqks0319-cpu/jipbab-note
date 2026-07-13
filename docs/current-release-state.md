@@ -1,6 +1,37 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-11 KST
+Updated: 2026-07-13 KST
+
+## 2026-07-13 이유식·유아식 조사 후보 24개
+
+- 사용자 조사 보고서의 코어 후보 24개를 연령대별 구조화 데이터로 추가했다. 분포는 4~6개월 8개, 6~8개월 6개, 8~11개월 4개, 12개월 이상 6개다.
+- `/recipe/infant-toddler`에 연령 필터, 조사 정량, 조리 흐름 요약, 알레르기, 안전 안내, 출처·권리 상태를 표시하는 전용 화면을 추가하고 일반 레시피 목록에서 진입할 수 있게 했다.
+- 외부 원문·사진·영상·썸네일은 복제하지 않았다. 정량이 불완전한 항목은 추정하지 않고 `정량 검수 필요`로 표시했으며 외부 이미지 URL은 24/24 모두 `null`이다.
+- 만 12개월 전 후보에는 꿀 금지, 모든 후보에는 새 재료 단독 도입과 보호자·소아청소년과 판단 안내, 알레르기 재료가 있는 후보에는 반응 관찰 안내를 강제했다.
+- 24개 모두 `research_only`, `summary_only`이며 `canPublishInfantToddlerRecipe()`는 항상 `false`다. 추천 API·일반 공개 레시피·조리 모드·사람 검수 통계에는 포함하지 않았다.
+- 실제 조리, 보호자 사용성, 식품안전·의학, 원문 권리, 이미지 권리, 보관·재가열 검수와 공개 승인은 각각 `0/24`다.
+- 집중 계약 테스트 `4/4`, lint·TypeScript·전체 unit `395/395`, 콘텐츠 게이트, production build `39/39` routes를 통과했다. Production alias, 운영 DB, Vercel 환경변수와 기존 publication gate는 변경하지 않았다.
+- Evidence: `docs/infant-toddler-recipe-intake.md`, `lib/infant-toddler-recipes.ts`, `tests/infant-toddler-recipes.test.ts`.
+
+## 2026-07-11 Phase 6.1 기술 happy path·UX 단순화 작업 트리
+
+- GitHub 기준 HEAD `a96e69d589f0c587267e400d115e3333fd6c059a`를 정확히 checkout한 뒤 Phase 6.1을 구현했다. 현재 변경은 아직 commit·push·Vercel 배포하지 않은 로컬 작업 트리다.
+- 공식 Preview 원본은 Git Integration 프로젝트 `jipbab-note`와 deployment `dpl_9Zz3Zj9N5Van8reEfFc9gyVbBmHb`로 고정했다. 해당 배포의 SHA는 기준 HEAD `a96e69d`와 일치하며 `READY`다.
+- 기존 `jipbab-note-app` 프로젝트는 Production alias 유지 전용, `dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT` CLI Preview는 음성 경로 12/12의 과거 증거로 문서화했다.
+- Production에서 항상 차단되는 application-layer 기술 fixture 1개를 추가했다. staging/test 환경, 명시적 enable flag, 12자 이상 server token, 요청 header가 모두 맞아야 하며 `isTestFixture=true`, `humanReviewCounted=false`다.
+- 실제 Chrome fresh profile에서 재료 저장 → 추천 API 200 → 상세 → 인분 변경 → 부족 재료 장보기 → 중복 수량 병합 → 조리 → 30초/90초 타이머 일시정지·reload 복원 → 완료 → 피드백 → 재료 소진 → 재접속 복원까지 `18/18`을 통과했다.
+- 390px 최종 화면에서 보이는 인터랙션 37개 중 44px 미만 `0`, 가로 overflow `0`, console error `0`, 외부 resource 실패 `0`, 취소되지 않은 앱 요청 실패 `0`을 확인하고 mobile 390px·desktop 1280px·network·console·결과·접근성 artifact를 생성했다.
+- Chrome 실행기는 `CHROME_PATH`, macOS, Linux, Chrome for Testing, Chromium을 지원한다. 주요 흐름을 `data-testid`로 고정하고 GitHub Actions runtime E2E와 PR 14일/수동 RC 90일 artifact 보존을 추가했다.
+- Starter 재료를 냉장고 이미지 위로 이동하고 이미지를 축소했다. 홈 추천을 1~2개로 줄이고, 기본 레시피 필터를 `10분 이내`, `지금 바로 가능`, `재료 5개 이하`로 단순화했다.
+- 장보기는 사용자 목록을 카탈로그보다 먼저 표시하고 카탈로그를 접었다. 24개씩 렌더링하며 계란·두부 분류, 플랫폼 중립 외부 링크 문구, 12px 보조 텍스트를 보강했다.
+- 런타임 Pretendard CDN 의존을 제거하고 한국어 시스템 폰트 스택으로 전환해 오프라인·WebView에서 외부 폰트 실패 없이 렌더링한다.
+- 재료 일치율의 별 아이콘을 `냉장고 재료 n/m`로 바꾸고, 인분 계량·타이머 pause/resume·완료 후 다시 만들기·필수 퍼널 분석 이벤트를 추가했다.
+- 두부·계란 catalog 분류를 바로잡는 migration과 rollback은 파일만 추가했으며 Supabase에는 적용하지 않았다.
+- 최종 검증은 `npm test` lint·TypeScript·unit `391/391`, integration, content gate, E2E 정적 계약 `11/11`, 음성 runtime `12/12`, 기술 fixture happy runtime `18/18`, production build `38/38`, CI-safe release gate `14/14`, partner category seed `12/12`를 통과했다.
+- `pnpm release:check`는 기술 계약 10개 그룹이 통과하고 Phase 5 사람 증거, 로컬 release env/Capacitor 생성물, iOS archive/IPA, Android AAB의 4개 그룹에서 차단됐다. 이는 이번 코드 변경 실패가 아니라 실제 출시 외부·산출물 게이트다.
+- 기술 fixture는 DB 기반 staging fixture 또는 사람 검수 증거가 아니다. 핵심 20개 사람 증거는 계속 `0/20`, staging DB API 200·인증 성공·오프라인·실기기·migration/backup/rollback·HMAC secret은 미완료다.
+- Production alias, 운영 DB, Vercel secret은 변경하지 않았으며 판정은 `내부 기술 QA PASS / 공개 베타·Production NO-GO`다.
+- Evidence: `docs/phase-6-e2e-report.md`, `docs/phase-6-staging-fixture.md`, `output/ui-evidence/phase6-e2e-result.json`.
 
 ## 2026-07-11 Phase 6 브라우저 E2E·데모 네트워크
 
@@ -9,7 +40,7 @@ Updated: 2026-07-11 KST
 - fresh 390px Chrome profile에서 게스트 첫 화면, 계란·두부 저장, reload 복원, 추천·목록·상세 fail-closed, family/merge 인증 거부, account-delete 입력 거부까지 runtime 12/12를 확인했다.
 - 같은 12개 runtime check를 새 Preview에서 다시 실행해 통과했다. Vercel error/fatal runtime log는 0건이다.
 - demo query 판별 전에 API가 시작되던 원인을 `isDemoMode`와 `ready` 분리로 고쳤다. 데모 홈과 레시피 목록의 `/api/v1/*` resource request는 각각 0건이다.
-- 전체 unit 370/370, integration pass, production build 38/38 routes, CI-safe 14/14가 통과한다. local release gate는 13개 통과하고 Phase 5 사람 증거 0/20 한 항목만 의도대로 실패한다.
+- 당시 배포 체크포인트에서는 전체 unit 370/370, integration, production build 38/38 routes, CI-safe 14/14가 통과했다. 당시 local release gate는 13개가 통과하고 Phase 5 사람 증거 0/20 한 항목에서 의도대로 실패했다. 현재 작업 트리 결과는 문서 최상단의 Phase 6.1 항목을 기준으로 한다.
 - 공개 승인 staging recipe가 없으므로 추천 성공 → 상세 → 장보기 → 조리 → 타이머 → 완료 happy path, 로그인/병합 성공, authenticated account deletion, offline 복구는 완료로 주장하지 않는다.
 - API v1은 production migration과 HMAC secret 미적용으로 예상된 redacted 503, `Retry-After: 60`, `Cache-Control: no-store`, `X-Request-Id`를 반환한다. production alias는 승격하지 않았다.
 - Evidence: `docs/phase-6-e2e-report.md`, `output/ui-evidence/phase6-e2e-guest-negative-390.png`.

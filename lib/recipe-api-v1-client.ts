@@ -44,6 +44,7 @@ export interface RecipeApiV1Card {
   recommendationReason: string;
   publishedAt: string;
   publicationEvidence: RecipePublicationEvidence;
+  isTestFixture?: boolean;
 }
 
 export interface RecipeApiV1ListData {
@@ -121,6 +122,7 @@ export interface RecipeApiV1Detail {
   };
   publishedAt: string;
   publicationEvidence: RecipePublicationEvidence;
+  isTestFixture?: boolean;
 }
 
 export class RecipeApiV1ClientError extends Error {
@@ -238,6 +240,7 @@ export function recipeApiV1CardToRecord(card: RecipeApiV1Card): RecipeRecord {
     releaseTier: null,
     publishStatus: "published",
     publicationEvidence: card.publicationEvidence,
+    isTestFixture: card.isTestFixture === true,
   };
 }
 
@@ -348,6 +351,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     releaseTier: null,
     publishStatus: "published",
     publicationEvidence: detail.publicationEvidence,
+    isTestFixture: detail.isTestFixture === true,
   };
 }
 

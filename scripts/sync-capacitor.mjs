@@ -188,7 +188,9 @@ let package = Package(
       "BrowserPlugin",
       "LocalNotificationsPlugin",
       "JipbabGemmaPlugin",
+      "JipbabOAuthPlugin",
       "CapApp_SPM.JipbabGemmaPlugin",
+      "CapApp_SPM.JipbabOAuthPlugin",
     ];
     writeFileSync(capacitorConfigPath, `${JSON.stringify(capacitorConfig, null, "\t")}\n`, "utf8");
     console.log("Registered JipbabGemma Capacitor plugin for iOS.");

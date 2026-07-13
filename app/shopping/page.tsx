@@ -26,6 +26,7 @@ import type { ShoppingItem } from '@/types'
 import type { PartnerLinkConfig } from '@/lib/partner-links'
 
 const DEFAULT_CATEGORY: IngredientCategory = '채소'
+const CATALOG_PAGE_SIZE = 24
 const PARTNERS_DISCLOSURE = '일부 구매 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
 type AddShoppingDraftOptions = {
   duplicateMode?: 'ask' | 'merge' | 'skip'
@@ -48,8 +49,8 @@ type ShoppingCatalogGroup = ShoppingCatalogScope & {
 }
 
 const QUICK_SHOPPING_CHIPS: Array<{ name: string; quantity: string; category: IngredientCategory }> = [
-  { name: '두부', quantity: '1모', category: '유제품' },
-  { name: '계란', quantity: '10개', category: '유제품' },
+  { name: '두부', quantity: '1모', category: '콩·두부' },
+  { name: '계란', quantity: '10개', category: '계란·난류' },
   { name: '우유', quantity: '1L', category: '유제품' },
   { name: '대파', quantity: '1단', category: '채소' },
   { name: '양파', quantity: '3개', category: '채소' },
@@ -91,7 +92,7 @@ const SHOPPING_CATALOG_GROUPS: ShoppingCatalogGroup[] = [
     subcategories: [
       { id: 'all', label: '전체', imageName: '양파', imageCategory: '채소' },
       { id: 'fresh', label: '채소/과일', categories: ['채소', '과일'], imageName: '상추', imageCategory: '채소' },
-      { id: 'meat-egg', label: '정육/계란', categories: ['육류'], keywords: ['계란', '달걀', '두부'], imageName: '계란', imageCategory: '유제품' },
+      { id: 'meat-egg', label: '정육/계란', categories: ['육류', '계란·난류', '콩·두부'], imageName: '계란', imageCategory: '계란·난류' },
       { id: 'seafood', label: '수산/건어물', categories: ['수산물'], imageName: '고등어', imageCategory: '수산물' },
       { id: 'dairy', label: '우유/유제품', categories: ['유제품'], imageName: '우유', imageCategory: '유제품' },
       { id: 'rice-noodle', label: '쌀/면/빵', categories: ['곡물/면/빵'], imageName: '쌀', imageCategory: '곡물/면/빵' },
@@ -117,14 +118,13 @@ const SHOPPING_CATALOG_GROUPS: ShoppingCatalogGroup[] = [
   {
     id: 'meat-egg',
     label: '정육/계란',
-    categories: ['육류'],
-    keywords: ['계란', '달걀', '두부'],
+    categories: ['육류', '계란·난류', '콩·두부'],
     subcategories: [
-      { id: 'all', label: '전체', imageName: '계란', imageCategory: '유제품' },
+      { id: 'all', label: '전체', imageName: '계란', imageCategory: '계란·난류' },
       { id: 'pork', label: '돼지고기', keywords: ['돼지고기', '삼겹살', '목살', '돼지갈비'], imageName: '돼지고기', imageCategory: '육류' },
       { id: 'beef', label: '소고기', keywords: ['소고기', '불고기', '국거리'], imageName: '소고기', imageCategory: '육류' },
       { id: 'chicken', label: '닭/오리', keywords: ['닭고기', '닭가슴살', '닭다리', '닭안심', '오리고기'], imageName: '닭고기', imageCategory: '육류' },
-      { id: 'egg-tofu', label: '계란/두부', keywords: ['계란', '달걀', '두부'], imageName: '두부', imageCategory: '유제품' },
+      { id: 'egg-tofu', label: '계란/두부', categories: ['계란·난류', '콩·두부'], imageName: '두부', imageCategory: '콩·두부' },
       { id: 'ham', label: '햄/소시지', keywords: ['햄', '소시지', '베이컨'], imageName: '소시지', imageCategory: '육류' },
     ],
   },
@@ -349,6 +349,8 @@ export default function ShoppingPage() {
   const [unitPrice, setUnitPrice] = useState('')
   const [selectedCatalogGroupId, setSelectedCatalogGroupId] = useState(SHOPPING_CATALOG_GROUPS[0]?.id ?? 'all')
   const [selectedCatalogSubcategoryId, setSelectedCatalogSubcategoryId] = useState('all')
+  const [showCatalog, setShowCatalog] = useState(false)
+  const [catalogVisibleCount, setCatalogVisibleCount] = useState(CATALOG_PAGE_SIZE)
 
   const displayItems = isAppStoreDemo ? APPSTORE_DEMO_SHOPPING_ITEMS : items
   const uncheckedItems = useMemo(() => displayItems.filter((item) => !item.checked), [displayItems])
@@ -387,6 +389,10 @@ export default function ShoppingPage() {
 
     return getShoppingCatalogSubcategoryItems(selectedCatalogGroup, selectedCatalogSubcategory)
   }, [selectedCatalogGroup, selectedCatalogSubcategory])
+  const visibleCatalogItems = useMemo(
+    () => selectedCatalogItems.slice(0, catalogVisibleCount),
+    [catalogVisibleCount, selectedCatalogItems],
+  )
 
   const addShoppingDraft = async (
     draft: { name: string; quantity?: string; category?: IngredientCategory },
@@ -527,7 +533,7 @@ export default function ShoppingPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
-              {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.
+              {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하세요. 외부 구매 링크는 새 브라우저 화면에서 열려요.
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -582,7 +588,7 @@ export default function ShoppingPage() {
           <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
             {pendingSyncCount > 0
               ? `동기화 대기 ${pendingSyncCount}개가 있어요. 네트워크가 복구되면 자동으로 다시 업로드합니다.`
-              : '장보기 데이터는 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
+              : '지금 이 기기에 저장했어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.'}
           </p>
         ) : null}
         <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
@@ -600,6 +606,7 @@ export default function ShoppingPage() {
             }}
           >
             <input
+              data-testid="shopping-quick-input"
               type="text"
               value={quickInput}
               onChange={(event) => setQuickInput(event.target.value)}
@@ -607,6 +614,7 @@ export default function ShoppingPage() {
               className="min-w-0 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
             />
             <button
+              data-testid="shopping-quick-submit"
               type="submit"
               disabled={!normalizeIngredientInput(quickInput)}
               className="inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
@@ -627,92 +635,6 @@ export default function ShoppingPage() {
               >
                 {chip.name} {chip.quantity}
               </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="jipbab-panel mt-3 rounded-[18px] p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-black text-[#d94d19]">로켓프레시식 카테고리</p>
-              <h2 className="mt-1 text-[18px] font-black leading-tight text-[#2f2117]">카테고리 장보기</h2>
-            </div>
-            <p className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
-              {selectedCatalogItems.length}개
-            </p>
-          </div>
-
-          <div className="mt-3 flex gap-4 overflow-x-auto border-b border-[#eadcc9] pb-0">
-            {SHOPPING_CATALOG_GROUPS.map((groupItem) => {
-              const selected = selectedCatalogGroup?.id === groupItem.id
-              return (
-                <button
-                  key={groupItem.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedCatalogGroupId(groupItem.id)
-                    setSelectedCatalogSubcategoryId('all')
-                  }}
-                  className={`relative min-h-11 shrink-0 px-0 pb-3 text-[14px] font-black ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
-                  }`}
-                >
-                  {groupItem.label}
-                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
-            {selectedCatalogGroup?.subcategories.map((subcategory) => {
-              const selected = selectedCatalogSubcategory?.id === subcategory.id
-              const count = selectedCatalogGroup ? getShoppingCatalogSubcategoryItems(selectedCatalogGroup, subcategory).length : 0
-              const photoUrl = getIngredientPhotoUrl(subcategory.imageName, subcategory.imageCategory)
-
-              return (
-                <button
-                  key={subcategory.id}
-                  type="button"
-                  onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
-                  className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
-                >
-                  <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
-                    selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'
-                  }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
-                  </span>
-                  <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
-                  }`}
-                  >
-                    {subcategory.label}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#b5a493]">{count}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-[#fff7ed] px-3 py-2">
-            <p className="truncate text-[12px] font-black text-[#4b3929]">
-              {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
-            </p>
-            <p className="shrink-0 text-[11px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {selectedCatalogItems.map((item) => (
-              <ShoppingCatalogCard
-                key={item.id}
-                item={item}
-                quantity={getShoppingCatalogQuantity(item)}
-                isInShoppingList={shoppingNameSet.has(normalizeShoppingIngredientName(item.name))}
-                onAdd={() => handleCatalogAdd(item)}
-                partnerLinks={partnerLinks}
-              />
             ))}
           </div>
         </div>
@@ -774,24 +696,22 @@ export default function ShoppingPage() {
             <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
             <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => {
-                const purchaseLink = getCoupangPurchaseLink({
-                  name: item.name,
-                  category: item.category ?? null,
-                }, partnerLinks)
-
-                return (
-                  <a
-                    key={item.name}
-                    href={purchaseLink.href}
-                    target="_blank"
-                    rel={externalLinkRel(purchaseLink.isPartnerLink)}
-                    className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
-                  >
-                    {item.name} 바로 사기
-                  </a>
-                )
-              })}
+              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => {
+                    void addShoppingDraft({
+                      name: item.name,
+                      quantity: item.quantity ?? undefined,
+                      category: item.category ?? undefined,
+                    })
+                  }}
+                  className="min-h-11 rounded-full bg-[#fff0e4] px-3 text-[12px] font-black text-[#d94d19]"
+                >
+                  {item.name} 장보기에 추가
+                </button>
+              ))}
             </div>
           </div>
         ) : (
@@ -915,6 +835,107 @@ export default function ShoppingPage() {
             ) : null}
           </div>
         )}
+      </section>
+
+      <section className="px-5 pt-5">
+        <div className="jipbab-panel rounded-[18px] p-4">
+          <button
+            type="button"
+            aria-expanded={showCatalog}
+            onClick={() => setShowCatalog((current) => !current)}
+            className="flex min-h-12 w-full items-center justify-between gap-3 text-left"
+          >
+            <span>
+              <span className="block text-[18px] font-black text-[#2f2117]">재료 찾아 담기</span>
+              <span className="mt-1 block text-[12px] font-semibold text-[#8f7f70]">카테고리로 추가하거나 자주 사는 재료를 찾아보세요.</span>
+            </span>
+            <span className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
+              {showCatalog ? '접기' : '열기'}
+            </span>
+          </button>
+
+          {showCatalog ? (
+            <div className="mt-3">
+              <div className="flex gap-4 overflow-x-auto border-b border-[#eadcc9]">
+                {SHOPPING_CATALOG_GROUPS.map((groupItem) => {
+                  const selected = selectedCatalogGroup?.id === groupItem.id
+                  return (
+                    <button
+                      key={groupItem.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCatalogGroupId(groupItem.id)
+                        setSelectedCatalogSubcategoryId('all')
+                        setCatalogVisibleCount(CATALOG_PAGE_SIZE)
+                      }}
+                      className={`relative min-h-11 shrink-0 pb-3 text-[14px] font-black ${selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'}`}
+                    >
+                      {groupItem.label}
+                      {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                {selectedCatalogGroup?.subcategories.map((subcategory) => {
+                  const selected = selectedCatalogSubcategory?.id === subcategory.id
+                  const count = selectedCatalogGroup ? getShoppingCatalogSubcategoryItems(selectedCatalogGroup, subcategory).length : 0
+                  const photoUrl = getIngredientPhotoUrl(subcategory.imageName, subcategory.imageCategory)
+                  return (
+                    <button
+                      key={subcategory.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCatalogSubcategoryId(subcategory.id)
+                        setCatalogVisibleCount(CATALOG_PAGE_SIZE)
+                      }}
+                      className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
+                    >
+                      <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
+                      </span>
+                      <span className={`min-h-8 text-[12px] font-black leading-4 ${selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'}`}>
+                        {subcategory.label}
+                      </span>
+                      <span className="text-[12px] font-bold text-[#b5a493]">{count}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-[#fff7ed] px-3 py-2">
+                <p className="truncate text-[12px] font-black text-[#4b3929]">
+                  {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
+                </p>
+                <p className="shrink-0 text-[12px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {visibleCatalogItems.map((item) => (
+                  <ShoppingCatalogCard
+                    key={item.id}
+                    item={item}
+                    quantity={getShoppingCatalogQuantity(item)}
+                    isInShoppingList={shoppingNameSet.has(normalizeShoppingIngredientName(item.name))}
+                    onAdd={() => handleCatalogAdd(item)}
+                    partnerLinks={partnerLinks}
+                  />
+                ))}
+              </div>
+              {visibleCatalogItems.length < selectedCatalogItems.length ? (
+                <button
+                  type="button"
+                  onClick={() => setCatalogVisibleCount((current) => current + CATALOG_PAGE_SIZE)}
+                  className="mt-3 flex min-h-11 w-full items-center justify-center rounded-[12px] border border-[#eadcc9] text-[13px] font-black text-[#4b3929]"
+                >
+                  재료 더 보기
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </section>
     </div>
   )

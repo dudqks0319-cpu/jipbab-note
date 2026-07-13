@@ -66,7 +66,7 @@ const PRODUCT_SUGGESTIONS: ProductSuggestionSeed[] = [
     description: "밑반찬, 아침, 간단한 한 끼에 자주 쓰는 계란 추천 링크입니다.",
     matchKeywords: ["계란", "달걀", "에그"],
     fallbackKeyword: "계란",
-    imageUrl: getIngredientPhotoUrl("계란", "유제품"),
+    imageUrl: getIngredientPhotoUrl("계란", "계란·난류"),
   },
   {
     key: "milk",
@@ -137,6 +137,7 @@ function getEnvPartnerLinkConfig(): PartnerLinkConfig {
     },
     categoryLinks: {
       "채소": COUPANG_PARTNERS_VEGETABLE_URL,
+      "계란·난류": COUPANG_PARTNERS_EGG_URL,
       "유제품": COUPANG_PARTNERS_DAIRY_URL,
       "냉동식품": COUPANG_PARTNERS_FROZEN_URL,
       "조미료": COUPANG_PARTNERS_SEASONING_URL,

@@ -18,7 +18,83 @@ candidate:
   git_sha: "f90f0679821443f07ee7fd019885f89d97ef3e7d"
   branch: "ux/home-today-action-v2"
   dirty_state: "phase6_e2e_preview_deployment_record_committed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/current-release-state.md"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-staging-fixture.md, docs/infant-toddler-recipe-intake.md, docs/current-release-state.md"
+
+official_deployment_sources:
+  audited_at: "2026-07-11 KST"
+  github_repo: "dudqks0319-cpu/jipbab-note"
+  release_branch: "ux/home-today-action-v2"
+  plan_github_head: "a96e69d589f0c587267e400d115e3333fd6c059a"
+  official_preview_project: "youngbeens-projects/jipbab-note"
+  official_preview_deployment_id: "dpl_9Zz3Zj9N5Van8reEfFc9gyVbBmHb"
+  official_preview_source: "git"
+  official_preview_git_sha: "a96e69d589f0c587267e400d115e3333fd6c059a"
+  official_preview_status: "READY"
+  production_project: "youngbeens-projects/jipbab-note-app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  production_promoted: false
+  historical_cli_preview_deployment_id: "dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT"
+  historical_cli_preview_role: "phase6_negative_e2e_evidence_only"
+
+phase6_1_local_worktree:
+  implemented_at: "2026-07-11 KST"
+  base_git_sha: "a96e69d589f0c587267e400d115e3333fd6c059a"
+  commit_status: "local_worktree_not_committed_or_deployed"
+  report: "docs/phase-6-e2e-report.md"
+  fixture_runbook: "docs/phase-6-staging-fixture.md"
+  technical_fixture_scope: "application_layer_staging_test_only_production_fail_closed"
+  technical_fixture_recipe_id: "00000000-0000-4000-8000-0000000006e1"
+  technical_fixture_human_review_counted: false
+  e2e_static_contract_status: "verified_11_of_11"
+  e2e_happy_runtime_status: "verified_local_chrome_18_of_18"
+  e2e_negative_runtime_status: "previously_verified_local_and_cli_preview_12_of_12"
+  e2e_shopping_duplicate_merge_status: "verified"
+  e2e_timer_pause_reload_restore_status: "verified_30_and_90_seconds"
+  e2e_completion_feedback_consumption_restore_status: "verified"
+  mobile_390_visible_control_count: 37
+  mobile_390_undersized_control_count: 0
+  mobile_390_horizontal_overflow: 0
+  browser_console_error_count: 0
+  browser_uncanceled_app_request_failure_count: 0
+  browser_http_error_response_count: 0
+  browser_external_resource_failure_count: 0
+  browser_artifacts: "mobile_390_desktop_1280_network_console_result_accessibility"
+  ci_runtime_status: "workflow_configured_pending_remote_run"
+  full_unit_test_status: "verified_391_of_391_with_zero_lint_warnings"
+  integration_status: "verified_publication_zero_exposed_and_signed_session_negative_paths"
+  content_gate_status: "verified_176_recipe_candidates_186_curated_guidance_phase1_phase5"
+  production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  ci_static_gate_status: "verified_14_of_14_dependency_audit_clean"
+  local_release_gate_status: "10_pass_4_blocked_human_evidence_release_env_ios_archive_android_aab"
+  partner_category_seed_status: "verified_12_of_12"
+  db_backed_staging_fixture_status: "blocked_reconciled_staging_database_required"
+  authenticated_success_paths_status: "blocked_staging_accounts_required"
+  offline_and_real_device_status: "blocked_device_qa_required"
+  human_recipe_evidence_status: "blocked_zero_of_twenty"
+  production_migration_status: "not_applied"
+  production_deploy_status: "not_deployed"
+  production_promoted: false
+
+infant_toddler_recipe_intake:
+  implemented_at: "2026-07-13 KST"
+  source_report: "user_provided_deep_research_report"
+  candidate_count: 24
+  stage_counts: "4_to_6_months_8, 6_to_8_months_6, 8_to_11_months_4, 12_months_plus_6"
+  app_route: "/recipe/infant-toddler"
+  publication_status: "research_only_24_of_24"
+  source_usage: "summary_only_24_of_24"
+  external_image_count: 0
+  focused_contract_status: "verified_4_of_4"
+  full_unit_test_status: "verified_395_of_395_with_zero_lint_warnings"
+  content_gate_status: "verified_existing_recipe_and_publication_contracts_unchanged"
+  production_build_status: "verified_next_16_2_6_turbopack_39_of_39_routes"
+  actual_cooking_status: "blocked_zero_of_24"
+  medical_and_food_safety_review_status: "blocked_zero_of_24"
+  rights_review_status: "blocked_zero_of_24"
+  image_rights_review_status: "blocked_zero_of_24"
+  publication_approval_status: "blocked_zero_of_24"
+  production_db_status: "not_changed"
+  production_deploy_status: "not_deployed"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -208,11 +284,11 @@ phase6_quality_security:
   home_lcp_hint_status: "verified_warning_resolved"
   e2e_implementation_git_sha: "1c91aa814ffc80182b73d390c768e574aaf25c51"
   e2e_report: "docs/phase-6-e2e-report.md"
-  e2e_static_contract_status: "verified_8_of_8"
+  e2e_static_contract_status: "verified_worktree_11_of_11_last_deployed_8_of_8"
   e2e_negative_runtime_status: "verified_12_of_12"
   e2e_guest_ingredient_persistence_status: "verified_fresh_profile_and_reload"
   e2e_demo_recipe_api_request_count: 0
-  e2e_full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
+  e2e_full_happy_path_status: "verified_local_application_fixture_18_of_18_db_backed_staging_path_still_blocked"
   e2e_offline_status: "blocked_real_device_and_offline_harness_required"
   e2e_preview_deploy_status: "deployed_ready_verified_12_of_12"
   migration: "20260711113000_harden_security_definer_privileges.sql"
@@ -221,13 +297,13 @@ phase6_quality_security:
   security_definer_effective_count: 11
   removed_unused_security_definer_count: 1
   focused_security_test_status: "verified_29_of_29"
-  full_unit_test_status: "verified_370_of_370"
+  full_unit_test_status: "verified_worktree_391_of_391_last_deployed_370_of_370"
   supabase_contract_status: "verified_146_of_146"
   integration_status: "verified_zero_unreviewed_exposed_and_signed_session_negative_paths"
   release_security_status: "verified_4_of_4"
   production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
   ci_static_gate_status: "verified_14_of_14"
-  release_gate_status: "13_pass_1_expected_fail_phase5_human_evidence"
+  release_gate_status: "worktree_10_pass_4_blocked_human_evidence_release_env_ios_archive_android_aab"
   isolated_postgres_execution_status: "blocked_no_docker_or_psql"
   production_migration_status: "not_applied"
   production_deploy_status: "not_deployed"
@@ -309,17 +385,22 @@ migration_history:
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: false
   phase6_security_definer_migration_recorded_remote: false
+  phase6_ingredient_reclassification_migration_recorded_remote: false
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
   - name: "Phase 6 E2E static contract"
     command: "pnpm check:phase6-e2e-contract"
-    status: "current_pass_8_of_8"
+    status: "current_worktree_pass_11_of_11"
     evidence: "docs/phase-6-e2e-report.md"
   - name: "Phase 6 guest and fail-closed browser E2E"
     command: "pnpm capture:phase6-e2e-negative"
-    status: "current_pass_12_of_12_full_happy_path_blocked"
+    status: "last_verified_pass_12_of_12"
     evidence: "output/ui-evidence/phase6-e2e-guest-negative-390.png"
+  - name: "Phase 6 protected technical fixture happy path"
+    command: "pnpm capture:phase6-e2e-happy"
+    status: "current_worktree_pass_18_of_18_human_review_counted_false"
+    evidence: "output/ui-evidence/phase6-e2e-result.json, output/ui-evidence/phase6-accessibility-summary.json"
   - name: "Phase 6 mobile accessibility static contract"
     command: "pnpm check:phase6-accessibility"
     status: "current_pass_214_tags_8_contracts_zero_failures"
@@ -342,8 +423,8 @@ local_checks:
     evidence: "pnpm-lock.yaml"
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_370_of_370"
-    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts"
+    status: "current_worktree_pass_391_of_391_zero_lint_warnings"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts, tests/phase-6-fixture.test.ts, tests/phase-6-ux-contract.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
@@ -398,7 +479,7 @@ local_checks:
     evidence: "docs/current-release-state.md"
   - name: "Local release gates"
     command: "pnpm release:check"
-    status: "current_pass_13_with_1_expected_phase5_human_evidence_failure"
+    status: "current_worktree_10_pass_4_expected_release_blocker_groups"
     evidence: "docs/current-release-state.md"
   - name: "Release security gate"
     command: "pnpm release:security-check"
@@ -543,8 +624,8 @@ blockers:
     due: "before_any_supabase_db_push"
   - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
     severity: "P0"
-    status: "open"
-    title: "Public source repository, GitHub default branch, Vercel linked repository, and deployed feature SHA are not aligned."
+    status: "official_preview_aligned_production_promotion_still_blocked"
+    title: "GitHub HEAD and the official jipbab-note Git Preview are aligned, while the separate jipbab-note-app Production project must remain unpromoted until a future candidate SHA and all release gates are verified."
     owner: "project_owner"
     evidence: "docs/official-production-sources.md"
     due: "before_next_production_deploy"
@@ -572,7 +653,7 @@ blockers:
   - id: "P0-JIPBAB-PHASE2-STAGING-API"
     severity: "P0"
     status: "local_contract_verified_staging_healthy_path_pending"
-    title: "API v1 negative paths and fail-closed production behavior are verified locally, but no reviewed v2 fixture or reconciled staging PostgreSQL exists for healthy 200-path and distributed-RPC verification."
+    title: "API v1 negative paths and an application-layer technical happy fixture are verified locally, but no reconciled staging PostgreSQL recipe v2 fixture exists for DB-backed 200-path and distributed-RPC verification."
     owner: "FullStackDev+DBA+ContentQA"
     evidence: "docs/phase-2-api-v1-report.md"
     due: "before_any_api_v1_client_cutover"

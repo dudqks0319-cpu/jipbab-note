@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -28,6 +29,15 @@ test("ingredient catalog has broad first-batch competitive coverage", () => {
   assert.ok(items.some((item) => item.name === "맛술" && item.aliases?.includes("미림")));
   assert.ok(items.some((item) => item.name === "당면"));
   assert.ok(items.some((item) => item.name === "토마토캔"));
+});
+
+test("MFDS catalog builds keep corrected egg and tofu category buckets", () => {
+  const buildSource = readFileSync(new URL("../scripts/build-ingredients-catalog.mjs", import.meta.url), "utf8");
+
+  assert.match(buildSource, /"계란·난류": new Set\(\)/);
+  assert.match(buildSource, /"콩·두부": new Set\(\)/);
+  assert.match(buildSource, /"계란·난류": sortIngredients/);
+  assert.match(buildSource, /"콩·두부": sortIngredients/);
 });
 
 test("search matches aliases as well as direct names", () => {
@@ -102,6 +112,8 @@ test("ingredient category suggestion uses catalog names and aliases", () => {
   assert.equal(suggestIngredientCategory("사과", "채소"), "과일");
   assert.equal(suggestIngredientCategory("양조간장", "채소"), "조미료");
   assert.equal(suggestIngredientCategory("목살", "채소"), "육류");
+  assert.equal(suggestIngredientCategory("달걀", "채소"), "계란·난류");
+  assert.equal(suggestIngredientCategory("두부", "채소"), "콩·두부");
   assert.equal(suggestIngredientCategory("모르는재료", "채소"), "채소");
 });
 

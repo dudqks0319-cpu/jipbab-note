@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 import { resolveAuthProviderOptions } from "../lib/auth-config.ts";
@@ -171,7 +171,11 @@ test("native OAuth uses system browser and app callback instead of embedded prov
   const redirects = readFileSync(new URL("../lib/auth-redirect.ts", import.meta.url), "utf8");
   const nativeCallbackPage = readFileSync(new URL("../app/auth/native-callback/page.tsx", import.meta.url), "utf8");
   const capacitorConfig = readFileSync(new URL("../capacitor.config.ts", import.meta.url), "utf8");
-  const iosCapacitorConfig = readFileSync(new URL("../ios/App/App/capacitor.config.json", import.meta.url), "utf8");
+  const iosCapacitorConfigUrl = new URL("../ios/App/App/capacitor.config.json", import.meta.url);
+  const iosCapacitorConfig = existsSync(iosCapacitorConfigUrl)
+    ? readFileSync(iosCapacitorConfigUrl, "utf8")
+    : null;
+  const capacitorSync = readFileSync(new URL("../scripts/sync-capacitor.mjs", import.meta.url), "utf8");
   const iosInfoPlist = readFileSync(new URL("../ios/App/App/Info.plist", import.meta.url), "utf8");
   const androidManifest = readFileSync(new URL("../android/app/src/main/AndroidManifest.xml", import.meta.url), "utf8");
   const packageJson = readFileSync(new URL("../package.json", import.meta.url), "utf8");
@@ -221,8 +225,13 @@ test("native OAuth uses system browser and app callback instead of embedded prov
   assert.match(capacitorConfig, /CAPACITOR_CLOUDFLARE_HOST/);
   assert.match(capacitorConfig, /hostFromUrl\(runtimeAppUrl\)/);
   assert.match(capacitorConfig, /xqelabiwtjntwrjqcteo\.supabase\.co/);
-  assert.match(iosCapacitorConfig, /CAPBrowserPlugin/);
-  assert.match(iosCapacitorConfig, /JipbabOAuthPlugin/);
+  if (iosCapacitorConfig) {
+    assert.match(iosCapacitorConfig, /CAPBrowserPlugin|BrowserPlugin/);
+    assert.match(iosCapacitorConfig, /JipbabOAuthPlugin/);
+  } else {
+    assert.match(capacitorSync, /BrowserPlugin/);
+    assert.match(capacitorSync, /JipbabOAuthPlugin/);
+  }
   assert.doesNotMatch(capacitorConfig, /accounts\.google\.com/);
   assert.doesNotMatch(capacitorConfig, /appleid\.apple\.com/);
   assert.doesNotMatch(capacitorConfig, /kauth\.kakao\.com/);

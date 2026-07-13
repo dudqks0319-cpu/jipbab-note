@@ -1,4 +1,4 @@
-import { createHash, createSign } from "node:crypto";
+import { createSign } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 

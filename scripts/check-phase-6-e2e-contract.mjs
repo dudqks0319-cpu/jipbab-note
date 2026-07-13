@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-e2e-negative.mjs", "utf8");
+const happyCaptureSource = readFileSync("scripts/capture-phase-6-e2e-happy.mjs", "utf8");
+const chromePathSource = readFileSync("scripts/lib/chrome-path.mjs", "utf8");
+const fixtureSource = readFileSync("lib/phase-6-e2e-fixture.ts", "utf8");
+const workflowSource = readFileSync(".github/workflows/release-gate.yml", "utf8");
 const homeSource = readFileSync("app/page.tsx", "utf8");
 const recipeListSource = readFileSync("app/recipe/page.tsx", "utf8");
 const demoModeSource = readFileSync("hooks/useDemoMode.ts", "utf8");
@@ -18,7 +22,8 @@ const contracts = [
     name: "guest first-use and persistence flow",
     pass:
       captureSource.includes("있는 재료만 골라주세요") &&
-      captureSource.includes("2개 담고 추천 보기") &&
+      captureSource.includes("starter-ingredient-계란") &&
+      captureSource.includes("starter-submit") &&
       captureSource.includes("보관 2개") &&
       captureSource.includes("Page.reload"),
   },
@@ -56,10 +61,40 @@ const contracts = [
       demoModeSource.includes("ready: true"),
   },
   {
-    name: "full E2E blocker is explicit",
+    name: "portable Chrome discovery",
     pass:
-      captureSource.includes("fullHappyPathStatus") &&
-      captureSource.includes("blocked_no_publication_approved_staging_fixture"),
+      captureSource.includes("resolveChromeExecutable") &&
+      chromePathSource.includes("Google Chrome for Testing") &&
+      chromePathSource.includes("/usr/bin/google-chrome") &&
+      chromePathSource.includes("CHROME_PATH"),
+  },
+  {
+    name: "technical fixture is production-blocked",
+    pass:
+      fixtureSource.includes('env.APP_ENV === "production"') &&
+      fixtureSource.includes('env.VERCEL_ENV === "production"') &&
+      fixtureSource.includes("PHASE6_E2E_FIXTURE_TOKEN") &&
+      fixtureSource.includes("isTestFixture: true"),
+  },
+  {
+    name: "full happy path and artifacts",
+    pass:
+      packageJson.scripts?.["capture:phase6-e2e-happy"] ===
+        "node scripts/capture-phase-6-e2e-happy.mjs" &&
+      happyCaptureSource.includes("recommendation_api_200") &&
+      happyCaptureSource.includes("timer_reload_restored") &&
+      happyCaptureSource.includes("cooking_completed") &&
+      happyCaptureSource.includes("phase6-e2e-mobile-390.png") &&
+      happyCaptureSource.includes("phase6-e2e-desktop-1280.png") &&
+      happyCaptureSource.includes("humanReviewCounted: false"),
+  },
+  {
+    name: "CI runtime and artifact upload",
+    pass:
+      workflowSource.includes("capture:phase6-e2e-negative") &&
+      workflowSource.includes("capture:phase6-e2e-happy") &&
+      workflowSource.includes("actions/upload-artifact") &&
+      workflowSource.includes("output/ui-evidence"),
   },
 ];
 
@@ -76,4 +111,4 @@ if (failures.length > 0) {
 }
 
 console.log("\nPASS");
-console.log("- guest, fail-closed, auth-negative, and demo-network contracts passed");
+console.log("- guest, fail-closed, portable Chrome, protected fixture, happy path, and artifact contracts passed");

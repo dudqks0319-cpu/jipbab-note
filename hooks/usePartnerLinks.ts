@@ -70,6 +70,8 @@ const STATIC_PARTNER_LINKS: PartnerLinkConfig = {
     [normalizeLinkKey('생수')]: 'https://link.coupang.com/a/eEGYWK',
   },
   categoryLinks: {
+    '계란·난류': 'https://link.coupang.com/a/eEzpQo',
+    '콩·두부': 'https://link.coupang.com/a/eEzG5O',
     유제품: 'https://link.coupang.com/a/eEzpQo',
     채소: 'https://link.coupang.com/a/eEzKyg',
     육류: 'https://link.coupang.com/a/eEB0hw',

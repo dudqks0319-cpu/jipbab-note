@@ -14,37 +14,44 @@ import {
   rankRecipeRecommendationsV1,
 } from "@/lib/recipe-recommendation-v1";
 import { readBoundedJsonObject } from "@/lib/request-security";
+import {
+  listPhase6E2EFixtureRecipes,
+  shouldUsePhase6E2EFixture,
+} from "@/lib/phase-6-e2e-fixture";
 
 const MAX_BODY_BYTES = 16 * 1024;
 
 export async function POST(request: Request) {
   const requestId = createApiRequestId();
+  const useFixture = shouldUsePhase6E2EFixture(request.headers);
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
     return apiV1Error("INVALID_BODY", "요청 본문이 너무 큽니다.", 413, requestId);
   }
 
-  const rateLimit = await consumeDistributedRateLimit(request, "recipes:recommendations", {
-    limit: 30,
-    windowSeconds: 60,
-  });
-  if (rateLimit.status === "limited") {
-    return apiV1Error(
-      "RATE_LIMITED",
-      "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
-      429,
-      requestId,
-      { retryAfter: rateLimit.retryAfter },
-    );
-  }
-  if (rateLimit.status === "unavailable") {
-    return apiV1Error(
-      "DEPENDENCY_NOT_READY",
-      "추천 API를 준비 중입니다.",
-      503,
-      requestId,
-      { retryAfter: rateLimit.retryAfter },
-    );
+  if (!useFixture) {
+    const rateLimit = await consumeDistributedRateLimit(request, "recipes:recommendations", {
+      limit: 30,
+      windowSeconds: 60,
+    });
+    if (rateLimit.status === "limited") {
+      return apiV1Error(
+        "RATE_LIMITED",
+        "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
+        429,
+        requestId,
+        { retryAfter: rateLimit.retryAfter },
+      );
+    }
+    if (rateLimit.status === "unavailable") {
+      return apiV1Error(
+        "DEPENDENCY_NOT_READY",
+        "추천 API를 준비 중입니다.",
+        503,
+        requestId,
+        { retryAfter: rateLimit.retryAfter },
+      );
+    }
   }
 
   try {
@@ -56,7 +63,7 @@ export async function POST(request: Request) {
       throw new ApiV1ValidationError("INVALID_BODY", "요청 본문을 확인해 주세요.");
     }
     const input = parseRecipeRecommendationV1Input(bodyResult.value);
-    const candidates = await listPublicRecipesV1({
+    const candidateInput = {
       query: null,
       categoryId: null,
       difficulty: input.difficulty,
@@ -67,7 +74,10 @@ export async function POST(request: Request) {
       sort: "recommended",
       cursor: null,
       limit: 200,
-    });
+    } as const;
+    const candidates = useFixture
+      ? listPhase6E2EFixtureRecipes(candidateInput)
+      : await listPublicRecipesV1(candidateInput);
     const recommendations = rankRecipeRecommendationsV1(candidates.recipes, input);
     return apiV1Success(
       {

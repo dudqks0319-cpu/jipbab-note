@@ -16,8 +16,8 @@
 
 | 재료명 | 카테고리 | 파트너스 링크 |
 | --- | --- | --- |
-| 계란 | 유제품 | https://link.coupang.com/a/eEzpQo |
-| 두부 | 유제품 | https://link.coupang.com/a/eEzG5O |
+| 계란 | 계란·난류 | https://link.coupang.com/a/eEzpQo |
+| 두부 | 콩·두부 | https://link.coupang.com/a/eEzG5O |
 | 대파 | 채소 | https://link.coupang.com/a/eEzKyg |
 | 김치 | 통조림/가공식품 | https://link.coupang.com/a/eEAbrW |
 | 양파 | 채소 | https://link.coupang.com/a/eEAj6u |

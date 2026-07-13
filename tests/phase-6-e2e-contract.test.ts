@@ -8,6 +8,7 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
 };
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
+const happyPath = readFileSync("scripts/capture-phase-6-e2e-happy.mjs", "utf8");
 
 test("Phase 6 E2E contract is wired into package and release gates", () => {
   assert.equal(
@@ -18,8 +19,16 @@ test("Phase 6 E2E contract is wired into package and release gates", () => {
     packageJson.scripts["capture:phase6-e2e-negative"],
     "node scripts/capture-phase-6-e2e-negative.mjs",
   );
+  assert.equal(
+    packageJson.scripts["capture:phase6-e2e-happy"],
+    "node scripts/capture-phase-6-e2e-happy.mjs",
+  );
   assert.match(localGate, /scripts\/check-phase-6-e2e-contract\.mjs/);
   assert.match(ciGate, /scripts\/check-phase-6-e2e-contract\.mjs/);
+  assert.match(happyPath, /shopping_duplicate_merged/);
+  assert.match(happyPath, /undersizedControlCount, 0/);
+  assert.match(happyPath, /Network\.requestWillBeSent/);
+  assert.match(happyPath, /appFailedRequestCount, 0/);
 });
 
 test("Phase 6 E2E static contract passes", () => {

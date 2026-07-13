@@ -20,6 +20,8 @@ const CATEGORIES = [
   "과일",
   "육류",
   "수산물",
+  "계란·난류",
+  "콩·두부",
   "유제품",
   "냉동식품",
   "조미료",
@@ -32,6 +34,8 @@ const CATEGORY_PRIORITY = [
   "조미료",
   "육류",
   "수산물",
+  "계란·난류",
+  "콩·두부",
   "유제품",
   "채소",
   "과일",
@@ -46,7 +50,9 @@ const LOCAL_FALLBACK_BY_CATEGORY = {
   과일: ["사과", "배", "바나나", "딸기", "레몬", "오렌지", "키위", "블루베리"],
   육류: ["소고기", "돼지고기", "닭고기", "목살", "삼겹살", "닭가슴살", "소시지"],
   수산물: ["고등어", "연어", "새우", "오징어", "멸치", "미역", "다시마", "바지락"],
-  유제품: ["우유", "치즈", "버터", "요거트", "생크림", "계란", "두부"],
+  "계란·난류": ["계란", "달걀", "메추리알"],
+  "콩·두부": ["두부", "순두부", "연두부", "유부"],
+  유제품: ["우유", "치즈", "버터", "요거트", "생크림"],
   냉동식품: ["냉동만두", "냉동새우", "냉동볶음밥", "냉동우동면", "냉동블루베리"],
   조미료: ["간장", "고추장", "된장", "소금", "설탕", "식초", "참기름", "고춧가루"],
   "곡물/면/빵": ["쌀", "밀가루", "당면", "파스타면", "식빵", "라면"],
@@ -142,6 +148,17 @@ const CATEGORY_RULES = {
     { keyword: "낙지", weight: 5 },
     { keyword: "꽁치", weight: 5 },
   ],
+  "계란·난류": [
+    { keyword: "계란", weight: 6 },
+    { keyword: "달걀", weight: 6 },
+    { keyword: "메추리알", weight: 6 },
+  ],
+  "콩·두부": [
+    { keyword: "두부", weight: 6 },
+    { keyword: "순두부", weight: 6 },
+    { keyword: "연두부", weight: 6 },
+    { keyword: "유부", weight: 5 },
+  ],
   유제품: [
     { keyword: "우유", weight: 5 },
     { keyword: "치즈", weight: 5 },
@@ -150,10 +167,7 @@ const CATEGORY_RULES = {
     { keyword: "요구르트", weight: 5 },
     { keyword: "생크림", weight: 5 },
     { keyword: "연유", weight: 5 },
-    { keyword: "계란", weight: 4 },
-    { keyword: "달걀", weight: 4 },
     { keyword: "두유", weight: 3 },
-    { keyword: "두부", weight: 3 },
     { keyword: "크림치즈", weight: 5 },
     { keyword: "모짜렐라", weight: 5 },
     { keyword: "파마산", weight: 5 },
@@ -380,6 +394,8 @@ const buildCatalog = async (apiKey) => {
     과일: new Set(),
     육류: new Set(),
     수산물: new Set(),
+    "계란·난류": new Set(),
+    "콩·두부": new Set(),
     유제품: new Set(),
     냉동식품: new Set(),
     조미료: new Set(),
@@ -431,6 +447,8 @@ const buildCatalog = async (apiKey) => {
     과일: sortIngredients(Array.from(setByCategory.과일)),
     육류: sortIngredients(Array.from(setByCategory.육류)),
     수산물: sortIngredients(Array.from(setByCategory.수산물)),
+    "계란·난류": sortIngredients(Array.from(setByCategory["계란·난류"])),
+    "콩·두부": sortIngredients(Array.from(setByCategory["콩·두부"])),
     유제품: sortIngredients(Array.from(setByCategory.유제품)),
     냉동식품: sortIngredients(Array.from(setByCategory.냉동식품)),
     조미료: sortIngredients(Array.from(setByCategory.조미료)),
@@ -461,6 +479,23 @@ const getFallbackCatalog = () => {
     all,
     byCategory: LOCAL_FALLBACK_BY_CATEGORY,
   };
+};
+
+const preserveBuiltAtWhenUnchanged = (outputPath, nextResult) => {
+  try {
+    const previous = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    const previousBuiltAt = previous.builtAt;
+    const previousContent = { ...previous };
+    const nextContent = { ...nextResult };
+    delete previousContent.builtAt;
+    delete nextContent.builtAt;
+    if (Number.isFinite(previousBuiltAt) && JSON.stringify(previousContent) === JSON.stringify(nextContent)) {
+      return { ...nextResult, builtAt: previousBuiltAt };
+    }
+  } catch {
+    return nextResult;
+  }
+  return nextResult;
 };
 
 // Main execution
@@ -507,7 +542,8 @@ async function main() {
   };
 
   const outputPath = path.join(__dirname, "../lib/ingredients-catalog-data.json");
-  fs.writeFileSync(outputPath, JSON.stringify(result, null, 2), "utf8");
+  const stableResult = preserveBuiltAtWhenUnchanged(outputPath, result);
+  fs.writeFileSync(outputPath, `${JSON.stringify(stableResult, null, 2)}\n`, "utf8");
   console.log(`카탈로그 파일이 성공적으로 저장되었습니다: ${outputPath}`);
 }
 

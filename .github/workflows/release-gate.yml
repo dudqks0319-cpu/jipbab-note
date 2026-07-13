@@ -59,6 +59,22 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Phase 6 browser negative path
+        run: pnpm capture:phase6-e2e-negative
+
+      - name: Phase 6 browser happy path
+        run: pnpm capture:phase6-e2e-happy
+
+      - name: Upload Phase 6 browser evidence
+        if: always()
+        # actions/upload-artifact v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: phase6-browser-evidence-${{ github.sha }}
+          path: output/ui-evidence/
+          if-no-files-found: warn
+          retention-days: ${{ github.event_name == 'workflow_dispatch' && 90 || 14 }}
+
       - name: Build
         run: pnpm build
 
