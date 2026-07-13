@@ -38,6 +38,11 @@ const checks = [
     args: ["scripts/check-phase-6-analytics-dashboard.mjs"],
   },
   {
+    name: "phase6-rollback-rehearsal",
+    command: "node",
+    args: ["scripts/check-phase-6-rollback-rehearsal.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
