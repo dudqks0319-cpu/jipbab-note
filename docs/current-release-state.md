@@ -2,6 +2,14 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 6 롤백 연습 체크포인트 Preview
+
+- GitHub 구현·증거 체크포인트 `69ef47bef5a7bc08f6854e524067cdfc89fa746a`를 깨끗한 `git archive`에서 Vercel Preview `dpl_BtoCNmLSXLnud9TT4rPnmu7upQ6k` (`https://jipbab-note-8zvlhz5l6-youngbeens-projects.vercel.app`)로 배포했고 상태는 `READY`다. 작업 폴더의 `lib/ingredients-catalog-data.json` 수정과 `ios/App/CapApp-SPM/Package.resolved` 미추적 파일은 배포에서 제외했다.
+- 원격 build는 compile, TypeScript, 38/38 routes를 통과했다. `/`와 `/recipe`는 HTTP 200이며 `/api/v1/recipes?limit=1`은 운영 migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`를 반환한다.
+- Vercel runtime log의 `deployment_sha`는 위 GitHub 체크포인트와 정확히 일치한다. 로그에는 허용된 request ID, endpoint, status, latency, error code, deployment SHA만 있고 query, body, token, email, free text는 없다.
+- 인앱 브라우저는 내부 분석 대시보드가 아니라 이 Preview의 실제 집밥노트 홈을 표시한다. 홈 제목은 `있는 재료로 오늘 메뉴 정해요`이고 냉장고·레시피·장보기·마이 하단 탐색을 확인했다.
+- Production alias는 승격하지 않았다. Phase 5 사람 증거 0/20, DB migration history·backup·staging restore, 운영 env, iOS/Android 실기기 검증은 계속 `blocked_external`이다.
+
 ## 2026-07-13 Phase 6 비파괴 코드 롤백 연습
 
 - 구현 커밋 `7c36bf29db80a7c98af90f97e04dd6dcd1797116`에서 현재 branch나 index를 바꾸지 않고 명시한 ancestor commit을 `git archive`로 재현하는 rollback rehearsal을 추가했다. Vercel alias 변경, `git reset`, Supabase mutation은 호출하지 않는다.
