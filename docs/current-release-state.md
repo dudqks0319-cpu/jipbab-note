@@ -2,6 +2,17 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 출시 증거 경로·외부 상태 재검증
+
+- 연결된 worktree에서 문서의 `<repo>/output/...` 증거 경로를 문자 그대로 검사해, 기본 저장소에 존재하는 App Store Connect/TestFlight 증거를 누락으로 오판하던 원인을 고쳤다. 공용 경로 해석기는 `git --git-common-dir`로 기본 저장소 루트를 찾고 `<repo>` 경로의 `..` 및 저장소 밖 symlink 이탈을 거부한다. 절대경로, worktree 상대경로, HTTP(S) 증거 참조의 기존 동작은 유지한다.
+- 기본 저장소의 `<repo>/output/release-evidence/2026-07-10T04-02-31-522Z-store-console`이 실제로 존재한다. `pnpm check:store-console-confirmation -- --platform=appstore`는 현재 Xcode build `2026062602`, TestFlight 처리 완료, 내부 테스터 사용 가능 증거를 1/1 PASS로 판정한다.
+- `pnpm release:store-api-credential-status`는 `Ready: 0`, `Blocked: 2`, `Security failures: 0`이다. App Store Connect API 키 3개와 Google Play service-account credential이 없어 공식 API의 당일 재조회는 수행하지 않았다. 기존 2026-07-10 App Store 증거만 복구했으며, credential 값은 읽거나 출력하지 않았다.
+- 권한을 확장한 읽기 전용 `pnpm check:real-device-availability`에서 iOS 17.6.1 물리 기기 1대는 연결 상태로 확인됐고, 추가 iOS 26.5 기기 1대는 offline, Android 물리 기기는 미연결이다. 이 연결 확인은 현재 build `2026062602`의 OAuth·알림·장보기 링크·계정 삭제 수동 QA 완료를 뜻하지 않으므로 실기기 QA는 계속 BLOCKED다.
+- `pnpm check:store-console-confirmation -- --platform=play`는 Play Console internal track, AAB upload, Google Play API credential 증거가 없어 의도대로 실패했다. Play Console 내부 테스트는 계속 BLOCKED이며 업로드나 콘솔 변경은 수행하지 않았다.
+- 경로·목표 집중 회귀 테스트 22/22, 전체 unit 412/412, TypeScript, integration, 콘텐츠 176개 validation, CI-safe release gate 19/19, release security 4/4가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 유지된다. `pnpm release:goal-check`는 `15 PASS / 3 BLOCKED / 1 MISSING`으로 정정됐다. 남은 항목은 외부 모니터링 채널, 현재 후보 실기기 QA, Play Console 내부 테스트, Phase 5 핵심 20개 실제 조리·사람 검수다.
+- 인앱 브라우저 결과물은 분석 대시보드가 아니라 Vercel Preview `https://jipbab-note-o4dz9hz5p-youngbeens-projects.vercel.app/`의 실제 집밥노트 홈으로 유지했다. 제목 `있는 재료로 오늘 메뉴 정해요`와 홈·냉장고·레시피·장보기·마이 탐색을 확인했다.
+- 잔여 리스크: Owner `Content+Food Safety+Legal`, due `before_phase5_publication` — 실제 조리·사람 검수 20/20. Owner `FullStackDev+SRE+Privacy`, due `before_production_monitoring_signoff` — 실제 경보 채널 수신. Owner `FullStackDev+QA+Operator`, due `before_native_release` — build `2026062602`의 iOS/Android 전체 실기기 QA. Owner `FullStackDev+ReleaseOperator`, due `before_play_internal_testing` — signed AAB와 Play internal track 확인.
+
 ## 2026-07-13 Phase 6 오류 모니터링 전달 경계 Preview
 
 - 구현 커밋 `d52f20707753d5dc39df85cbfb2124273d0b6a54`를 `origin/agent/phase6-observability-analytics`에 push하고 같은 clean archive를 Vercel Preview `dpl_F33KGMEyXYAb6ybfYxFJCaqZcEfy` (`https://jipbab-note-o4dz9hz5p-youngbeens-projects.vercel.app`)로 배포했다. target은 `preview`, 상태는 `READY`이며 Production alias는 승격하지 않았다.
