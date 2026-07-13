@@ -2,9 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Plus, Refrigerator, Search } from 'lucide-react'
+import { Check, Plus, Refrigerator, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
+import CompactFridgeIngredientGrid from '@/components/home/CompactFridgeIngredientGrid'
 import { buildHomeHref } from '@/lib/home-actions'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
 
@@ -34,11 +35,15 @@ export default function StarterActionCard({
   const selectedNameSet = new Set(selectedNames)
   const hasSelection = selectedNames.length > 0
   const previewIngredients = useMemo(() => {
-    const visibleNameSet = new Set((hasSelection ? selectedNames : visibleStarterNames.slice(0, 3)).map((name) => name.toLowerCase()))
+    const visibleNameSet = new Set(selectedNames.map((name) => name.toLowerCase()))
     return STARTER_INGREDIENT_TEMPLATES
       .filter((item) => visibleNameSet.has(item.name.toLowerCase()))
-      .slice(0, 6)
-  }, [hasSelection, selectedNames, visibleStarterNames])
+      .map((item) => ({
+        id: `starter-${item.name}`,
+        name: item.name,
+        category: item.category,
+      }))
+  }, [selectedNames])
   const summaryText = storageCounts
     ? `냉장 ${storageCounts.cold} · 냉동 ${storageCounts.frozen} · 실온 ${storageCounts.room}`
     : null
@@ -62,7 +67,7 @@ export default function StarterActionCard({
       <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
         {hasIngredients
           ? '시간, 도구, 부족 재료 기준으로 바로 할 수 있는 메뉴부터 볼게요.'
-          : '계란, 두부, 김치만 있어도 괜찮아요. 먼저 오늘 만들 메뉴부터 찾아볼게요.'}
+          : '계란, 두부, 김치만 있어도 괜찮아요. 아래에서 실제로 있는 재료만 골라주세요.'}
       </p>
 
       {!hasIngredients ? (
@@ -84,28 +89,27 @@ export default function StarterActionCard({
               <div className="relative z-10 flex h-full flex-col bg-gradient-to-b from-white/10 via-white/8 to-[#2f2117]/8 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#2f2117] shadow-[0_6px_14px_rgba(76,51,28,0.10)]">
-                    오늘 메뉴 찾기
+                    냉장고에 담기
                   </p>
-                  <p className="rounded-full bg-[#ea5a1f] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]">
-                    {hasSelection ? `${selectedNames.length}개 선택` : '미리보기'}
+                  <p
+                    className="rounded-full bg-[#ea5a1f] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]"
+                    aria-live="polite"
+                  >
+                    {selectedNames.length}개 선택
                   </p>
                 </div>
-                <div className="mx-auto mt-9 grid w-52 grid-cols-2 gap-2">
-                  {previewIngredients.map((item) => (
-                    <span
-                      key={item.name}
-                      className="min-w-0 rounded-[12px] border border-white/90 bg-white/92 px-2 py-1.5 text-center text-[11px] font-black text-[#4b3929] shadow-[0_7px_14px_rgba(47,33,23,0.12)] backdrop-blur-[2px]"
-                    >
-                      <span className="block truncate">{item.name}</span>
-                      <span className="mt-0.5 block text-[8px] font-black text-[#9b8979]">{item.storageType}</span>
-                    </span>
-                  ))}
-                </div>
+                <CompactFridgeIngredientGrid
+                  ingredients={previewIngredients}
+                  maxVisible={12}
+                  emptyMessage="아래 재료를 눌러 담아보세요"
+                  className="mx-auto mt-8"
+                  testId="starter-fridge-ingredient-grid"
+                />
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="냉장고에 있는 재료 선택">
             {visibleStarterNames.map((name) => {
               const selected = selectedNameSet.has(name)
               return (
@@ -114,12 +118,13 @@ export default function StarterActionCard({
                   type="button"
                   onClick={() => toggleIngredient(name)}
                   aria-pressed={selected}
-                  className={`min-h-11 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
+                  className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-[14px] font-bold transition-colors ${
                     selected
                       ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                       : 'border-[#eadcc9] bg-white text-[#4b3929]'
                   }`}
                 >
+                  {selected ? <Check size={14} strokeWidth={3} aria-hidden="true" /> : null}
                   {name}
                 </button>
               )
@@ -149,7 +154,7 @@ export default function StarterActionCard({
             }`}
           >
             <Plus size={15} />
-            {hasSelection ? `${selectedNames.length}개 담고 추천 보기` : '있는 재료를 골라주세요'}
+            {hasSelection ? '이 재료로 메뉴 찾기' : '있는 재료를 골라주세요'}
           </button>
         )}
         <div className="mt-3 grid grid-cols-2 gap-2">
