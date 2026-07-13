@@ -2,6 +2,19 @@
 
 Updated: 2026-07-13 KST
 
+## 최신 실행 증거
+
+- 실행기 commit: `7c36bf29db80a7c98af90f97e04dd6dcd1797116`
+- rollback target: `c21b4ae8116836075b33090818b4a68e348c9d1f`
+- target Preview: `https://jipbab-note-2wvccgmvm-youngbeens-projects.vercel.app`
+- 결과: `passed_local_code_rehearsal`
+- 필수 command: 9/9 pass
+- HTTP smoke: 10/10 pass
+- DB rollback pair: 6/6 present, destructive statement 0
+- Evidence: `output/rollback-evidence/2026-07-13T10-26-31-100Z/rollback-rehearsal.{json,md}`
+
+연습 중 첫 clean archive에는 Git에서 제외된 `ios/App/App/capacitor.config.json`이 없어 unit test 1건이 실패했다. `pnpm mobile:sync:ios`를 필수 순서에 추가했다. 다음 실행은 `CAPACITOR_SERVER_URL`을 명시하지 않아 안전하게 중단됐으므로 commit과 paired Preview URL을 모두 필수 입력으로 고정했다. 세 번째 실행은 production용 `NODE_ENV`가 integration의 Next dev server에 전달돼 500을 만들었고 test/dev 환경과 production start 환경을 분리했다. 계약이나 테스트를 약화하지 않고 세 원인을 수정한 뒤 최종 실행이 통과했다.
+
 ## 목적
 
 계획서 Phase 6 완료 기준의 `롤백 연습 완료`를 한 번에 과장하지 않고 다음 세 경계로 나눠 검증한다.
@@ -64,7 +77,7 @@ pnpm capture:phase6-rollback \
 
 ## 현재 증거와 남은 위험
 
-- 로컬 실행 결과: runtime capture의 `result`와 commit SHA를 기준으로 판단한다.
+- 로컬 코드 rollback: `7c36bf2 -> c21b4ae`, `passed_local_code_rehearsal`.
 - Vercel actual rollback: `not_executed`.
 - DB actual rollback: `blocked_external`.
 - Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history, backup, 실제 staging PostgreSQL rollback·restore drill.

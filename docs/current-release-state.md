@@ -2,6 +2,17 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 6 비파괴 코드 롤백 연습
+
+- 구현 커밋 `7c36bf29db80a7c98af90f97e04dd6dcd1797116`에서 현재 branch나 index를 바꾸지 않고 명시한 ancestor commit을 `git archive`로 재현하는 rollback rehearsal을 추가했다. Vercel alias 변경, `git reset`, Supabase mutation은 호출하지 않는다.
+- 최종 연습은 현재 `7c36bf2`에서 직전 정상 관측성 Preview source `c21b4ae8116836075b33090818b4a68e348c9d1f`와 paired URL `https://jipbab-note-2wvccgmvm-youngbeens-projects.vercel.app` 조합을 재생했다.
+- clean archive에서 offline frozen install, iOS native sync, lint, typecheck, test, integration, recipe validation, content test, production build가 9/9 통과했다. archive build는 38/38 routes를 만들었다.
+- 임시 production server의 `/`, `/recipe`는 HTTP 200이고 server secret 없는 API v1은 예상된 redacted 503, `DEPENDENCY_NOT_READY`, `no-store`, retry header, request ID를 반환했다. HTTP smoke는 10/10 통과했다.
+- critical migration 6개의 rollback pair가 모두 존재하고 `drop table`, `drop column`, `truncate`는 0건이다. 이것은 실제 PostgreSQL 실행 증거가 아니며 DB 상태는 `blocked_external`이다.
+- 현재 branch 검증: unit 397/397, recipe 176개 validation, content gate pass, integration pass, production build 38/38, CI-safe release gate 18/18, release security 4/4.
+- Vercel actual rollback과 DB actual rollback은 수행하지 않았다. Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history·backup·staging restore. Owner `FullStackDev+SRE`, due `before_phase6_completion`: 승인된 Preview rollback과 post-rollback HTTP/log 증거.
+- Evidence: `docs/phase-6-rollback-rehearsal.md`, `output/rollback-evidence/2026-07-13T10-26-31-100Z/rollback-rehearsal.{json,md}`. `output/`은 로컬 증거로 Git에서 제외한다.
+
 ## 2026-07-13 Phase 6 제품·레시피 분석 리포트
 
 - 구현 커밋 `aea2ec9d4b476a9afc57645871009de73af2663e`에서 계획서의 제품 전환, D7 재방문, 레시피 시작·완료·중단·실패·실제 조리시간·장보기 추가율, API 오류율·지연시간·배포 SHA를 로컬 HTML/JSON으로 집계한다.

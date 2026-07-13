@@ -10,7 +10,9 @@ Updated: 2026-07-13 KST
 - 외부 분석 벤더: 미선정
 - 외부 경보 채널: 미연결
 - 실제 사용자 field 지표: 미수집
-- production 배포·롤백 연습: 미실행
+- clean archive 코드 롤백 연습: `7c36bf2 -> c21b4ae` 통과
+- Vercel alias 실제 롤백: 미실행
+- staging DB 실제 롤백·복원: 미실행
 
 외부 벤더, 사용자 동의 문구, 보관기간과 삭제 정책이 승인되기 전에는 제품 분석 이벤트를 전송하지 않는다. 현재 구현은 `enabled: true`, `consent: granted`, 명시적 transport가 동시에 제공될 때만 전송 경계를 연다.
 
@@ -90,6 +92,8 @@ API v1의 목록, 상세, 추천 응답은 요청당 한 번 `api.request_comple
 
 ```bash
 pnpm check:phase6-observability
+pnpm check:phase6-rollback
+pnpm capture:phase6-rollback --target-ref <known-good-commit> --target-url <known-good-preview-url>
 pnpm release:ci-static-check
 pnpm release:security-check
 curl -I <preview-url>/
@@ -105,5 +109,5 @@ vercel logs <deployment-url> --no-follow --since 30m --level fatal --json
 
 - Owner `Product+Privacy`, due `before_product_analytics_enablement`: 동의 문구, 개인정보 처리방침, 보관기간, 삭제·opt-out 정책 승인
 - Owner `FullStackDev+SRE`, due `before_production_monitoring_signoff`: 모니터링 벤더와 경보 채널 연결, 테스트 경보 수신 증거
-- Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history 조정, restorable backup, staging rollback 연습
-- Owner `FullStackDev+QA`, due `before_phase6_completion`: production smoke와 실제 롤백 연습 증거
+- Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history 조정, restorable backup, 실제 staging PostgreSQL rollback·restore 연습
+- Owner `FullStackDev+SRE`, due `before_phase6_completion`: 운영자 승인 Vercel Preview rollback과 post-rollback HTTP·log 증거

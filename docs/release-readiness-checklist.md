@@ -16,6 +16,9 @@ pnpm release:check
 - [ ] `pnpm check:core-loop-release` 실행: 냉장고 재료 → 추천 레시피 → 부족 재료 장보기 → 구매 후 냉장고 반영 루프 PASS 확인
 - [ ] `pnpm check:local-mode-release` 실행: Supabase 빈 응답/지연 상황에서도 로컬 재료·장보기 데이터와 로그인 동기화 상태가 보존되는지 확인
 - [ ] `pnpm release:ci-static-check` 실행: CI-safe 초보자 레시피 목표, Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
+- [ ] `pnpm check:phase6-rollback` 실행: explicit ancestor, clean archive, offline install, 비파괴 DB rollback pair와 외부 변경 금지 계약 확인
+- [ ] `pnpm capture:phase6-rollback --target-ref <known-good-commit> --target-url <known-good-preview-url>` 실행: `passed_local_code_rehearsal`, 필수 명령, 홈·레시피·redacted API smoke 확인
+- [ ] DB rollout 전 migration history, restorable backup, 실제 staging PostgreSQL rollback·restore 연습 완료. 로컬 코드 연습으로 대체 금지
 - [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
 - [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인
 - [ ] `pnpm store-assets:prepare` 실행: App Store 6.9형 스크린샷, Play Store 휴대전화 스크린샷, Play Store 기능 그래픽 생성 확인
