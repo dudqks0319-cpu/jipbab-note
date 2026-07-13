@@ -12,7 +12,9 @@ Branch: `integration/phase6-release-candidate`
 - 영유아식 연구: 24개 후보를 공통 recipe v2 연구 모델로 변환하고 공개 경로 없이 비운영 관리자 플래그 뒤에 격리
 - 제품 분석: 33개 표준 이벤트 매핑, 명시적 동의·철회 UI, 기술 fixture 제외, 실제 냉장고·추천·레시피·조리·장보기 동작 배선
 - 성능: 기존 LCP/CLS/상호작용 예산에 TTFB, transfer, JS, 이미지, 요청 수, long task, hydration 회귀 계약 추가
+- 실제 데이터 성능: 공개 레시피 UUID를 요구하고 카드 12개·장보기 20개·상세·인분·조리·타이머·가족·콜백·앱 정보를 모두 확인하는 release-candidate 프로필 추가
 - 저장소 관리: 바이너리 1,064개 inventory, 중복 해시·미참조 후보 보고서, 5MiB 단일 파일 및 release archive Git 추적 차단
+- CI 유지보수: `upload-artifact`를 공식 Node.js 24 기반 v6 고정 SHA로 갱신하고 기존 lint 경고 제거
 
 ## 검증 결과
 

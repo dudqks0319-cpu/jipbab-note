@@ -99,6 +99,22 @@ const contracts = [
       baseline.schemaVersion === 1,
   },
   {
+    name: "populated release-candidate surfaces",
+    pass:
+      captureSource.includes('PHASE6_PERFORMANCE_PROFILE must be baseline or release-candidate') &&
+      captureSource.includes('published-recipe-list-12') &&
+      captureSource.includes('minimumSelectorCount: 12') &&
+      captureSource.includes('image-recipe-detail-serving') &&
+      captureSource.includes('shopping-list-20') &&
+      captureSource.includes('minimumSelectorCount: 20') &&
+      captureSource.includes('cooking-mode') &&
+      captureSource.includes('timer-running') &&
+      captureSource.includes('family-fridge') &&
+      captureSource.includes('login-callback') &&
+      captureSource.includes('app-info') &&
+      captureSource.includes('release-candidate regression baselines are missing'),
+  },
+  {
     name: "local and CI release gate wiring",
     pass:
       localGate.includes("scripts/check-phase-6-performance-budget.mjs") &&

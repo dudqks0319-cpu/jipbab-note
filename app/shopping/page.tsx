@@ -1062,7 +1062,7 @@ function ShoppingRow({
   const purchaseLink = getCoupangPurchaseLink({ name, category }, partnerLinks)
 
   return (
-    <div className="flex items-center gap-3 px-3 py-3">
+    <div data-testid="shopping-item-row" className="flex items-center gap-3 px-3 py-3">
       <button
         type="button"
         onClick={onToggle}

@@ -18,6 +18,9 @@ const chromePath =
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const runCount = Number(process.env.PHASE6_PERFORMANCE_RUNS ?? 3);
 const settleMilliseconds = Number(process.env.PHASE6_PERFORMANCE_SETTLE_MS ?? 4_000);
+const measurementProfile = process.env.PHASE6_PERFORMANCE_PROFILE?.trim() || "baseline";
+const populatedRecipeId = process.env.PHASE6_PERFORMANCE_RECIPE_ID?.trim() || "";
+const populatedRecipeTitle = process.env.PHASE6_PERFORMANCE_RECIPE_TITLE?.trim() || "";
 const evidenceDir = path.resolve("output/performance-evidence");
 const evidencePath = path.join(evidenceDir, "phase6-performance-lab.json");
 const baselinePath = path.resolve("docs/phase-6-performance-baseline.json");
@@ -48,7 +51,7 @@ const device = Object.freeze({
   uploadBitsPerSecond: 750_000,
 });
 
-const routes = [
+const baselineRoutes = [
   {
     name: "guest-home",
     path: "/",
@@ -66,6 +69,81 @@ const routes = [
     expectedText: "장보기",
   },
 ];
+
+const releaseCandidateRoutes = [
+  {
+    name: "published-home",
+    path: "/",
+    expectedText: "오늘 바로 가능한 메뉴",
+    requiredSelector: '[data-testid="today-primary-cta"]',
+    minimumSelectorCount: 1,
+  },
+  {
+    name: "published-recipe-list-12",
+    path: "/recipe",
+    expectedText: "레시피",
+    requiredSelector: '[data-testid="recipe-card"]',
+    minimumSelectorCount: 12,
+    interaction: "recipe-search",
+  },
+  {
+    name: "image-recipe-detail-serving",
+    path: `/recipe/${populatedRecipeId}`,
+    expectedText: populatedRecipeTitle,
+    requiredSelector: 'img[src]',
+    minimumSelectorCount: 1,
+    interaction: "servings",
+  },
+  {
+    name: "shopping-list-20",
+    path: "/shopping",
+    expectedText: "장보기 리스트",
+    requiredSelector: '[data-testid="shopping-item-row"]',
+    minimumSelectorCount: 20,
+  },
+  {
+    name: "cooking-mode",
+    path: `/recipe/${populatedRecipeId}`,
+    expectedText: populatedRecipeTitle,
+    interaction: "cooking",
+  },
+  {
+    name: "timer-running",
+    path: `/recipe/${populatedRecipeId}`,
+    expectedText: populatedRecipeTitle,
+    interaction: "timer",
+  },
+  {
+    name: "family-fridge",
+    path: "/family",
+    expectedText: "가족 냉장고",
+  },
+  {
+    name: "login-callback",
+    path: "/auth/callback?error=access_denied",
+    expectedText: "로그인을 완료하지 못했습니다.",
+  },
+  {
+    name: "app-info",
+    path: "/settings/app-info",
+    expectedText: "배포본을 직접 확인할 수 있어요",
+  },
+];
+
+if (!new Set(["baseline", "release-candidate"]).has(measurementProfile)) {
+  throw new Error("PHASE6_PERFORMANCE_PROFILE must be baseline or release-candidate");
+}
+
+if (measurementProfile === "release-candidate") {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(populatedRecipeId)) {
+    throw new Error("PHASE6_PERFORMANCE_RECIPE_ID must be a published recipe UUID for release-candidate capture");
+  }
+  if (!populatedRecipeTitle || populatedRecipeTitle.length > 100) {
+    throw new Error("PHASE6_PERFORMANCE_RECIPE_TITLE is required and must be at most 100 characters");
+  }
+}
+
+const routes = measurementProfile === "release-candidate" ? releaseCandidateRoutes : baselineRoutes;
 
 if (!requestedUrl) {
   throw new Error(
@@ -340,6 +418,43 @@ async function exerciseRecipeSearch(client) {
   assert.equal(searchValue, "e", "trusted recipe search input did not update");
 }
 
+async function assertMinimumSelectorCount(client, route) {
+  if (!route.requiredSelector) return;
+  const count = await evaluate(
+    client,
+    `document.querySelectorAll(${JSON.stringify(route.requiredSelector)}).length`,
+  );
+  assert.ok(
+    count >= (route.minimumSelectorCount ?? 1),
+    `${route.name} requires at least ${route.minimumSelectorCount ?? 1} matches for ${route.requiredSelector}, received ${count}`,
+  );
+}
+
+async function exerciseRouteInteraction(client, route) {
+  if (route.interaction === "recipe-search") {
+    await exerciseRecipeSearch(client);
+    return;
+  }
+  if (route.interaction === "servings") {
+    await trustedClick(client, '[data-testid="recipe-servings-increase"]');
+    await sleep(500);
+    return;
+  }
+  if (route.interaction === "cooking" || route.interaction === "timer") {
+    await trustedClick(client, '[data-testid="recipe-start-cooking"]');
+    await sleep(500);
+  }
+  if (route.interaction === "timer") {
+    await trustedClick(client, '[data-testid="cook-timer-toggle"]');
+    await sleep(1_000);
+    const timerLabel = await evaluate(
+      client,
+      `document.querySelector('[data-testid="cook-timer-toggle"]')?.textContent ?? ''`,
+    );
+    assert.match(timerLabel, /일시정지/, "release-candidate timer did not enter a running state");
+  }
+}
+
 function summarizeResources(entries, navigation) {
   const resources = entries.map((entry) => ({
     decodedBodyBytes: entry.decodedBodySize,
@@ -464,10 +579,8 @@ async function captureRun(debugPort, route, runNumber) {
     await domReady;
     await waitForPageText(client, route.expectedText);
     await sleep(settleMilliseconds);
-
-    if (route.interaction === "recipe-search") {
-      await exerciseRecipeSearch(client);
-    }
+    await assertMinimumSelectorCount(client, route);
+    await exerciseRouteInteraction(client, route);
 
     const snapshot = await evaluate(
       client,
@@ -762,11 +875,15 @@ if (searchInputP75Milliseconds === null) {
     `search input p75 ${searchInputP75Milliseconds}ms > ${budgets.searchInputMilliseconds}ms`,
   );
 }
+if (measurementProfile === "release-candidate" && missingBaselines.length > 0) {
+  failures.push(`release-candidate regression baselines are missing: ${missingBaselines.join(", ")}`);
+}
 
 const evidence = {
   schemaVersion: 1,
   capturedAt: new Date().toISOString(),
   measurementClass: "repeatable_mobile_lab_guard_not_field_p75",
+  measurementProfile,
   origin: targetOrigin,
   budgets,
   device,

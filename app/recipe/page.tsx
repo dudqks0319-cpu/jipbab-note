@@ -475,7 +475,7 @@ export default function RecipePage() {
                 : readyLabel.text
 
               return (
-                <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
+                <article key={recipe.id} data-testid="recipe-card" className="jipbab-panel overflow-hidden rounded-[16px]">
                   <div className="flex gap-3 p-2.5">
                     <Link href={`/recipe/${recipe.id}`} className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#9b8979]">
                       <span className="grid place-items-center gap-1 text-[10px] font-black">

@@ -28,6 +28,36 @@ test("Phase 6 performance static contract passes", () => {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /Contracts checked: 12/);
+  assert.match(result.stdout, /Contracts checked: 13/);
   assert.match(result.stdout, /Failures: 0/);
+});
+
+test("release-candidate performance capture requires a published recipe identity", () => {
+  const result = spawnSync("node", ["scripts/capture-phase-6-performance.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PHASE6_PERFORMANCE_PROFILE: "release-candidate",
+      PHASE6_PERFORMANCE_RECIPE_ID: "",
+      PHASE6_PERFORMANCE_RECIPE_TITLE: "",
+      PHASE6_PERFORMANCE_URL: "",
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must be a published recipe UUID/);
+});
+
+test("performance capture rejects unknown measurement profiles", () => {
+  const result = spawnSync("node", ["scripts/capture-phase-6-performance.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PHASE6_PERFORMANCE_PROFILE: "untrusted",
+      PHASE6_PERFORMANCE_URL: "",
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must be baseline or release-candidate/);
 });

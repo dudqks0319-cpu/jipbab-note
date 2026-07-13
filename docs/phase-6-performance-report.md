@@ -49,6 +49,17 @@ pnpm check:phase6-performance
 
 회귀 기준은 `docs/phase-6-performance-baseline.json`에 고정한다. 2026-07-13 증거에 전체 transfer만 있어 해당 값에는 +15% 예산을 즉시 적용한다. JS·이미지·요청 수·long task 기준은 다음 승인된 populated-data 측정에서 값을 채울 때까지 `missingBaselines`로 명시하며, 값이 없는 기준을 통과로 가장하지 않는다. TTFB 800ms, hydration 오류 0, console 오류 0, unexpected network 오류 0은 절대 예산으로 항상 검사한다.
 
+실제 출시 후보 데이터 측정은 공개 승인된 레시피 UUID와 제목을 지정해야 한다. 이 프로필은 공개 레시피 홈, 카드 12개 목록, 이미지 상세와 인분 변경, 장보기 20개, 조리 모드, 실행 중 타이머, 가족 냉장고, 로그인 callback, 앱 정보 화면을 모두 검사한다. 화면 데이터나 회귀 baseline이 비어 있으면 실패한다.
+
+```bash
+PHASE6_PERFORMANCE_URL=<preview-url> \
+PHASE6_PERFORMANCE_PROFILE=release-candidate \
+PHASE6_PERFORMANCE_RECIPE_ID=<published-recipe-uuid> \
+PHASE6_PERFORMANCE_RECIPE_TITLE=<published-recipe-title> \
+PHASE6_PERFORMANCE_RUNS=5 \
+pnpm capture:phase6-performance
+```
+
 ## 연계 검증
 
 - Phase 6 성능 정적 계약: 11/11
