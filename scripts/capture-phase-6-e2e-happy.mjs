@@ -252,6 +252,7 @@ const chrome = spawn(
   chromePath,
   [
     "--headless=new",
+    "--disable-dev-shm-usage",
     "--disable-gpu",
     "--hide-scrollbars",
     "--no-first-run",
@@ -280,14 +281,17 @@ try {
   checks.push("fixture_session_bootstrapped");
   const portFile = path.join(userDataDir, "DevToolsActivePort");
   let debugPort = null;
-  for (let attempt = 0; attempt < 100 && !debugPort; attempt += 1) {
+  for (let attempt = 0; attempt < 300 && !debugPort; attempt += 1) {
+    if (chrome.exitCode !== null) {
+      throw new Error(`Chrome exited before DevTools became ready (exit ${chrome.exitCode})`);
+    }
     try {
       debugPort = Number(readFileSync(portFile, "utf8").trim().split("\n")[0]);
     } catch {
       await sleep(100);
     }
   }
-  assert.ok(debugPort, "Chrome DevTools port did not become ready");
+  assert.ok(debugPort, "Chrome DevTools port did not become ready within 30 seconds");
   const targetResponse = await fetch(
     `http://127.0.0.1:${debugPort}/json/new?${encodeURIComponent("about:blank")}`,
     { method: "PUT" },

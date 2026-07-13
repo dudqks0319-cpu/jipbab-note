@@ -75,6 +75,7 @@ const chrome = spawn(
   chromePath,
   [
     "--headless=new",
+    "--disable-dev-shm-usage",
     "--disable-gpu",
     "--hide-scrollbars",
     "--no-first-run",
@@ -87,14 +88,17 @@ const chrome = spawn(
 
 async function waitForDevToolsPort() {
   const portFile = path.join(userDataDir, "DevToolsActivePort");
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  for (let attempt = 0; attempt < 300; attempt += 1) {
+    if (chrome.exitCode !== null) {
+      throw new Error(`Chrome exited before DevTools became ready (exit ${chrome.exitCode})`);
+    }
     if (existsSync(portFile)) {
       const [debugPort] = readFileSync(portFile, "utf8").trim().split("\n");
       if (debugPort) return Number(debugPort);
     }
     await sleep(100);
   }
-  throw new Error("Chrome DevTools port did not become ready");
+  throw new Error("Chrome DevTools port did not become ready within 30 seconds");
 }
 
 function createClient(webSocketUrl) {
