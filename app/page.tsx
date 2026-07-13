@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Search,
   ShoppingBasket,
-  Star,
+  Gauge,
   Utensils,
 } from 'lucide-react'
 
@@ -175,12 +175,12 @@ export default function HomePage() {
         }
       })
   }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group])
-  const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 6), [rankedHomeRecipes])
+  const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 2), [rankedHomeRecipes])
   const homeRecipeSections = useMemo(() => {
     const buildSection = (title: string, subtitle: string, recipes: typeof rankedHomeRecipes) => ({
       title,
       subtitle,
-      recipes: recipes.slice(0, 6),
+      recipes: recipes.slice(0, 1),
     })
     const possibleNow = rankedHomeRecipes.filter((recipe) => getEssentialMissingIngredients(recipe.missingIngredients).length === 0)
     const oneMissing = rankedHomeRecipes.filter((recipe) => getEssentialMissingIngredients(recipe.missingIngredients).length === 1)
@@ -256,9 +256,7 @@ export default function HomePage() {
           <StarterActionCard
             demoMode={isAppStoreDemo}
             hasIngredients={!isEmptyFridge}
-            onAddStarterIngredients={(selectedNames) => {
-              void addStarterIngredients(selectedNames)
-            }}
+            onAddStarterIngredients={addStarterIngredients}
             starterIngredientNames={STARTER_INGREDIENT_NAMES}
             storageCounts={storageCounts}
           />
@@ -315,7 +313,12 @@ export default function HomePage() {
             <FridgeCount label="냉동" value={storageCounts.frozen} />
             <FridgeCount label="실온" value={storageCounts.room} />
           </div>
-          <HomeFridgePreview ingredients={activeDisplayIngredients} storageCounts={storageCounts} />
+          <details className="mt-3 rounded-[14px] border border-[#eadcc9] bg-white px-3 py-2">
+            <summary className="flex min-h-11 cursor-pointer items-center text-[12px] font-black text-[#4b3929]">
+              작은 냉장고 미리보기
+            </summary>
+            <HomeFridgePreview ingredients={activeDisplayIngredients} storageCounts={storageCounts} />
+          </details>
           <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
             <Link
               href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })}
@@ -496,7 +499,7 @@ function HomeFridgePreview({
         loading="eager"
         fetchPriority="high"
         sizes="(max-width: 430px) 318px, 360px"
-        className="h-auto w-full"
+        className="h-40 w-full object-cover object-top"
       />
       <div
         className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
@@ -636,7 +639,7 @@ function RecipeHomeCard({
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-[#ecd5bd]">
-          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+          <span className="grid h-full place-items-center gap-1 text-[12px] font-black text-[#9b8979]">
             <Utensils size={18} />
             이미지 없음
           </span>
@@ -652,22 +655,22 @@ function RecipeHomeCard({
       </Link>
       <div className="px-2.5 py-2">
         <Link href={recipeHref} className="block min-w-0">
-          <h3 className="line-clamp-2 min-h-8 text-[12px] font-black leading-4 text-[#2f2117]">{recipe.name}</h3>
+          <h3 className="line-clamp-2 min-h-8 text-[13px] font-black leading-4 text-[#2f2117]">{recipe.name}</h3>
         </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-[#7d6d5f]">
           <span className="inline-flex items-center gap-1">
             <Clock3 size={10} />
             {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '시간 미표시'}
           </span>
           <span className="inline-flex items-center gap-1 text-[#a66a17]">
-            <Star size={10} className="shrink-0 fill-[#f0a51c] text-[#f0a51c]" />
+            <Gauge size={12} className="shrink-0" />
             {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
           </span>
         </div>
-        <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
+        <p className="mt-1 truncate text-[12px] font-black text-[#3d7b38]">
           {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
         </p>
-        <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
+        <p className="mt-1 truncate text-[12px] font-black text-[#a66a17]">
           {getBeginnerRecipeBadge(recipe)}
         </p>
         {!compact ? (
@@ -710,7 +713,7 @@ function getBeginnerRecipeBadge(recipe: {
   if (typeof recipe.totalMinutes === 'number') {
     return `${recipe.totalMinutes}분 안심`
   }
-  return '초보 검수'
+  return '조리 정보 확인'
 }
 
 function RecipeCardSkeleton() {

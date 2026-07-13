@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
+import { BadgeCheck, Bookmark, Clock3, Heart, PackageCheck, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
@@ -237,15 +237,6 @@ export default function RecipePage() {
             {favorites.length}
           </button>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Link href="/meal-plan" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
-            주간 식단
-          </Link>
-          <Link href="/recipe/import" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
-            레시피 가져오기
-          </Link>
-        </div>
-
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
           <Search size={16} className="text-[#b5a493]" />
           <input
@@ -277,44 +268,12 @@ export default function RecipePage() {
       ) : null}
 
       <section className="grid grid-cols-3 gap-2 px-5 pt-3">
-        {visibleCategories.map((category) => {
-          const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
-          const active = quickFilterForCategory
-            ? quickFilter === quickFilterForCategory
-            : quickFilter === 'all' && selectedCategory === category
-          const labelLines = getDisplayCategoryLabelLines(category)
-
-          return (
-            <button
-              key={category}
-              type="button"
-              onClick={() => handleDisplayCategoryClick(category)}
-              className={`flex min-h-[58px] flex-col items-center justify-center rounded-[18px] border px-2 py-2 text-center text-[12px] font-black leading-[1.15] transition-all ${
-                active
-                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
-              }`}
-            >
-              <span className="flex min-h-7 flex-col items-center justify-center">
-                {labelLines.map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </span>
-              {category !== '전체' && typeof categoryCounts[category] === 'number' ? (
-                <span className="mt-0.5 text-[10px] opacity-70">{categoryCounts[category]}</span>
-              ) : null}
-            </button>
-          )
-        })}
-      </section>
-
-      <section className="grid grid-cols-3 gap-2 px-5 pt-2">
         {RECIPE_QUICK_FILTERS.map((filter) => (
           <button
             key={filter.id}
             type="button"
             onClick={() => setQuickFilter(filter.id)}
-            className={`min-h-11 rounded-full border px-2 py-1.5 text-[11px] font-black transition-all ${
+            className={`min-h-11 rounded-full border px-2 py-1.5 text-[12px] font-black transition-all ${
               quickFilter === filter.id
                 ? 'border-[#2f6fec] bg-[#eef4ff] text-[#2f6fec]'
                 : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
@@ -343,6 +302,29 @@ export default function RecipePage() {
           </button>
           {showAdvancedFilters ? (
             <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="col-span-2 grid grid-cols-3 gap-2">
+                {visibleCategories.map((category) => {
+                  const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
+                  const active = quickFilterForCategory
+                    ? quickFilter === quickFilterForCategory
+                    : quickFilter === 'all' && selectedCategory === category
+                  const labelLines = getDisplayCategoryLabelLines(category)
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => handleDisplayCategoryClick(category)}
+                      className={`flex min-h-[58px] flex-col items-center justify-center rounded-[18px] border px-2 py-2 text-center text-[12px] font-black leading-[1.15] ${
+                        active
+                          ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                          : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                      }`}
+                    >
+                      {labelLines.map((line) => <span key={line}>{line}</span>)}
+                    </button>
+                  )
+                })}
+              </div>
               <FilterSelect
                 label="난이도"
                 value={difficultyFilter}
@@ -469,7 +451,7 @@ export default function RecipePage() {
                 recipe.matchedIngredients.length,
                 curated?.trustLabel,
               )
-              const beginnerVerified = recipe.publicationEvidence?.reviewedForBeginner === true
+              const beginnerVerified = recipe.isTestFixture !== true && recipe.publicationEvidence?.reviewedForBeginner === true
               const recommendationReason = 'recommendationReason' in recipe && typeof recipe.recommendationReason === 'string'
                 ? recipe.recommendationReason
                 : readyLabel.text
@@ -522,7 +504,7 @@ export default function RecipePage() {
                         </button>
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#7d6d5f]">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] font-bold text-[#7d6d5f]">
                         <span className="inline-flex items-center gap-1">
                           <Clock3 size={12} />
                           {typeof minutes === 'number' ? `${minutes}분` : '시간 미표시'}
@@ -531,9 +513,9 @@ export default function RecipePage() {
                           <Users size={12} />
                           {typeof servings === 'number' ? `${servings}인분` : '인분 미표시'}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[#d94d19]">
-                          <Star size={12} className="fill-[#f0a51c] text-[#f0a51c]" />
-                          {recipe.matchRate}% ({recipe.totalRecipeIngredients})
+                        <span className="inline-flex items-center gap-1 text-[#3d7b38]">
+                          <PackageCheck size={12} />
+                          냉장고 재료 {recipe.matchedIngredients.length}/{recipe.totalRecipeIngredients}
                         </span>
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black ${readyLabel.tone}`}>
                           <ShoppingBasket size={10} />
@@ -543,6 +525,11 @@ export default function RecipePage() {
                           <span className="inline-flex items-center gap-1 rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-black text-[#2f6fec]">
                             <BadgeCheck size={10} />
                             초보 검수
+                          </span>
+                        ) : null}
+                        {recipe.isTestFixture ? (
+                          <span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-black text-[#2f6fec]">
+                            기술 E2E
                           </span>
                         ) : null}
                         {favorite ? (
@@ -565,6 +552,17 @@ export default function RecipePage() {
             })}
           </div>
         )}
+      </section>
+
+      <section className="px-5 pt-5">
+        <div className="grid grid-cols-2 gap-2 rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] p-3">
+          <Link href="/meal-plan" className="flex min-h-11 items-center justify-center rounded-[13px] text-center text-[12px] font-black text-[#4b3929]">
+            주간 식단
+          </Link>
+          <Link href="/recipe/import" className="flex min-h-11 items-center justify-center rounded-[13px] text-center text-[12px] font-black text-[#4b3929]">
+            레시피 가져오기
+          </Link>
+        </div>
       </section>
 
       <section className="mt-5 flex items-center justify-center gap-2 px-5">

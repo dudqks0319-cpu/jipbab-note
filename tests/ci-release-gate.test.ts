@@ -44,9 +44,19 @@ test("GitHub release workflow runs code gates and keeps goal status informationa
   assert.doesNotMatch(workflowSource, /uses: actions\/setup-node@v/);
   assert.match(workflowSource, /pnpm install --frozen-lockfile/);
   assert.match(workflowSource, /pnpm test/);
+  assert.match(workflowSource, /pnpm test:integration/);
+  assert.match(workflowSource, /pnpm test:content/);
   assert.match(workflowSource, /pnpm build/);
+  assert.match(workflowSource, /pnpm capture:phase6-e2e-negative/);
+  assert.match(workflowSource, /pnpm capture:phase6-e2e-happy/);
   assert.match(workflowSource, /pnpm release:ci-static-check/);
-  assert.match(workflowSource, /pnpm release:goal-check \|\| true/);
+  assert.match(workflowSource, /pnpm release:security-check/);
+  assert.match(workflowSource, /pnpm release:goal-report/);
+  assert.match(workflowSource, /integration\/\*\*/);
+  assert.equal(
+    packageJson.scripts["release:candidate-gate"],
+    "node scripts/verify-goal-completion.mjs",
+  );
   assert.equal(
     packageJson.scripts["release:security-check"],
     "node scripts/check-release-security.mjs",

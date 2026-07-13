@@ -2,14 +2,12 @@
 import type { CuratedRecipe } from "@/lib/curated-recipes";
 import type { RecipeWithMatch } from "@/types";
 
-export type RecipeQuickFilter = "all" | "ready" | "one-more" | "beginner" | "quick" | "no-fire" | "microwave";
+export type RecipeQuickFilter = "all" | "ready" | "one-more" | "beginner" | "quick" | "few-ingredients" | "no-fire" | "microwave";
 
 export const RECIPE_QUICK_FILTERS: Array<{ id: RecipeQuickFilter; label: string }> = [
-  { id: "all", label: "추천" },
-  { id: "ready", label: "바로 가능" },
-  { id: "one-more", label: "1개만 사면" },
-  { id: "no-fire", label: "불 없이" },
-  { id: "microwave", label: "전자레인지" },
+  { id: "quick", label: "10분 이내" },
+  { id: "ready", label: "지금 바로 가능" },
+  { id: "few-ingredients", label: "재료 5개 이하" },
 ];
 
 export function getReadinessBadge(
@@ -54,6 +52,9 @@ export function matchesRecipeQuickFilter(
       (typeof recipe.totalMinutes === "number" && recipe.totalMinutes <= 10) ||
       (typeof curated?.cookingTime === "number" && curated.cookingTime <= 10)
     );
+  }
+  if (quickFilter === "few-ingredients") {
+    return recipe.totalRecipeIngredients <= 5;
   }
   if (quickFilter === "no-fire") {
     return recipe.noFire === true || curated?.noFire === true;

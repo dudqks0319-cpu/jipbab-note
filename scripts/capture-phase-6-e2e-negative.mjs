@@ -11,20 +11,15 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { resolveChromeExecutable } from "./lib/chrome-path.mjs";
 
 const requestedUrl = process.env.PHASE6_E2E_URL?.trim() || null;
 const port = Number(process.env.PHASE6_E2E_PORT ?? 4328);
 const origin = requestedUrl ? new URL(requestedUrl).origin : `http://127.0.0.1:${port}`;
-const chromePath =
-  process.env.CHROME_PATH ??
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const chromePath = resolveChromeExecutable();
 const evidenceDir = path.resolve("output/ui-evidence");
 const screenshotPath = path.join(evidenceDir, "phase6-e2e-guest-negative-390.png");
-const fullHappyPathStatus = "blocked_no_publication_approved_staging_fixture";
-
-if (!existsSync(chromePath)) {
-  throw new Error(`Chrome not found: ${chromePath}`);
-}
+const fullHappyPathStatus = "technical_fixture_available_staging_database_pending";
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 let server = null;
@@ -33,7 +28,7 @@ let serverOutput = "";
 if (!requestedUrl) {
   server = spawn(
     "pnpm",
-    ["exec", "next", "dev", "--webpack", "--hostname", "127.0.0.1", "--port", String(port)],
+    ["exec", "next", "start", "--hostname", "127.0.0.1", "--port", String(port)],
     {
       cwd: process.cwd(),
       env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
@@ -195,12 +190,10 @@ async function navigate(client, url) {
 }
 
 const bodyIncludes = `(text) => document.body?.innerText.includes(text) ?? false`;
-const clickButton = `(label) => {
-  const button = [...document.querySelectorAll('button')].find(
-    (candidate) => candidate.textContent?.trim() === label,
-  );
-  if (!button) return false;
-  button.click();
+const clickTestId = `(testId) => {
+  const target = document.querySelector('[data-testid="' + testId + '"]');
+  if (!(target instanceof HTMLElement)) return false;
+  target.click();
   return true;
 }`;
 const apiResources = `() => performance.getEntriesByType('resource')
@@ -236,10 +229,10 @@ try {
   await waitForBrowserCondition(client, "fresh guest starter", bodyIncludes, ["있는 재료만 골라주세요"]);
   checks.push("fresh_guest_starter_visible");
 
-  assert.equal(await evaluate(client, clickButton, ["계란"]), true);
-  assert.equal(await evaluate(client, clickButton, ["두부"]), true);
+  assert.equal(await evaluate(client, clickTestId, ["starter-ingredient-계란"]), true);
+  assert.equal(await evaluate(client, clickTestId, ["starter-ingredient-두부"]), true);
   await waitForBrowserCondition(client, "two selected ingredients", bodyIncludes, ["2개 담고 추천 보기"]);
-  assert.equal(await evaluate(client, clickButton, ["2개 담고 추천 보기"]), true);
+  assert.equal(await evaluate(client, clickTestId, ["starter-submit"]), true);
   await waitForBrowserCondition(client, "two ingredients persisted", bodyIncludes, ["보관 2개"]);
   await waitForBrowserCondition(
     client,

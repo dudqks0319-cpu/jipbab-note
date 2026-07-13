@@ -14,6 +14,7 @@ import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
 import { getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
+import { trackProductAnalyticsEvent } from "@/lib/product-analytics";
 
 type RecipeShoppingAssistantProps = {
   recipeId: string;
@@ -182,6 +183,7 @@ export default function RecipeShoppingAssistant({
       imageUrl: item.imageUrl,
       memo: [item.memo, `${recipeName} 조리 후 소진`].filter(Boolean).join(" · ") || null,
     })));
+    setStatusMessage(`사용한 재료 ${matchedInventoryItems.length}개를 소진 처리했어요.`);
   };
 
   useEffect(() => {
@@ -230,6 +232,11 @@ export default function RecipeShoppingAssistant({
       const targetLabel = activeScope === "family" ? "가족 장보기" : "내 장보기";
       if (result.addedCount > 0) {
         setStatusMessage(`${targetLabel}에 ${result.addedCount}개를 추가했어요.`);
+        trackProductAnalyticsEvent("missing_ingredient_added", {
+          recipeId,
+          missingCount: result.addedCount,
+          scope: activeScope,
+        });
       } else if (result.skippedDuplicates.length > 0) {
         setStatusMessage("이미 장보기에 있는 재료는 다시 추가하지 않았어요.");
       } else {
@@ -344,6 +351,7 @@ export default function RecipeShoppingAssistant({
                     type="button"
                     onClick={() => toggleMissingIngredient(ingredient)}
                     disabled={alreadyInShopping}
+                    data-testid={`missing-ingredient-${ingredient}`}
                     className={`min-h-11 max-w-full rounded-[14px] border px-3 py-2 text-left text-[12px] font-black ${
                       checked
                         ? "border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]"
@@ -366,6 +374,7 @@ export default function RecipeShoppingAssistant({
             </div>
             <button
               type="button"
+              data-testid="missing-ingredients-add"
               onClick={() => {
                 void addSelectedMissingIngredients();
               }}
@@ -447,6 +456,7 @@ export default function RecipeShoppingAssistant({
             </p>
             <button
               type="button"
+              data-testid="consumed-ingredients-apply"
               onClick={() => {
                 void removeCookedIngredients();
               }}

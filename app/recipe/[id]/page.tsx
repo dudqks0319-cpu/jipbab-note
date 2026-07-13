@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import {
   BookOpenText,
@@ -18,6 +19,7 @@ import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeImage from "@/components/recipe/RecipeImage";
 import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
+import RecipeIngredientList from "@/components/recipe/RecipeIngredientList";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { recipeApiV1DetailToRecord } from "@/lib/recipe-api-v1-client";
@@ -25,6 +27,10 @@ import { getPublicRecipeDetailV1 } from "@/lib/recipe-api-v1-repository";
 import { isBeginnerRecipeGeneratedImage } from "@/lib/recipe-images";
 import { isRecipeDetailPublicationApproved } from "@/lib/recipe-publication";
 import type { RecipeDetailRecord } from "@/types";
+import {
+  getPhase6E2EFixtureDetail,
+  shouldUsePhase6E2EFixture,
+} from "@/lib/phase-6-e2e-fixture";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -64,7 +70,13 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const { id } = await params;
   if (!id) notFound();
 
-  const recipe = await fetchRecipeDetail(id);
+  const requestHeaders = await headers();
+  const fixtureDetail = shouldUsePhase6E2EFixture(requestHeaders)
+    ? getPhase6E2EFixtureDetail(id)
+    : null;
+  const recipe = fixtureDetail
+    ? recipeApiV1DetailToRecord(fixtureDetail)
+    : await fetchRecipeDetail(id);
   if (!recipe || !isRecipeDetailPublicationApproved(recipe)) {
     return (
       <div className="min-h-full bg-[#fbf6ee] px-5 py-10">
@@ -177,27 +189,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </section>
       ) : null}
 
-      <section id="ingredients" className="scroll-mt-24 px-5 py-8">
-        <div className="border-b-2 border-[#2d2d2d] pb-3">
-          <h2 className="text-[26px] font-black text-[#242424]">재료</h2>
-          <p className="mt-1 text-sm font-semibold text-[#7a7168]">{recipe.servings}인분 기준</p>
-        </div>
-        <ul className="divide-y divide-[#ededed]">
-          {ingredientDetails.map((ingredient) => (
-            <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-4">
-              <div className="min-w-0">
-                <p className="break-keep text-[18px] font-bold leading-7 text-[#303030]">
-                  {ingredient.name}
-                  {ingredient.required === false ? <span className="ml-2 text-xs text-[#8d8177]">선택</span> : null}
-                </p>
-                {ingredient.prepNote ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p> : null}
-                {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
-              </div>
-              <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">{ingredient.display}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <RecipeIngredientList
+        recipeId={recipe.id}
+        baseServings={recipe.servings}
+        ingredients={ingredientDetails}
+        isTestFixture={recipe.isTestFixture}
+      />
 
       <RecipeShoppingAssistant
         recipeId={recipe.id}
@@ -235,9 +232,11 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      <div id="recipe-qna" className="scroll-mt-24">
-        <RecipeComments recipeId={recipe.id} recipeName={recipe.name} />
-      </div>
+      {!recipe.isTestFixture ? (
+        <div id="recipe-qna" className="scroll-mt-24">
+          <RecipeComments recipeId={recipe.id} recipeName={recipe.name} />
+        </div>
+      ) : null}
 
       <section className="px-5 pb-24 pt-6">
         <div className="rounded-2xl border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">

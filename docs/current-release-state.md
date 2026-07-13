@@ -1,6 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-13 KST
+Updated: 2026-07-14 KST
+
+## 2026-07-14 Phase 6 통합 Release Candidate
+
+- 공식 통합 기준선을 `agent/phase6-observability-analytics@169e013b43d06124686f2121601a270d1e7df919`로 고정하고 `integration/phase6-release-candidate` 브랜치를 생성했다. 기존 작업 브랜치를 통째로 병합하지 않고 happy path, API fixture, 핵심 UX, 계란·두부 분류를 기능 단위로 가져왔다.
+- 세 API v1 라우트는 `fixture session → 일반 요청 rate limit → repository → 공통 envelope → structured telemetry → 필요 시 비동기 alert` 경계를 유지한다. fixture bootstrap은 staging/test에서만 짧은 HttpOnly·SameSite 세션을 발급하며 Production과 잘못된 token에는 404로 응답한다. CDP 전역 extra header는 제거했다.
+- E2E는 `next build` 결과를 `next start`로 실행한다. fail-closed 경로 12개와 fixture 성공 경로 19개가 통과했고, 추천 200 → 상세 → 3인분 환산 → 장보기 중복 병합 → 조리 → 30/90초 타이머 일시정지·복원 → 완료 → 피드백 → 재료 소진까지 확인했다. 기술 fixture는 `isTestFixture=true`, `humanReviewCounted=false`이며 실제 사람 검수 0/20을 바꾸지 않는다.
+- network·console·결과 artifact는 token, cookie, authorization, email, query string, 절대 로컬 경로를 저장 전에 redaction한다. 로컬 증거는 `output/ui-evidence/`에 생성되며 Git에 포함하지 않는다.
+- Starter·홈·레시피 목록·상세·장보기·조리 UX를 통합했다. 기본 레시피 필터는 `10분 이내`, `지금 바로 가능`, `재료 5개 이하`로 단순화했고 인분 계량, 타이머 pause/resume, 안정적인 `data-testid`, 장보기 사용자 목록 우선, 플랫폼 중립 문구를 반영했다. 이유식·유아식 일반 공개 진입점은 포함하지 않았다.
+- 계란과 두부를 각각 `계란·난류`, `콩·두부`로 교정하는 additive migration `20260711170000_reclassify_egg_tofu_catalog.sql`과 rollback을 추가했다. migration history reconciliation, 복원 가능한 backup, staging apply→rollback→reapply 전에는 Supabase Production에 적용하지 않는다.
+- 제품 화면 이벤트는 기존 33개 개인정보 보호 계약으로 정규화했다. 기본 비활성, 동의 필요, transport 필요 조건을 유지하고 기술 fixture 실행은 로컬 marker로 실제 분석 집계에서 제외한다. 분석 vendor와 Production 수집은 활성화하지 않았다.
+- 검증: `npm test` 432/432, integration pass, content pass(176 candidates), Production build 40/40 routes, negative E2E 12/12, happy E2E 19/19, CI-safe release gate 19/19, security gate 4/4, dependency vulnerability 0건, `git diff --check` pass.
+- 현재 목표 판정은 13 PASS / 3 BLOCKED / 3 MISSING이다. 외부 모니터링 실제 수신, 현재 후보 iOS/Android 실기기 QA, Play internal track, 핵심 20개 실제 조리·사람 검수, App Store Connect 당일 재확인, 360/390/430px 최신 화면 증거는 완료로 주장하지 않는다. Production alias, Vercel deployment, Supabase remote DB, 스토어 제출은 변경하지 않았다.
 
 ## 2026-07-13 Phase 5 사람 테스트 패킷·콘텐츠 버전 고정
 
@@ -47,7 +59,7 @@ Updated: 2026-07-13 KST
 ## 2026-07-13 Phase 6 앱 내 배포 정보 Preview
 
 - 구현 커밋 `51458b429866815cbdfea6ed136519c4e1159c7d`를 `origin/agent/phase6-observability-analytics`에 push하고, 같은 SHA의 깨끗한 `git archive`를 Vercel Preview `dpl_6Rz4X6sHq8auV8YFbhmHvjoL5FDg` (`https://jipbab-note-dh9uis8k7-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`이며 Production alias는 승격하지 않았다.
-- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260711113000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
+- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260711170000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
 - 공개 화면에는 allowlist로 정규화한 release metadata만 표시한다. raw environment, 계정, 이메일, 냉장고 재료, token, secret은 노출하지 않는다. malformed environment와 build time은 각각 `local`, `확인 불가`로 fail-closed한다.
 - 원격 build는 compile, TypeScript, 39/39 routes를 통과했다. `/`, `/settings`, `/settings/app-info`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 운영 migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`, `DEPENDENCY_NOT_READY`를 반환한다.
 - Vercel runtime log의 `deployment_sha`는 위 GitHub 구현 SHA와 정확히 일치한다. 구조화 로그에는 request ID, endpoint, status, latency, error code, deployment SHA만 있고 query, body, token, email, free text는 없다.

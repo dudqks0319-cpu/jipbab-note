@@ -212,3 +212,16 @@ test("fallback partner links cover every shopping catalog category", () => {
     );
   }
 });
+
+test("corrected egg and tofu categories are included in additive DB partner seeds", () => {
+  const checker = readFileSync(new URL("../scripts/check-partner-links.mjs", import.meta.url), "utf8");
+  const migration = readFileSync(
+    new URL("../supabase/migrations/20260711170000_reclassify_egg_tofu_catalog.sql", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(checker, /20260711170000_reclassify_egg_tofu_catalog\.sql/);
+  assert.match(migration, /'category', null, '계란·난류'/);
+  assert.match(migration, /'category', null, '콩·두부'/);
+  assert.match(migration, /on conflict \(kind, normalized_key\) do nothing/);
+});

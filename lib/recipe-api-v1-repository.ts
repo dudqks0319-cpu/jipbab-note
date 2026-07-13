@@ -49,6 +49,7 @@ export interface RecipeV1Card {
   recommendationReason: string;
   publishedAt: string;
   publicationEvidence: RecipePublicationEvidence;
+  isTestFixture?: boolean;
 }
 
 export interface PublicRecipeListResult {
@@ -524,6 +525,7 @@ export type RecipeV1Detail = {
   source: RecipeV1SourceRow;
   publishedAt: string;
   publicationEvidence: RecipePublicationEvidence;
+  isTestFixture?: boolean;
 };
 
 function toolNames(value: unknown): string[] {

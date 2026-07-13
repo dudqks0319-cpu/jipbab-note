@@ -7,11 +7,12 @@ import { useMemo, useState } from 'react'
 
 import { buildHomeHref } from '@/lib/home-actions'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
+import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 
 type StarterActionCardProps = {
   demoMode?: boolean
   hasIngredients: boolean
-  onAddStarterIngredients: (selectedNames: string[]) => void
+  onAddStarterIngredients: (selectedNames: string[]) => Promise<void> | void
   starterIngredientNames: string[]
   storageCounts?: {
     cold: number
@@ -49,6 +50,15 @@ export default function StarterActionCard({
         ? prev.filter((item) => item !== name)
         : [...prev, name]
     ))
+    trackProductAnalyticsEvent('starter_ingredient_selected', {
+      ingredientCount: selectedNames.includes(name) ? selectedNames.length - 1 : selectedNames.length + 1,
+    })
+  }
+
+  const submitStarterIngredients = async () => {
+    trackProductAnalyticsEvent('recommendation_requested', { selectedCount: selectedNames.length })
+    await onAddStarterIngredients(selectedNames)
+    trackProductAnalyticsEvent('starter_ingredients_saved', { selectedCount: selectedNames.length })
   }
 
   return (
@@ -67,11 +77,32 @@ export default function StarterActionCard({
 
       {!hasIngredients ? (
         <>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {visibleStarterNames.map((name) => {
+              const selected = selectedNameSet.has(name)
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  data-testid={`starter-ingredient-${name}`}
+                  onClick={() => toggleIngredient(name)}
+                  aria-pressed={selected}
+                  className={`min-h-11 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
+                    selected
+                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                      : 'border-[#eadcc9] bg-white text-[#4b3929]'
+                  }`}
+                >
+                  {name}
+                </button>
+              )
+            })}
+          </div>
           <div
             data-testid="starter-fridge-preview"
             className="mt-4 overflow-hidden rounded-[18px] border border-[#eadcc9] bg-white shadow-[0_10px_22px_rgba(76,51,28,0.08)]"
           >
-            <div className="relative h-64 overflow-hidden bg-[#fff7ed]">
+            <div className="relative h-36 overflow-hidden bg-[#fff7ed]">
               <Image
                 src={FRIDGE_IMAGE_SRC}
                 alt=""
@@ -90,14 +121,14 @@ export default function StarterActionCard({
                     {hasSelection ? `${selectedNames.length}개 선택` : '미리보기'}
                   </p>
                 </div>
-                <div className="mx-auto mt-9 grid w-52 grid-cols-2 gap-2">
+                <div className="mx-auto mt-3 grid w-52 grid-cols-2 gap-2">
                   {previewIngredients.map((item) => (
                     <span
                       key={item.name}
                       className="min-w-0 rounded-[12px] border border-white/90 bg-white/92 px-2 py-1.5 text-center text-[11px] font-black text-[#4b3929] shadow-[0_7px_14px_rgba(47,33,23,0.12)] backdrop-blur-[2px]"
                     >
                       <span className="block truncate">{item.name}</span>
-                      <span className="mt-0.5 block text-[8px] font-black text-[#9b8979]">{item.storageType}</span>
+                      <span className="mt-0.5 block text-[12px] font-black text-[#9b8979]">{item.storageType}</span>
                     </span>
                   ))}
                 </div>
@@ -105,26 +136,6 @@ export default function StarterActionCard({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {visibleStarterNames.map((name) => {
-              const selected = selectedNameSet.has(name)
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => toggleIngredient(name)}
-                  aria-pressed={selected}
-                  className={`min-h-11 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
-                    selected
-                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                      : 'border-[#eadcc9] bg-white text-[#4b3929]'
-                  }`}
-                >
-                  {name}
-                </button>
-              )
-            })}
-          </div>
         </>
       ) : null}
 
@@ -140,7 +151,8 @@ export default function StarterActionCard({
         ) : (
           <button
             type="button"
-            onClick={() => onAddStarterIngredients(selectedNames)}
+            data-testid="starter-submit"
+            onClick={() => void submitStarterIngredients()}
             disabled={!hasSelection}
             className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] px-4 text-[15px] font-black transition-colors ${
               hasSelection

@@ -4,6 +4,8 @@ export const INGREDIENT_CATEGORIES = [
   "과일",
   "육류",
   "수산물",
+  "계란·난류",
+  "콩·두부",
   "유제품",
   "냉동식품",
   "조미료",
@@ -450,6 +452,7 @@ export interface RecipeRecord {
   releaseTier?: RecipeReleaseTier | null;
   publishStatus?: RecipePublishStatus | null;
   publicationEvidence?: RecipePublicationEvidence | null;
+  isTestFixture?: boolean;
 }
 
 export interface RecipeListResponse {

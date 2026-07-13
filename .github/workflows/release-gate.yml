@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - main
+      - integration/**
+      - release/**
   pull_request:
     branches:
       - main
+      - integration/**
   workflow_dispatch:
 
 permissions:
@@ -23,7 +26,7 @@ jobs:
   release-gate:
     name: Code and Static Release Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
@@ -59,11 +62,36 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Integration tests
+        run: pnpm test:integration
+
+      - name: Content tests
+        run: pnpm test:content
+
       - name: Build
         run: pnpm build
+
+      - name: Phase 6 browser negative path
+        run: pnpm capture:phase6-e2e-negative
+
+      - name: Phase 6 browser happy path
+        run: pnpm capture:phase6-e2e-happy
+
+      - name: Upload Phase 6 browser evidence
+        if: always()
+        # actions/upload-artifact v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: phase6-browser-evidence-${{ github.sha }}
+          path: output/ui-evidence/
+          if-no-files-found: warn
+          retention-days: ${{ github.event_name == 'workflow_dispatch' && 90 || 14 }}
 
       - name: CI static release gates
         run: pnpm release:ci-static-check
 
+      - name: Security release gates
+        run: pnpm release:security-check
+
       - name: Goal completion status
-        run: pnpm release:goal-check || true
+        run: pnpm release:goal-report

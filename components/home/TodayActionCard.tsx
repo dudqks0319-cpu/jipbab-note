@@ -1,10 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react'
+import { useEffect } from 'react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { buildHomeHref, getTodayActionPrimaryCta, getTodayActionSecondaryCta } from '@/lib/home-actions'
 import { getEssentialMissingIngredients } from '@/lib/matching'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 
 export type TodayActionRecipe = {
   id: string
@@ -31,6 +35,15 @@ export default function TodayActionCard({
   isLoading,
   recipe,
 }: TodayActionCardProps) {
+  useEffect(() => {
+    if (!recipe) return
+    trackProductAnalyticsEvent('recommendation_result_viewed', {
+      recipeId: recipe.id,
+      missingCount: getEssentialMissingIngredients(recipe.missingIngredients).length,
+      resultCount: 1,
+    })
+  }, [recipe])
+
   if (isLoading && !recipe) {
     return (
       <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] p-4 shadow-[0_14px_32px_rgba(76,51,28,0.08)]" aria-label="오늘 추천 불러오는 중">
@@ -151,12 +164,14 @@ export default function TodayActionCard({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={primaryCta.href}
+            data-testid="today-primary-cta"
             className="flex min-h-12 min-w-0 items-center justify-center rounded-[15px] bg-[#ea5a1f] px-2 text-center text-[14px] font-black leading-4 text-white shadow-[0_10px_20px_rgba(234,90,31,0.22)]"
           >
             {primaryCta.label}
           </Link>
           <Link
             href={secondaryCta.href}
+            data-testid="today-secondary-cta"
             className="flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-[15px] border border-white/15 bg-white/10 px-2 text-center text-[12px] font-black leading-4 text-[#ffe7c9]"
           >
             {missingCount === 1 ? (

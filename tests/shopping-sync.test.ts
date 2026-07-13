@@ -70,7 +70,8 @@ test("shopping page exposes category catalog adds and purchase links", () => {
   assert.match(pageSource, /SHOPPING_CATALOG_GROUPS/);
   assert.match(pageSource, /id: 'all'/);
   assert.match(pageSource, /getIngredientCatalog/);
-  assert.match(pageSource, /로켓프레시식 카테고리/);
+  assert.match(pageSource, /재료 찾아 담기/);
+  assert.doesNotMatch(pageSource, /로켓프레시식 카테고리/);
   assert.match(pageSource, /getShoppingCatalogSubcategoryItems/);
   assert.match(pageSource, /setSelectedCatalogSubcategoryId\('all'\)/);
   assert.match(pageSource, /상추\/쌈채소/);
@@ -80,6 +81,7 @@ test("shopping page exposes category catalog adds and purchase links", () => {
   assert.match(pageSource, /duplicateMode: 'merge'/);
   assert.match(pageSource, /getCoupangPurchaseLink\(\{ name: item\.name, category: item\.category \}/);
   assert.match(pageSource, /쿠팡 링크/);
+  assert.match(pageSource, /catalogVisibleCount/);
 });
 
 test("recipe shopping assistant supports scoped and selective missing ingredient adds", () => {

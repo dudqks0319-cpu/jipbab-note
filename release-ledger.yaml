@@ -20,6 +20,19 @@ candidate:
   dirty_state: "phase6_performance_preview_deployment_record_committed"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
+integration_candidate:
+  branch: "integration/phase6-release-candidate"
+  base_branch: "agent/phase6-observability-analytics"
+  base_git_sha: "169e013b43d06124686f2121601a270d1e7df919"
+  integration_status: "local_verified_not_deployed"
+  production_promotion_status: "blocked"
+  fixture_session: "staging_only_http_only_same_site_production_404"
+  fixture_human_review_counted: false
+  supabase_remote_changes: false
+  vercel_remote_changes: false
+  store_submission_changes: false
+  evidence: "docs/phase-6-release-candidate-integration.md, output/ui-evidence"
+
 phase0_baseline:
   audited_at: "2026-07-10 KST"
   canonical_repo_candidate: "https://github.com/dudqks0319-cpu/jipbab-note"
@@ -359,6 +372,10 @@ migration_history:
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: false
   phase6_security_definer_migration_recorded_remote: false
+  phase6_egg_tofu_reclassification_recorded_remote: false
+  latest_local_migration: "20260711170000_reclassify_egg_tofu_catalog.sql"
+  latest_local_migration_rollback: "supabase/rollbacks/20260711170000_reclassify_egg_tofu_catalog.sql"
+  latest_local_migration_status: "not_applied_requires_history_reconciliation_backup_and_staging"
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
