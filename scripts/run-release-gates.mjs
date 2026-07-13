@@ -23,6 +23,11 @@ const checks = [
     args: ["scripts/check-phase-6-e2e-contract.mjs"],
   },
   {
+    name: "phase6-performance-budget",
+    command: "node",
+    args: ["scripts/check-phase-6-performance-budget.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
