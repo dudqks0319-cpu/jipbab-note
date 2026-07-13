@@ -33,6 +33,11 @@ const checks = [
     args: ["scripts/check-phase-6-observability.mjs"],
   },
   {
+    name: "phase6-analytics-dashboard",
+    command: "node",
+    args: ["scripts/check-phase-6-analytics-dashboard.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],

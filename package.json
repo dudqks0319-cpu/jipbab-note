@@ -59,6 +59,8 @@
     "check:phase6-performance": "node scripts/check-phase-6-performance-budget.mjs",
     "capture:phase6-performance": "node scripts/capture-phase-6-performance.mjs",
     "check:phase6-observability": "node scripts/check-phase-6-observability.mjs",
+    "check:phase6-analytics-dashboard": "node scripts/check-phase-6-analytics-dashboard.mjs",
+    "capture:phase6-analytics-dashboard": "node --experimental-strip-types scripts/generate-phase-6-analytics-dashboard.mjs",
     "release:ci-static-check": "node scripts/run-ci-release-gates.mjs",
     "release:external-status": "node scripts/check-external-release-status.mjs",
     "release:appstore-external-status": "node scripts/check-appstore-external-status.mjs",

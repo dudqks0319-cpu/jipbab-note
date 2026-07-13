@@ -132,6 +132,9 @@ const MEASUREMENT_KEYS = new Set<keyof ProductAnalyticsMeasurements>([
   "failure_code",
 ]);
 
+const EVENT_KEYS = new Set(["schema_version", "event", "timestamp", "properties"]);
+const PROPERTY_KEYS = new Set<string>([...CONTEXT_KEYS, ...MEASUREMENT_KEYS]);
+
 const OPAQUE_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DEPLOYMENT_SHA_PATTERN = /^(?:unknown|[a-f0-9]{7,64})$/i;
@@ -241,6 +244,74 @@ export function buildProductAnalyticsEvent(
       ...measurements,
     },
   };
+}
+
+export function parseProductAnalyticsEvent(value: unknown): ProductAnalyticsEvent {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("analytics_event_invalid");
+  }
+
+  const record = value as Record<string, unknown>;
+  assertAllowedKeys(record, EVENT_KEYS, "event");
+  if (record.schema_version !== 1) {
+    throw new Error("schema_version_invalid");
+  }
+  if (
+    typeof record.event !== "string" ||
+    !(PRODUCT_ANALYTICS_EVENT_NAMES as readonly string[]).includes(record.event)
+  ) {
+    throw new Error("event_not_allowed");
+  }
+  if (typeof record.timestamp !== "string") {
+    throw new Error("timestamp_invalid");
+  }
+  const parsedTimestamp = new Date(record.timestamp);
+  if (
+    !Number.isFinite(parsedTimestamp.getTime()) ||
+    parsedTimestamp.toISOString() !== record.timestamp
+  ) {
+    throw new Error("timestamp_invalid");
+  }
+  if (
+    typeof record.properties !== "object" ||
+    record.properties === null ||
+    Array.isArray(record.properties)
+  ) {
+    throw new Error("properties_invalid");
+  }
+
+  const properties = record.properties as Record<string, unknown>;
+  assertAllowedKeys(properties, PROPERTY_KEYS, "properties");
+  for (const key of [
+    "anonymous_session_id",
+    "user_status",
+    "screen",
+    "app_version",
+    "platform",
+    "deployment_sha",
+  ] as const) {
+    if (typeof properties[key] !== "string") {
+      throw new Error(`${key}_invalid`);
+    }
+  }
+
+  const context = Object.fromEntries(
+    [...CONTEXT_KEYS]
+      .filter((key) => properties[key] !== undefined)
+      .map((key) => [key, properties[key]]),
+  ) as ProductAnalyticsContext;
+  const measurements = Object.fromEntries(
+    [...MEASUREMENT_KEYS]
+      .filter((key) => properties[key] !== undefined)
+      .map((key) => [key, properties[key]]),
+  ) as ProductAnalyticsMeasurements;
+
+  return buildProductAnalyticsEvent(
+    record.event as ProductAnalyticsEventName,
+    context,
+    measurements,
+    () => parsedTimestamp,
+  );
 }
 
 type EmitProductAnalyticsOptions = {
