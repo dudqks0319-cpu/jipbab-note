@@ -83,6 +83,27 @@ test("goal completion check runs the executable Supabase release check", () => {
   assert.doesNotMatch(source, /local Supabase schema\/RLS contract evidence in release ledger/);
 });
 
+test("goal completion check requires migration reconciliation, backup, and live unblock evidence", () => {
+  assert.match(source, /scripts\/check-supabase-live-unblock\.mjs/);
+  assert.match(source, /failureStatus: "blocked"/);
+  assert.match(source, /운영 DB migration·backup·staging·rollback/);
+  assert.match(source, /SUPABASE_MIGRATION_HISTORY_RECONCILED=1/);
+  assert.match(source, /SUPABASE_BACKUP_VERIFIED=1/);
+});
+
+test("goal completion check requires populated release-candidate performance evidence", () => {
+  assert.match(source, /docs\/phase-6-performance-baseline\.json/);
+  assert.match(source, /measurementProfile !== "release-candidate"/);
+  assert.match(source, /deploymentSha/);
+  assert.match(source, /baseline\.runCount/);
+  assert.match(source, /published-home/);
+  assert.match(source, /published-recipe-list-12/);
+  assert.match(source, /image-recipe-detail-serving/);
+  assert.match(source, /shopping-list-20/);
+  assert.match(source, /timer-running/);
+  assert.match(source, /출시 후보 실제 데이터 성능 baseline/);
+});
+
 test("goal completion check treats live Supabase and Storage blockers as blockers", () => {
   assert.match(source, /운영 Supabase live\/read\/write\/RLS/);
   assert.match(source, /Supabase live current status: confirmed/);

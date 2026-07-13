@@ -9,7 +9,27 @@ const ledgerPath = path.join(cwd, "docs/current-release-state.md");
 const realDeviceQaPath = path.join(cwd, "docs/real-device-qa.md");
 const storeConsolePath = path.join(cwd, "docs/store-console-confirmation.md");
 const monitoringConfirmationPath = path.join(cwd, "docs/monitoring-channel-confirmation.md");
+const performanceBaselinePath = path.join(cwd, "docs/phase-6-performance-baseline.json");
 const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+
+const requiredReleaseCandidatePerformanceRoutes = [
+  "published-home",
+  "published-recipe-list-12",
+  "image-recipe-detail-serving",
+  "shopping-list-20",
+  "cooking-mode",
+  "timer-running",
+  "family-fridge",
+  "login-callback",
+  "app-info",
+];
+const requiredPerformanceRegressionMetrics = [
+  "totalTransferBytes",
+  "jsTransferBytes",
+  "imageTransferBytes",
+  "requestCount",
+  "totalLongTaskMilliseconds",
+];
 
 function readIosProjectBuildNumber() {
   if (!existsSync(iosProjectPath)) {
@@ -133,6 +153,28 @@ function readOptional(filePath) {
   return existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
 }
 
+function readOptionalJson(filePath) {
+  if (!existsSync(filePath)) return null;
+  try {
+    return JSON.parse(readFileSync(filePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function hasReleaseCandidatePerformanceEvidence(baseline) {
+  if (!baseline || baseline.measurementProfile !== "release-candidate") return false;
+  if (!/^[a-f0-9]{40}$/i.test(baseline.deploymentSha ?? "")) return false;
+  if (!Number.isInteger(baseline.runCount) || baseline.runCount < 5) return false;
+  if (!Number.isFinite(baseline.interactionP75Milliseconds)) return false;
+  if (!Number.isFinite(baseline.searchInputP75Milliseconds)) return false;
+
+  return requiredReleaseCandidatePerformanceRoutes.every((routeName) => {
+    const route = baseline.routes?.[routeName];
+    return requiredPerformanceRegressionMetrics.every((metric) => Number.isFinite(route?.[metric]));
+  });
+}
+
 function lineValue(source, label) {
   const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = source.match(new RegExp(`^\\s*-\\s*${escapedLabel}:\\s*(.+)$`, "m"));
@@ -162,7 +204,7 @@ function evidenceStatus(source, requiredTerms, blockedMarkers, extraEvidence = {
   return "missing";
 }
 
-function runLocalCheck(label, args) {
+function runLocalCheck(label, args, { failureStatus = "missing" } = {}) {
   const result = spawnSync(process.execPath, args, {
     cwd,
     encoding: "utf8",
@@ -181,7 +223,7 @@ function runLocalCheck(label, args) {
   }
 
   return {
-    status: "missing",
+    status: failureStatus,
     evidence: `${label} failed${firstUsefulLine ? `: ${firstUsefulLine}` : ""}`,
   };
 }
@@ -195,6 +237,7 @@ const ledger = readFileSync(ledgerPath, "utf8");
 const realDeviceQa = readOptional(realDeviceQaPath);
 const storeConsole = readOptional(storeConsolePath);
 const monitoringConfirmation = readOptional(monitoringConfirmationPath);
+const performanceBaseline = readOptionalJson(performanceBaselinePath);
 const results = [];
 const coreLoopReleaseCheck = runLocalCheck("node scripts/check-core-loop-release.mjs", [
   "scripts/check-core-loop-release.mjs",
@@ -227,6 +270,11 @@ const phase5HumanEvidenceCheck = runLocalCheck("node --experimental-strip-types 
 const monitoringDeliveryCheck = runLocalCheck("node scripts/check-phase-6-monitoring.mjs", [
   "scripts/check-phase-6-monitoring.mjs",
 ]);
+const supabaseLiveUnblockCheck = runLocalCheck(
+  "node scripts/check-supabase-live-unblock.mjs",
+  ["scripts/check-supabase-live-unblock.mjs"],
+  { failureStatus: "blocked" },
+);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
@@ -261,6 +309,22 @@ addResult(
   "Supabase 로컬 RLS/스키마 계약",
   supabaseReleaseCheck.evidence,
   "pnpm check:supabase-release 재실행",
+);
+
+addResult(
+  results,
+  supabaseLiveUnblockCheck.status,
+  "운영 DB migration·backup·staging·rollback",
+  supabaseLiveUnblockCheck.evidence,
+  "remote migration history와 live schema 차이표 승인, 복원 가능한 backup 확인 후 SUPABASE_MIGRATION_HISTORY_RECONCILED=1 SUPABASE_BACKUP_VERIFIED=1 pnpm release:supabase-live-unblock-check 실행",
+);
+
+addResult(
+  results,
+  hasReleaseCandidatePerformanceEvidence(performanceBaseline) ? "pass" : "blocked",
+  "출시 후보 실제 데이터 성능 baseline",
+  "docs/phase-6-performance-baseline.json evidence for exact deployment SHA, five runs, interaction timing, and nine populated release-candidate routes",
+  "인증 가능한 Preview에서 release-candidate 프로필을 5회 측정하고 deploymentSha·interaction/search p75와 9개 화면 회귀 지표를 baseline에 기록",
 );
 
 addResult(

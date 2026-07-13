@@ -60,6 +60,16 @@ PHASE6_PERFORMANCE_RUNS=5 \
 pnpm capture:phase6-performance
 ```
 
+출시 후보 완료 판정에는 측정 성공만으로 부족하다. 검토된 결과를 `docs/phase-6-performance-baseline.json`에 승격하고 다음 항목을 모두 기록해야 `pnpm release:candidate-gate`가 통과한다.
+
+- `measurementProfile`: `release-candidate`
+- `deploymentSha`: 측정한 Preview의 40자리 Git SHA
+- `runCount`: 5 이상
+- `interactionP75Milliseconds`, `searchInputP75Milliseconds`
+- 9개 화면별 `totalTransferBytes`, `jsTransferBytes`, `imageTransferBytes`, `requestCount`, `totalLongTaskMilliseconds`
+
+필수 화면은 `published-home`, `published-recipe-list-12`, `image-recipe-detail-serving`, `shopping-list-20`, `cooking-mode`, `timer-running`, `family-fridge`, `login-callback`, `app-info`다. 현재 baseline은 데모 3개 화면의 이전 측정값만 포함하므로 출시 후보 성능 증거는 `BLOCKED`다.
+
 ## 연계 검증
 
 - Phase 6 성능 정적 계약: 11/11
@@ -82,4 +92,5 @@ pnpm capture:phase6-performance
 - Owner `ContentQA+BeginnerTesters+FoodSafety+Legal`, due `before_any_phase5_recipe_publication`: 실제 조리와 사람 검수 증거가 0/20이다.
 - Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history, backup, rollback drill, 검수된 staging v2 fixture가 준비되지 않았다.
 - Owner `FullStackDev+QA`, due `before_phase6_completion`: 공개 승인 레시피가 없어 추천 성공부터 조리 완료까지 full happy-path E2E를 실행할 수 없다.
+- Owner `FullStackDev+SRE`, due `before_phase6_completion`: 현재 Git-linked Preview가 Vercel 인증으로 보호되어 populated release-candidate 성능 측정을 실행할 수 없다. 승인된 automation bypass 또는 측정 가능한 Preview가 필요하다.
 - Production alias는 위 차단 항목이 남아 있어 Preview로 승격하지 않았다.
