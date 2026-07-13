@@ -2,6 +2,15 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 5 사람 테스트 패킷·콘텐츠 버전 고정
+
+- 계획서의 남은 필수 누락인 핵심 20개 실제 조리·사람 검수를 현장에서 실행할 수 있도록 `docs/phase-5-human-test-packets.md`를 생성했다. 각 레시피 패킷은 현재 재료·도구·단계·불 세기·시간·완료 신호·실수·복구·보관·안전·출처와 익명 증거 체크리스트를 한곳에 고정한다.
+- 기존 사람 증거 계약은 `recipe_version`이 조리 CSV와 검수 CSV 사이에서 같은지만 확인해, 현재 레시피 내용이 바뀐 뒤에도 임의의 `v1` 증거가 통과할 수 있었다. 이제 조리 안내, 재료, 이미지, 출처, 안전 필드의 SHA-256 기반 결정적 `phase5-sha256-*` 버전을 계산하고 조리·검수 템플릿에 미리 채운다.
+- 증거 검증기는 모든 대기·완료 행이 현재 콘텐츠 버전과 같은지 확인한다. 현재 내용과 다른 버전의 실제 조리·검수 기록은 서로 같은 문자열이어도 발행 후보에서 제외한다. 증거가 입력된 CSV는 자동으로 덮어쓰지 않고 수동 재검수 대상으로 중단한다.
+- 안전한 마이그레이션은 증거가 전혀 없는 `pending` 템플릿만 현재 콘텐츠 버전으로 갱신한다. 실패·재시험 이력, 익명 코드, 실제 경로, DB UUID 등 사람이 입력한 필드는 유지한다.
+- 집중 회귀 테스트는 21/21 통과했다. 실제 조리와 초보자·식품 안전·출처·이미지 권리 검수는 여전히 각각 0/20이며, 패킷 생성이나 결정적 버전만으로 사람 증거를 승인하거나 DB에 반영하지 않는다.
+- 잔여 Phase 5 조치: Owner `Content+Food Safety+Legal`, due `before_phase5_publication` — 네 wave에서 실제 사람이 앱 화면만 보고 20개를 조리하고, 동일 콘텐츠 버전의 조리·검수 증거를 기록한다.
+
 ## 2026-07-13 연결 worktree iOS 출시 증거 복구
 
 - App Store 증거 경로 수정 후 남은 iOS 검사기를 재감사해 `check-ios-release-artifact.mjs`, `check-ios-cable-qa-evidence.mjs`, `check-ios-xcuitest-smoke-evidence.mjs`, `check-real-device-qa-evidence.mjs`도 연결 worktree의 빈 ignored 경로만 보거나 `<repo>`를 문자 그대로 처리하는 동일 계열 결함을 확인했다. 네 검사기를 공용 canonical repository resolver로 통일했으며 명시적 환경변수 override는 유지한다.

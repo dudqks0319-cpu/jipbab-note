@@ -82,6 +82,7 @@ function expectedReviewRows(audits) {
       requested_title: audit.requestedTitle,
       selected_title: audit.selectedTitle,
       recipe_id: audit.recipe.id,
+      recipe_version: audit.recipeVersion,
       review_type: reviewType,
     })),
   );
@@ -93,6 +94,7 @@ function identityMatches(record, expected, includeReviewType = false) {
     record.requested_title === expected.requested_title &&
     record.selected_title === expected.selected_title &&
     record.recipe_id === expected.recipe_id &&
+    record.recipe_version === expected.recipe_version &&
     (!includeReviewType || record.review_type === expected.review_type)
   );
 }
@@ -129,13 +131,14 @@ export function evaluatePhase5HumanEvidence({
           requested_title: audit.requestedTitle,
           selected_title: audit.selectedTitle,
           recipe_id: audit.recipe.id,
+          recipe_version: audit.recipeVersion,
         }
       : null;
     const context = expected
       ? `${expected.recipe_id}:actual_cooking:row-${index + 1}`
       : `row-${index + 1}:actual_cooking`;
     if (!expected || !identityMatches(record, expected)) {
-      fail(context, "핵심 20개 선택과 식별자가 일치하지 않습니다.", expected?.recipe_id);
+      fail(context, "핵심 20개 선택, 콘텐츠 버전 또는 식별자가 일치하지 않습니다.", expected?.recipe_id);
       return;
     }
     presentCookingRecipeIds.add(expected.recipe_id);
@@ -221,7 +224,7 @@ export function evaluatePhase5HumanEvidence({
     const expected = expectedReviews[index];
     const context = expected ? `${expected.recipe_id}:${expected.review_type}` : `row-${index + 1}:human_review`;
     if (!expected || !identityMatches(record, expected, true)) {
-      fail(context, "핵심 20개 검수 순서, 식별자 또는 review_type이 일치하지 않습니다.");
+      fail(context, "핵심 20개 검수 순서, 콘텐츠 버전, 식별자 또는 review_type이 일치하지 않습니다.");
       return;
     }
     if (!ALLOWED_RESULTS.has(record.result)) {
@@ -307,7 +310,7 @@ export function evaluatePhase5HumanEvidence({
       (reviewType) => reviewRecords?.get(reviewType)?.result === "approved",
     );
     const versionsMatch =
-      VERSION_PATTERN.test(version ?? "") &&
+      version === audit.recipeVersion &&
       PHASE5_HUMAN_REVIEW_TYPES.every(
         (reviewType) => reviewRecords?.get(reviewType)?.recipe_version === version,
       );

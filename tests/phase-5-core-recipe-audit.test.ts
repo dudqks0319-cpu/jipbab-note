@@ -9,9 +9,11 @@ import {
   PHASE5_COOKING_TEMPLATE_COLUMNS,
   PHASE5_COOKING_TEMPLATE_PATH,
   PHASE5_CORE_20_SELECTIONS,
+  PHASE5_HUMAN_TEST_PACKETS_PATH,
   PHASE5_HUMAN_REVIEW_TEMPLATE_PATH,
   buildPhase5Artifacts,
   checkPhase5Artifacts,
+  contentVersionForRecipe,
   parseCsvRows,
   writePhase5Artifacts,
 } from "../scripts/generate-phase-5-core-recipe-audit.mjs";
@@ -41,6 +43,52 @@ test("Phase 5 후보는 현재 카탈로그에서 정확히 한 번씩 해석된
     );
     assert.ok(audit.score.total >= 0 && audit.score.total <= 100, audit.selectedTitle);
   }
+});
+
+test("사람 검수 패킷과 CSV는 현재 조리 콘텐츠의 결정적 버전에 고정된다", () => {
+  const { audits, files } = buildPhase5Artifacts(cwd);
+  const versions = new Set(audits.map((audit) => audit.recipeVersion));
+  assert.equal(versions.size, 20);
+  for (const audit of audits) {
+    assert.match(audit.recipeVersion, /^phase5-sha256-[0-9a-f]{24}$/u);
+  }
+
+  const cookingRows = parseCsvRows(files[PHASE5_COOKING_TEMPLATE_PATH]);
+  const reviewRows = parseCsvRows(files[PHASE5_HUMAN_REVIEW_TEMPLATE_PATH]);
+  assert.ok(cookingRows);
+  assert.ok(reviewRows);
+  const cookingVersionIndex = cookingRows[0].indexOf("recipe_version");
+  const reviewVersionIndex = reviewRows[0].indexOf("recipe_version");
+  assert.deepEqual(
+    cookingRows.slice(1).filter((row) => row.some(Boolean)).map((row) => row[cookingVersionIndex]),
+    audits.map((audit) => audit.recipeVersion),
+  );
+  assert.deepEqual(
+    reviewRows.slice(1).filter((row) => row.some(Boolean)).map((row) => row[reviewVersionIndex]),
+    audits.flatMap((audit) => Array(4).fill(audit.recipeVersion)),
+  );
+
+  const packets = files[PHASE5_HUMAN_TEST_PACKETS_PATH];
+  assert.equal((packets.match(/^## \d{2}\. /gmu) ?? []).length, 20);
+  for (const audit of audits) {
+    assert.ok(packets.includes(`레시피 ID: \`${audit.recipe.id}\``));
+    assert.ok(packets.includes(`콘텐츠 버전: \`${audit.recipeVersion}\``));
+  }
+  assert.match(packets, /실제 사람이 앱 화면만 보고 조리한 결과만 기록/u);
+  assert.match(packets, /자동 승인하거나 DB에 반영하지 않는다/u);
+  assert.doesNotMatch(packets, /테스트 금지/u);
+});
+
+test("조리 안내가 바뀌면 사람 증거용 콘텐츠 버전도 바뀐다", () => {
+  const recipe = CURATED_JIPBAB_RECIPES.find((candidate) => candidate.name === "간장계란밥");
+  assert.ok(recipe);
+  const changedRecipe = {
+    ...recipe,
+    steps: recipe.steps.map((step, index) =>
+      index === 0 ? { ...step, description: `${step.description} 변경` } : step,
+    ),
+  };
+  assert.notEqual(contentVersionForRecipe(recipe), contentVersionForRecipe(changedRecipe));
 });
 
 test("자동 점수와 코드 플래그는 인간 검수나 실제 조리 증거로 승격되지 않는다", () => {
@@ -95,8 +143,13 @@ test("감사 재생성은 입력된 실제 조리 증거를 덮어쓰지 않는�
   const templatePath = path.join(tempRoot, PHASE5_COOKING_TEMPLATE_PATH);
   mkdirSync(path.dirname(templatePath), { recursive: true });
 
-  const emptyTemplate = buildPhase5Artifacts(cwd).files["docs/phase-5-actual-cooking-template.csv"];
-  const firstAttempt = emptyTemplate.replace("beginner-recipe-001,,", "beginner-recipe-001,v1,");
+  const artifacts = buildPhase5Artifacts(cwd);
+  const emptyTemplate = artifacts.files["docs/phase-5-actual-cooking-template.csv"];
+  const firstVersion = artifacts.audits[0].recipeVersion;
+  const firstAttempt = emptyTemplate.replace(
+    `beginner-recipe-001,${firstVersion},,`,
+    `beginner-recipe-001,${firstVersion},attempt-first,`,
+  );
   const parsed = parseCsvRows(firstAttempt);
   assert.ok(parsed);
   const [header, firstRow] = parsed;
@@ -120,11 +173,13 @@ test("감사 재생성은 입력된 사람 검수 기록도 덮어쓰지 않는�
   const templatePath = path.join(tempRoot, PHASE5_HUMAN_REVIEW_TEMPLATE_PATH);
   mkdirSync(path.dirname(templatePath), { recursive: true });
 
-  const emptyTemplate = buildPhase5Artifacts(cwd).files[PHASE5_HUMAN_REVIEW_TEMPLATE_PATH];
-  const populatedTemplate = emptyTemplate.replace(
-    "beginner-recipe-001,,beginner",
-    "beginner-recipe-001,v1,beginner",
-  );
+  const artifacts = buildPhase5Artifacts(cwd);
+  const emptyTemplate = artifacts.files[PHASE5_HUMAN_REVIEW_TEMPLATE_PATH];
+  const parsed = parseCsvRows(emptyTemplate);
+  assert.ok(parsed);
+  const [header, ...rows] = parsed;
+  rows[0][header.indexOf("reviewer_code")] = "reviewer-a01";
+  const populatedTemplate = `${[header, ...rows].map((row) => row.join(",")).join("\n")}\n`;
   assert.notEqual(populatedTemplate, emptyTemplate);
   writeFileSync(templatePath, populatedTemplate, "utf8");
 

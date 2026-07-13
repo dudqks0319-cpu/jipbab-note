@@ -1,21 +1,21 @@
 order,requested_title,selected_title,recipe_id,recipe_version,attempt_id,app_build_sha,test_surface,test_device,test_date,tester_code,heat_source,cookware,started_at,completed_at,actual_minutes,completed,failed_step,failure_code,safety_issue,copy_change,image_change,evidence_path,status
-1,간장계란밥,간장계란밥,beginner-recipe-001,,,,,,,,,,,,,,,,,,,,pending
-2,계란볶음밥,햄야채볶음밥,beginner-recipe-016,,,,,,,,,,,,,,,,,,,,pending
-3,참치김치볶음밥,참치김치볶음밥,beginner-recipe-014,,,,,,,,,,,,,,,,,,,,pending
-4,김치볶음밥,김치볶음밥,beginner-recipe-013,,,,,,,,,,,,,,,,,,,,pending
-5,계란말이,프라이팬 계란말이,beginner-recipe-003,,,,,,,,,,,,,,,,,,,,pending
-6,계란찜,전자레인지 계란찜,beginner-recipe-002,,,,,,,,,,,,,,,,,,,,pending
-7,두부조림,두부조림,beginner-recipe-028,,,,,,,,,,,,,,,,,,,,pending
-8,감자조림,감자조림,curated-gamja-jorim,,,,,,,,,,,,,,,,,,,,pending
-9,어묵볶음,어묵볶음,beginner-recipe-051,,,,,,,,,,,,,,,,,,,,pending
-10,콩나물무침,콩나물무침,beginner-recipe-032,,,,,,,,,,,,,,,,,,,,pending
-11,된장찌개,된장찌개,beginner-recipe-067,,,,,,,,,,,,,,,,,,,,pending
-12,돼지고기 김치찌개,돼지고기 김치찌개,curated-pork-kimchi-jjigae,,,,,,,,,,,,,,,,,,,,pending
-13,미역국,미역국,beginner-recipe-064,,,,,,,,,,,,,,,,,,,,pending
-14,북엇국,북엇국,beginner-recipe-065,,,,,,,,,,,,,,,,,,,,pending
-15,제육볶음,제육볶음,curated-jeyuk-bokkeum,,,,,,,,,,,,,,,,,,,,pending
-16,간장불고기,간장마늘 닭조림,curated-soy-garlic-chicken,,,,,,,,,,,,,,,,,,,,pending
-17,잔치국수,잔치국수,beginner-recipe-081,,,,,,,,,,,,,,,,,,,,pending
-18,떡볶이,떡국떡달걀국,beginner-recipe-070,,,,,,,,,,,,,,,,,,,,pending
-19,토마토달걀볶음,토마토달걀볶음,beginner-recipe-006,,,,,,,,,,,,,,,,,,,,pending
-20,닭가슴살 채소볶음,닭가슴살양배추덮밥,beginner-recipe-170,,,,,,,,,,,,,,,,,,,,pending
+1,간장계란밥,간장계란밥,beginner-recipe-001,phase5-sha256-dd141b3aea37971fd87f5543,,,,,,,,,,,,,,,,,,,pending
+2,계란볶음밥,햄야채볶음밥,beginner-recipe-016,phase5-sha256-5772fbfe271dc47b11937983,,,,,,,,,,,,,,,,,,,pending
+3,참치김치볶음밥,참치김치볶음밥,beginner-recipe-014,phase5-sha256-50cee2d05424d0c52c681b89,,,,,,,,,,,,,,,,,,,pending
+4,김치볶음밥,김치볶음밥,beginner-recipe-013,phase5-sha256-4634e1198ea1fb6bf1bff91e,,,,,,,,,,,,,,,,,,,pending
+5,계란말이,프라이팬 계란말이,beginner-recipe-003,phase5-sha256-de9601e4ac96f0e217d95b53,,,,,,,,,,,,,,,,,,,pending
+6,계란찜,전자레인지 계란찜,beginner-recipe-002,phase5-sha256-fd88017f7c624e2b7856446b,,,,,,,,,,,,,,,,,,,pending
+7,두부조림,두부조림,beginner-recipe-028,phase5-sha256-6ca8f5c0c8656199c40a145a,,,,,,,,,,,,,,,,,,,pending
+8,감자조림,감자조림,curated-gamja-jorim,phase5-sha256-cba82e341961c3955a6079d6,,,,,,,,,,,,,,,,,,,pending
+9,어묵볶음,어묵볶음,beginner-recipe-051,phase5-sha256-8b0f252047294d38796d7056,,,,,,,,,,,,,,,,,,,pending
+10,콩나물무침,콩나물무침,beginner-recipe-032,phase5-sha256-886e216559a192631daaeef2,,,,,,,,,,,,,,,,,,,pending
+11,된장찌개,된장찌개,beginner-recipe-067,phase5-sha256-6f1207be131d01a2912bd62d,,,,,,,,,,,,,,,,,,,pending
+12,돼지고기 김치찌개,돼지고기 김치찌개,curated-pork-kimchi-jjigae,phase5-sha256-8871bb2d1437f74c32a57bfa,,,,,,,,,,,,,,,,,,,pending
+13,미역국,미역국,beginner-recipe-064,phase5-sha256-d007cf5ede24cc05fce1529a,,,,,,,,,,,,,,,,,,,pending
+14,북엇국,북엇국,beginner-recipe-065,phase5-sha256-ac52ac5cb538d80d8fba0136,,,,,,,,,,,,,,,,,,,pending
+15,제육볶음,제육볶음,curated-jeyuk-bokkeum,phase5-sha256-4f5fc1865f74ddec1a08e644,,,,,,,,,,,,,,,,,,,pending
+16,간장불고기,간장마늘 닭조림,curated-soy-garlic-chicken,phase5-sha256-ee98f684f52f895cbc97b8d0,,,,,,,,,,,,,,,,,,,pending
+17,잔치국수,잔치국수,beginner-recipe-081,phase5-sha256-f57edf8fd0e6ebdb1e954280,,,,,,,,,,,,,,,,,,,pending
+18,떡볶이,떡국떡달걀국,beginner-recipe-070,phase5-sha256-d35dc27ffe18658115506afb,,,,,,,,,,,,,,,,,,,pending
+19,토마토달걀볶음,토마토달걀볶음,beginner-recipe-006,phase5-sha256-b0647712d0aa38bfe7b28198,,,,,,,,,,,,,,,,,,,pending
+20,닭가슴살 채소볶음,닭가슴살양배추덮밥,beginner-recipe-170,phase5-sha256-d7f0ee7deda1ab90d230b1da,,,,,,,,,,,,,,,,,,,pending

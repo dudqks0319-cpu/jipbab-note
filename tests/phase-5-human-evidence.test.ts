@@ -66,7 +66,6 @@ function completedEvidence() {
     artifacts.files[PHASE5_COOKING_TEMPLATE_PATH],
     PHASE5_COOKING_TEMPLATE_COLUMNS,
     (record, index) => ({
-      recipe_version: "v1",
       attempt_id: `attempt-${String(index + 1).padStart(2, "0")}`,
       app_build_sha: "b588e31",
       test_surface: "web",
@@ -95,7 +94,6 @@ function completedEvidence() {
       const order = Number(record.order);
       const isLegalSource = record.review_type === "legal_source";
       return {
-        recipe_version: "v1",
         reviewer_code: `reviewer-${record.review_type}-${record.order}`,
         reviewed_at: "2026-07-11T02:00:00Z",
         score: "95",
@@ -153,6 +151,30 @@ test("같은 버전의 실제 조리와 사람 검수 4종이 모두 유효해�
   assert.equal(result.counts.image_rights, 20);
   assert.equal(result.counts.publicationEligible, 20);
   assert.equal(new Set(result.eligibleRecipeIds).size, 20);
+});
+
+test("현재 조리 콘텐츠와 다른 버전의 사람 증거는 같은 문자열끼리 맞아도 차단된다", () => {
+  const evidence = completedEvidence();
+  const staleVersion = "phase5-sha256-000000000000000000000000";
+  const staleCookingCsv = rewriteCsv(
+    evidence.cookingCsv,
+    PHASE5_COOKING_TEMPLATE_COLUMNS,
+    (record, index) => (index === 0 ? { recipe_version: staleVersion } : record),
+  );
+  const staleReviewCsv = rewriteCsv(
+    evidence.reviewCsv,
+    PHASE5_HUMAN_REVIEW_TEMPLATE_COLUMNS,
+    (record) => (record.order === "1" ? { recipe_version: staleVersion } : record),
+  );
+  const result = evaluatePhase5HumanEvidence({
+    cwd,
+    cookingCsv: staleCookingCsv,
+    reviewCsv: staleReviewCsv,
+    pathExists: () => true,
+  });
+
+  assert.ok(result.errors.some((error) => error.includes("콘텐츠 버전")));
+  assert.equal(result.counts.publicationEligible, 19);
 });
 
 test("미완성 또는 안전 문제가 있는 조리 기록은 approved여도 차단된다", () => {
