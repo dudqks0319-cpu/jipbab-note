@@ -59,6 +59,7 @@
     "check:phase6-performance": "node scripts/check-phase-6-performance-budget.mjs",
     "capture:phase6-performance": "node scripts/capture-phase-6-performance.mjs",
     "check:phase6-observability": "node scripts/check-phase-6-observability.mjs",
+    "check:phase6-monitoring": "node scripts/check-phase-6-monitoring.mjs",
     "check:phase6-analytics-dashboard": "node scripts/check-phase-6-analytics-dashboard.mjs",
     "capture:phase6-analytics-dashboard": "node --experimental-strip-types scripts/generate-phase-6-analytics-dashboard.mjs",
     "check:phase6-rollback": "node scripts/check-phase-6-rollback-rehearsal.mjs",

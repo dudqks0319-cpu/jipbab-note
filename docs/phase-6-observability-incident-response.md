@@ -5,6 +5,7 @@ Updated: 2026-07-13 KST
 ## 현재 판정
 
 - 운영 API 텔레메트리 계약: 로컬 구현·검증
+- 운영 오류 webhook 전달 경계: 로컬 구현·합성 검증
 - 제품 분석 이벤트 계약: 로컬 구현·검증
 - 제품 분석 전송: 기본 비활성
 - 외부 분석 벤더: 미선정
@@ -38,6 +39,10 @@ API v1의 목록, 상세, 추천 응답은 요청당 한 번 `api.request_comple
 - service role key와 외부 API secret
 
 `deployment_sha`는 `VERCEL_GIT_COMMIT_SHA`, `DEPLOYMENT_SHA`, `GITHUB_SHA` 중 검증된 7~64자리 hex 값만 사용하고 없으면 `unknown`을 기록한다. sink 장애는 API 응답을 실패시키지 않는다. `DEPENDENCY_NOT_READY`는 현재 migration/HMAC 의존성 차단을 구분할 수 있도록 warning으로 기록하며, 다른 5xx는 error로 기록한다.
+
+`INTERNAL_ERROR` 5xx는 외부 채널 설정이 완전할 때만 Next.js `after`에서 비동기로 전달한다. payload는 위 허용 필드만 새 객체로 다시 만들고, HMAC SHA-256으로 서명하며, 2.5초 안에 완료되지 않으면 중단한다. redirect, 브라우저 credentials, URL query와 fragment는 허용하지 않는다. 전송·스케줄러 실패는 원래 API 응답을 변경하지 않고 `deployment_sha`만 포함한 `monitoring.alert_delivery_failed` warning을 남긴다. 예상된 `DEPENDENCY_NOT_READY`는 외부 경보를 만들지 않는다.
+
+서버 전용 설정은 `OPERATIONAL_ALERTS_ENABLED`, `OPERATIONAL_ALERT_WEBHOOK_URL`, `OPERATIONAL_ALERT_HMAC_SECRET` 세 개다. 명시적 `true`, query 없는 HTTPS URL, 32~256자 secret이 동시에 없으면 전송은 fail-closed한다. 실제 외부 채널 완료 판정은 [모니터링 채널 확인 문서](./monitoring-channel-confirmation.md)의 수신 시각·SHA·redacted 증거가 모두 채워진 뒤에만 한다.
 
 ## 제품 분석 이벤트 계약
 
@@ -92,6 +97,7 @@ API v1의 목록, 상세, 추천 응답은 요청당 한 번 `api.request_comple
 
 ```bash
 pnpm check:phase6-observability
+pnpm check:phase6-monitoring
 pnpm check:phase6-rollback
 pnpm capture:phase6-rollback --target-ref <known-good-commit> --target-url <known-good-preview-url>
 pnpm release:ci-static-check
@@ -108,6 +114,6 @@ vercel logs <deployment-url> --no-follow --since 30m --level fatal --json
 ## 남은 외부 게이트
 
 - Owner `Product+Privacy`, due `before_product_analytics_enablement`: 동의 문구, 개인정보 처리방침, 보관기간, 삭제·opt-out 정책 승인
-- Owner `FullStackDev+SRE`, due `before_production_monitoring_signoff`: 모니터링 벤더와 경보 채널 연결, 테스트 경보 수신 증거
+- Owner `FullStackDev+SRE`, due `before_production_monitoring_signoff`: 모니터링 벤더와 경보 채널 연결, `docs/monitoring-channel-confirmation.md` 테스트 경보 수신 증거
 - Owner `FullStackDev+DBA`, due `before_any_supabase_db_push`: migration history 조정, restorable backup, 실제 staging PostgreSQL rollback·restore 연습
 - Owner `FullStackDev+SRE`, due `before_phase6_completion`: 운영자 승인 Vercel Preview rollback과 post-rollback HTTP·log 증거

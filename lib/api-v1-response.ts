@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import {
   buildApiV1ErrorEnvelope,
@@ -12,6 +12,12 @@ import {
   type ApiOperationEndpoint,
   type OperationalTelemetryEnvironment,
 } from "./operational-telemetry.ts";
+import {
+  queueOperationalAlert,
+  type OperationalAlertEnvironment,
+  type OperationalAlertFetch,
+  type OperationalAlertScheduler,
+} from "./operational-alerts.ts";
 import type { TelemetrySink } from "./telemetry.ts";
 
 export type { ApiV1ErrorCode } from "./api-v1-envelope.ts";
@@ -57,7 +63,9 @@ export function apiV1Error(
 type ApiV1ResponderOptions = {
   now?: () => number;
   sink?: TelemetrySink;
-  environment?: OperationalTelemetryEnvironment;
+  environment?: OperationalTelemetryEnvironment & OperationalAlertEnvironment;
+  alertFetch?: OperationalAlertFetch;
+  scheduleAfterResponse?: OperationalAlertScheduler;
 };
 
 export function createApiV1Responder(
@@ -73,11 +81,24 @@ export function createApiV1Responder(
     environment: options.environment,
   });
 
+  function recordAndQueueAlert(status: number, code?: ApiV1ErrorCode) {
+    const metadata = record(status, code);
+    if (!metadata) {
+      return;
+    }
+    queueOperationalAlert(metadata, {
+      environment: options.environment,
+      fetch: options.alertFetch,
+      schedule: options.scheduleAfterResponse ?? after,
+      sink: options.sink,
+    });
+  }
+
   return {
     requestId,
     success<T>(data: T, status = 200) {
       const response = apiV1Success(data, requestId, status);
-      record(status);
+      recordAndQueueAlert(status);
       return response;
     },
     error(
@@ -96,7 +117,7 @@ export function createApiV1Responder(
         requestId,
         responseOptions,
       );
-      record(status, code);
+      recordAndQueueAlert(status, code);
       return response;
     },
   };

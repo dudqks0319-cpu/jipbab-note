@@ -17,6 +17,8 @@ pnpm release:check
 - [ ] `pnpm check:local-mode-release` 실행: Supabase 빈 응답/지연 상황에서도 로컬 재료·장보기 데이터와 로그인 동기화 상태가 보존되는지 확인
 - [ ] `pnpm release:ci-static-check` 실행: CI-safe 초보자 레시피 목표, Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
 - [ ] `pnpm check:phase6-rollback` 실행: explicit ancestor, clean archive, offline install, 비파괴 DB rollback pair와 외부 변경 금지 계약 확인
+- [ ] `pnpm check:phase6-monitoring` 실행: 서버 전용 webhook 설정, allowlist payload, HMAC 서명, timeout, 응답 비차단 계약 확인
+- [ ] `docs/monitoring-channel-confirmation.md`에 승인된 벤더·담당자·현재 배포 SHA·실제 테스트 경보 수신 시각·redacted 증거를 기록. 합성 로컬 테스트로 대체 금지
 - [ ] `pnpm capture:phase6-rollback --target-ref <known-good-commit> --target-url <known-good-preview-url>` 실행: `passed_local_code_rehearsal`, 필수 명령, 홈·레시피·redacted API smoke 확인
 - [ ] DB rollout 전 migration history, restorable backup, 실제 staging PostgreSQL rollback·restore 연습 완료. 로컬 코드 연습으로 대체 금지
 - [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
@@ -152,6 +154,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] analytics 이벤트는 개인정보 최소 수집 원칙과 사용자 식별자 정책 확인 후 활성화
 - [ ] crash reporting 도입 전 수집 항목, 보관 기간, 사용자 고지 문구 확인
 - [ ] 보안 모니터링 알림 기준 정의: 비정상 API 오류율, 권한 거부 급증, 관리자 기능 실패
+- [ ] `OPERATIONAL_ALERTS_ENABLED`, `OPERATIONAL_ALERT_WEBHOOK_URL`, `OPERATIONAL_ALERT_HMAC_SECRET`은 서버 전용으로 등록하고 HMAC 검증 수신기만 사용
 - [ ] `pnpm check:supabase-release` 통과: 출시 필수 테이블, RLS, ownership policy, service_role policy, `partner_links` read-only 권한 확인
 - [ ] 운영 Supabase에서 `supabase/migrations/20260228001000_verify_rls.sql` 또는 동등한 SQL 검증 실행: 다른 `device_id`/`user_id` 데이터 조회·수정·삭제 거부
 - [ ] 운영 알림 담당자와 장애/보안 이벤트 triage 경로 지정

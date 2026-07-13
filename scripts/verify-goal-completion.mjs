@@ -7,6 +7,7 @@ const cwd = process.cwd();
 const ledgerPath = path.join(cwd, "docs/current-release-state.md");
 const realDeviceQaPath = path.join(cwd, "docs/real-device-qa.md");
 const storeConsolePath = path.join(cwd, "docs/store-console-confirmation.md");
+const monitoringConfirmationPath = path.join(cwd, "docs/monitoring-channel-confirmation.md");
 const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
 
 function readIosProjectBuildNumber() {
@@ -97,6 +98,28 @@ const playConsoleExtraEvidence = {
   artifactLabels: ["Play Console evidence artifacts"],
 };
 
+const monitoringExtraEvidence = {
+  patterns: [
+    {
+      label: "Monitoring vendor: approved value",
+      pattern: /^\s*-\s*Monitoring vendor:\s*(?!pending\s*$).+/m,
+    },
+    {
+      label: "Alert channel owner: approved value",
+      pattern: /^\s*-\s*Alert channel owner:\s*(?!pending\s*$).+/m,
+    },
+    {
+      label: "Test alert received at: ISO timestamp",
+      pattern: /^\s*-\s*Test alert received at:\s*20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z\s*$/m,
+    },
+    {
+      label: "Deployment SHA: full Git SHA",
+      pattern: /^\s*-\s*Deployment SHA:\s*[a-f0-9]{40}\s*$/im,
+    },
+  ],
+  artifactLabels: ["Monitoring evidence artifacts"],
+};
+
 function addResult(results, status, label, evidence, nextAction = "") {
   results.push({ status, label, evidence, nextAction });
 }
@@ -182,6 +205,7 @@ if (!existsSync(ledgerPath)) {
 const ledger = readFileSync(ledgerPath, "utf8");
 const realDeviceQa = readOptional(realDeviceQaPath);
 const storeConsole = readOptional(storeConsolePath);
+const monitoringConfirmation = readOptional(monitoringConfirmationPath);
 const results = [];
 const coreLoopReleaseCheck = runLocalCheck("node scripts/check-core-loop-release.mjs", [
   "scripts/check-core-loop-release.mjs",
@@ -210,6 +234,9 @@ const beginnerMobileEvidenceCheck = runLocalCheck("node scripts/check-beginner-m
 const phase5HumanEvidenceCheck = runLocalCheck("node --experimental-strip-types scripts/check-phase-5-human-evidence.mjs", [
   "--experimental-strip-types",
   "scripts/check-phase-5-human-evidence.mjs",
+]);
+const monitoringDeliveryCheck = runLocalCheck("node scripts/check-phase-6-monitoring.mjs", [
+  "scripts/check-phase-6-monitoring.mjs",
 ]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
@@ -277,6 +304,31 @@ addResult(
   "핵심 20개 실제 조리·사람 검수 증거",
   phase5HumanEvidenceCheck.evidence,
   "docs/phase-5-human-testing-runbook.md에 따라 실제 조리와 초보자·식품 안전·출처·이미지 권리 검수를 완료한 뒤 pnpm check:phase5-human-evidence 재실행",
+);
+
+addResult(
+  results,
+  monitoringDeliveryCheck.status,
+  "오류 모니터링 코드 경계",
+  monitoringDeliveryCheck.evidence,
+  "pnpm check:phase6-monitoring 실패 원인 수정",
+);
+
+addResult(
+  results,
+  evidenceStatus(
+    monitoringConfirmation,
+    ["Operational alert delivery: confirmed"],
+    [
+      "Operational alert delivery: blocked",
+      "Monitoring vendor: pending",
+      "Test alert received at: pending",
+    ],
+    monitoringExtraEvidence,
+  ),
+  "외부 오류 모니터링 채널",
+  "docs/monitoring-channel-confirmation.md evidence for an approved vendor, owned alert channel, exact deployment SHA, and received synthetic alert",
+  "모니터링 벤더·담당 채널 승인 후 staging/Preview 합성 INTERNAL_ERROR 수신 증거를 기록",
 );
 
 addResult(

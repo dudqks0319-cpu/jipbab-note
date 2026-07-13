@@ -78,8 +78,12 @@ check(
 );
 check(
   "response boundary integration",
-  includesAll(apiResponse, ["createApiOperationRecorder", "record(status)", "record(status, code)"]),
-  "success and error responses share the same recorder",
+  includesAll(apiResponse, [
+    "createApiOperationRecorder",
+    "recordAndQueueAlert(status)",
+    "recordAndQueueAlert(status, code)",
+  ]),
+  "success and error responses share the same recorder and alert queue boundary",
 );
 check(
   "API route integration",

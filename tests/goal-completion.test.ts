@@ -118,3 +118,15 @@ test("goal completion check requires Phase 5 actual cooking and human review evi
   assert.match(source, /핵심 20개 실제 조리·사람 검수 증거/);
   assert.match(source, /phase-5-human-testing-runbook\.md/);
 });
+
+test("goal completion check separates monitoring code from actual channel receipt", () => {
+  assert.match(source, /scripts\/check-phase-6-monitoring\.mjs/);
+  assert.match(source, /오류 모니터링 코드 경계/);
+  assert.match(source, /docs\/monitoring-channel-confirmation\.md/);
+  assert.match(source, /Operational alert delivery: confirmed/);
+  assert.match(source, /Operational alert delivery: blocked/);
+  assert.match(source, /Test alert received at: ISO timestamp/);
+  assert.match(source, /Deployment SHA: full Git SHA/);
+  assert.match(source, /Monitoring evidence artifacts/);
+  assert.match(source, /외부 오류 모니터링 채널/);
+});
