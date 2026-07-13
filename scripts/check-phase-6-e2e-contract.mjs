@@ -34,6 +34,7 @@ const contracts = [
     pass:
       captureSource.includes("현재 공개 가능한 레시피를 준비 중이에요.") &&
       captureSource.includes("레시피 서비스를 점검하고 있습니다.") &&
+      captureSource.includes("레시피를 불러오지 못했습니다.") &&
       captureSource.includes("출처, 안전 안내와 실제 조리를 확인한 레시피만 공개합니다."),
   },
   {

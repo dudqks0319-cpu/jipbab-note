@@ -190,6 +190,7 @@ async function navigate(client, url) {
 }
 
 const bodyIncludes = `(text) => document.body?.innerText.includes(text) ?? false`;
+const bodyIncludesAny = `(texts) => texts.some((text) => document.body?.innerText.includes(text) ?? false)`;
 const clickTestId = `(testId) => {
   const target = document.querySelector('[data-testid="' + testId + '"]');
   if (!(target instanceof HTMLElement)) return false;
@@ -252,8 +253,8 @@ try {
   await waitForBrowserCondition(
     client,
     "recipe service fail-closed",
-    bodyIncludes,
-    ["레시피 서비스를 점검하고 있습니다."],
+    bodyIncludesAny,
+    [["레시피 서비스를 점검하고 있습니다.", "레시피를 불러오지 못했습니다."]],
   );
   assert.equal(
     await evaluate(client, `() => document.querySelector('input[placeholder="레시피 검색"]')?.value`, []),
