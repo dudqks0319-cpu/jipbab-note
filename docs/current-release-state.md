@@ -1,6 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-11 KST
+Updated: 2026-07-13 KST
+
+## 2026-07-13 Phase 6 성능 예산·최신 Preview
+
+- 성능 게이트 구현 `1c2d353237220153aa943dbbc76dad1cfc9ea7fd`와 iOS 동기화 회귀 수정 `d25691a594cb02a832ee502f17c687d23a1250e9`를 `origin/ux/home-today-action-v2`에 push했다.
+- 사용자 작업 중인 아동식 변경은 두 커밋과 배포에서 제외했다. 깨끗한 `d25691a` worktree를 Vercel Preview `dpl_CXQDf9vKvvo5YGAxvMarSNjMt8H4` (`https://jipbab-note-3wkvam4y5-youngbeens-projects.vercel.app`)로 배포했고 상태는 `READY`다.
+- 원격 build는 compile, TypeScript, 38/38 routes를 통과했다. `/`와 `/recipe`는 HTTP 200이며 `/api/v1/recipes?limit=1`은 migration/HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`를 반환한다.
+- 390x844, CPU 4x, 1.6 Mbps/150ms RTT, cold run 3회의 lab p75에서 홈 LCP 1,240ms, 레시피 목록 876ms, 장보기 1,736ms, CLS 최대 0.0412, 상호작용 40ms, 검색 입력 반영 34.1ms로 계획서 예산을 모두 통과했다. 앱 console error와 unexpected network error는 0건이다.
+- 이 수치는 회귀 방지용 lab guard이며 field p75가 아니다. Vercel Speed Insights의 충분한 실제 사용자 데이터가 없어 production field p75는 미검증으로 유지한다.
+- 새 Preview 브라우저 음성 E2E 12/12, 최근 Vercel error/fatal log 0/0을 확인했다. 깨끗한 checkout은 iOS sync 후 lint·TypeScript·unit 372/372를 통과했고 CI-safe release gate 15/15와 security gate 4/4도 통과했다.
+- 깨끗한 checkout에서 iOS sync가 OAuth 플러그인 등록을 덮어쓰는 기존 결함을 발견해 `CAPBrowserPlugin`, `JipbabOAuthPlugin`, `CapApp_SPM.JipbabOAuthPlugin`을 보존하도록 고쳤고 OAuth 집중 테스트 26/26으로 확인했다.
+- 공개 승인 staging recipe와 Phase 5 사람 증거 20/20, DB migration/backup/rollback이 없으므로 full happy-path와 production 승격은 수행하지 않았다.
+- Evidence: `docs/phase-6-performance-report.md`, `output/performance-evidence/phase6-performance-lab.json`.
 
 ## 2026-07-11 Phase 6 브라우저 E2E·데모 네트워크
 

@@ -12,13 +12,13 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase6_e2e_negative_accessibility_security_hardened_happy_path_blocked"
+  phase: "phase6_performance_e2e_negative_accessibility_security_hardened_happy_path_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "f90f0679821443f07ee7fd019885f89d97ef3e7d"
+  git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
   branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_e2e_preview_deployment_record_committed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/current-release-state.md"
+  dirty_state: "phase6_performance_preview_deployment_record_committed"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -215,19 +215,34 @@ phase6_quality_security:
   e2e_full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
   e2e_offline_status: "blocked_real_device_and_offline_harness_required"
   e2e_preview_deploy_status: "deployed_ready_verified_12_of_12"
+  performance_implementation_git_sha: "1c2d353237220153aa943dbbc76dad1cfc9ea7fd"
+  performance_report: "docs/phase-6-performance-report.md"
+  performance_static_contract_status: "verified_11_of_11"
+  performance_runtime_profile: "390x844_cpu4x_1_6mbps_750kbps_150ms_rtt_three_cold_runs"
+  performance_guest_home_lcp_p75_ms: 1240
+  performance_recipe_list_lcp_p75_ms: 876
+  performance_shopping_lcp_p75_ms: 1736
+  performance_max_cls_p75: 0.0412
+  performance_interaction_p75_ms: 40
+  performance_search_input_p75_ms: 34.1
+  performance_console_error_count: 0
+  performance_unexpected_network_error_count: 0
+  performance_field_p75_status: "blocked_insufficient_real_user_data_lab_guard_only"
+  ios_sync_fix_git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
+  ios_sync_oauth_test_status: "verified_26_of_26"
   migration: "20260711113000_harden_security_definer_privileges.sql"
   rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql"
   security_definer_contract_status: "verified_14_of_14"
   security_definer_effective_count: 11
   removed_unused_security_definer_count: 1
   focused_security_test_status: "verified_29_of_29"
-  full_unit_test_status: "verified_370_of_370"
+  full_unit_test_status: "verified_clean_checkout_ios_sync_372_of_372"
   supabase_contract_status: "verified_146_of_146"
   integration_status: "verified_zero_unreviewed_exposed_and_signed_session_negative_paths"
   release_security_status: "verified_4_of_4"
   production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
-  ci_static_gate_status: "verified_14_of_14"
-  release_gate_status: "13_pass_1_expected_fail_phase5_human_evidence"
+  ci_static_gate_status: "verified_15_of_15"
+  release_gate_status: "14_pass_1_expected_fail_phase5_human_evidence"
   isolated_postgres_execution_status: "blocked_no_docker_or_psql"
   production_migration_status: "not_applied"
   production_deploy_status: "not_deployed"
@@ -278,6 +293,41 @@ phase6_e2e_vercel_preview:
   production_promoted: false
   production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
 
+phase6_performance_vercel_preview:
+  deployed_at: "2026-07-13 KST"
+  performance_implementation_git_sha: "1c2d353237220153aa943dbbc76dad1cfc9ea7fd"
+  deployed_git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_CXQDf9vKvvo5YGAxvMarSNjMt8H4"
+  deployment_url: "https://jipbab-note-3wkvam4y5-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  e2e_negative_runtime_status: "verified_12_of_12"
+  performance_runtime_status: "verified_all_lab_budgets_zero_failures"
+  performance_profile: "390x844_cpu4x_1_6mbps_750kbps_150ms_rtt_three_cold_runs"
+  guest_home_lcp_p75_ms: 1240
+  recipe_list_lcp_p75_ms: 876
+  shopping_lcp_p75_ms: 1736
+  max_cls_p75: 0.0412
+  interaction_p75_ms: 40
+  search_input_p75_ms: 34.1
+  app_console_error_count: 0
+  unexpected_network_error_count: 0
+  runtime_error_log_count: 0
+  runtime_fatal_log_count: 0
+  field_p75_status: "blocked_insufficient_real_user_data_lab_guard_only"
+  full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_production_migrations_not_applied_and_field_p75_missing"
+
 phase0_to_phase4_vercel_deployment:
   deployed_at: "2026-07-11 KST"
   content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
@@ -312,6 +362,18 @@ migration_history:
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
+  - name: "Phase 6 performance static contract"
+    command: "pnpm check:phase6-performance"
+    status: "current_pass_11_of_11"
+    evidence: "docs/phase-6-performance-report.md"
+  - name: "Phase 6 mobile performance lab budget"
+    command: "pnpm capture:phase6-performance"
+    status: "current_pass_all_budgets_zero_failures_lab_guard_not_field_p75"
+    evidence: "output/performance-evidence/phase6-performance-lab.json"
+  - name: "iOS sync OAuth plugin registration"
+    command: "CAPACITOR_ALLOW_PLACEHOLDER=1 pnpm mobile:sync:ios then auth-config test"
+    status: "current_pass_26_of_26"
+    evidence: "scripts/sync-capacitor.mjs, tests/auth-config.test.ts"
   - name: "Phase 6 E2E static contract"
     command: "pnpm check:phase6-e2e-contract"
     status: "current_pass_8_of_8"
@@ -342,8 +404,8 @@ local_checks:
     evidence: "pnpm-lock.yaml"
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_370_of_370"
-    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts"
+    status: "current_pass_clean_checkout_ios_sync_372_of_372"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts, tests/phase-6-performance-budget.test.ts"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
@@ -394,11 +456,11 @@ local_checks:
     evidence: "docs/current-release-state.md"
   - name: "CI-safe release gates"
     command: "pnpm release:ci-static-check"
-    status: "current_pass_14_of_14"
+    status: "current_pass_15_of_15"
     evidence: "docs/current-release-state.md"
   - name: "Local release gates"
     command: "pnpm release:check"
-    status: "current_pass_13_with_1_expected_phase5_human_evidence_failure"
+    status: "current_pass_14_with_1_expected_phase5_human_evidence_failure"
     evidence: "docs/current-release-state.md"
   - name: "Release security gate"
     command: "pnpm release:security-check"
