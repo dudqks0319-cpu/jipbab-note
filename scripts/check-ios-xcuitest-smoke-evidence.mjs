@@ -1,8 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { resolveRepositoryRoot } from "./lib/release-evidence-reference.mjs";
 
 const cwd = process.cwd();
-const evidenceDir = path.join(cwd, "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke");
+const repositoryRoot = resolveRepositoryRoot(cwd);
+const evidenceDir = path.join(
+  repositoryRoot,
+  "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke",
+);
 const requiredFiles = [
   "summary.md",
   "xcresult-primary-tabs-all-fixed-summary.txt",

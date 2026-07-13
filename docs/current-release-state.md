@@ -2,6 +2,16 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 연결 worktree iOS 출시 증거 복구
+
+- App Store 증거 경로 수정 후 남은 iOS 검사기를 재감사해 `check-ios-release-artifact.mjs`, `check-ios-cable-qa-evidence.mjs`, `check-ios-xcuitest-smoke-evidence.mjs`, `check-real-device-qa-evidence.mjs`도 연결 worktree의 빈 ignored 경로만 보거나 `<repo>`를 문자 그대로 처리하는 동일 계열 결함을 확인했다. 네 검사기를 공용 canonical repository resolver로 통일했으며 명시적 환경변수 override는 유지한다.
+- 회귀 테스트는 수정 전 canonical 경로 계약 2건과 iOS release artifact 경로 계약 1건이 실패하는 것을 확인한 뒤, 구현 후 실기기·케이블 집중 테스트 17/17로 통과했다. `<repo>`의 `..` 및 저장소 밖 symlink 이탈 거부도 기존 회귀 테스트로 유지된다.
+- `pnpm check:ios-release`는 기본 저장소의 ignored 산출물을 찾아 18/18 PASS했다. 현재 프로젝트·archive·IPA는 `com.jipbab.note`, version `1.0`, build `2026062602`, team `3FG9QJC8WC`로 일치하고 archive의 App Store upload history는 success다. compact remote-shell IPA는 HTTPS Production URL `https://jipbab-note-app.vercel.app`을 포함한다.
+- `pnpm check:ios-xcuitest-smoke`는 기존 iPhone 12 Pro 케이블 증거와 스크린샷 manifest를 찾아 35 PASS, 0 FAIL로 복구됐다. 이 증거는 primary tabs, recipe-to-shopping core loop, shopping link handoff, notification preparation을 다루지만 OAuth 완료와 실제 계정 삭제 실행은 포함하지 않는다.
+- `pnpm check:ios-cable-qa`는 더 이상 `evidence directory missing`으로 실패하지 않는다. 최신 2026-06-26 packet에서 23개 항목을 통과하고 현재 후보 build 불일치 1건만 정확히 보고한다. 연결된 iPhone 12 Pro(iOS 17.6.1)의 설치 앱을 식별정보 없이 읽은 결과는 `com.jipbab.note 1.0 (2026062601)`이며, 목표 후보는 `2026062602`다.
+- `pnpm check:real-device-qa-evidence -- --platform=ios`도 현재 `iOS build: 2026062602` 증거 한 줄만 부족하다고 보고한다. build `2026062602` archive와 IPA는 로컬에 존재하지만 실제 iPhone 교체 설치는 외부 쓰기이므로 이 점검에서 수행하지 않았고, 기존 실기기 증거를 새 빌드 증거로 승격하지 않았다.
+- 잔여 iOS 조치: Owner `FullStackDev+QA+Operator`, due `before_native_release` — 운영자 승인 후 development-signed `2026062602` archive app을 물리 iPhone에 설치하고 cable launch·app inventory·현재 후보 수동 흐름을 새 packet으로 캡처한다. OAuth·알림·장보기 링크·직접 계정 삭제는 실제 관찰된 항목만 갱신한다.
+
 ## 2026-07-13 출시 증거 경로·외부 상태 재검증
 
 - 연결된 worktree에서 문서의 `<repo>/output/...` 증거 경로를 문자 그대로 검사해, 기본 저장소에 존재하는 App Store Connect/TestFlight 증거를 누락으로 오판하던 원인을 고쳤다. 공용 경로 해석기는 `git --git-common-dir`로 기본 저장소 루트를 찾고 `<repo>` 경로의 `..` 및 저장소 밖 symlink 이탈을 거부한다. 절대경로, worktree 상대경로, HTTP(S) 증거 참조의 기존 동작은 유지한다.

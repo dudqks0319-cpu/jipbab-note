@@ -25,6 +25,16 @@ test("iOS cable QA evidence check is part of App Store external status", () => {
   assert.match(appStoreExternalStatus, /check-ios-xcuitest-smoke-evidence\.mjs/);
 });
 
+test("iOS cable QA checkers resolve ignored evidence from the canonical repository", () => {
+  assert.match(source, /resolveRepositoryRoot\(cwd\)/);
+  assert.match(source, /path\.join\(repositoryRoot, "output", "release-evidence"\)/);
+  assert.match(xcuitestSmokeSource, /resolveRepositoryRoot\(cwd\)/);
+  assert.match(
+    xcuitestSmokeSource,
+    /path\.join\(\s*repositoryRoot,\s*"output\/release-evidence\/2026-06-25T09-30-ios-xcuitest-cable-smoke",?\s*\)/,
+  );
+});
+
 test("iOS cable QA evidence check validates build identity and cable launch proof", () => {
   assert.match(source, /CURRENT_PROJECT_VERSION/);
   assert.match(source, /com\.jipbab\.note/);
@@ -94,6 +104,8 @@ test("iOS cable XCUITest target covers shopping handoff and notification prepara
 });
 
 test("iOS release artifact check reads only the app target settings", () => {
+  assert.match(iosReleaseArtifactSource, /resolveRepositoryRoot\(cwd\)/);
+  assert.match(iosReleaseArtifactSource, /path\.join\(repositoryRoot, "ios\/build"\)/);
   assert.match(iosReleaseArtifactSource, /appTargetBuildConfigurationIds/);
   assert.match(iosReleaseArtifactSource, /PBXNativeTarget "App"/);
   assert.match(iosReleaseArtifactSource, /com\\.apple\\.product-type\\.application/);

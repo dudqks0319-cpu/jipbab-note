@@ -1,8 +1,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { resolveRepositoryRoot } from "./lib/release-evidence-reference.mjs";
 
 const cwd = process.cwd();
-const evidenceRoot = path.join(cwd, "output", "release-evidence");
+const repositoryRoot = resolveRepositoryRoot(cwd);
+const evidenceRoot = path.join(repositoryRoot, "output", "release-evidence");
 const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
 
 const requiredFiles = [

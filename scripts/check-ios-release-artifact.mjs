@@ -3,8 +3,11 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { resolveRepositoryRoot } from "./lib/release-evidence-reference.mjs";
 
 const cwd = process.cwd();
+const repositoryRoot = resolveRepositoryRoot(cwd);
+const iosBuildDirectory = path.join(repositoryRoot, "ios/build");
 const plistBuddy = "/usr/libexec/PlistBuddy";
 const expectedBundleId = "com.jipbab.note";
 const expectedTeamId = "3FG9QJC8WC";
@@ -39,7 +42,7 @@ function resolveFromEnv(name, fallback) {
 }
 
 function newestArchivePath() {
-  const buildDir = path.join(cwd, "ios/build");
+  const buildDir = iosBuildDirectory;
   if (!existsSync(buildDir)) {
     return null;
   }
@@ -57,7 +60,7 @@ function defaultArchivePath() {
 }
 
 function newestIpaPath() {
-  const buildDir = path.join(cwd, "ios/build");
+  const buildDir = iosBuildDirectory;
   if (!existsSync(buildDir)) {
     return null;
   }
@@ -72,7 +75,7 @@ function newestIpaPath() {
 }
 
 function defaultIpaPath() {
-  return newestIpaPath() ?? path.join(cwd, "ios/build/export-check/App.ipa");
+  return newestIpaPath() ?? path.join(iosBuildDirectory, "export-check/App.ipa");
 }
 
 function defaultExportOptionsPath(ipaFilePath) {
@@ -81,7 +84,7 @@ function defaultExportOptionsPath(ipaFilePath) {
     return siblingExportOptions;
   }
 
-  return path.join(cwd, "ios/build/export-check/ExportOptions.plist");
+  return path.join(iosBuildDirectory, "export-check/ExportOptions.plist");
 }
 
 function readPlistValue(plistPath, key) {
