@@ -48,7 +48,7 @@ type ApiOperationRecorderInput = {
 
 const DEPLOYMENT_SHA_PATTERN = /^[a-f0-9]{7,64}$/i;
 
-function deploymentSha(environment: OperationalTelemetryEnvironment): string {
+export function resolveDeploymentSha(environment: OperationalTelemetryEnvironment): string {
   const candidate = [
     environment.VERCEL_GIT_COMMIT_SHA,
     environment.DEPLOYMENT_SHA,
@@ -84,7 +84,7 @@ export function buildApiOperationMetadata(input: ApiOperationInput): ApiOperatio
     status: input.status,
     latency_ms: boundedLatency(input.latencyMs),
     ...(input.errorCode ? { error_code: input.errorCode } : {}),
-    deployment_sha: deploymentSha(input.environment ?? process.env),
+    deployment_sha: resolveDeploymentSha(input.environment ?? process.env),
   };
 }
 

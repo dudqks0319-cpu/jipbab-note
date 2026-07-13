@@ -420,10 +420,7 @@ export default function SettingsPage() {
           </div>
           <SettingLink title="이용약관" value="" href="/terms" />
           <SettingLink title="개인정보 처리방침" value="" href="/privacy" />
-          <div className="flex items-center justify-between px-4 py-3.5">
-            <span className="text-[14px] font-bold text-[#4b3929]">앱 정보</span>
-            <span className="text-[12px] font-semibold text-[#8f7f70]">v1.0.0</span>
-          </div>
+          <SettingLink title="앱 정보" value="v1.0.0" href="/settings/app-info" />
         </div>
       </section>
 
