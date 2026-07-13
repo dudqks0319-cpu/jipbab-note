@@ -30,6 +30,8 @@ test("Phase 6 E2E contract is wired into package and release gates", () => {
   assert.match(happyPath, /Network\.requestWillBeSent/);
   assert.match(happyPath, /appFailedRequestCount, 0/);
   assert.doesNotMatch(happyPath, /Network\.setExtraHTTPHeaders/);
+  assert.doesNotMatch(happyPath, /Page\.javascriptDialogOpening/);
+  assert.match(happyPath, /confirmation-confirm/);
   assert.match(happyPath, /fixture_session_bootstrapped/);
   assert.match(happyPath, /redactE2EArtifact/);
 });

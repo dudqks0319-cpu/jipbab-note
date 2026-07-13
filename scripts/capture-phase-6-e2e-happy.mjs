@@ -409,11 +409,9 @@ try {
   await navigate(client, `${origin}/shopping`);
   await waitForBrowserCondition(client, "shopping item persisted", bodyIncludes, ["미구매 (1)"]);
   assert.equal(await evaluate(client, fillTestId, ["shopping-quick-input", "파 1단"]), true);
-  const duplicateDialogOpening = client.waitFor("Page.javascriptDialogOpening");
-  const duplicateSubmitClick = evaluate(client, clickTestId, ["shopping-quick-submit"]);
-  await duplicateDialogOpening;
-  await client.send("Page.handleJavaScriptDialog", { accept: true });
-  assert.equal(await duplicateSubmitClick, true);
+  assert.equal(await evaluate(client, clickTestId, ["shopping-quick-submit"]), true);
+  await waitForBrowserCondition(client, "shopping merge confirmation", bodyIncludes, ["장보기 수량을 합칠까요?"]);
+  assert.equal(await evaluate(client, clickTestId, ["confirmation-confirm"]), true);
   await waitForBrowserCondition(client, "shopping duplicate merged", bodyIncludes, ["파 수량을 기존 장보기 항목과 합쳤어요."]);
   checks.push("shopping_duplicate_merged");
 
@@ -444,11 +442,9 @@ try {
   assert.equal(await evaluate(client, clickTestId, ["cook-feedback-easy"]), true);
   checks.push("timer_90_paused", "previous_step", "cooking_completed", "feedback_saved");
 
-  const dialogOpening = client.waitFor("Page.javascriptDialogOpening");
-  const consumeClick = evaluate(client, clickTestId, ["consumed-ingredients-apply"]);
-  await dialogOpening;
-  await client.send("Page.handleJavaScriptDialog", { accept: true });
-  assert.equal(await consumeClick, true);
+  assert.equal(await evaluate(client, clickTestId, ["consumed-ingredients-apply"]), true);
+  await waitForBrowserCondition(client, "consume confirmation", bodyIncludes, ["사용한 재료를 소진 처리할까요?"]);
+  assert.equal(await evaluate(client, clickTestId, ["confirmation-confirm"]), true);
   await waitForBrowserCondition(client, "ingredients consumed", bodyIncludes, ["사용한 재료 2개를 소진 처리했어요."]);
   await reload(client);
   await waitForBrowserCondition(client, "completion restored", bodyIncludes, ["조리 완료"]);

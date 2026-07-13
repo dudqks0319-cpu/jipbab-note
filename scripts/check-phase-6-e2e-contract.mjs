@@ -96,6 +96,8 @@ const contracts = [
       happyCaptureSource.includes("humanReviewCounted: false") &&
       happyCaptureSource.includes("fixture_session_bootstrapped") &&
       !happyCaptureSource.includes("Network.setExtraHTTPHeaders") &&
+      !happyCaptureSource.includes("Page.javascriptDialogOpening") &&
+      happyCaptureSource.includes('clickTestId, ["confirmation-confirm"]') &&
       happyCaptureSource.includes("redactE2EArtifact") &&
       artifactRedactionSource.includes("REDACTED"),
   },

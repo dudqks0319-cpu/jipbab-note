@@ -90,6 +90,7 @@ function ConfirmDialog({
           <button
             ref={cancelButtonRef}
             type="button"
+            data-testid="confirmation-cancel"
             onClick={onCancel}
             className="min-h-12 rounded-[14px] border border-[#d9c9b8] bg-white px-4 text-sm font-black text-[#6f6257] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ea5a1f]"
           >
@@ -98,6 +99,7 @@ function ConfirmDialog({
           <button
             ref={confirmButtonRef}
             type="button"
+            data-testid="confirmation-confirm"
             onClick={onConfirm}
             className={`min-h-12 rounded-[14px] px-4 text-sm font-black text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ea5a1f] ${
               options.destructive ? 'bg-[#c93c32]' : 'bg-[#ea5a1f]'
