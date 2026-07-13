@@ -29,6 +29,20 @@ const requiredPerformanceRegressionMetrics = [
   "imageTransferBytes",
   "requestCount",
   "totalLongTaskMilliseconds",
+  "longTaskOver50Count",
+];
+const requiredPerformanceStatistics = ["median", "p75", "max", "standardDeviation"];
+const requiredPerformanceStatisticMetrics = [
+  "lcpMilliseconds",
+  "cls",
+  "fcpMilliseconds",
+  "ttfbMilliseconds",
+  "transferBytes",
+  "jsTransferBytes",
+  "imageTransferBytes",
+  "requestCount",
+  "totalLongTaskMilliseconds",
+  "longTaskOver50Count",
 ];
 
 function readIosProjectBuildNumber() {
@@ -165,13 +179,37 @@ function readOptionalJson(filePath) {
 function hasReleaseCandidatePerformanceEvidence(baseline) {
   if (!baseline || baseline.measurementProfile !== "release-candidate") return false;
   if (!/^[a-f0-9]{40}$/i.test(baseline.deploymentSha ?? "")) return false;
-  if (!Number.isInteger(baseline.runCount) || baseline.runCount < 5) return false;
+  if (!Number.isInteger(baseline.runCountPerCacheMode) || baseline.runCountPerCacheMode < 5) {
+    return false;
+  }
+  if (
+    baseline.totalRunCountPerRoute !== baseline.runCountPerCacheMode * 2 ||
+    baseline.runCount !== baseline.totalRunCountPerRoute
+  ) {
+    return false;
+  }
   if (!Number.isFinite(baseline.interactionP75Milliseconds)) return false;
   if (!Number.isFinite(baseline.searchInputP75Milliseconds)) return false;
 
   return requiredReleaseCandidatePerformanceRoutes.every((routeName) => {
     const route = baseline.routes?.[routeName];
-    return requiredPerformanceRegressionMetrics.every((metric) => Number.isFinite(route?.[metric]));
+    const hasRegressionMetrics = requiredPerformanceRegressionMetrics.every(
+      (metric) => Number.isFinite(route?.[metric]),
+    );
+    const hasSamplingStatistics = ["cold", "warm"].every((cacheMode) => {
+      const statistics = route?.statistics?.[cacheMode];
+      return (
+        statistics?.attemptedRuns === baseline.runCountPerCacheMode &&
+        statistics?.successfulRuns === baseline.runCountPerCacheMode &&
+        statistics.failureRate === 0 &&
+        requiredPerformanceStatisticMetrics.every((metricName) =>
+          requiredPerformanceStatistics.every((statisticName) =>
+            Number.isFinite(statistics?.[metricName]?.[statisticName]),
+          ),
+        )
+      );
+    });
+    return hasRegressionMetrics && hasSamplingStatistics;
   });
 }
 
@@ -323,8 +361,8 @@ addResult(
   results,
   hasReleaseCandidatePerformanceEvidence(performanceBaseline) ? "pass" : "blocked",
   "출시 후보 실제 데이터 성능 baseline",
-  "docs/phase-6-performance-baseline.json evidence for exact deployment SHA, five runs, interaction timing, and nine populated release-candidate routes",
-  "인증 가능한 Preview에서 release-candidate 프로필을 5회 측정하고 deploymentSha·interaction/search p75와 9개 화면 회귀 지표를 baseline에 기록",
+  "docs/phase-6-performance-baseline.json evidence for exact deployment SHA, five cold plus five warm runs, aggregate statistics, interaction timing, and nine populated release-candidate routes",
+  "인증 가능한 Preview에서 release-candidate 프로필을 cold 5회와 warm 5회 측정하고 deploymentSha·집계 통계·interaction/search p75와 9개 화면 회귀 지표를 baseline에 기록",
 );
 
 addResult(

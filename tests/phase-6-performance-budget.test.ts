@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { summarizeSamples } from "../scripts/lib/performance-statistics.mjs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
@@ -34,7 +35,7 @@ test("Phase 6 performance static contract passes", () => {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /Contracts checked: 14/);
+  assert.match(result.stdout, /Contracts checked: 15/);
   assert.match(result.stdout, /Failures: 0/);
 });
 
@@ -97,6 +98,67 @@ const releaseCandidateRoutes = [
   "app-info",
 ];
 
+const aggregateStatistics = {
+  attemptedRuns: 5,
+  successfulRuns: 5,
+  failureRate: 0,
+  lcpMilliseconds: {
+    median: 1200,
+    p75: 1200,
+    max: 1200,
+    standardDeviation: 0,
+  },
+  cls: { median: 0.02, p75: 0.02, max: 0.02, standardDeviation: 0 },
+  fcpMilliseconds: {
+    median: 800,
+    p75: 800,
+    max: 800,
+    standardDeviation: 0,
+  },
+  ttfbMilliseconds: {
+    median: 300,
+    p75: 300,
+    max: 300,
+    standardDeviation: 0,
+  },
+  transferBytes: {
+    median: 400000,
+    p75: 400000,
+    max: 400000,
+    standardDeviation: 0,
+  },
+  jsTransferBytes: {
+    median: 250000,
+    p75: 250000,
+    max: 250000,
+    standardDeviation: 0,
+  },
+  imageTransferBytes: {
+    median: 100000,
+    p75: 100000,
+    max: 100000,
+    standardDeviation: 0,
+  },
+  requestCount: { median: 30, p75: 30, max: 30, standardDeviation: 0 },
+  totalLongTaskMilliseconds: {
+    median: 20,
+    p75: 20,
+    max: 20,
+    standardDeviation: 0,
+  },
+  longTaskOver50Count: { median: 0, p75: 0, max: 0, standardDeviation: 0 },
+};
+
+test("performance statistics include median, p75, maximum, and population deviation", () => {
+  assert.deepEqual(summarizeSamples([100, 200, 300, 400, 500]), {
+    median: 300,
+    p75: 400,
+    max: 500,
+    standardDeviation: 141.4,
+  });
+  assert.equal(summarizeSamples([0.0111, 0.0222, 0.0333, 0.0444, 0.0555], 4).p75, 0.0444);
+});
+
 function validReleaseCandidateEvidence() {
   return {
     schemaVersion: 1,
@@ -105,14 +167,19 @@ function validReleaseCandidateEvidence() {
     measurementProfile: "release-candidate",
     deploymentSha: "1".repeat(40),
     origin: "https://preview.example.com",
-    runCount: 5,
+    runCount: 10,
+    runCountPerCacheMode: 5,
+    totalRunCountPerRoute: 10,
     interactionP75Milliseconds: 80,
     searchInputP75Milliseconds: 45,
     failures: ["release-candidate regression baselines are missing: bootstrap"],
     missingBaselines: ["bootstrap"],
+    captureFailures: [],
     routeSummaries: releaseCandidateRoutes.map((route) => ({
       route,
-      runs: 5,
+      runs: 10,
+      coldRuns: 5,
+      warmRuns: 5,
       lcpP75Milliseconds: 1200,
       clsP75: 0.02,
       ttfbP75Milliseconds: 300,
@@ -121,9 +188,14 @@ function validReleaseCandidateEvidence() {
       imageTransferP75Bytes: 100000,
       requestCountP75: 30,
       totalLongTaskP75Milliseconds: 20,
+      longTaskOver50P75Count: 0,
       consoleErrorCount: 0,
       hydrationErrorCount: 0,
       unexpectedNetworkErrorCount: 0,
+      statistics: {
+        cold: structuredClone(aggregateStatistics),
+        warm: structuredClone(aggregateStatistics),
+      },
     })),
     results: [{ raw: "must not be promoted" }],
   };
@@ -163,14 +235,25 @@ test("performance baseline promotion rejects non-baseline failures", () => {
   assert.match(result.stderr, /absolute performance or runtime failures/);
 });
 
+test("performance baseline promotion rejects incomplete cold and warm sampling", () => {
+  const evidence = validReleaseCandidateEvidence();
+  evidence.routeSummaries[0].statistics.warm.successfulRuns = 4;
+  const { result } = runPromotion(evidence, true);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /cold and warm runs/);
+});
+
 test("performance baseline promotion writes only reviewed aggregate evidence", () => {
   const evidence = validReleaseCandidateEvidence();
   const { result, baseline } = runPromotion(evidence, true);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   assert.equal(baseline.measurementProfile, "release-candidate");
   assert.equal(baseline.deploymentSha, "1".repeat(40));
-  assert.equal(baseline.runCount, 5);
+  assert.equal(baseline.runCount, 10);
+  assert.equal(baseline.runCountPerCacheMode, 5);
+  assert.equal(baseline.totalRunCountPerRoute, 10);
   assert.equal(baseline.routes["published-home"].totalTransferBytes, 400000);
+  assert.equal(baseline.routes["published-home"].statistics.warm.successfulRuns, 5);
   assert.equal("results" in baseline, false);
   assert.equal("failures" in baseline, false);
 });

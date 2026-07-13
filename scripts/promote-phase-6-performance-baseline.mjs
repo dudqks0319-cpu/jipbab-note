@@ -32,6 +32,19 @@ const absoluteBudgets = Object.freeze({
   searchInputP75Milliseconds: 100,
 });
 
+const requiredAggregateMetrics = [
+  "lcpMilliseconds",
+  "cls",
+  "fcpMilliseconds",
+  "ttfbMilliseconds",
+  "transferBytes",
+  "jsTransferBytes",
+  "imageTransferBytes",
+  "requestCount",
+  "totalLongTaskMilliseconds",
+  "longTaskOver50Count",
+];
+
 function stop(message) {
   console.error(`Performance baseline promotion blocked: ${message}`);
   process.exit(1);
@@ -78,8 +91,14 @@ function validateHeader(evidence) {
     stop("deployment SHA must be a full Git SHA");
   }
   if (!isSafeHttpsOrigin(evidence.origin)) stop("origin must be a credential-free HTTPS origin");
-  if (!Number.isInteger(evidence.runCount) || evidence.runCount < 5) {
-    stop("at least five runs are required");
+  if (!Number.isInteger(evidence.runCountPerCacheMode) || evidence.runCountPerCacheMode < 5) {
+    stop("at least five cold and five warm runs are required");
+  }
+  if (
+    evidence.totalRunCountPerRoute !== evidence.runCountPerCacheMode * 2 ||
+    evidence.runCount !== evidence.totalRunCountPerRoute
+  ) {
+    stop("total run count must equal the cold and warm sample total");
   }
   if (!Number.isFinite(Date.parse(evidence.capturedAt))) stop("capturedAt must be an ISO timestamp");
 }
@@ -93,6 +112,9 @@ function validateFailures(evidence) {
   );
   if (nonBootstrapFailures.length > 0) {
     stop("evidence must not contain absolute performance or runtime failures");
+  }
+  if (!Array.isArray(evidence.captureFailures) || evidence.captureFailures.length > 0) {
+    stop("evidence must not contain capture failures");
   }
 }
 
@@ -111,9 +133,39 @@ function validateInteractionBudgets(evidence) {
   }
 }
 
-function validateRouteSummary(summary, routeName) {
+function validateModeStatistics(statistics, routeName, cacheMode, expectedRuns) {
+  if (
+    !statistics ||
+    statistics.attemptedRuns !== expectedRuns ||
+    statistics.successfulRuns !== expectedRuns ||
+    statistics.failureRate !== 0
+  ) {
+    stop(`${routeName} must contain five successful cold and warm runs for ${cacheMode}`);
+  }
+  for (const metricName of requiredAggregateMetrics) {
+    const metric = statistics[metricName];
+    for (const statisticName of ["median", "p75", "max", "standardDeviation"]) {
+      if (!isFiniteNonNegative(metric?.[statisticName])) {
+        stop(`${routeName} ${cacheMode} ${metricName}.${statisticName} is missing`);
+      }
+    }
+  }
+}
+
+function validateRouteSummary(summary, routeName, expectedRuns) {
   if (!summary || summary.route !== routeName) stop(`${routeName} summary is missing`);
-  if (!Number.isInteger(summary.runs) || summary.runs < 5) stop(`${routeName} has fewer than five runs`);
+  if (
+    !Number.isInteger(summary.runs) ||
+    !Number.isInteger(summary.coldRuns) ||
+    !Number.isInteger(summary.warmRuns) ||
+    summary.coldRuns !== expectedRuns ||
+    summary.warmRuns !== expectedRuns ||
+    summary.runs !== expectedRuns * 2
+  ) {
+    stop(`${routeName} must contain five successful cold and warm runs`);
+  }
+  validateModeStatistics(summary.statistics?.cold, routeName, "cold", expectedRuns);
+  validateModeStatistics(summary.statistics?.warm, routeName, "warm", expectedRuns);
   if (!isFiniteNonNegative(summary.lcpP75Milliseconds) || summary.lcpP75Milliseconds > absoluteBudgets.lcpP75Milliseconds) {
     stop(`${routeName} LCP is missing or exceeds 2500ms`);
   }
@@ -132,8 +184,25 @@ function validateRouteSummary(summary, routeName) {
     "imageTransferP75Bytes",
     "requestCountP75",
     "totalLongTaskP75Milliseconds",
+    "longTaskOver50P75Count",
   ]) {
     if (!isFiniteNonNegative(summary[key])) stop(`${routeName} ${key} is missing`);
+  }
+  const coldP75Pairs = [
+    ["lcpP75Milliseconds", "lcpMilliseconds"],
+    ["clsP75", "cls"],
+    ["ttfbP75Milliseconds", "ttfbMilliseconds"],
+    ["transferP75Bytes", "transferBytes"],
+    ["jsTransferP75Bytes", "jsTransferBytes"],
+    ["imageTransferP75Bytes", "imageTransferBytes"],
+    ["requestCountP75", "requestCount"],
+    ["totalLongTaskP75Milliseconds", "totalLongTaskMilliseconds"],
+    ["longTaskOver50P75Count", "longTaskOver50Count"],
+  ];
+  for (const [summaryKey, statisticsKey] of coldP75Pairs) {
+    if (summary[summaryKey] !== summary.statistics.cold[statisticsKey].p75) {
+      stop(`${routeName} ${summaryKey} must match the cold p75 statistic`);
+    }
   }
 }
 
@@ -150,13 +219,15 @@ function buildBaseline(evidence) {
   const routes = {};
   for (const routeName of requiredReleaseCandidateRoutes) {
     const summary = summaries.get(routeName);
-    validateRouteSummary(summary, routeName);
+    validateRouteSummary(summary, routeName, evidence.runCountPerCacheMode);
     routes[routeName] = {
       totalTransferBytes: summary.transferP75Bytes,
       jsTransferBytes: summary.jsTransferP75Bytes,
       imageTransferBytes: summary.imageTransferP75Bytes,
       requestCount: summary.requestCountP75,
       totalLongTaskMilliseconds: summary.totalLongTaskP75Milliseconds,
+      longTaskOver50Count: summary.longTaskOver50P75Count,
+      statistics: structuredClone(summary.statistics),
     };
   }
 
@@ -169,6 +240,8 @@ function buildBaseline(evidence) {
     deploymentSha: evidence.deploymentSha,
     origin: evidence.origin,
     runCount: evidence.runCount,
+    runCountPerCacheMode: evidence.runCountPerCacheMode,
+    totalRunCountPerRoute: evidence.totalRunCountPerRoute,
     interactionP75Milliseconds: evidence.interactionP75Milliseconds,
     searchInputP75Milliseconds: evidence.searchInputP75Milliseconds,
     routes,

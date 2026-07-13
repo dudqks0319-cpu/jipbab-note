@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { summarizeSamples } from "./lib/performance-statistics.mjs";
 
 const requestedUrl = process.env.PHASE6_PERFORMANCE_URL?.trim();
 const chromePath =
@@ -157,6 +158,9 @@ if (!requestedUrl) {
 
 if (!Number.isInteger(runCount) || runCount < 3 || runCount > 9) {
   throw new Error("PHASE6_PERFORMANCE_RUNS must be an integer between 3 and 9");
+}
+if (measurementProfile === "release-candidate" && runCount < 5) {
+  throw new Error("release-candidate performance capture requires at least five cold and warm runs");
 }
 
 if (!Number.isFinite(settleMilliseconds) || settleMilliseconds < 2_000) {
@@ -490,7 +494,7 @@ function summarizeResources(entries, navigation) {
   };
 }
 
-async function captureRun(debugPort, route, runNumber) {
+async function captureRun(debugPort, route, runNumber, cacheMode) {
   const targetResponse = await fetch(
     `http://127.0.0.1:${debugPort}/json/new?${encodeURIComponent("about:blank")}`,
     { method: "PUT" },
@@ -568,8 +572,11 @@ async function captureRun(debugPort, route, runNumber) {
     await client.send("Emulation.setCPUThrottlingRate", {
       rate: device.cpuSlowdownMultiplier,
     });
-    await client.send("Network.setCacheDisabled", { cacheDisabled: true });
-    await client.send("Network.clearBrowserCache");
+    const cacheDisabled = cacheMode === "cold";
+    await client.send("Network.setCacheDisabled", { cacheDisabled });
+    if (cacheDisabled) {
+      await client.send("Network.clearBrowserCache");
+    }
     await client.send("Network.emulateNetworkConditions", {
       offline: false,
       latency: device.latencyMilliseconds,
@@ -642,6 +649,7 @@ async function captureRun(debugPort, route, runNumber) {
     return {
       route: route.name,
       run: runNumber,
+      cacheMode,
       lcpMilliseconds: round(snapshot.largestContentfulPaint.startTime),
       lcpElement: {
         ...snapshot.largestContentfulPaint,
@@ -716,13 +724,44 @@ async function waitForDevToolsPort() {
 }
 
 const results = [];
+const captureFailures = [];
+
+function recordCaptureFailure(route, cacheMode, runNumber, error) {
+  const message = error instanceof Error ? error.message : "unknown capture failure";
+  captureFailures.push({
+    route: route.name,
+    cacheMode,
+    run: runNumber,
+    message: sanitizeRuntimeMessage(message),
+  });
+}
+
+async function measureRouteRun(debugPort, route, runNumber, cacheMode) {
+  try {
+    const result = await captureRun(debugPort, route, runNumber, cacheMode);
+    results.push(result);
+    return true;
+  } catch (error) {
+    recordCaptureFailure(route, cacheMode, runNumber, error);
+    return false;
+  }
+}
 
 try {
   const debugPort = await waitForDevToolsPort();
   for (const route of routes) {
     for (let runNumber = 1; runNumber <= runCount; runNumber += 1) {
-      console.log(`Measuring ${route.name} run ${runNumber}/${runCount}`);
-      results.push(await captureRun(debugPort, route, runNumber));
+      console.log(`Measuring ${route.name} cold run ${runNumber}/${runCount}`);
+      await measureRouteRun(debugPort, route, runNumber, "cold");
+    }
+    if (measurementProfile === "release-candidate") {
+      console.log(`Priming ${route.name} warm cache`);
+      const primed = await measureRouteRun(debugPort, route, 0, "warm-prime");
+      if (primed) results.pop();
+      for (let runNumber = 1; runNumber <= runCount; runNumber += 1) {
+        console.log(`Measuring ${route.name} warm run ${runNumber}/${runCount}`);
+        await measureRouteRun(debugPort, route, runNumber, "warm");
+      }
     }
   }
 } finally {
@@ -738,44 +777,54 @@ try {
   rmSync(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
 
+function metricP75(routeResults, selector, digits = 1) {
+  if (routeResults.length === 0) return null;
+  return round(percentile(routeResults.map(selector), 0.75), digits);
+}
+
+function summarizeRouteMode(routeResults) {
+  const metric = (selector, digits = 1) => (
+    routeResults.length > 0 ? summarizeSamples(routeResults.map(selector), digits) : null
+  );
+  return {
+    attemptedRuns: runCount,
+    successfulRuns: routeResults.length,
+    failureRate: round((runCount - routeResults.length) / runCount, 4),
+    lcpMilliseconds: metric((result) => result.lcpMilliseconds),
+    cls: metric((result) => result.cls, 4),
+    fcpMilliseconds: metric((result) => result.fcpMilliseconds),
+    ttfbMilliseconds: metric((result) => result.ttfbMilliseconds),
+    transferBytes: metric((result) => result.resources.totalTransferBytes),
+    jsTransferBytes: metric((result) => result.resources.jsTransferBytes),
+    imageTransferBytes: metric((result) => result.resources.imageTransferBytes),
+    requestCount: metric((result) => result.resources.count),
+    totalLongTaskMilliseconds: metric((result) => result.totalLongTaskMilliseconds),
+    longTaskOver50Count: metric((result) => result.longTaskOver50Count),
+  };
+}
+
 const routeSummaries = routes.map((route) => {
   const routeResults = results.filter((result) => result.route === route.name);
+  const coldResults = routeResults.filter((result) => result.cacheMode === "cold");
+  const warmResults = routeResults.filter((result) => result.cacheMode === "warm");
   return {
     route: route.name,
     runs: routeResults.length,
-    lcpP75Milliseconds: round(
-      percentile(routeResults.map((result) => result.lcpMilliseconds), 0.75),
+    coldRuns: coldResults.length,
+    warmRuns: warmResults.length,
+    lcpP75Milliseconds: metricP75(coldResults, (result) => result.lcpMilliseconds),
+    clsP75: metricP75(coldResults, (result) => result.cls, 4),
+    fcpP75Milliseconds: metricP75(coldResults, (result) => result.fcpMilliseconds),
+    ttfbP75Milliseconds: metricP75(coldResults, (result) => result.ttfbMilliseconds),
+    transferP75Bytes: metricP75(coldResults, (result) => result.resources.totalTransferBytes),
+    jsTransferP75Bytes: metricP75(coldResults, (result) => result.resources.jsTransferBytes),
+    imageTransferP75Bytes: metricP75(coldResults, (result) => result.resources.imageTransferBytes),
+    requestCountP75: metricP75(coldResults, (result) => result.resources.count),
+    totalLongTaskP75Milliseconds: metricP75(
+      coldResults,
+      (result) => result.totalLongTaskMilliseconds,
     ),
-    clsP75: round(percentile(routeResults.map((result) => result.cls), 0.75), 4),
-    fcpP75Milliseconds: round(
-      percentile(routeResults.map((result) => result.fcpMilliseconds), 0.75),
-    ),
-    ttfbP75Milliseconds: round(
-      percentile(routeResults.map((result) => result.ttfbMilliseconds), 0.75),
-    ),
-    transferP75Bytes: percentile(
-      routeResults.map((result) => result.resources.totalTransferBytes),
-      0.75,
-    ),
-    jsTransferP75Bytes: percentile(
-      routeResults.map((result) => result.resources.jsTransferBytes),
-      0.75,
-    ),
-    imageTransferP75Bytes: percentile(
-      routeResults.map((result) => result.resources.imageTransferBytes),
-      0.75,
-    ),
-    requestCountP75: percentile(
-      routeResults.map((result) => result.resources.count),
-      0.75,
-    ),
-    totalLongTaskP75Milliseconds: round(
-      percentile(routeResults.map((result) => result.totalLongTaskMilliseconds), 0.75),
-    ),
-    longTaskOver50P75Count: percentile(
-      routeResults.map((result) => result.longTaskOver50Count),
-      0.75,
-    ),
+    longTaskOver50P75Count: metricP75(coldResults, (result) => result.longTaskOver50Count),
     consoleErrorCount: routeResults.reduce(
       (total, result) => total + result.consoleErrorCount,
       0,
@@ -796,6 +845,12 @@ const routeSummaries = routes.map((route) => {
       (total, result) => total + result.unexpectedNetworkErrorCount,
       0,
     ),
+    statistics: {
+      cold: summarizeRouteMode(coldResults),
+      warm: measurementProfile === "release-candidate"
+        ? summarizeRouteMode(warmResults)
+        : null,
+    },
   };
 });
 
@@ -820,7 +875,9 @@ const searchInputP75Milliseconds = searchResults.length
     )
   : null;
 
-const failures = [];
+const failures = captureFailures.map(
+  (failure) => `${failure.route} ${failure.cacheMode} run ${failure.run} failed: ${failure.message}`,
+);
 const missingBaselines = [];
 const regressionMetrics = [
   ["transferP75Bytes", "totalTransferBytes", budgets.totalTransferIncreaseRatio],
@@ -828,17 +885,32 @@ const regressionMetrics = [
   ["imageTransferP75Bytes", "imageTransferBytes", budgets.imageTransferIncreaseRatio],
   ["requestCountP75", "requestCount", budgets.requestCountIncreaseRatio],
   ["totalLongTaskP75Milliseconds", "totalLongTaskMilliseconds", budgets.totalLongTaskIncreaseRatio],
+  ["longTaskOver50P75Count", "longTaskOver50Count", budgets.totalLongTaskIncreaseRatio],
 ];
 for (const summary of routeSummaries) {
-  if (summary.lcpP75Milliseconds > budgets.lcpMilliseconds) {
+  if (measurementProfile === "release-candidate" && (
+    summary.coldRuns < runCount ||
+    summary.warmRuns < runCount ||
+    summary.statistics.cold.failureRate !== 0 ||
+    summary.statistics.warm.failureRate !== 0
+  )) {
+    failures.push(`${summary.route} must complete ${runCount} cold and ${runCount} warm runs`);
+  }
+  if (!Number.isFinite(summary.lcpP75Milliseconds)) {
+    failures.push(`${summary.route} LCP p75 is missing`);
+  } else if (summary.lcpP75Milliseconds > budgets.lcpMilliseconds) {
     failures.push(
       `${summary.route} LCP p75 ${summary.lcpP75Milliseconds}ms > ${budgets.lcpMilliseconds}ms`,
     );
   }
-  if (summary.clsP75 > budgets.cls) {
+  if (!Number.isFinite(summary.clsP75)) {
+    failures.push(`${summary.route} CLS p75 is missing`);
+  } else if (summary.clsP75 > budgets.cls) {
     failures.push(`${summary.route} CLS p75 ${summary.clsP75} > ${budgets.cls}`);
   }
-  if (summary.ttfbP75Milliseconds > budgets.ttfbMilliseconds) {
+  if (!Number.isFinite(summary.ttfbP75Milliseconds)) {
+    failures.push(`${summary.route} TTFB p75 is missing`);
+  } else if (summary.ttfbP75Milliseconds > budgets.ttfbMilliseconds) {
     failures.push(`${summary.route} TTFB p75 ${summary.ttfbP75Milliseconds}ms > ${budgets.ttfbMilliseconds}ms`);
   }
   if (summary.consoleErrorCount > 0) {
@@ -892,12 +964,15 @@ const evidence = {
   origin: targetOrigin,
   budgets,
   device,
-  runCount,
+  runCount: measurementProfile === "release-candidate" ? runCount * 2 : runCount,
+  runCountPerCacheMode: runCount,
+  totalRunCountPerRoute: measurementProfile === "release-candidate" ? runCount * 2 : runCount,
   routeSummaries,
   interactionP75Milliseconds,
   searchInputP75Milliseconds,
   failures,
   missingBaselines,
+  captureFailures,
   results,
 };
 writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
@@ -905,6 +980,9 @@ writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 console.log("Phase 6 mobile performance capture");
 console.log(`Origin: ${targetOrigin}`);
 console.log(`Profile: 390x844, CPU ${device.cpuSlowdownMultiplier}x, 1.6 Mbps / 150ms RTT`);
+console.log(
+  `Sampling: ${runCount} cold${measurementProfile === "release-candidate" ? ` + ${runCount} warm` : ""} runs per route`,
+);
 for (const summary of routeSummaries) {
   console.log(
     `- ${summary.route}: LCP p75=${summary.lcpP75Milliseconds}ms, CLS p75=${summary.clsP75}, FCP p75=${summary.fcpP75Milliseconds}ms, TTFB p75=${summary.ttfbP75Milliseconds}ms, transfer p75=${summary.transferP75Bytes}B, JS=${summary.jsTransferP75Bytes}B, image=${summary.imageTransferP75Bytes}B, requests=${summary.requestCountP75}, long tasks=${summary.totalLongTaskP75Milliseconds}ms, console errors=${summary.consoleErrorCount}, hydration errors=${summary.hydrationErrorCount}, unexpected network errors=${summary.unexpectedNetworkErrorCount}, expected dependency errors=${summary.expectedDependencyErrorCount}, expected platform errors=${summary.expectedPlatformErrorCount}`,

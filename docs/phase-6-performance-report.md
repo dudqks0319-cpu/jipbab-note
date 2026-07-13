@@ -61,7 +61,7 @@ PHASE6_PERFORMANCE_RUNS=5 \
 pnpm capture:phase6-performance
 ```
 
-최초 출시 후보 측정은 아직 기준선이 없으므로 절대 성능·runtime 검사를 통과해도 회귀 기준 누락으로 실패하며, Git에서 제외된 증거 JSON은 남긴다. 증거 전체를 사람이 검토한 뒤 실패가 기준선 누락뿐일 때만 다음 명령으로 집계값을 승격한다. 승격기는 명시적 승인, 전체 배포 SHA, 5회 이상 측정, 9개 필수 화면, 절대 성능 예산, runtime 오류 0건을 다시 검사하며 raw 측정값이나 실패 목록은 baseline에 복사하지 않는다.
+Release Candidate는 화면마다 cold 5회와 warm 5회를 별도로 측정한다. 각 모드의 median, p75, 최대값, 표준편차, 실패율을 기록하고 절대 예산과 회귀 예산은 보수적인 cold p75에 적용한다. 최초 측정은 아직 기준선이 없으므로 절대 성능·runtime 검사를 통과해도 회귀 기준 누락으로 실패하며, Git에서 제외된 증거 JSON은 남긴다. 증거 전체를 사람이 검토한 뒤 실패가 기준선 누락뿐일 때만 다음 명령으로 집계값을 승격한다. 승격기는 명시적 승인, 전체 배포 SHA, cold/warm 각 5회, 9개 필수 화면, 절대 성능 예산, runtime·capture 오류 0건을 다시 검사하며 raw 측정값이나 실패 목록은 baseline에 복사하지 않는다.
 
 ```bash
 PHASE6_PERFORMANCE_PROMOTION_APPROVED=1 \
@@ -72,9 +72,12 @@ pnpm promote:phase6-performance-baseline
 
 - `measurementProfile`: `release-candidate`
 - `deploymentSha`: 측정한 Preview의 40자리 Git SHA
-- `runCount`: 5 이상
+- `runCount`: 화면별 총 10회 이상
+- `runCountPerCacheMode`: cold·warm 각각 5회 이상
+- `totalRunCountPerRoute`: `runCountPerCacheMode × 2`
 - `interactionP75Milliseconds`, `searchInputP75Milliseconds`
-- 9개 화면별 `totalTransferBytes`, `jsTransferBytes`, `imageTransferBytes`, `requestCount`, `totalLongTaskMilliseconds`
+- 9개 화면별 `totalTransferBytes`, `jsTransferBytes`, `imageTransferBytes`, `requestCount`, `totalLongTaskMilliseconds`, `longTaskOver50Count`
+- 9개 화면의 cold·warm별 `median`, `p75`, `max`, `standardDeviation`, `failureRate`
 
 필수 화면은 `published-home`, `published-recipe-list-12`, `image-recipe-detail-serving`, `shopping-list-20`, `cooking-mode`, `timer-running`, `family-fridge`, `login-callback`, `app-info`다. 현재 baseline은 데모 3개 화면의 이전 측정값만 포함하므로 출시 후보 성능 증거는 `BLOCKED`다.
 

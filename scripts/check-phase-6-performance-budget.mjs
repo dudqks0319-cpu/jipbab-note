@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-performance.mjs", "utf8");
+const statisticsSource = readFileSync("scripts/lib/performance-statistics.mjs", "utf8");
 const promotionSource = readFileSync("scripts/promote-phase-6-performance-baseline.mjs", "utf8");
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
@@ -68,6 +69,17 @@ const contracts = [
       captureSource.includes("/json/new"),
   },
   {
+    name: "release-candidate cold and warm statistics",
+    pass:
+      captureSource.includes("requires at least five cold and warm runs") &&
+      captureSource.includes('cacheMode === "cold"') &&
+      captureSource.includes('"warm-prime"') &&
+      captureSource.includes("runCountPerCacheMode") &&
+      captureSource.includes("failureRate") &&
+      statisticsSource.includes("median") &&
+      statisticsSource.includes("standardDeviation"),
+  },
+  {
     name: "trusted search interaction",
     pass:
       captureSource.includes("Input.dispatchMouseEvent") &&
@@ -125,6 +137,7 @@ const contracts = [
       promotionSource.includes("PHASE6_PERFORMANCE_PROMOTION_APPROVED=1") &&
       promotionSource.includes("release-candidate regression baselines are missing:") &&
       promotionSource.includes("must not contain absolute performance or runtime failures") &&
+      promotionSource.includes("five successful cold and warm runs") &&
       promotionSource.includes("requiredReleaseCandidateRoutes"),
   },
   {
