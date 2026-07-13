@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-performance.mjs", "utf8");
+const promotionSource = readFileSync("scripts/promote-phase-6-performance-baseline.mjs", "utf8");
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
 const baseline = JSON.parse(readFileSync("docs/phase-6-performance-baseline.json", "utf8"));
@@ -113,6 +114,18 @@ const contracts = [
       captureSource.includes('login-callback') &&
       captureSource.includes('app-info') &&
       captureSource.includes('release-candidate regression baselines are missing'),
+  },
+  {
+    name: "reviewed release-candidate baseline promotion",
+    pass:
+      packageJson.scripts?.["promote:phase6-performance-baseline"] ===
+        "node scripts/promote-phase-6-performance-baseline.mjs" &&
+      captureSource.includes("PHASE6_PERFORMANCE_DEPLOYMENT_SHA must be a full Git SHA") &&
+      captureSource.includes('deploymentSha: measurementProfile === "release-candidate"') &&
+      promotionSource.includes("PHASE6_PERFORMANCE_PROMOTION_APPROVED=1") &&
+      promotionSource.includes("release-candidate regression baselines are missing:") &&
+      promotionSource.includes("must not contain absolute performance or runtime failures") &&
+      promotionSource.includes("requiredReleaseCandidateRoutes"),
   },
   {
     name: "local and CI release gate wiring",

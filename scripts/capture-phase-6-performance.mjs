@@ -21,6 +21,7 @@ const settleMilliseconds = Number(process.env.PHASE6_PERFORMANCE_SETTLE_MS ?? 4_
 const measurementProfile = process.env.PHASE6_PERFORMANCE_PROFILE?.trim() || "baseline";
 const populatedRecipeId = process.env.PHASE6_PERFORMANCE_RECIPE_ID?.trim() || "";
 const populatedRecipeTitle = process.env.PHASE6_PERFORMANCE_RECIPE_TITLE?.trim() || "";
+const deploymentSha = process.env.PHASE6_PERFORMANCE_DEPLOYMENT_SHA?.trim() || "";
 const evidenceDir = path.resolve("output/performance-evidence");
 const evidencePath = path.join(evidenceDir, "phase6-performance-lab.json");
 const baselinePath = path.resolve("docs/phase-6-performance-baseline.json");
@@ -140,6 +141,9 @@ if (measurementProfile === "release-candidate") {
   }
   if (!populatedRecipeTitle || populatedRecipeTitle.length > 100) {
     throw new Error("PHASE6_PERFORMANCE_RECIPE_TITLE is required and must be at most 100 characters");
+  }
+  if (!/^[a-f0-9]{40}$/i.test(deploymentSha)) {
+    throw new Error("PHASE6_PERFORMANCE_DEPLOYMENT_SHA must be a full Git SHA for release-candidate capture");
   }
 }
 
@@ -884,6 +888,7 @@ const evidence = {
   capturedAt: new Date().toISOString(),
   measurementClass: "repeatable_mobile_lab_guard_not_field_p75",
   measurementProfile,
+  deploymentSha: measurementProfile === "release-candidate" ? deploymentSha : null,
   origin: targetOrigin,
   budgets,
   device,

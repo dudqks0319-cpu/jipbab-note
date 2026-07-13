@@ -56,11 +56,19 @@ PHASE6_PERFORMANCE_URL=<preview-url> \
 PHASE6_PERFORMANCE_PROFILE=release-candidate \
 PHASE6_PERFORMANCE_RECIPE_ID=<published-recipe-uuid> \
 PHASE6_PERFORMANCE_RECIPE_TITLE=<published-recipe-title> \
+PHASE6_PERFORMANCE_DEPLOYMENT_SHA=<40-character-preview-git-sha> \
 PHASE6_PERFORMANCE_RUNS=5 \
 pnpm capture:phase6-performance
 ```
 
-출시 후보 완료 판정에는 측정 성공만으로 부족하다. 검토된 결과를 `docs/phase-6-performance-baseline.json`에 승격하고 다음 항목을 모두 기록해야 `pnpm release:candidate-gate`가 통과한다.
+최초 출시 후보 측정은 아직 기준선이 없으므로 절대 성능·runtime 검사를 통과해도 회귀 기준 누락으로 실패하며, Git에서 제외된 증거 JSON은 남긴다. 증거 전체를 사람이 검토한 뒤 실패가 기준선 누락뿐일 때만 다음 명령으로 집계값을 승격한다. 승격기는 명시적 승인, 전체 배포 SHA, 5회 이상 측정, 9개 필수 화면, 절대 성능 예산, runtime 오류 0건을 다시 검사하며 raw 측정값이나 실패 목록은 baseline에 복사하지 않는다.
+
+```bash
+PHASE6_PERFORMANCE_PROMOTION_APPROVED=1 \
+pnpm promote:phase6-performance-baseline
+```
+
+승격 후 같은 배포·데이터로 `pnpm capture:phase6-performance`를 다시 실행해 새 기준선 대비 회귀 검사까지 통과해야 한다. 출시 후보 완료 판정에는 측정 성공만으로 부족하며, 다음 항목을 모두 기록해야 `pnpm release:candidate-gate`가 통과한다.
 
 - `measurementProfile`: `release-candidate`
 - `deploymentSha`: 측정한 Preview의 40자리 Git SHA
