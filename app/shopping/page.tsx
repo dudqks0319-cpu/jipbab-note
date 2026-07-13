@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { CalendarDays, Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
 
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
 import { useFamilyShare } from '@/hooks/useFamilyShare'
@@ -322,6 +323,7 @@ function getShoppingCatalogSubcategoryItems(
 }
 
 export default function ShoppingPage() {
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog()
   const isAppStoreDemo = useDemoMode()
   const { group } = useFamilyShare()
   const [selectedScope, setSelectedScope] = useState<'personal' | 'family'>('personal')
@@ -411,7 +413,11 @@ export default function ShoppingPage() {
     const shouldMerge = duplicate && duplicateMode === 'merge'
       ? true
       : duplicate && duplicateMode === 'ask'
-        ? window.confirm(`이미 장보기 목록에 있어요. ${normalizedName}${normalizedQuantity ? ` ${normalizedQuantity}` : ''} 수량을 합칠까요?`)
+        ? await requestConfirmation({
+            title: '장보기 수량을 합칠까요?',
+            message: `${normalizedName}${normalizedQuantity ? ` ${normalizedQuantity}` : ''} 항목이 이미 있습니다. 기존 항목에 수량을 합칩니다.`,
+            confirmLabel: '수량 합치기',
+          })
         : false
     if (duplicate && !shouldMerge) {
       setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
@@ -486,7 +492,11 @@ export default function ShoppingPage() {
       (ingredient) => normalizeShoppingIngredientName(ingredient.name) === normalizeShoppingIngredientName(item.name),
     )
     if (duplicate) {
-      const shouldMerge = window.confirm(`${item.name}이 이미 냉장고에 있어요. 기존 재료와 합칠까요?`)
+      const shouldMerge = await requestConfirmation({
+        title: '냉장고 재료와 합칠까요?',
+        message: `${item.name}이 이미 냉장고에 있습니다. 구매한 수량과 보관 정보를 기존 재료에 합칩니다.`,
+        confirmLabel: '냉장고에 합치기',
+      })
       if (!shouldMerge) return
 
       await updateIngredient(duplicate.id, buildMergedIngredientPayloadFromShoppingItem(duplicate, item, fridgeOptions))
@@ -528,6 +538,7 @@ export default function ShoppingPage() {
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
+      {confirmationDialog}
       <section className="mobile-safe-top px-5">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">

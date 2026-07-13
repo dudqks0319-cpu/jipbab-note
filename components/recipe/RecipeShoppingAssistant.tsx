@@ -9,6 +9,7 @@ import { useIngredients } from "@/hooks/useIngredients";
 import { usePartnerLinks } from "@/hooks/usePartnerLinks";
 import { useShopping } from "@/hooks/useShopping";
 import CoupangAffiliateCard from "@/components/affiliate/CoupangAffiliateCard";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { calculateRecipeIngredientMatch } from "@/lib/matching";
@@ -39,6 +40,7 @@ export default function RecipeShoppingAssistant({
   ingredientList,
   ingredientDetails = [],
 }: RecipeShoppingAssistantProps) {
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog();
   const { group } = useFamilyShare();
   const [selectedScope, setSelectedScope] = useState<AssistantScope>(() => {
     if (typeof window === "undefined") {
@@ -161,9 +163,11 @@ export default function RecipeShoppingAssistant({
 
   const removeCookedIngredients = async () => {
     if (matchedInventoryItems.length === 0) return;
-    const shouldRemove = window.confirm(
-      `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 소진 처리할까요? 삭제하지 않고 소진 기록으로 남깁니다.`,
-    );
+    const shouldRemove = await requestConfirmation({
+      title: "사용한 재료를 소진 처리할까요?",
+      message: `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 삭제하지 않고 소진 기록으로 남깁니다.`,
+      confirmLabel: "소진 처리",
+    });
     if (!shouldRemove) return;
     await Promise.all(matchedInventoryItems.map((item) => updateIngredient(item.id, {
       name: item.name,
@@ -257,7 +261,8 @@ export default function RecipeShoppingAssistant({
   }
 
   return (
-    <section id="shopping-assistant" className="scroll-mt-24 px-5 pt-5">
+    <>
+      <section id="shopping-assistant" className="scroll-mt-24 px-5 pt-5">
       <div className="jipbab-panel rounded-[16px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -467,6 +472,8 @@ export default function RecipeShoppingAssistant({
           </div>
         ) : null}
       </div>
-    </section>
+      </section>
+      {confirmationDialog}
+    </>
   );
 }

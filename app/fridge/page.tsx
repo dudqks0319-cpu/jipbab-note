@@ -4,6 +4,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useAppSettings } from '@/hooks/useAppSettings'
 import { useDemoMode } from '@/hooks/useDemoMode'
@@ -229,6 +230,7 @@ function buildFutureDate(days: number): string {
 }
 
 export default function FridgePage() {
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog()
   const { ingredients, loading, error, source, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
@@ -447,7 +449,11 @@ export default function FridgePage() {
         (item) => normalizeIngredientName(item.name) === normalizeIngredientName(payload.name),
       )
       if (duplicate) {
-        const shouldMerge = window.confirm(`${duplicate.name}이 이미 있어요. 기존 재료에 합칠까요?`)
+        const shouldMerge = await requestConfirmation({
+          title: '기존 재료와 합칠까요?',
+          message: `${duplicate.name}이 이미 냉장고에 있습니다. 새 수량과 메모를 기존 재료에 합칩니다.`,
+          confirmLabel: '합치기',
+        })
         if (!shouldMerge) return
 
         await updateIngredient(duplicate.id, buildIngredientPayloadFromRecord(duplicate, {
@@ -605,7 +611,12 @@ export default function FridgePage() {
     const deltaX = endX - swipeStartX
     setSwipeStartX(null)
     if (deltaX > -72) return
-    const shouldDelete = window.confirm(`${item.name}을 삭제할까요?`)
+    const shouldDelete = await requestConfirmation({
+      title: `${item.name}을 삭제할까요?`,
+      message: '삭제한 냉장고 재료는 복구할 수 없습니다.',
+      confirmLabel: '재료 삭제',
+      destructive: true,
+    })
     if (!shouldDelete) return
     await handleDelete(item.id)
   }
@@ -646,6 +657,7 @@ export default function FridgePage() {
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
+      {confirmationDialog}
       <section className="mobile-safe-top px-5">
         <div className="flex items-start justify-between">
           <div>

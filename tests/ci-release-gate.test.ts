@@ -52,6 +52,21 @@ test("GitHub release workflow runs code gates and keeps goal status informationa
   assert.match(workflowSource, /pnpm release:ci-static-check/);
   assert.match(workflowSource, /pnpm release:security-check/);
   assert.match(workflowSource, /pnpm release:goal-report/);
+  for (const requiredCheck of [
+    "Code Quality / Test",
+    "Code Quality / Integration",
+    "Content / Recipe Validation",
+    "Build / Next Production",
+    "Browser / Negative",
+    "Browser / Happy Fixture",
+    "Security / Release",
+    "Release / Static Gates",
+  ]) {
+    assert.match(workflowSource, new RegExp(`name: ${requiredCheck.replace("/", "\\/")}`));
+  }
+  assert.match(workflowSource, /outputs:\n\s+test: \$\{\{ steps\.test\.outcome \}\}/);
+  assert.match(workflowSource, /id: browser_happy\n\s+if: steps\.build\.outcome == 'success'/);
+  assert.match(workflowSource, /continue-on-error: true/);
   assert.match(workflowSource, /integration\/\*\*/);
   assert.equal(
     packageJson.scripts["release:candidate-gate"],

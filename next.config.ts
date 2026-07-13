@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertPhase6E2EFixtureBuildIsSafe } from "./lib/phase-6-e2e-build-guard.ts";
+
+assertPhase6E2EFixtureBuildIsSafe();
 
 const isProduction = process.env.NODE_ENV === "production";
 const scriptSrc = isProduction

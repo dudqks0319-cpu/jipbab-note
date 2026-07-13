@@ -23,10 +23,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release-gate:
-    name: Code and Static Release Gates
+  verification:
+    name: Verification Pipeline
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    outputs:
+      test: ${{ steps.test.outcome }}
+      integration: ${{ steps.integration.outcome }}
+      content: ${{ steps.content.outcome }}
+      build: ${{ steps.build.outcome }}
+      browser_negative: ${{ steps.browser_negative.outcome }}
+      browser_happy: ${{ steps.browser_happy.outcome }}
+      security: ${{ steps.security.outcome }}
+      static: ${{ steps.static.outcome }}
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
@@ -60,23 +69,37 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Test
+        id: test
+        continue-on-error: true
         run: pnpm test
 
       - name: Integration tests
+        id: integration
+        continue-on-error: true
         run: pnpm test:integration
 
       - name: Content tests
+        id: content
+        continue-on-error: true
         run: pnpm test:content
 
       - name: Build
+        id: build
+        continue-on-error: true
         env:
           NEXT_PUBLIC_API_BASE_URL: ""
         run: pnpm build
 
       - name: Phase 6 browser negative path
+        id: browser_negative
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
         run: pnpm capture:phase6-e2e-negative
 
       - name: Phase 6 browser happy path
+        id: browser_happy
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
         run: pnpm capture:phase6-e2e-happy
 
       - name: Upload Phase 6 browser evidence
@@ -90,10 +113,102 @@ jobs:
           retention-days: ${{ github.event_name == 'workflow_dispatch' && 90 || 14 }}
 
       - name: CI static release gates
+        id: static
+        continue-on-error: true
         run: pnpm release:ci-static-check
 
       - name: Security release gates
+        id: security
+        continue-on-error: true
         run: pnpm release:security-check
 
       - name: Goal completion status
         run: pnpm release:goal-report
+
+  code-test:
+    name: Code Quality / Test
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.test }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  code-integration:
+    name: Code Quality / Integration
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.integration }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  content-validation:
+    name: Content / Recipe Validation
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.content }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  next-build:
+    name: Build / Next Production
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.build }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  browser-negative:
+    name: Browser / Negative
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.browser_negative }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  browser-happy:
+    name: Browser / Happy Fixture
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.browser_happy }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  security-release:
+    name: Security / Release
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.security }}
+        run: test "$STAGE_OUTCOME" = "success"
+
+  static-release:
+    name: Release / Static Gates
+    needs: verification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful stage
+        env:
+          STAGE_OUTCOME: ${{ needs.verification.outputs.static }}
+        run: test "$STAGE_OUTCOME" = "success"

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -23,6 +24,7 @@ const STATUS_OPTIONS = [
 ] as const;
 
 export default function AdminAccountDeletionsPage() {
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog();
   const { isAuthenticated, loading } = useAuth();
   const [records, setRecords] = useState<DeletionRequestRecord[]>([]);
   const [message, setMessage] = useState<string | null>(null);
@@ -89,9 +91,12 @@ export default function AdminAccountDeletionsPage() {
         return;
       }
 
-      const confirmed = window.confirm(
-        `${record.email ?? record.user_id} 계정과 연결 데이터를 삭제합니다. 이 작업은 되돌릴 수 없습니다.`,
-      );
+      const confirmed = await requestConfirmation({
+        title: "계정 삭제를 실행할까요?",
+        message: `${record.email ?? record.user_id} 계정과 연결 데이터를 삭제합니다. 이 작업은 되돌릴 수 없습니다.`,
+        confirmLabel: "계정 삭제",
+        destructive: true,
+      });
 
       if (!confirmed) {
         return;
@@ -146,6 +151,7 @@ export default function AdminAccountDeletionsPage() {
 
   return (
     <div className="flex flex-col pb-8">
+      {confirmationDialog}
       <section className="px-5 pt-4">
         <p className="text-xs font-semibold tracking-[0.16em] text-gray-400">ADMIN</p>
         <h1 className="text-2xl font-bold text-gray-800">계정 삭제 요청함</h1>

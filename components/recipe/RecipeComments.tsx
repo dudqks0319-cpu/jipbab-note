@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MessageCircle, Trash2 } from "lucide-react";
 
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { RecipeCommentRecord } from "@/types";
@@ -46,6 +47,7 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsProps) {
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [comments, setComments] = useState<RecipeCommentRecord[]>([]);
   const [content, setContent] = useState("");
@@ -119,7 +121,12 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
   };
 
   const deleteComment = async (commentId: string) => {
-    const shouldDelete = window.confirm("내 댓글을 삭제할까요?");
+    const shouldDelete = await requestConfirmation({
+      title: "댓글을 삭제할까요?",
+      message: "삭제한 댓글은 복구할 수 없습니다.",
+      confirmLabel: "댓글 삭제",
+      destructive: true,
+    });
     if (!shouldDelete) {
       return;
     }
@@ -148,7 +155,8 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
   };
 
   return (
-    <section className="px-5 pt-5">
+    <>
+      <section className="px-5 pt-5">
       <div className="jipbab-panel rounded-[16px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -248,6 +256,8 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
           )}
         </div>
       </div>
-    </section>
+      </section>
+      {confirmationDialog}
+    </>
   );
 }

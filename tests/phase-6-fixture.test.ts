@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { assertPhase6E2EFixtureBuildIsSafe } from "../lib/phase-6-e2e-build-guard.ts";
+
 import {
   createPhase6E2EFixtureSession,
   PHASE6_E2E_FIXTURE_COOKIE,
@@ -17,6 +19,30 @@ const fixtureEnvironment = {
   PHASE6_E2E_FIXTURE_TOKEN: "fixture-secret",
 };
 const now = Date.UTC(2026, 6, 14);
+
+test("Phase 6 fixture configuration aborts production builds", () => {
+  assert.throws(
+    () => assertPhase6E2EFixtureBuildIsSafe({
+      NODE_ENV: "production",
+      PHASE6_E2E_FIXTURE_ENABLED: "true",
+    }),
+    /must be disabled for production builds/,
+  );
+  assert.throws(
+    () => assertPhase6E2EFixtureBuildIsSafe({
+      APP_ENV: "staging",
+      VERCEL_ENV: "production",
+      PHASE6_E2E_FIXTURE_ENABLED: "true",
+    }),
+    /must be disabled for production builds/,
+  );
+  assert.doesNotThrow(() => assertPhase6E2EFixtureBuildIsSafe({
+    NODE_ENV: "production",
+    APP_ENV: "staging",
+    VERCEL_ENV: "preview",
+    PHASE6_E2E_FIXTURE_ENABLED: "true",
+  }));
+});
 
 test("Phase 6 fixture requires an explicit staging token and fails closed in production", () => {
   const session = createPhase6E2EFixtureSession(
@@ -101,4 +127,22 @@ test("technical fixture does not call public comments API", () => {
   const detailPage = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
 
   assert.match(detailPage, /!recipe\.isTestFixture/);
+});
+
+test("technical fixture is absent from release and human-review evidence", () => {
+  const evidenceFiles = [
+    "../docs/recipe-inventory.csv",
+    "../docs/recipe-inventory.md",
+    "../docs/phase-5-core-20-audit.csv",
+    "../docs/phase-5-core-20-audit.md",
+    "../docs/phase-5-actual-cooking-template.csv",
+    "../docs/phase-5-human-review-template.csv",
+    "../release-ledger.yaml",
+  ];
+
+  for (const path of evidenceFiles) {
+    const content = readFileSync(new URL(path, import.meta.url), "utf8");
+    assert.equal(content.includes(PHASE6_E2E_FIXTURE_RECIPE_ID), false, path);
+    assert.equal(content.includes("phase6-egg-tofu-pan"), false, path);
+  }
 });

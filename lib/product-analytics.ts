@@ -23,6 +23,8 @@ export type RuntimeProductAnalyticsEventName =
 
 type RuntimeProperties = Record<string, unknown>
 
+const PHASE6_TECHNICAL_FIXTURE_RECIPE_ID = '00000000-0000-4000-8000-0000000006e1'
+
 const EVENT_MAPPING: Record<RuntimeProductAnalyticsEventName, CanonicalEventName> = {
   starter_ingredient_selected: 'starter_ingredients_selected',
   starter_ingredients_saved: 'onboarding_completed',
@@ -55,6 +57,12 @@ function boundedInteger(value: unknown, minimum: number, maximum: number): numbe
   return Number.isSafeInteger(value) && Number(value) >= minimum && Number(value) <= maximum
     ? Number(value)
     : undefined
+}
+
+export function isTechnicalFixtureAnalyticsEvent(properties: RuntimeProperties): boolean {
+  return properties.isTestFixture === true
+    || properties.source === 'technical_fixture'
+    || properties.recipeId === PHASE6_TECHNICAL_FIXTURE_RECIPE_ID
 }
 
 export function mapRuntimeProductAnalyticsEvent(
@@ -110,6 +118,7 @@ export function trackProductAnalyticsEvent(
   properties: RuntimeProperties = {},
 ): void {
   if (typeof window === 'undefined') return
+  if (isTechnicalFixtureAnalyticsEvent(properties)) return
   if (window.localStorage.getItem('jipbab:e2e-fixture') === 'true') return
   if (process.env.NEXT_PUBLIC_PRODUCT_ANALYTICS_ENABLED !== 'true') return
 

@@ -20,7 +20,9 @@ function lineNumber(source, index) {
   return source.slice(0, index).split("\n").length;
 }
 
-for (const filePath of roots.flatMap(collectTsxFiles)) {
+const tsxFiles = roots.flatMap(collectTsxFiles);
+
+for (const filePath of tsxFiles) {
   const source = readFileSync(filePath, "utf8");
   const scanSource = source.replaceAll("=>", "⇒");
   const interactiveTags = scanSource.matchAll(/<(button|a|Link)\b[\s\S]*?>/g);
@@ -48,6 +50,7 @@ const button = readFileSync("components/ui/Button.tsx", "utf8");
 const fridgeIllustration = readFileSync("components/fridge/FridgeIllustration.tsx", "utf8");
 const home = readFileSync("app/page.tsx", "utf8");
 const starterAction = readFileSync("components/home/StarterActionCard.tsx", "utf8");
+const confirmDialog = readFileSync("components/ui/ConfirmDialog.tsx", "utf8");
 
 const contracts = [
   [
@@ -97,6 +100,20 @@ const contracts = [
       starterAction.includes('src={FRIDGE_IMAGE_SRC}') &&
       starterAction.includes('loading="eager"'),
     "every above-fold fridge LCP image needs eager high-priority loading",
+  ],
+  [
+    "accessible confirmation dialog",
+    confirmDialog.includes('role="dialog"') &&
+      confirmDialog.includes('aria-modal="true"') &&
+      confirmDialog.includes("event.key === 'Escape'") &&
+      confirmDialog.includes("event.key !== 'Tab'") &&
+      confirmDialog.includes("cancelButtonRef.current?.focus()"),
+    "app confirmations need dialog semantics, escape handling, focus trapping, and initial focus",
+  ],
+  [
+    "no browser confirm",
+    tsxFiles.every((filePath) => !readFileSync(filePath, "utf8").includes("window.confirm")),
+    "user confirmations must use the accessible app dialog instead of the browser prompt",
   ],
 ];
 
