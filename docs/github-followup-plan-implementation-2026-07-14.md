@@ -18,10 +18,12 @@ Branch: `integration/phase6-release-candidate`
 
 ## 검증 결과
 
-- `npm test`: 444/444 통과
+- `npm test`: 446/446 통과, lint 경고 0건
 - `pnpm build`: 41/41 route 프로덕션 빌드 통과
 - `pnpm release:ci-static-check`: 20/20 통과
 - `pnpm release:candidate-gate`: 14 통과, 3 차단, 2 누락
+- GitHub Release Gate run `29272882322`: Verification Pipeline과 required marker job 9/9 통과, annotation 0건
+- 원격 HEAD `7001237ec826ac5193875d999212450503c35a77`: Vercel Preview deployment `5428997846` 성공, GitHub deployment source SHA 일치
 - 모바일 증거: 12/12 통과
 - 핵심 20개 정적 감사: 정확한 메뉴 20/20, 로컬 이미지 20/20, 자동 점수 90점 이상 20/20
 
@@ -33,6 +35,6 @@ Branch: `integration/phase6-release-candidate`
 - 핵심 20개 실제 조리와 초보자·식품 안전·출처·이미지 권리 사람 검수
 - App Store Connect/TestFlight 최신 후보 처리와 내부 테스터 가능 증거
 - 운영 DB migration history 정합화, 복원 가능한 backup, staging apply/rollback/reapply 증거
-- GitHub SHA와 새 Vercel Preview SHA 일치 확인 및 populated-data 성능 baseline 채움
+- Vercel Preview 보호 해제 또는 승인된 automation bypass, 공개 레시피 UUID·제목과 장보기 20개 상태를 준비한 뒤 populated-data 성능 baseline 채움
 
-위 항목은 계정·사람·실기기·운영 인프라가 필요한 증거이므로 이 브랜치에서 임의로 완료 처리하지 않는다. 모든 외부 게이트가 통과하기 전에는 Production 승격, 운영 migration, 스토어 제출을 진행하지 않는다.
+GitHub SHA와 Preview source SHA 일치는 확인했다. 다만 현재 Preview는 Vercel 인증 화면으로 리디렉션되어 앱 화면의 release-candidate 성능 측정을 실행할 수 없다. 위 항목은 계정·사람·실기기·운영 인프라가 필요한 증거이므로 이 브랜치에서 임의로 완료 처리하지 않는다. 모든 외부 게이트가 통과하기 전에는 Production 승격, 운영 migration, 스토어 제출을 진행하지 않는다.

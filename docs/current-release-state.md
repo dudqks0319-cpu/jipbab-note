@@ -11,8 +11,9 @@ Updated: 2026-07-14 KST
 - Starter·홈·레시피 목록·상세·장보기·조리 UX를 통합했다. 기본 레시피 필터는 `10분 이내`, `지금 바로 가능`, `재료 5개 이하`로 단순화했고 인분 계량, 타이머 pause/resume, 안정적인 `data-testid`, 장보기 사용자 목록 우선, 플랫폼 중립 문구를 반영했다. 이유식·유아식 일반 공개 진입점은 포함하지 않았다.
 - 계란과 두부를 각각 `계란·난류`, `콩·두부`로 교정하는 additive migration `20260711170000_reclassify_egg_tofu_catalog.sql`과 rollback을 추가했다. migration history reconciliation, 복원 가능한 backup, staging apply→rollback→reapply 전에는 Supabase Production에 적용하지 않는다.
 - 제품 화면 이벤트는 기존 33개 개인정보 보호 계약으로 정규화했다. 기본 비활성, 동의 필요, transport 필요 조건을 유지하고 기술 fixture 실행은 로컬 marker로 실제 분석 집계에서 제외한다. 분석 vendor와 Production 수집은 활성화하지 않았다.
-- 검증: `npm test` 432/432, integration pass, content pass(176 candidates), Production build 40/40 routes, negative E2E 12/12, happy E2E 19/19, CI-safe release gate 19/19, security gate 4/4, dependency vulnerability 0건, `git diff --check` pass.
-- 현재 목표 판정은 13 PASS / 3 BLOCKED / 3 MISSING이다. 외부 모니터링 실제 수신, 현재 후보 iOS/Android 실기기 QA, Play internal track, 핵심 20개 실제 조리·사람 검수, App Store Connect 당일 재확인, 360/390/430px 최신 화면 증거는 완료로 주장하지 않는다. Production alias, Vercel deployment, Supabase remote DB, 스토어 제출은 변경하지 않았다.
+- 최신 검증: `npm test` 446/446, lint 경고 0건, integration pass, content pass(176 candidates), Production build 41/41 routes, negative E2E 12/12, happy E2E 19/19, CI-safe release gate 20/20, security gate 4/4, dependency vulnerability 0건, `git diff --check` pass. GitHub Release Gate run `29272882322`의 required job 9개도 모두 통과했고 annotation은 0건이다.
+- 현재 목표 판정은 14 PASS / 3 BLOCKED / 2 MISSING이다. 외부 모니터링 실제 수신, 현재 후보 iOS/Android 실기기 QA, Play internal track, 핵심 20개 실제 조리·사람 검수, App Store Connect 당일 재확인은 완료로 주장하지 않는다. 360/390/430px 최신 화면 증거는 12/12 통과했다. Supabase remote DB, Production alias, 스토어 제출은 변경하지 않았다.
+- 원격 HEAD `7001237ec826ac5193875d999212450503c35a77`는 GitHub deployment `5428997846`의 Vercel Preview source SHA와 일치하고 배포 상태는 `success`다. Preview URL은 Vercel 인증으로 보호되어 비인증 요청이 로그인 화면으로 리디렉션되므로, populated-data release-candidate 성능 수치는 아직 채우지 않았다. 보호 해제 또는 승인된 automation bypass와 공개 레시피·장보기 데이터가 준비되기 전에는 성능 완료로 판정하지 않는다.
 
 ## 2026-07-13 Phase 5 사람 테스트 패킷·콘텐츠 버전 고정
 
