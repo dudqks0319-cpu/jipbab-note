@@ -2,6 +2,18 @@
 
 Updated: 2026-07-13 KST
 
+## 2026-07-13 Phase 6 오류 모니터링 전달 경계 Preview
+
+- 구현 커밋 `d52f20707753d5dc39df85cbfb2124273d0b6a54`를 `origin/agent/phase6-observability-analytics`에 push하고 같은 clean archive를 Vercel Preview `dpl_F33KGMEyXYAb6ybfYxFJCaqZcEfy` (`https://jipbab-note-o4dz9hz5p-youngbeens-projects.vercel.app`)로 배포했다. target은 `preview`, 상태는 `READY`이며 Production alias는 승격하지 않았다.
+- 첫 배포 `dpl_ArxJocFojJt2kgi5LHEAu9tS2kTN`은 코드 archive는 같았지만 수동 입력한 전체 deployment SHA가 실제 Git hash와 달라 검증 중 폐기했다. 최신 증거와 향후 롤백 기준으로 사용하지 않는다. 교정 Preview의 앱 정보 화면과 Vercel runtime log는 실제 GitHub SHA `d52f20707753d5dc39df85cbfb2124273d0b6a54`와 정확히 일치한다.
+- `INTERNAL_ERROR` 5xx만 allowlist payload로 만들고 Next.js `after`에서 비동기로 보낸다. 명시적 활성화, query 없는 HTTPS URL, 32~256자 HMAC secret이 모두 없으면 fail-closed한다. body는 HMAC SHA-256으로 서명하고 2.5초 timeout, redirect 거부, credentials 생략을 적용한다.
+- 예상된 `DEPENDENCY_NOT_READY`, 비정상 request ID·endpoint·SHA, malformed URL·secret은 보내지 않는다. 전송 또는 scheduler 실패는 API 응답을 바꾸지 않고 URL·secret·token·이메일 없이 deployment SHA만 포함한 warning을 남긴다.
+- Preview에는 세 운영 오류 알림 환경변수를 등록하지 않아 외부 전송은 비활성이다. 실제 모니터링 벤더·담당 채널·보관 정책·합성 경보 수신은 `docs/monitoring-channel-confirmation.md`에서 계속 `blocked_external`로 분리한다.
+- 원격 build는 compile, TypeScript, 39/39 routes를 통과했다. `/`와 `/settings/app-info`는 HTTP 200이고 `/api/v1/recipes?limit=1`은 예상된 redacted 503, `no-store`, `Retry-After: 60`, `X-Request-Id`, `DEPENDENCY_NOT_READY`를 반환했다. runtime log에는 허용된 필드와 정확한 deployment SHA만 있고 monitoring delivery failure는 없다.
+- 인앱 브라우저에서 실제 집밥노트 홈과 앱 정보 화면을 확인했다. 홈 제목, 재료 선택, 냉장고·레시피·장보기·마이 탐색과 전체 배포 SHA를 확인한 뒤 실제 집밥노트 홈을 최종 사용자 결과물로 유지했다.
+- 검증: monitoring contract 10/10, observability contract 16/16, 전체 unit 408/408, integration pass, recipe 176개 validation, content gate pass, TypeScript pass, lint 오류 0건, production build 39/39, CI-safe release gate 19/19, release security 4/4. 목표 판정은 코드 경계 PASS를 추가하고 외부 모니터링 채널을 별도 BLOCKED로 추가해 현재 14 PASS, 3 BLOCKED, 2 MISSING이다.
+- 남은 OPS-003 게이트: Owner `FullStackDev+SRE+Privacy`, due `before_production_monitoring_signoff` — 벤더·보관기간·접근권한 승인, 서버 전용 환경변수 등록, 현재 SHA의 synthetic `INTERNAL_ERROR` 실제 수신, redacted 증거 기록. 확인 전 Production에서 `OPERATIONAL_ALERTS_ENABLED=true`를 설정하지 않는다.
+
 ## 2026-07-13 Phase 6 앱 내 배포 정보 Preview
 
 - 구현 커밋 `51458b429866815cbdfea6ed136519c4e1159c7d`를 `origin/agent/phase6-observability-analytics`에 push하고, 같은 SHA의 깨끗한 `git archive`를 Vercel Preview `dpl_6Rz4X6sHq8auV8YFbhmHvjoL5FDg` (`https://jipbab-note-dh9uis8k7-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`이며 Production alias는 승격하지 않았다.
