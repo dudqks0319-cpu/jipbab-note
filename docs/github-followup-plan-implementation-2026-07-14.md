@@ -13,18 +13,18 @@ Branch: `integration/phase6-release-candidate`
 - 제품 분석: 33개 표준 이벤트 매핑, 명시적 동의·철회 UI, 기술 fixture 제외, 실제 냉장고·추천·레시피·조리·장보기 동작 배선
 - 성능: 기존 LCP/CLS/상호작용 예산에 TTFB, transfer, JS, 이미지, 요청 수, long task, hydration 회귀 계약 추가
 - 실제 데이터 성능: 공개 레시피 UUID를 요구하고 카드 12개·장보기 20개·상세·인분·조리·타이머·가족·콜백·앱 정보를 모두 확인하는 release-candidate 프로필 추가
-- 성능 기준선 운영: 측정 배포의 전체 Git SHA를 필수화하고, 5회·9개 화면·절대 예산·runtime 오류 0건을 재검사한 검토 승인 명령만 집계 baseline을 갱신하도록 제한
+- 성능 기준선 운영: 측정 배포의 전체 Git SHA를 필수화하고, cold·warm 각 5회·9개 화면·median/p75/max/표준편차/실패율·절대 예산·runtime 오류 0건을 재검사한 검토 승인 명령만 집계 baseline을 갱신하도록 제한
 - 저장소 관리: 바이너리 1,064개 inventory, 중복 해시·미참조 후보 보고서, 5MiB 단일 파일 및 release archive Git 추적 차단
 - CI 유지보수: `upload-artifact`를 공식 Node.js 24 기반 v6 고정 SHA로 갱신하고 기존 lint 경고 제거
 
 ## 검증 결과
 
-- `npm test`: 452/452 통과, lint 경고 0건
+- `npm test`: 455/455 통과, lint 경고 0건
 - `pnpm build`: 41/41 route 프로덕션 빌드 통과
 - `pnpm release:ci-static-check`: 20/20 통과
 - `pnpm release:candidate-gate`: 14 통과, 5 차단, 2 누락
-- 직전 GitHub Release Gate run `29291738986`: Verification Pipeline과 required marker job 9/9 통과, annotation 0건
-- 직전 원격 검증 체크포인트 `c726477777caee87cc7df069ca8e6aa5351123ec`: Vercel Preview deployment 성공, GitHub deployment source SHA 일치
+- 직전 GitHub Release Gate run `29292411853`: Verification Pipeline과 required marker job 9/9 통과, annotation 0건
+- 직전 원격 검증 체크포인트 `81039c495060a8c536103da58385c46fe6f98469`: Vercel Preview deployment 성공, GitHub deployment source SHA 일치
 - 모바일 증거: 12/12 통과
 - 핵심 20개 정적 감사: 정확한 메뉴 20/20, 로컬 이미지 20/20, 자동 점수 90점 이상 20/20
 
@@ -39,3 +39,5 @@ Branch: `integration/phase6-release-candidate`
 - Vercel Preview 보호 해제 또는 승인된 automation bypass, 공개 레시피 UUID·제목과 장보기 20개 상태를 준비한 뒤 populated-data 성능 baseline 채움
 
 후보 게이트는 운영 DB migration·backup·staging·rollback과 출시 후보 실제 데이터 성능 baseline을 독립 차단 항목으로 직접 검사한다. 성능 증거 승격은 `PHASE6_PERFORMANCE_PROMOTION_APPROVED=1 pnpm promote:phase6-performance-baseline`로만 수행하며, 기준선 누락 외 실패가 있으면 중단한다. GitHub SHA와 Preview source SHA 일치는 확인했지만 현재 Preview는 Vercel 인증 화면으로 리디렉션되어 앱 화면의 release-candidate 성능 측정을 실행할 수 없다. 위 항목은 계정·사람·실기기·운영 인프라가 필요한 증거이므로 이 브랜치에서 임의로 완료 처리하지 않는다. 모든 외부 게이트가 통과하기 전에는 Production 승격, 운영 migration, 스토어 제출을 진행하지 않는다.
+
+요구사항별 완료·차단 근거는 `docs/github-followup-plan-completion-audit-2026-07-14.md`에 유지한다. `main` 반영과 release tag는 최종 외부 게이트 통과 후 별도 승격 승인 대상으로 남긴다.
