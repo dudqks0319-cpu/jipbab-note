@@ -42,12 +42,14 @@ check(
   routes.every(
     (route) =>
       route.includes("consumeDistributedRateLimit") &&
-      route.includes("createApiRequestId") &&
-      route.includes("apiV1Success") &&
-      route.includes("apiV1Error"),
-  ),
-  "list, detail, and recommendation routes share request IDs, envelopes, and distributed limits",
-  "every route must use the common response and distributed rate-limit contracts",
+      route.includes("createApiV1Responder"),
+  ) &&
+    source.response.includes("createApiRequestId()") &&
+    source.response.includes("apiV1Success(data, requestId, status)") &&
+    source.response.includes("apiV1Error(") &&
+    source.response.includes("createApiOperationRecorder"),
+  "list, detail, and recommendation routes share request IDs, envelopes, operational telemetry, and distributed limits",
+  "every route must use the common responder and distributed rate-limit contracts",
 );
 
 check(

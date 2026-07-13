@@ -28,6 +28,11 @@ const checks = [
     args: ["scripts/check-phase-6-performance-budget.mjs"],
   },
   {
+    name: "phase6-observability",
+    command: "node",
+    args: ["scripts/check-phase-6-observability.mjs"],
+  },
+  {
     name: "beginner-goal-readiness",
     command: "node",
     args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],

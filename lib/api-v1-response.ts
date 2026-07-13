@@ -7,6 +7,12 @@ import {
   buildApiV1SuccessEnvelope,
   type ApiV1ErrorCode,
 } from "./api-v1-envelope.ts";
+import {
+  createApiOperationRecorder,
+  type ApiOperationEndpoint,
+  type OperationalTelemetryEnvironment,
+} from "./operational-telemetry.ts";
+import type { TelemetrySink } from "./telemetry.ts";
 
 export type { ApiV1ErrorCode } from "./api-v1-envelope.ts";
 
@@ -46,4 +52,52 @@ export function apiV1Error(
       headers: responseHeaders(requestId, options?.retryAfter),
     },
   );
+}
+
+type ApiV1ResponderOptions = {
+  now?: () => number;
+  sink?: TelemetrySink;
+  environment?: OperationalTelemetryEnvironment;
+};
+
+export function createApiV1Responder(
+  endpoint: ApiOperationEndpoint,
+  options: ApiV1ResponderOptions = {},
+) {
+  const requestId = createApiRequestId();
+  const record = createApiOperationRecorder({
+    requestId,
+    endpoint,
+    now: options.now,
+    sink: options.sink,
+    environment: options.environment,
+  });
+
+  return {
+    requestId,
+    success<T>(data: T, status = 200) {
+      const response = apiV1Success(data, requestId, status);
+      record(status);
+      return response;
+    },
+    error(
+      code: ApiV1ErrorCode,
+      message: string,
+      status: number,
+      responseOptions?: {
+        retryAfter?: number;
+        details?: Record<string, string | number | boolean>;
+      },
+    ) {
+      const response = apiV1Error(
+        code,
+        message,
+        status,
+        requestId,
+        responseOptions,
+      );
+      record(status, code);
+      return response;
+    },
+  };
 }

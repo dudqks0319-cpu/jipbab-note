@@ -6,11 +6,7 @@ import {
   parseApiQuery,
   parseApiSort,
 } from "@/lib/api-v1-contract";
-import {
-  apiV1Error,
-  apiV1Success,
-  createApiRequestId,
-} from "@/lib/api-v1-response";
+import { createApiV1Responder } from "@/lib/api-v1-response";
 import { consumeDistributedRateLimit } from "@/lib/distributed-rate-limit";
 import {
   listPublicRecipesV1,
@@ -20,26 +16,24 @@ import {
 import { isCanonicalRecipeCategoryId } from "@/lib/recipe-category-taxonomy";
 
 export async function GET(request: Request) {
-  const requestId = createApiRequestId();
+  const respond = createApiV1Responder("GET /api/v1/recipes");
   const rateLimit = await consumeDistributedRateLimit(request, "recipes:list", {
     limit: 60,
     windowSeconds: 60,
   });
   if (rateLimit.status === "limited") {
-    return apiV1Error(
+    return respond.error(
       "RATE_LIMITED",
       "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
       429,
-      requestId,
       { retryAfter: rateLimit.retryAfter },
     );
   }
   if (rateLimit.status === "unavailable") {
-    return apiV1Error(
+    return respond.error(
       "DEPENDENCY_NOT_READY",
       "레시피 API를 준비 중입니다.",
       503,
-      requestId,
       { retryAfter: rateLimit.retryAfter },
     );
   }
@@ -85,25 +79,23 @@ export async function GET(request: Request) {
       limit: parseApiLimit(searchParams.get("limit")),
     });
 
-    return apiV1Success(result, requestId);
+    return respond.success(result);
   } catch (error) {
     if (error instanceof ApiV1ValidationError) {
-      return apiV1Error(
+      return respond.error(
         error.code as "INVALID_QUERY" | "INVALID_FILTER" | "INVALID_CURSOR" | "INVALID_LIMIT",
         error.message,
         400,
-        requestId,
       );
     }
     if (error instanceof RecipeApiDependencyError) {
-      return apiV1Error(
+      return respond.error(
         "DEPENDENCY_NOT_READY",
         "레시피 데이터 계약을 준비 중입니다.",
         503,
-        requestId,
         { retryAfter: 60 },
       );
     }
-    return apiV1Error("INTERNAL_ERROR", "레시피를 조회하지 못했습니다.", 500, requestId);
+    return respond.error("INTERNAL_ERROR", "레시피를 조회하지 못했습니다.", 500);
   }
 }

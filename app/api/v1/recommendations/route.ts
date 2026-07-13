@@ -1,9 +1,5 @@
 import { ApiV1ValidationError } from "@/lib/api-v1-contract";
-import {
-  apiV1Error,
-  apiV1Success,
-  createApiRequestId,
-} from "@/lib/api-v1-response";
+import { createApiV1Responder } from "@/lib/api-v1-response";
 import { consumeDistributedRateLimit } from "@/lib/distributed-rate-limit";
 import {
   listPublicRecipesV1,
@@ -18,10 +14,10 @@ import { readBoundedJsonObject } from "@/lib/request-security";
 const MAX_BODY_BYTES = 16 * 1024;
 
 export async function POST(request: Request) {
-  const requestId = createApiRequestId();
+  const respond = createApiV1Responder("POST /api/v1/recommendations");
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-    return apiV1Error("INVALID_BODY", "요청 본문이 너무 큽니다.", 413, requestId);
+    return respond.error("INVALID_BODY", "요청 본문이 너무 큽니다.", 413);
   }
 
   const rateLimit = await consumeDistributedRateLimit(request, "recipes:recommendations", {
@@ -29,20 +25,18 @@ export async function POST(request: Request) {
     windowSeconds: 60,
   });
   if (rateLimit.status === "limited") {
-    return apiV1Error(
+    return respond.error(
       "RATE_LIMITED",
       "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
       429,
-      requestId,
       { retryAfter: rateLimit.retryAfter },
     );
   }
   if (rateLimit.status === "unavailable") {
-    return apiV1Error(
+    return respond.error(
       "DEPENDENCY_NOT_READY",
       "추천 API를 준비 중입니다.",
       503,
-      requestId,
       { retryAfter: rateLimit.retryAfter },
     );
   }
@@ -50,7 +44,7 @@ export async function POST(request: Request) {
   try {
     const bodyResult = await readBoundedJsonObject(request, MAX_BODY_BYTES);
     if (bodyResult.status === "too_large") {
-      return apiV1Error("INVALID_BODY", "요청 본문이 너무 큽니다.", 413, requestId);
+      return respond.error("INVALID_BODY", "요청 본문이 너무 큽니다.", 413);
     }
     if (bodyResult.status === "invalid") {
       throw new ApiV1ValidationError("INVALID_BODY", "요청 본문을 확인해 주세요.");
@@ -69,26 +63,24 @@ export async function POST(request: Request) {
       limit: 200,
     });
     const recommendations = rankRecipeRecommendationsV1(candidates.recipes, input);
-    return apiV1Success(
+    return respond.success(
       {
         recommendations,
         candidateCount: candidates.recipes.length,
       },
-      requestId,
     );
   } catch (error) {
     if (error instanceof ApiV1ValidationError) {
-      return apiV1Error("INVALID_BODY", error.message, 400, requestId);
+      return respond.error("INVALID_BODY", error.message, 400);
     }
     if (error instanceof RecipeApiDependencyError) {
-      return apiV1Error(
+      return respond.error(
         "DEPENDENCY_NOT_READY",
         "레시피 데이터 계약을 준비 중입니다.",
         503,
-        requestId,
         { retryAfter: 60 },
       );
     }
-    return apiV1Error("INTERNAL_ERROR", "추천을 만들지 못했습니다.", 500, requestId);
+    return respond.error("INTERNAL_ERROR", "추천을 만들지 못했습니다.", 500);
   }
 }
