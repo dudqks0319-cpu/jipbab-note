@@ -19,7 +19,7 @@ Branch: `integration/phase6-release-candidate`
 
 ## 검증 결과
 
-- `npm test`: 454/454 통과, lint 경고 0건
+- `npm test`: 455/455 통과, lint 경고 0건
 - `pnpm build`: 41/41 route 프로덕션 빌드 통과
 - `pnpm release:ci-static-check`: 20/20 통과
 - `pnpm release:candidate-gate`: 14 통과, 5 차단, 2 누락

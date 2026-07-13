@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { buildRouteStateResetParams } from "./lib/performance-capture-state.mjs";
 import { summarizeSamples } from "./lib/performance-statistics.mjs";
 
 const requestedUrl = process.env.PHASE6_PERFORMANCE_URL?.trim();
@@ -577,6 +578,10 @@ async function captureRun(debugPort, route, runNumber, cacheMode) {
     if (cacheDisabled) {
       await client.send("Network.clearBrowserCache");
     }
+    await client.send(
+      "Storage.clearDataForOrigin",
+      buildRouteStateResetParams(targetOrigin),
+    );
     await client.send("Network.emulateNetworkConditions", {
       offline: false,
       latency: device.latencyMilliseconds,

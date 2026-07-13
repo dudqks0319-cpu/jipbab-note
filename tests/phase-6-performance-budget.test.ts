@@ -4,6 +4,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import {
+  buildRouteStateResetParams,
+  routeStateStorageTypes,
+} from "../scripts/lib/performance-capture-state.mjs";
 import { summarizeSamples } from "../scripts/lib/performance-statistics.mjs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
@@ -157,6 +161,21 @@ test("performance statistics include median, p75, maximum, and population deviat
     standardDeviation: 141.4,
   });
   assert.equal(summarizeSamples([0.0111, 0.0222, 0.0333, 0.0444, 0.0555], 4).p75, 0.0444);
+});
+
+test("route state reset preserves authentication and warm network caches", () => {
+  assert.deepEqual(routeStateStorageTypes, ["local_storage", "indexeddb", "websql"]);
+  assert.deepEqual(buildRouteStateResetParams("https://preview.example.com"), {
+    origin: "https://preview.example.com",
+    storageTypes: "local_storage,indexeddb,websql",
+  });
+  assert.equal(routeStateStorageTypes.includes("cookies"), false);
+  assert.equal(routeStateStorageTypes.includes("cache_storage"), false);
+  assert.equal(routeStateStorageTypes.includes("service_workers"), false);
+  assert.throws(
+    () => buildRouteStateResetParams("https://preview.example.com/path"),
+    /exact origin/,
+  );
 });
 
 function validReleaseCandidateEvidence() {
