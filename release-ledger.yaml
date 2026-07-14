@@ -12,10 +12,10 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase7_recipe_completion_preview_ready_external_and_human_gates_blocked"
+  phase: "phase7_recipe_completion_and_fe005_navigation_preview_ready_external_and_human_gates_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "d0f9c7f9bb7662b11073c27d59e2e58d18f58d75"
+  git_sha: "4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444"
   branch: "agent/phase6-observability-analytics"
   dirty_state: "current_commits_pushed_user_owned_local_changes_preserved"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/phase-7-recipe-feedback-collection.md, docs/current-release-state.md"
@@ -119,6 +119,33 @@ phase3_frontend_api_v1:
     - "output/ui-evidence/phase3-recipe-390.png"
     - "output/ui-evidence/phase3-recipe-430.png"
     - "output/ui-evidence/phase3-detail-unavailable-390.png"
+
+fe005_recipe_list_navigation:
+  implementation_git_sha: "4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444"
+  branch: "agent/phase6-observability-analytics"
+  filter_reset_status: "verified_all_list_filter_sort_favorite_and_advanced_states"
+  history_validation_status: "verified_exact_location_bounded_page_cursor_filter_and_scroll"
+  back_navigation_status: "verified_query_quick_filter_page_2_and_scroll_1346_to_1344"
+  full_unit_test_status: "verified_441_of_441"
+  lint_status: "verified_zero_errors_33_preexisting_generated_warnings"
+  typecheck_status: "verified"
+  release_security_status: "verified_4_of_4"
+  production_build_status: "verified_next_16_2_6_turbopack_40_of_40_routes"
+  mobile_runtime_status: "verified_390x844_zero_overflow_minimum_visible_button_height_44px_zero_console_errors_or_warnings"
+  qa_fixture_boundary: "local_memory_only_not_app_db_git_human_or_production_evidence"
+  preview_deployment_id: "dpl_GrvKCCkRFbArg63j2SKkpvtz8Cbj"
+  preview_deployment_url: "https://jipbab-note-5lqu7aepk-youngbeens-projects.vercel.app"
+  preview_target: "preview"
+  preview_status: "READY"
+  preview_source_commit: "4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444"
+  preview_root_http_status: 200
+  preview_recipe_http_status: 200
+  preview_recipe_api_http_status: 503
+  preview_recipe_api_status_reason: "expected_dependency_not_ready_until_reconciled_migrations_and_reviewed_v2_data"
+  preview_recipe_api_retry_after_seconds: 60
+  preview_recipe_api_cache_control: "no-store"
+  production_promoted: false
+  evidence: "docs/current-release-state.md"
 
 phase4_cook_mode:
   report: "docs/phase-4-cook-mode-report.md"

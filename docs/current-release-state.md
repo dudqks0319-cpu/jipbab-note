@@ -2,6 +2,16 @@
 
 Updated: 2026-07-14 KST
 
+## 2026-07-14 FE-005 레시피 목록 필터·이동 상태 복원
+
+- 검색어·카테고리·빠른 필터·난이도·시간·도구·냉장고 조건·정렬·즐겨찾기·상세 패널을 한 번에 기본값으로 돌리는 `필터 초기화`를 추가했다. URL의 가상 빠른 필터 `beginner`와 `quick`도 목록 재진입 때 복원한다.
+- 레시피 상세로 이동하기 직전에 현재 URL, cursor 기반 페이지, 페이지별 cursor와 실제 앱 스크롤 컨테이너 `#main-content`의 위치를 기존 Next.js history state를 보존하면서 저장한다. 뒤로가기에서는 같은 URL과 검증된 상태일 때만 복원하며 페이지·cursor·문자열·스크롤 범위를 제한해 변조되거나 과도한 history payload는 거부한다.
+- 390x844 인앱 브라우저에서 검색어 `계란`과 `초보가능`을 적용하고 2/2 페이지의 화면에 보이는 카드로 상세에 들어갔다가 뒤로가기를 실행했다. 검색어·빠른 필터·2페이지가 유지됐고 스크롤은 `1346px -> 1344px`로 복원됐다. 가로 넘침 0, 보이는 버튼 최소 높이 44px, console error/warning 0건이다.
+- 카드·두 번째 cursor 검증용 30개 데이터는 로컬 메모리 프록시에만 주입했고 앱·DB·Git에는 저장하지 않았다. 실제 Preview API는 검수된 v2 데이터와 migration이 아직 없으므로 계속 fail-closed하며 이 합성 QA를 사람 검수나 운영 데이터 증거로 승격하지 않는다.
+- 전체 단위 테스트 441/441, TypeScript, production build 40/40 경로, release security 4/4가 통과했다. lint는 오류 0건이며 기존 iOS 생성물 경고 33건만 남았다. 잘못된 history payload와 cursor·페이지 상한은 음수 회귀 테스트로 고정했다.
+- 구현 커밋 `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`를 GitHub에 push하고 같은 깨끗한 archive를 Vercel Preview `dpl_GrvKCCkRFbArg63j2SKkpvtz8Cbj` (`https://jipbab-note-5lqu7aepk-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 메타데이터의 `sourceCommit`은 구현 커밋과 일치하며 `/`와 `/recipe`는 HTTP 200이다.
+- Preview의 `GET /api/v1/recipes?limit=1`은 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환했다. Production 승격, Supabase migration, 실제 조리·사용자·실기기·스토어·외부 모니터링 증거 변경은 수행하지 않았다.
+
 ## 2026-07-14 FE-015 조리 완료 통합 흐름
 
 - 모든 조리 단계를 체크하면 `요리를 완성했어요` 화면에서 실제 걸린 시간, 어려웠던 단계, 맛 결과, 다시 만들 의향, 남은 음식 보관·재가열 안내를 한 번에 확인한다. 상태·단계·맛·의향은 고정 선택지만 사용하며 이름·이메일·자유서술을 추가하지 않았다.

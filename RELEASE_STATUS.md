@@ -2,14 +2,14 @@
 
 ## 한 줄 상태
 
-FE-015 조리 완료 통합 코드는 `d0f9c7f9bb7662b11073c27d59e2e58d18f58d75`, Preview 증거 체크포인트는 `9ff6ff134792f604ec3242bb6ae0d35790968cd2`로 GitHub에 푸시했습니다. 같은 코드 archive의 Vercel Preview `dpl_3nfwe71uvw2kboeeKDWfkLaRFqsy`는 `READY`, 루트 HTTP 200입니다. Production은 승격하지 않았고 Phase 7 DB migration·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+FE-005 레시피 목록 필터 초기화·뒤로가기 상태 복원 코드는 `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`로 GitHub에 푸시했습니다. 같은 코드 archive의 Vercel Preview `dpl_GrvKCCkRFbArg63j2SKkpvtz8Cbj`는 `READY`이고 `/`·`/recipe` HTTP 200입니다. Production은 승격하지 않았고 DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
 
 ## 2026-07-14 최신 웹 Preview
 
-- Preview: `https://jipbab-note-4ug0rmf2g-youngbeens-projects.vercel.app`
-- 브라우저 390x844 실제 컴포넌트 QA: 조리 완료, 어려웠던 단계·맛·재조리 의향, 즐겨찾기, 선택 재료 소진, 냉장고 소진 기록과 되돌리기 통과
-- 검증: unit 438/438, 집중 19/19, API v1 19/19, CI 19/19, Supabase 146/146, security 4/4, production build 40/40 routes
-- 데이터 경계: Preview 피드백 API는 migration 미적용으로 redacted `503 DEPENDENCY_NOT_READY`이며 Production 정상 저장이나 실제 사용자 증거로 간주하지 않음
+- Preview: `https://jipbab-note-5lqu7aepk-youngbeens-projects.vercel.app`
+- 브라우저 390x844 실제 목록 QA: 전체 필터 초기화, 검색·초보 필터, cursor 2페이지, 상세 이동 후 뒤로가기 페이지·스크롤 복원 통과
+- 검증: unit 441/441, TypeScript pass, lint 오류 0, security 4/4, production build 40/40 routes, 가로 overflow 0, 최소 버튼 44px
+- 데이터 경계: 카드·cursor용 30개 fixture는 로컬 메모리에만 사용했고 Preview API는 migration 미적용으로 redacted `503 DEPENDENCY_NOT_READY`를 유지함
 
 ## 기존 App Store 출시 이력
 
@@ -27,10 +27,10 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 - Version: `1.0`
 - Build: `2026062602`
-- Git SHA: `d0f9c7f9bb7662b11073c27d59e2e58d18f58d75`
+- Git SHA: `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`
 - Preview evidence checkpoint: `9ff6ff134792f604ec3242bb6ae0d35790968cd2`
 - Branch: `agent/phase6-observability-analytics`
-- Phase: `phase7_recipe_completion_preview_ready_external_and_human_gates_blocked`
+- Phase: `phase7_recipe_completion_and_fe005_navigation_preview_ready_external_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
 
 ## 통과 또는 기록된 증거
