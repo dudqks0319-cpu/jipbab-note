@@ -19,12 +19,12 @@ Branch: `integration/phase6-release-candidate`
 
 ## 검증 결과
 
-- `npm test`: 455/455 통과, lint 경고 0건
+- `npm test`: 458/458 통과, lint 경고 0건
 - `pnpm build`: 41/41 route 프로덕션 빌드 통과
 - `pnpm release:ci-static-check`: 20/20 통과
 - `pnpm release:candidate-gate`: 14 통과, 5 차단, 2 누락
-- 직전 GitHub Release Gate run `29292411853`: Verification Pipeline과 required marker job 9/9 통과, annotation 0건
-- 직전 원격 검증 체크포인트 `81039c495060a8c536103da58385c46fe6f98469`: Vercel Preview deployment 성공, GitHub deployment source SHA 일치
+- 직전 GitHub Release Gate run `29294427977`: Verification Pipeline과 required marker job 9/9 통과, annotation 0건
+- 직전 원격 검증 체크포인트 `e860631b96248e069fa15526cd64ce1bd6ce8eb4`: Vercel Preview deployment 성공, GitHub deployment source SHA 일치
 - 모바일 증거: 12/12 통과
 - 핵심 20개 정적 감사: 정확한 메뉴 20/20, 로컬 이미지 20/20, 자동 점수 90점 이상 20/20
 

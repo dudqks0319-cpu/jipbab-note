@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-performance.mjs", "utf8");
 const statisticsSource = readFileSync("scripts/lib/performance-statistics.mjs", "utf8");
+const vercelBypassSource = readFileSync("scripts/lib/vercel-protection-bypass.mjs", "utf8");
 const promotionSource = readFileSync("scripts/promote-phase-6-performance-baseline.mjs", "utf8");
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
@@ -78,6 +79,17 @@ const contracts = [
       captureSource.includes("failureRate") &&
       statisticsSource.includes("median") &&
       statisticsSource.includes("standardDeviation"),
+  },
+  {
+    name: "origin-scoped Vercel automation bypass",
+    pass:
+      captureSource.includes("VERCEL_AUTOMATION_BYPASS_SECRET") &&
+      captureSource.includes('client.on("Fetch.requestPaused"') &&
+      captureSource.includes('client.send("Fetch.enable"') &&
+      !captureSource.includes("Network.setExtraHTTPHeaders") &&
+      vercelBypassSource.includes('.endsWith(".vercel.app")') &&
+      vercelBypassSource.includes('"x-vercel-protection-bypass"') &&
+      vercelBypassSource.includes('"x-vercel-set-bypass-cookie"'),
   },
   {
     name: "trusted search interaction",
