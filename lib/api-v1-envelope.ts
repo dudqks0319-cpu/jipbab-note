@@ -4,6 +4,7 @@ export type ApiV1ErrorCode =
   | "INVALID_FILTER"
   | "INVALID_CURSOR"
   | "INVALID_LIMIT"
+  | "UNAUTHORIZED"
   | "NOT_FOUND"
   | "RATE_LIMITED"
   | "DEPENDENCY_NOT_READY"

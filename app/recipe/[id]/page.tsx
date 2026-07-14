@@ -207,7 +207,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
       />
 
       <RecipeInstructionView recipeName={recipe.name} steps={recipe.steps} />
-      <RecipeCookMode recipeId={recipe.id} recipeName={recipe.name} steps={recipe.steps} />
+      <RecipeCookMode
+        recipeId={recipe.id}
+        recipeVersion={recipe.version ?? 1}
+        recipeName={recipe.name}
+        steps={recipe.steps}
+      />
 
       {recipe.safetyNotes?.length ? (
         <section className="px-5 pt-6">

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChefHat, ChevronLeft, ChevronRight, List, RotateCcw, Timer } from 'lucide-react'
 
+import RecipeCookFeedbackForm from '@/components/recipe/RecipeCookFeedbackForm'
 import {
   createRecipeCookTimer,
   normalizeRecipeCookProgress,
@@ -15,6 +16,7 @@ import type { RecipeDetailStep } from '@/types'
 
 type RecipeCookModeProps = {
   recipeId: string
+  recipeVersion: number
   recipeName: string
   steps: RecipeDetailStep[]
 }
@@ -63,12 +65,15 @@ function playCompletionSignal(context: AudioContext | null) {
   }
 }
 
-export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCookModeProps) {
+export default function RecipeCookMode({ recipeId, recipeVersion, recipeName, steps }: RecipeCookModeProps) {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set())
   const [activeTimer, setActiveTimer] = useState<RecipeCookTimer | null>(null)
   const [activeStepIndex, setActiveStepIndex] = useState(0)
   const [showAllSteps, setShowAllSteps] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [suggestedFailedStepOrder, setSuggestedFailedStepOrder] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<RecipeCookFeedback | null>(null)
+  const [startedAt, setStartedAt] = useState<string | null>(null)
   const [completedAt, setCompletedAt] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [hydrated, setHydrated] = useState(false)
@@ -93,6 +98,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
         if (saved.timer && remainingTimerSeconds(saved.timer) === 0) {
           signaledTimerRef.current = saved.timer.endsAt
         }
+        setStartedAt(saved.startedAt)
         setCompletedAt(saved.completedAt)
         setFeedback(saved.feedback)
       }
@@ -107,10 +113,11 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     if (!hydrated) return
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        version: 1,
+        version: 2,
         activeStepIndex,
         checkedStepIndexes: [...checkedSteps].sort((left, right) => left - right),
         timer: activeTimer,
+        startedAt,
         completedAt,
         feedback,
         updatedAt: new Date().toISOString(),
@@ -118,7 +125,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     } catch {
       return
     }
-  }, [activeStepIndex, activeTimer, checkedSteps, completedAt, feedback, hydrated, storageKey])
+  }, [activeStepIndex, activeTimer, checkedSteps, completedAt, feedback, hydrated, startedAt, storageKey])
 
   useEffect(() => {
     if (!activeTimer || remainingTimerSeconds(activeTimer) <= 0) return
@@ -179,7 +186,6 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     if (allComplete && !completedAt) setCompletedAt(new Date().toISOString())
     if (!allComplete && completedAt) {
       setCompletedAt(null)
-      setFeedback(null)
     }
   }, [allComplete, completedAt])
 
@@ -188,6 +194,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
   const activeTimerSeconds = stepTimerSeconds(activeStep)
 
   const toggleStep = (index: number) => {
+    if (!startedAt && !checkedSteps.has(index)) setStartedAt(new Date().toISOString())
     setCheckedSteps((previous) => {
       const next = new Set(previous)
       if (next.has(index)) next.delete(index)
@@ -206,6 +213,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
       audioContextRef.current = null
     }
     signaledTimerRef.current = null
+    if (!startedAt) setStartedAt(new Date().toISOString())
     setTimerAnnouncement('')
     setNow(Date.now())
     setActiveTimer(timer)
@@ -215,6 +223,9 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     setActiveStepIndex(0)
     setActiveTimer(null)
     setTimerAnnouncement('')
+    setFeedbackOpen(false)
+    setSuggestedFailedStepOrder(null)
+    setStartedAt(null)
     setCompletedAt(null)
     setFeedback(null)
   }
@@ -265,6 +276,18 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
               {activeTimer?.stepIndex === activeStep.index ? (remainingSeconds === 0 ? '타이머 완료' : formatRemainingTime(remainingSeconds)) : `${formatDurationLabel(activeTimerSeconds)} 타이머`}
             </button>
           ) : null}
+          {!allComplete ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSuggestedFailedStepOrder(activeStep.index)
+                setFeedbackOpen(true)
+              }}
+              className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-[13px] px-3 text-[12px] font-black text-[#8f5a43]"
+            >
+              현재 단계에서 조리를 멈췄어요
+            </button>
+          ) : null}
           <p className="sr-only" aria-live="assertive">{timerAnnouncement}</p>
         </div>
 
@@ -279,16 +302,17 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
           </div>
         ) : null}
 
-        {allComplete ? (
-          <div className="mt-4 rounded-[16px] border border-[#dcebd2] bg-[#f4fbef] px-4 py-4">
-            <h3 className="text-[18px] font-black text-[#315f2d]">조리 완료</h3>
-            <p className="mt-1 text-[13px] font-semibold leading-6 text-[#557b4f]">진행 기록은 이 기기에 저장되어 앱에 다시 돌아와도 유지됩니다.</p>
-            <div className="mt-3 grid grid-cols-3 gap-2" aria-label="조리 난이도 피드백">
-              {([['easy', '쉬웠어요'], ['okay', '괜찮아요'], ['hard', '어려웠어요']] as const).map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setFeedback(value)} aria-pressed={feedback === value} className={`min-h-11 rounded-xl px-2 text-[12px] font-black ${feedback === value ? 'bg-[#315f2d] text-white' : 'bg-white text-[#557b4f]'}`}>{label}</button>
-              ))}
-            </div>
-          </div>
+        {feedbackOpen || allComplete ? (
+          <RecipeCookFeedbackForm
+            recipeId={recipeId}
+            recipeVersion={recipeVersion}
+            steps={steps}
+            startedAt={startedAt}
+            completedAt={completedAt}
+            suggestedFailedStepOrder={allComplete ? null : suggestedFailedStepOrder}
+            initialFeedback={feedback}
+            onFeedbackChange={setFeedback}
+          />
         ) : null}
 
         <button type="button" onClick={resetProgress} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-[12px] font-black text-[#8f7f70]"><RotateCcw size={14} /> 진행 초기화</button>

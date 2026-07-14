@@ -17,6 +17,11 @@ const schemaBlocks = [
     endMarker: "-- PHASE2_API_FOUNDATION_SCHEMA_END",
     migrationPaths: ["supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql"],
   },
+  {
+    startMarker: "-- PHASE7_RECIPE_FEEDBACK_SCHEMA_START",
+    endMarker: "-- PHASE7_RECIPE_FEEDBACK_SCHEMA_END",
+    migrationPaths: ["supabase/migrations/20260714100000_add_recipe_feedback.sql"],
+  },
 ];
 
 let schema = readFileSync(schemaPath, "utf8");

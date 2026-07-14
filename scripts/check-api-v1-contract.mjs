@@ -4,12 +4,16 @@ const files = {
   listRoute: "app/api/v1/recipes/route.ts",
   detailRoute: "app/api/v1/recipes/[id]/route.ts",
   recommendationRoute: "app/api/v1/recommendations/route.ts",
+  feedbackRoute: "app/api/v1/recipe-feedback/route.ts",
   repository: "lib/recipe-api-v1-repository.ts",
   recommendation: "lib/recipe-recommendation-v1.ts",
+  feedback: "lib/recipe-feedback.ts",
   response: "lib/api-v1-response.ts",
   limiter: "lib/distributed-rate-limit.ts",
   migration: "supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql",
   rollback: "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql",
+  feedbackMigration: "supabase/migrations/20260714100000_add_recipe_feedback.sql",
+  feedbackRollback: "supabase/rollbacks/20260714100000_add_recipe_feedback.sql",
   schema: "supabase/schema.sql",
   envExample: ".env.example",
 };
@@ -35,7 +39,12 @@ function read(relativePath) {
 const source = Object.fromEntries(
   Object.entries(files).map(([key, relativePath]) => [key, read(relativePath)]),
 );
-const routes = [source.listRoute, source.detailRoute, source.recommendationRoute];
+const routes = [
+  source.listRoute,
+  source.detailRoute,
+  source.recommendationRoute,
+  source.feedbackRoute,
+];
 
 check(
   "API v1 routes",
@@ -48,7 +57,7 @@ check(
     source.response.includes("apiV1Success(data, requestId, status)") &&
     source.response.includes("apiV1Error(") &&
     source.response.includes("createApiOperationRecorder"),
-  "list, detail, and recommendation routes share request IDs, envelopes, operational telemetry, and distributed limits",
+  "list, detail, recommendation, and feedback routes share request IDs, envelopes, operational telemetry, and distributed limits",
   "every route must use the common responder and distributed rate-limit contracts",
 );
 
@@ -132,6 +141,21 @@ check(
 );
 
 check(
+  "private recipe feedback API",
+  source.feedbackRoute.includes("readBoundedJsonObject") &&
+    source.feedbackRoute.includes("getBearerAccessToken") &&
+    source.feedbackRoute.includes("getAuthenticatedServerUser") &&
+    source.feedbackRoute.includes("getServerSupabaseAdminClient") &&
+    source.feedbackRoute.includes('.from("recipe_feedback").insert') &&
+    source.feedbackRoute.includes('respond.error("UNAUTHORIZED"') &&
+    source.feedbackRoute.includes('error?.code === "23505"') &&
+    source.feedback.includes("INPUT_KEY_SET") &&
+    !source.feedback.includes('"comment"'),
+  "feedback requires a verified signed session, exact bounded fields, and idempotent server-only writes",
+  "feedback authentication, input minimization, or idempotent storage is incomplete",
+);
+
+check(
   "response envelope",
   source.response.includes('"Cache-Control": "no-store"') &&
     source.response.includes('"X-Request-Id"') &&
@@ -175,12 +199,48 @@ check(
 );
 
 check(
+  "recipe feedback database contract",
+  source.feedbackMigration.includes("create table if not exists public.recipe_feedback") &&
+    source.feedbackMigration.includes("recipe_feedback_failure_fields_consistent") &&
+    source.feedbackMigration.includes("recipe_feedback_no_free_text") &&
+    source.feedbackMigration.includes("check (comment is null)") &&
+    source.feedbackMigration.includes("unique (user_id, client_submission_id)") &&
+    source.feedbackMigration.includes("idx_recipe_feedback_recipe_created") &&
+    source.feedbackMigration.includes("idx_recipe_feedback_user_created") &&
+    source.feedbackMigration.includes("enable row level security") &&
+    source.feedbackMigration.includes("from public, anon, authenticated") &&
+    source.feedbackMigration.includes("to service_role") &&
+    !/grant\s+(?:all|insert|select)[^;]*\bto\s+(?:anon|authenticated)\b/i.test(
+      source.feedbackMigration,
+    ),
+  "feedback rows are constrained, indexed, inaccessible to app roles, and writable only by the server",
+  "feedback storage must minimize data and deny direct app-role access",
+);
+
+check(
+  "recipe feedback rollback",
+  source.feedbackRollback.includes("revoke all on table public.recipe_feedback") &&
+    !/drop\s+table|truncate/i.test(source.feedbackRollback),
+  "rollback revokes runtime access while retaining private beta evidence",
+  "feedback rollback must preserve collected evidence and remove runtime access",
+);
+
+check(
   "schema synchronization",
   source.schema.includes("PHASE2_API_FOUNDATION_SCHEMA_START") &&
     source.schema.includes("public.api_rate_limit_buckets") &&
     source.schema.includes("public.consume_api_rate_limit"),
   "Phase 2 database foundation is mirrored into the canonical schema",
   "canonical schema is missing the Phase 2 marker or rate-limit contract",
+);
+
+check(
+  "recipe feedback schema synchronization",
+  source.schema.includes("PHASE7_RECIPE_FEEDBACK_SCHEMA_START") &&
+    source.schema.includes("public.recipe_feedback") &&
+    source.schema.includes("recipe_feedback_no_free_text"),
+  "Phase 7 feedback storage is mirrored into the canonical schema",
+  "canonical schema is missing the Phase 7 feedback contract",
 );
 
 check(
@@ -196,6 +256,8 @@ const requiredTests = [
   "tests/distributed-rate-limit.test.ts",
   "tests/recipe-api-v1.test.ts",
   "tests/recipe-recommendation-v1.test.ts",
+  "tests/recipe-feedback.test.ts",
+  "tests/recipe-feedback-contract.test.ts",
 ];
 check(
   "API v1 regression coverage",

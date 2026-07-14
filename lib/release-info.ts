@@ -5,7 +5,7 @@ import {
 
 export const APP_VERSION = "1.0.0";
 export const RECIPE_SCHEMA_VERSION = "v2";
-export const INCLUDED_MIGRATION_VERSION = "20260711113000";
+export const INCLUDED_MIGRATION_VERSION = "20260714100000";
 export const RECIPE_CONTENT_VERSION = "phase5-core-20-draft-v1";
 
 export type ReleaseEnvironment = "local" | "development" | "preview" | "production";

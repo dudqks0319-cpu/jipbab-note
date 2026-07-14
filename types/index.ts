@@ -505,6 +505,7 @@ export interface RecipeIngredientDetail {
 }
 
 export interface RecipeDetailRecord extends RecipeRecord {
+  version?: number;
   ingredientList: string[];
   ingredientDetails?: RecipeIngredientDetail[];
   substituteIngredients?: RecipeIngredientDetail[];

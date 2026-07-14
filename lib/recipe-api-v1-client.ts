@@ -1,4 +1,5 @@
 import { getIngredientCatalog } from "./ingredient-catalog.ts";
+import type { RecipeFeedbackV1Input } from "./recipe-feedback.ts";
 import type { CanonicalRecipeCategoryId } from "./recipe-category-taxonomy.ts";
 import type {
   RecipeDetailRecord,
@@ -61,6 +62,12 @@ export interface RecipeApiV1Recommendation {
 export interface RecipeApiV1RecommendationData {
   recommendations: RecipeApiV1Recommendation[];
   candidateCount: number;
+}
+
+export interface RecipeFeedbackV1Response {
+  accepted: true;
+  duplicate: boolean;
+  clientSubmissionId: string;
 }
 
 export interface RecipeApiV1Detail {
@@ -305,6 +312,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
 
   return {
     id: detail.id,
+    version: detail.version,
     ...(detail.slug ? { slug: detail.slug } : {}),
     title: detail.title,
     summary: detail.summary,
@@ -410,6 +418,24 @@ export async function fetchRecipeRecommendationsV1(
     body: JSON.stringify(input),
   });
   return readApiData<RecipeApiV1RecommendationData>(response);
+}
+
+export async function submitRecipeFeedbackV1(
+  input: RecipeFeedbackV1Input,
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<RecipeFeedbackV1Response> {
+  const response = await fetch(resolveApiUrl("/api/v1/recipe-feedback"), {
+    method: "POST",
+    cache: "no-store",
+    signal,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+  return readApiData<RecipeFeedbackV1Response>(response);
 }
 
 export async function fetchRecipeDetailV1(

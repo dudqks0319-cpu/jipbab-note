@@ -25,6 +25,8 @@ test("release unblock runbook covers all remaining external blocker surfaces", (
   assert.match(runbook, /Mac 로그인 암호/);
   assert.match(runbook, /Android 물리 기기/);
   assert.match(runbook, /com\.jipbab\.note/);
+  assert.match(runbook, /20260714100000_add_recipe_feedback\.sql/);
+  assert.match(runbook, /POST \/api\/v1\/recipe-feedback/);
 });
 
 test("release unblock runbook includes the post-unblock verification commands", () => {

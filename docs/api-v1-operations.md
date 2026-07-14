@@ -2,7 +2,7 @@
 
 ## 범위
 
-`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구 또는 복구 안내가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
+`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. `POST /api/v1/recipe-feedback`는 검증된 서명 세션의 최소 조리 결과만 비공개로 저장한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구 또는 복구 안내가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
 
 목록의 `sort`는 `recommended`(기본값), `most-owned`, `least-missing`, `fastest`, `recent`만 허용한다. `recent`는 발행 시각·ID keyset cursor를 사용하고, 나머지 정렬은 현재 출시 최대치인 200개 후보 안에서 정렬 고정 offset cursor를 사용한다. cursor는 정렬 종류와 일치하지 않으면 거부된다.
 
@@ -13,6 +13,16 @@
 - 모든 응답은 `Cache-Control: no-store`와 `X-Request-Id`를 포함한다.
 - 제한 초과 또는 의존성 미준비 응답은 `Retry-After`를 포함한다.
 - 서버 예외, 환경변수 이름, 스택, DB 오류 본문은 응답이나 로그로 전달하지 않는다.
+
+## 레시피 피드백
+
+- Bearer token은 Supabase에서 다시 검증하며 서명된 익명 사용자와 영구 사용자만 허용한다.
+- 본문은 최대 4KB이고 정해진 7개 필드만 허용한다. 이름, 이메일, 전화번호, 자유서술과 호출자 지정 기기 ID는 받지 않는다.
+- `completionStatus`는 `completed_independently`, `completed_with_difficulty`, `failed` 중 하나다.
+- `failed`는 1~100 범위의 `failedStepOrder`가 필수이고 `reasonCode`는 계획서의 8개 코드 중 하나거나 `null`이다. 완료 상태에는 실패 단계와 이유를 보낼 수 없다.
+- `actualDurationSeconds`는 `null` 또는 1~43,200초다.
+- `(user_id, client_submission_id)` 유일성으로 재시도를 멱등 처리한다.
+- `recipe_feedback`은 app role의 직접 접근을 전부 거부하며 서버만 삽입한다. 자유서술용 `comment`는 DB 제약에서도 `null`만 허용한다.
 
 ## 분산 레이트 리밋
 
@@ -30,9 +40,10 @@ openssl rand -base64 48
 2. staging에 Phase 0, Phase 1 migration을 순서대로 적용하고 capture/restore 및 권한 음성 경로를 검증한다.
 3. staging에 `20260710160000_add_distributed_api_rate_limits.sql`을 적용한다.
 4. staging 서버에 `API_RATE_LIMIT_HMAC_SECRET`을 설정한다.
-5. 목록·상세·추천의 정상 경로, 잘못된 필터/커서/본문, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
-6. matching app build와 DB migration을 조정된 변경 창에 운영 반영한다.
-7. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
+5. staging에 `20260714100000_add_recipe_feedback.sql`을 적용하고 app role 직접 접근 거부와 service role 삽입을 확인한다.
+6. 목록·상세·추천의 정상 경로와 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
+7. matching app build와 DB migration을 조정된 변경 창에 운영 반영한다.
+8. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
 
 운영 migration history가 현재 로컬과 불일치하므로 이 문서 작성 시점에는 `supabase db push`를 실행하지 않는다.
 
@@ -45,5 +56,7 @@ node --experimental-strip-types --test \
   tests/api-v1-contract.test.ts \
   tests/distributed-rate-limit.test.ts \
   tests/recipe-api-v1.test.ts \
-  tests/recipe-recommendation-v1.test.ts
+  tests/recipe-recommendation-v1.test.ts \
+  tests/recipe-feedback.test.ts \
+  tests/recipe-feedback-contract.test.ts
 ```

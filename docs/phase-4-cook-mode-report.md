@@ -2,6 +2,12 @@
 
 작성일: 2026-07-11 KST
 
+## 2026-07-14 후속 상태
+
+- 이 문서 작성 당시 후속 범위였던 `/api/v1/recipe-feedback`과 실패 단계 수집은 로컬 구현을 마쳤다. migration 적용과 staging HTTP 검증은 아직 수행하지 않았다.
+- 여러 기기 간 진행상태를 동기화하는 `/api/v1/recipe-progress`는 여전히 미구현이다.
+- 현재 계약과 증거는 `docs/phase-7-recipe-feedback-collection.md`를 기준으로 한다.
+
 ## 변경 전 상태와 원인
 
 - 타이머가 1초마다 state를 감소시켜 백그라운드·화면 잠금 동안 실제 시간과 어긋날 수 있었다.

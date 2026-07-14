@@ -9,6 +9,7 @@ export const API_OPERATION_ENDPOINTS = [
   "GET /api/v1/recipes",
   "GET /api/v1/recipes/:id",
   "POST /api/v1/recommendations",
+  "POST /api/v1/recipe-feedback",
 ] as const;
 
 export type ApiOperationEndpoint = (typeof API_OPERATION_ENDPOINTS)[number];

@@ -2,6 +2,16 @@
 
 Updated: 2026-07-14 KST
 
+## 2026-07-14 API-007 레시피 피드백·실패 단계 수집
+
+- 계획서의 `혼자서 완성할 수 있었나요?` 3개 선택지, 실패 단계, 8개 선택형 실패 이유를 실제 조리 모드에 연결했다. 이름·이메일·자유서술 입력은 만들지 않았고 서버가 준비되지 않으면 로컬 저장 상태를 분명히 표시한다.
+- 로컬 진행상태를 version 2로 올려 조리 시작·완료 시각과 구조화 피드백을 저장한다. version 1 단계·타이머는 유지하되 예전 난이도 3값을 새 완성 상태로 임의 해석하지 않는다.
+- `POST /api/v1/recipe-feedback`는 4KB 본문, 분당 12회 분산 제한, 검증된 Supabase Bearer 세션, 7개 필드 exact allowlist, 사용자별 제출 UUID 멱등성을 적용한다.
+- `20260714100000_add_recipe_feedback.sql`은 FK·상태 일관성·시간 상한·자유서술 금지·인덱스를 정의하고 app role의 직접 접근을 전부 거부한다. rollback은 권한만 회수하고 이미 모은 비공개 증거를 보존한다.
+- 전체 단위 테스트 433/433, API v1 계약 18/18, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. 인앱 브라우저 실제 컴포넌트 QA에서 390px 가로 넘침 없음, 최소 버튼 44px, 텍스트 입력 0개, 로컬 저장 문구를 확인했다. 화면 증거는 `output/ui-evidence/phase7-recipe-feedback-failure-390.png`다.
+- 실제 로컬 HTTP 음수 경로는 무서명 `401 UNAUTHORIZED`, 허용되지 않은 `GET` 405, 4KB 초과 본문 `413 INVALID_BODY`를 반환했고 401·413에는 redacted envelope, `Cache-Control: no-store`, request ID가 확인됐다.
+- migration 적용, 정상 서버 저장 HTTP 검증, production 배포는 수행하지 않았다. 실제 사용자·실제 조리 증거도 여전히 0건이며 기존 Phase 5/7 게이트를 대체하지 않는다. 상세: `docs/phase-7-recipe-feedback-collection.md`.
+
 ## 2026-07-14 Phase 7 비공개 베타 준비·최신 운영자 인계
 
 - 계획서의 Phase 7을 실제 사용자 증거로만 판정하도록 `docs/phase-7-private-beta-runbook.md`, 익명 세션 CSV, 공개 베타 승인 문서와 `pnpm check:phase7-private-beta` 검증기를 추가했다. 참여자 이름·이메일·전화번호 대신 익명 코드만 허용하고 원본 증거는 Git에서 제외된 `output/phase7-private-beta-evidence/` 아래에 둔다.
@@ -59,7 +69,7 @@ Updated: 2026-07-14 KST
 ## 2026-07-13 Phase 6 앱 내 배포 정보 Preview
 
 - 구현 커밋 `51458b429866815cbdfea6ed136519c4e1159c7d`를 `origin/agent/phase6-observability-analytics`에 push하고, 같은 SHA의 깨끗한 `git archive`를 Vercel Preview `dpl_6Rz4X6sHq8auV8YFbhmHvjoL5FDg` (`https://jipbab-note-dh9uis8k7-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`이며 Production alias는 승격하지 않았다.
-- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260711113000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
+- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260714100000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
 - 공개 화면에는 allowlist로 정규화한 release metadata만 표시한다. raw environment, 계정, 이메일, 냉장고 재료, token, secret은 노출하지 않는다. malformed environment와 build time은 각각 `local`, `확인 불가`로 fail-closed한다.
 - 원격 build는 compile, TypeScript, 39/39 routes를 통과했다. `/`, `/settings`, `/settings/app-info`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 운영 migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`, `DEPENDENCY_NOT_READY`를 반환한다.
 - Vercel runtime log의 `deployment_sha`는 위 GitHub 구현 SHA와 정확히 일치한다. 구조화 로그에는 request ID, endpoint, status, latency, error code, deployment SHA만 있고 query, body, token, email, free text는 없다.
@@ -99,7 +109,7 @@ Updated: 2026-07-14 KST
 ## 2026-07-13 Phase 6 관측성·분석 계약 Preview
 
 - 구현 커밋 `c21b4ae8116836075b33090818b4a68e348c9d1f`를 격리 브랜치 `origin/agent/phase6-observability-analytics`에 push했다. 기본 작업 폴더의 미완성 아동식 변경은 이 커밋과 배포에서 제외했다.
-- 세 API v1 라우트는 공통 응답기에서 request ID, 공통 envelope, 1회성 운영 완료 로그를 함께 기록한다. 허용 메타데이터는 `request_id`, 정규화한 `endpoint`, `status`, `latency_ms`, 선택적 `error_code`, `deployment_sha`뿐이며 raw URL·query·body·email·token·free text는 기록하지 않는다.
+- 네 API v1 라우트는 공통 응답기에서 request ID, 공통 envelope, 1회성 운영 완료 로그를 함께 기록한다. 허용 메타데이터는 `request_id`, 정규화한 `endpoint`, `status`, `latency_ms`, 선택적 `error_code`, `deployment_sha`뿐이며 raw URL·query·body·email·token·free text는 기록하지 않는다.
 - 계획서의 제품 이벤트 33개를 이름·공통 속성·bounded measurement allowlist로 고정했다. 제품 분석은 기본 비활성이고 명시적 동의와 transport가 모두 없으면 전송하지 않는다. vendor, retention, consent 정책 승인 전에는 외부 분석 수집을 연결하지 않는다.
 - 최종 Vercel Preview는 `dpl_GmLZTPWPhbhaSmKaJLtLpYTs4bD5` (`https://jipbab-note-2wvccgmvm-youngbeens-projects.vercel.app`)이며 상태는 `READY`다. 깨끗한 `c21b4ae` checkout에 runtime/build `DEPLOYMENT_SHA`를 명시해 배포했다. 원격 build는 compile, TypeScript, 38/38 routes를 통과했다.
 - 배포 후 `/`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 production migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`를 반환한다. Vercel runtime log는 허용된 구조화 필드만 포함하고 `deployment_sha`가 위 구현 SHA와 정확히 일치한다.

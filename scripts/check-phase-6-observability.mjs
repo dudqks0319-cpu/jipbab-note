@@ -18,6 +18,7 @@ const routeSources = [
   readFileSync("app/api/v1/recipes/route.ts", "utf8"),
   readFileSync("app/api/v1/recipes/[id]/route.ts", "utf8"),
   readFileSync("app/api/v1/recommendations/route.ts", "utf8"),
+  readFileSync("app/api/v1/recipe-feedback/route.ts", "utf8"),
 ];
 
 const checks = [];
@@ -68,8 +69,9 @@ check(
     '"GET /api/v1/recipes"',
     '"GET /api/v1/recipes/:id"',
     '"POST /api/v1/recommendations"',
+    '"POST /api/v1/recipe-feedback"',
   ]),
-  "API v1 list, detail, and recommendation endpoints are named without raw URLs",
+  "API v1 list, detail, recommendation, and feedback endpoints are named without raw URLs",
 );
 check(
   "one-shot request recorder",
@@ -88,7 +90,7 @@ check(
 check(
   "API route integration",
   routeSources.every((source) => source.includes("createApiV1Responder")),
-  "all three API v1 routes use the observed responder",
+  "all four API v1 routes use the observed responder",
 );
 check(
   "product event catalog",

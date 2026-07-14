@@ -40,7 +40,7 @@ export function getServerSupabaseAdminClient(): SupabaseClient {
   );
 }
 
-function getBearerAccessToken(authorizationHeader: string | null): string | null {
+export function getBearerAccessToken(authorizationHeader: string | null): string | null {
   if (!authorizationHeader?.startsWith("Bearer ")) {
     return null;
   }
