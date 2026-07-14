@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
@@ -33,6 +33,11 @@ import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import type { RecipeApiV1Sort } from '@/lib/recipe-api-v1-client'
+import {
+  createRecipeListNavigationState,
+  readRecipeListNavigationState,
+  withRecipeListNavigationState,
+} from '@/lib/recipe-list-navigation-state'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
@@ -43,6 +48,11 @@ const DISPLAY_CATEGORY_QUICK_FILTERS: Partial<Record<DisplayRecipeCategory, Reci
   초보가능: 'beginner',
   '10분요리': 'quick',
 }
+const RESTORABLE_RECIPE_QUICK_FILTERS = new Set<RecipeQuickFilter>([
+  ...RECIPE_QUICK_FILTERS.map((filter) => filter.id),
+  'beginner',
+  'quick',
+])
 const DISPLAY_CATEGORY_LABEL_LINES: Partial<Record<DisplayRecipeCategory, string[]>> = {
   '밥·한 그릇': ['밥·한', '그릇'],
   '찌개·전골': ['찌개', '전골'],
@@ -68,6 +78,8 @@ export default function RecipePage() {
   const [sortMode, setSortMode] = useState<RecipeListSortMode>('recommended')
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [urlStateReady, setUrlStateReady] = useState(false)
+  const pendingScrollRestoreRef = useRef<number | null>(null)
+  const scrollRestoreDoneRef = useRef(false)
   const apiSort: RecipeApiV1Sort = {
     recommended: 'recommended',
     missing: 'least-missing',
@@ -77,6 +89,8 @@ export default function RecipePage() {
   const {
     recipes,
     loading,
+    hasLoaded,
+    loadedPage,
     error,
     page,
     totalCount,
@@ -89,6 +103,8 @@ export default function RecipePage() {
     setSelectedCategory,
     nextPage,
     prevPage,
+    capturePaginationState,
+    restorePaginationState,
     refresh,
   } = useRecipes(24, {
     enabled: urlStateReady && demoModeReady && !isAppStoreDemo,
@@ -107,7 +123,29 @@ export default function RecipePage() {
   const publicationEmpty = visibleTotalCount === 0 && !searchQuery && selectedCategory === '전체' && !favoritesOnly
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
+  const persistRecipeListNavigation = useCallback(() => {
+    try {
+      const locationKey = `${window.location.pathname}${window.location.search}`
+      const scrollElement = document.getElementById('main-content')
+      const scrollY = scrollElement ? scrollElement.scrollTop : window.scrollY
+      const navigationState = createRecipeListNavigationState({
+        locationKey,
+        scrollY,
+        pagination: capturePaginationState(),
+      })
+      window.history.replaceState(
+        withRecipeListNavigationState(window.history.state, navigationState),
+        '',
+        window.location.href,
+      )
+    } catch {
+      return
+    }
+  }, [capturePaginationState])
+
   useEffect(() => {
+    const locationKey = `${window.location.pathname}${window.location.search}`
+    const navigationState = readRecipeListNavigationState(window.history.state, locationKey)
     const params = new URLSearchParams(window.location.search)
     const linkedQuery = params.get('q') ?? params.get('ingredient')
     if (linkedQuery?.trim()) {
@@ -118,7 +156,7 @@ export default function RecipePage() {
       setSelectedCategory(toRealRecipeCategory(category as DisplayRecipeCategory))
     }
     const quick = params.get('quick')
-    if (quick && RECIPE_QUICK_FILTERS.some((item) => item.id === quick)) {
+    if (quick && RESTORABLE_RECIPE_QUICK_FILTERS.has(quick as RecipeQuickFilter)) {
       setQuickFilter(quick as RecipeQuickFilter)
     }
     const difficulty = params.get('difficulty')
@@ -143,8 +181,12 @@ export default function RecipePage() {
     }
     setFavoritesOnly(params.get('favorites') === '1')
     setShowAdvancedFilters(params.get('advanced') === '1')
+    if (navigationState) {
+      restorePaginationState(navigationState.pagination)
+      pendingScrollRestoreRef.current = navigationState.scrollY
+    }
     setUrlStateReady(true)
-  }, [setSearchQuery, setSelectedCategory])
+  }, [restorePaginationState, setSearchQuery, setSelectedCategory])
 
   useEffect(() => {
     if (!urlStateReady) return
@@ -166,6 +208,37 @@ export default function RecipePage() {
     setOrDelete('advanced', showAdvancedFilters ? '1' : '0', '0')
     window.history.replaceState(window.history.state, '', url)
   }, [difficultyFilter, favoritesOnly, fridgeFilter, quickFilter, searchQuery, selectedCategory, showAdvancedFilters, sortMode, timeFilter, toolFilter, urlStateReady])
+
+  useEffect(() => {
+    window.addEventListener('pagehide', persistRecipeListNavigation)
+    return () => {
+      window.removeEventListener('pagehide', persistRecipeListNavigation)
+    }
+  }, [persistRecipeListNavigation])
+
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 ||
+    selectedCategory !== '전체' ||
+    quickFilter !== 'all' ||
+    difficultyFilter !== 'all' ||
+    timeFilter !== 'all' ||
+    toolFilter !== 'all' ||
+    fridgeFilter !== 'all' ||
+    sortMode !== 'recommended' ||
+    favoritesOnly
+
+  const resetFilters = useCallback(() => {
+    setSearchQuery('')
+    setSelectedCategory('전체')
+    setQuickFilter('all')
+    setDifficultyFilter('all')
+    setTimeFilter('all')
+    setToolFilter('all')
+    setFridgeFilter('all')
+    setSortMode('recommended')
+    setFavoritesOnly(false)
+    setShowAdvancedFilters(false)
+  }, [setSearchQuery, setSelectedCategory])
 
   const filteredRecipes = useMemo(() => {
     const base = favoritesOnly ? baseRecipes.filter((recipe) => isFavorite(recipe.id)) : baseRecipes
@@ -198,6 +271,36 @@ export default function RecipePage() {
       return !hasCounts || (categoryCounts[category] ?? 0) > 0
     })
   }, [categoryCounts, quickFilter, selectedCategory])
+
+  useEffect(() => {
+    if (
+      scrollRestoreDoneRef.current ||
+      !urlStateReady ||
+      !demoModeReady ||
+      (!isAppStoreDemo && (!hasLoaded || loading || loadedPage !== page))
+    ) {
+      return
+    }
+    const scrollY = pendingScrollRestoreRef.current
+    if (scrollY === null) {
+      scrollRestoreDoneRef.current = true
+      return
+    }
+
+    let secondFrame = 0
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        const scrollElement = document.getElementById('main-content')
+        if (scrollElement) scrollElement.scrollTo({ top: scrollY, left: 0, behavior: 'auto' })
+        else window.scrollTo({ top: scrollY, left: 0, behavior: 'auto' })
+        scrollRestoreDoneRef.current = true
+      })
+    })
+    return () => {
+      window.cancelAnimationFrame(firstFrame)
+      if (secondFrame) window.cancelAnimationFrame(secondFrame)
+    }
+  }, [demoModeReady, filteredRecipes.length, hasLoaded, isAppStoreDemo, loadedPage, loading, page, urlStateReady])
 
   const handleDisplayCategoryClick = (category: DisplayRecipeCategory) => {
     const quickFilterForCategory = DISPLAY_CATEGORY_QUICK_FILTERS[category]
@@ -383,6 +486,16 @@ export default function RecipePage() {
               </label>
             </div>
           ) : null}
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#7d6d5f]"
+            >
+              <RefreshCw size={14} />
+              필터 초기화
+            </button>
+          ) : null}
         </div>
       </section>
 
@@ -477,7 +590,11 @@ export default function RecipePage() {
               return (
                 <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
                   <div className="flex gap-3 p-2.5">
-                    <Link href={`/recipe/${recipe.id}`} className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#9b8979]">
+                    <Link
+                      href={`/recipe/${recipe.id}`}
+                      onClick={persistRecipeListNavigation}
+                      className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#9b8979]"
+                    >
                       <span className="grid place-items-center gap-1 text-[10px] font-black">
                         <Utensils size={18} />
                         이미지 없음
@@ -494,7 +611,11 @@ export default function RecipePage() {
 
                     <div className="min-w-0 flex-1 py-1">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={`/recipe/${recipe.id}`} className="min-w-0">
+                        <Link
+                          href={`/recipe/${recipe.id}`}
+                          onClick={persistRecipeListNavigation}
+                          className="min-w-0"
+                        >
                           <h2 className="line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
                           <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">
                             {recipe.category}{recipe.method ? ` · ${recipe.method}` : ''}

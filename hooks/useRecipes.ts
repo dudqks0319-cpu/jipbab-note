@@ -12,6 +12,10 @@ import {
 } from "@/lib/recipe-api-v1-client";
 import { resolveLegacyRecipeCategory } from "@/lib/recipe-category-taxonomy";
 import {
+  normalizeRecipeListPaginationState,
+  type RecipeListPaginationState,
+} from "@/lib/recipe-list-navigation-state";
+import {
   buildRecipeRecommendationReason,
   findExpiringMatchedIngredients,
   rankRecipeRecommendations,
@@ -43,6 +47,8 @@ function recipeLoadErrorMessage(error: unknown): string {
 export interface UseRecipeCatalogResult {
   recipes: RecipeRecord[];
   loading: boolean;
+  hasLoaded: boolean;
+  loadedPage: number | null;
   error: string | null;
   page: number;
   totalCount: number;
@@ -55,6 +61,8 @@ export interface UseRecipeCatalogResult {
   goToPage: (nextPage: number) => void;
   nextPage: () => void;
   prevPage: () => void;
+  capturePaginationState: () => RecipeListPaginationState;
+  restorePaginationState: (state: unknown) => boolean;
   refresh: () => void;
 }
 
@@ -97,6 +105,8 @@ export function useRecipeCatalog(
   const sort = options.sort ?? "recommended";
   const [recipes, setRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadedPage, setLoadedPage] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -107,8 +117,23 @@ export function useRecipeCatalog(
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const cursorByPageRef = useRef(new Map<number, string | null>([[1, null]]));
+  const pendingPaginationRef = useRef<RecipeListPaginationState | null>(null);
   const requestIdRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+  const filterKey = JSON.stringify([
+    debouncedQuery,
+    selectedCategory,
+    ingredientKey,
+    sort,
+    options.difficulty ?? null,
+    options.maxTotalTime ?? null,
+    options.maxMissingIngredients ?? null,
+  ]);
+  const filterKeyRef = useRef(filterKey);
+
+  useEffect(() => {
+    filterKeyRef.current = filterKey;
+  }, [filterKey]);
 
   const fetchRecipes = useCallback(async () => {
     abortRef.current?.abort();
@@ -117,6 +142,8 @@ export function useRecipeCatalog(
     const controller = new AbortController();
     abortRef.current = controller;
     setLoading(true);
+    setHasLoaded(false);
+    setLoadedPage(null);
     setError(null);
 
     const categoryResolution =
@@ -154,7 +181,12 @@ export function useRecipeCatalog(
       setTotalCount(0);
       setError(recipeLoadErrorMessage(fetchError));
     } finally {
-      if (requestId === requestIdRef.current) setLoading(false);
+      if (requestId === requestIdRef.current) {
+        pendingPaginationRef.current = null;
+        setLoading(false);
+        setHasLoaded(true);
+        setLoadedPage(page);
+      }
     }
   }, [
     debouncedQuery,
@@ -165,6 +197,14 @@ export function useRecipeCatalog(
     page,
     safePageSize,
     selectedCategory,
+    setCategoryCounts,
+    setError,
+    setHasLoaded,
+    setLoading,
+    setLoadedPage,
+    setNextCursor,
+    setRecipes,
+    setTotalCount,
     sort,
   ]);
 
@@ -174,17 +214,15 @@ export function useRecipeCatalog(
   }, [searchQuery]);
 
   useEffect(() => {
+    const pendingPagination = pendingPaginationRef.current;
+    if (pendingPagination?.filterKey === filterKey) {
+      cursorByPageRef.current = new Map(pendingPagination.cursorByPage);
+      setPage(pendingPagination.page);
+      return;
+    }
     cursorByPageRef.current = new Map([[1, null]]);
     setPage(1);
-  }, [
-    debouncedQuery,
-    ingredientKey,
-    options.difficulty,
-    options.maxMissingIngredients,
-    options.maxTotalTime,
-    selectedCategory,
-    sort,
-  ]);
+  }, [filterKey]);
 
   useEffect(() => {
     if (options.enabled === false || debouncedQuery !== searchQuery.trim()) {
@@ -197,30 +235,62 @@ export function useRecipeCatalog(
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const setSearchQuery = useCallback((value: string) => setSearchQueryState(value), []);
+  const setSearchQuery = useCallback(
+    (value: string) => setSearchQueryState(value),
+    [setSearchQueryState],
+  );
   const setSelectedCategory = useCallback((category: RecipeCategory) => {
     setSelectedCategoryState(category);
-  }, []);
+  }, [setSelectedCategoryState]);
   const nextPage = useCallback(() => {
     if (!nextCursor) return;
     cursorByPageRef.current.set(page + 1, nextCursor);
     setPage((current) => current + 1);
-  }, [nextCursor, page]);
-  const prevPage = useCallback(() => setPage((current) => Math.max(1, current - 1)), []);
+  }, [nextCursor, page, setPage]);
+  const prevPage = useCallback(
+    () => setPage((current) => Math.max(1, current - 1)),
+    [setPage],
+  );
   const goToPage = useCallback(
     (nextPageNumber: number) => {
       const normalized = Math.max(1, Math.floor(nextPageNumber));
       if (normalized === page || !cursorByPageRef.current.has(normalized)) return;
       setPage(normalized);
     },
-    [page],
+    [page, setPage],
   );
-  const refresh = useCallback(() => setRefreshToken((current) => current + 1), []);
+  const capturePaginationState = useCallback(
+    (): RecipeListPaginationState => ({
+      version: 1,
+      page,
+      filterKey,
+      cursorByPage: [...cursorByPageRef.current.entries()].sort(
+        ([left], [right]) => left - right,
+      ),
+    }),
+    [filterKey, page],
+  );
+  const restorePaginationState = useCallback((state: unknown): boolean => {
+    const normalized = normalizeRecipeListPaginationState(state);
+    if (!normalized) return false;
+    pendingPaginationRef.current = normalized;
+    if (normalized.filterKey === filterKeyRef.current) {
+      cursorByPageRef.current = new Map(normalized.cursorByPage);
+      setPage(normalized.page);
+    }
+    return true;
+  }, [setPage]);
+  const refresh = useCallback(
+    () => setRefreshToken((current) => current + 1),
+    [setRefreshToken],
+  );
   const totalPages = nextCursor ? page + 1 : page;
 
   return {
     recipes,
     loading,
+    hasLoaded,
+    loadedPage,
     error,
     page,
     totalCount,
@@ -233,6 +303,8 @@ export function useRecipeCatalog(
     goToPage,
     nextPage,
     prevPage,
+    capturePaginationState,
+    restorePaginationState,
     refresh,
   };
 }
