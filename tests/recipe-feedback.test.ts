@@ -7,6 +7,10 @@ import {
   parseRecipeFeedbackV1Input,
   RecipeFeedbackValidationError,
 } from "../lib/recipe-feedback.ts";
+import {
+  parseRecipeFeedbackV1Response,
+  RecipeApiV1ClientError,
+} from "../lib/recipe-api-v1-client.ts";
 
 const baseInput = {
   clientSubmissionId: "263f627e-39f9-4e74-9a3d-68657698ec87",
@@ -26,6 +30,27 @@ test("recipe feedback accepts a bounded completion payload", () => {
   assert.equal(feedbackDifficultyForStatus("completed_independently"), "manageable");
   assert.equal(feedbackDifficultyForStatus("completed_with_difficulty"), "difficult");
   assert.equal(feedbackDifficultyForStatus("failed"), "blocked");
+});
+
+test("recipe feedback response schema rejects unknown or malformed fields", () => {
+  const response = {
+    accepted: true,
+    duplicate: false,
+    clientSubmissionId: baseInput.clientSubmissionId,
+  } as const;
+
+  assert.deepEqual(parseRecipeFeedbackV1Response(response), response);
+  for (const invalid of [
+    { ...response, accepted: false },
+    { ...response, clientSubmissionId: "not-a-uuid" },
+    { ...response, contact: "private@example.com" },
+  ]) {
+    assert.throws(
+      () => parseRecipeFeedbackV1Response(invalid),
+      (error: unknown) =>
+        error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
+    );
+  }
 });
 
 test("recipe feedback accepts a failed step and optional reason code", () => {

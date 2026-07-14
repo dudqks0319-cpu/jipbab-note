@@ -1,6 +1,12 @@
 import { getIngredientCatalog } from "./ingredient-catalog.ts";
 import type { RecipeFeedbackV1Input } from "./recipe-feedback.ts";
 import type { CanonicalRecipeCategoryId } from "./recipe-category-taxonomy.ts";
+import {
+  isRecipeApiV1Detail,
+  isRecipeApiV1ListData,
+  isRecipeApiV1RecommendationData,
+  isRecipeFeedbackV1Response,
+} from "./recipe-api-v1-response-schema.ts";
 import type {
   RecipeDetailRecord,
   RecipePublicationEvidence,
@@ -158,6 +164,54 @@ export class RecipeApiV1ClientError extends Error {
   }
 }
 
+type ApiResponseGuard<T> = (value: unknown) => value is T;
+
+function invalidResponse(requestId: string | null = null): never {
+  throw new RecipeApiV1ClientError({
+    code: "INVALID_RESPONSE",
+    message: "레시피 응답 형식을 확인하지 못했습니다.",
+    status: 502,
+    requestId,
+  });
+}
+
+function parseApiResponse<T>(
+  value: unknown,
+  guard: ApiResponseGuard<T>,
+  requestId: string | null = null,
+): T {
+  if (!guard(value)) invalidResponse(requestId);
+  return value;
+}
+
+export function parseRecipeApiV1ListData(
+  value: unknown,
+  requestId: string | null = null,
+): RecipeApiV1ListData {
+  return parseApiResponse(value, isRecipeApiV1ListData, requestId);
+}
+
+export function parseRecipeApiV1RecommendationData(
+  value: unknown,
+  requestId: string | null = null,
+): RecipeApiV1RecommendationData {
+  return parseApiResponse(value, isRecipeApiV1RecommendationData, requestId);
+}
+
+export function parseRecipeFeedbackV1Response(
+  value: unknown,
+  requestId: string | null = null,
+): RecipeFeedbackV1Response {
+  return parseApiResponse(value, isRecipeFeedbackV1Response, requestId);
+}
+
+export function parseRecipeApiV1Detail(
+  value: unknown,
+  requestId: string | null = null,
+): RecipeApiV1Detail {
+  return parseApiResponse(value, isRecipeApiV1Detail, requestId);
+}
+
 function resolveApiUrl(path: string): string {
   if (!API_BASE_URL) return path;
   return `${API_BASE_URL.replace(/\/$/, "")}${path}`;
@@ -177,7 +231,24 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
-async function readApiData<T>(response: Response): Promise<T> {
+function safeRequestId(value: unknown): string | null {
+  return typeof value === "string" && /^[0-9A-Za-z._:-]{1,128}$/.test(value)
+    ? value
+    : null;
+}
+
+function successRequestId(
+  response: Response,
+  payload: Record<string, unknown> | null,
+): string | null {
+  const meta = asObject(payload?.meta);
+  return safeRequestId(response.headers.get("x-request-id")) ?? safeRequestId(meta?.requestId);
+}
+
+async function readApiData<T>(
+  response: Response,
+  parser: (value: unknown, requestId?: string | null) => T,
+): Promise<T> {
   const payload = asObject(await readJson(response));
   if (!response.ok) {
     const error = asObject(payload?.error);
@@ -194,14 +265,9 @@ async function readApiData<T>(response: Response): Promise<T> {
     });
   }
   if (!("data" in (payload ?? {}))) {
-    throw new RecipeApiV1ClientError({
-      code: "INVALID_RESPONSE",
-      message: "레시피 응답 형식을 확인하지 못했습니다.",
-      status: 502,
-      requestId: response.headers.get("x-request-id"),
-    });
+    invalidResponse(successRequestId(response, payload));
   }
-  return payload?.data as T;
+  return parser(payload?.data, successRequestId(response, payload));
 }
 
 export function resolveIngredientCatalogIds(names: string[]): string[] {
@@ -403,7 +469,7 @@ export async function fetchRecipeListV1(
     cache: "no-store",
     signal,
   });
-  return readApiData<RecipeApiV1ListData>(response);
+  return readApiData(response, parseRecipeApiV1ListData);
 }
 
 export async function fetchRecipeRecommendationsV1(
@@ -426,7 +492,7 @@ export async function fetchRecipeRecommendationsV1(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  return readApiData<RecipeApiV1RecommendationData>(response);
+  return readApiData(response, parseRecipeApiV1RecommendationData);
 }
 
 export async function submitRecipeFeedbackV1(
@@ -444,7 +510,7 @@ export async function submitRecipeFeedbackV1(
     },
     body: JSON.stringify(input),
   });
-  return readApiData<RecipeFeedbackV1Response>(response);
+  return readApiData(response, parseRecipeFeedbackV1Response);
 }
 
 export async function fetchRecipeDetailV1(
@@ -455,5 +521,5 @@ export async function fetchRecipeDetailV1(
     cache: "no-store",
     signal,
   });
-  return readApiData<RecipeApiV1Detail>(response);
+  return readApiData(response, parseRecipeApiV1Detail);
 }

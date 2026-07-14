@@ -7,6 +7,10 @@ import {
   parseRecipeRecommendationV1Input,
   rankRecipeRecommendationsV1,
 } from "../lib/recipe-recommendation-v1.ts";
+import {
+  parseRecipeApiV1RecommendationData,
+  RecipeApiV1ClientError,
+} from "../lib/recipe-api-v1-client.ts";
 
 const REVIEWED_AT = "2026-07-10T05:00:00.000Z";
 
@@ -103,6 +107,8 @@ test("recommendations rank complete and expiring-ingredient matches first", () =
     title: "두부 반찬",
     matchedIngredientIds: ["dairy-tofu"],
     missingIngredientIds: [],
+    requiredIngredientCount: 1,
+    ownedIngredientCount: 1,
   });
   const input = parseRecipeRecommendationV1Input({
     ingredientIds: ["dairy-egg", "veg-green-onion", "veg-onion", "dairy-tofu"],
@@ -116,4 +122,16 @@ test("recommendations rank complete and expiring-ingredient matches first", () =
   assert.ok(ranked[0].reasons.includes("소비기한이 가까운 재료 1개를 사용할 수 있어요."));
   assert.ok(!ranked.find((item) => item.recipe.id === unrelated.id)?.reasons.some((reason) => reason.includes("소비기한")));
   assert.ok(ranked[0].score > ranked.find((item) => item.recipe.id === missing.id)!.score);
+
+  const response = { recommendations: ranked, candidateCount: 3 };
+  assert.deepEqual(parseRecipeApiV1RecommendationData(response), response);
+  assert.throws(
+    () =>
+      parseRecipeApiV1RecommendationData({
+        ...response,
+        recommendations: [{ ...ranked[0], debugUserId: "user-1" }],
+      }),
+    (error: unknown) =>
+      error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
+  );
 });

@@ -18,8 +18,15 @@ import {
   type RecipeV1StepRow,
 } from "../lib/recipe-api-v1-repository.ts";
 import {
+  fetchRecipeDetailV1,
+  fetchRecipeListV1,
+  fetchRecipeRecommendationsV1,
+  parseRecipeApiV1Detail,
+  parseRecipeApiV1ListData,
   recipeApiV1CardToMatch,
   recipeApiV1DetailToRecord,
+  RecipeApiV1ClientError,
+  submitRecipeFeedbackV1,
 } from "../lib/recipe-api-v1-client.ts";
 
 const REVIEWED_AT = "2026-07-10T05:00:00.000Z";
@@ -112,6 +119,88 @@ test("API v1 cards include exact owned and missing ingredient reasons", () => {
   assert.deepEqual(result.recipes[0].missingIngredientIds, ["veg-onion"]);
   assert.equal(result.recipes[0].recommendationReason, "재료 1개만 더 있으면 만들 수 있어요.");
   assert.equal(result.nextCursor, null);
+  assert.deepEqual(parseRecipeApiV1ListData(result), result);
+});
+
+test("client runtime schema rejects malformed list metadata with a bounded error", () => {
+  const row = recipeRow();
+  const result = buildPublicRecipeListResult(
+    [row],
+    ingredients(row.id),
+    query({ ingredientIds: ["dairy-egg"] }),
+    97,
+  );
+  const card = result.recipes[0];
+  assert.ok(card);
+
+  const invalidPayloads = [
+    {
+      ...result,
+      recipes: [{ ...card, ownedIngredientCount: card.requiredIngredientCount }],
+    },
+    {
+      ...result,
+      recipes: [{ ...card, viewerEmail: "private@example.com" }],
+    },
+    { ...result, nextCursor: 42 },
+  ];
+
+  for (const payload of invalidPayloads) {
+    assert.throws(
+      () => parseRecipeApiV1ListData(payload, "runtime-request-1"),
+      (error: unknown) =>
+        error instanceof RecipeApiV1ClientError &&
+        error.code === "INVALID_RESPONSE" &&
+        error.status === 502 &&
+        error.requestId === "runtime-request-1",
+    );
+  }
+});
+
+test("every client fetch rejects a malformed HTTP 200 response instead of exposing it", async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+  const requests = [
+    () => fetchRecipeListV1({ limit: 1 }),
+    () => fetchRecipeRecommendationsV1({ ingredientIds: ["dairy-egg"] }),
+    () =>
+      submitRecipeFeedbackV1(
+        {
+          clientSubmissionId: "263f627e-39f9-4e74-9a3d-68657698ec87",
+          recipeId: "a36e34ec-5f17-4e4a-8e07-246b8082447e",
+          recipeVersion: 3,
+          completionStatus: "completed_independently",
+          difficultStepOrder: null,
+          failedStepOrder: null,
+          reasonCode: null,
+          tasteResult: null,
+          repeatIntent: null,
+          actualDurationSeconds: 870,
+        },
+        "test-access-token",
+      ),
+    () => fetchRecipeDetailV1("a36e34ec-5f17-4e4a-8e07-246b8082447e"),
+  ];
+
+  for (const request of requests) {
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ data: {} }), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "runtime-http-request",
+        },
+      });
+    await assert.rejects(
+      request(),
+      (error: unknown) =>
+        error instanceof RecipeApiV1ClientError &&
+        error.code === "INVALID_RESPONSE" &&
+        error.requestId === "runtime-http-request",
+    );
+  }
 });
 
 test("API v1 card mapping preserves exact pantry-fit metadata for the UI", () => {
@@ -342,6 +431,7 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
   );
 
   assert.ok(detail);
+  assert.deepEqual(parseRecipeApiV1Detail(detail), detail);
   assert.equal(detail.version, 3);
   assert.equal(detail.schemaVersion, 2);
   assert.equal(detail.ingredients[1].substitutions[0].ingredientId, "veg-green-onion");
@@ -383,6 +473,29 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
       [{ id: "source-1", ...detailSource }],
     ),
     [],
+  );
+
+  assert.throws(
+    () =>
+      parseRecipeApiV1Detail({
+        ...detail,
+        source: { ...detail.source, viewerEmail: "private@example.com" },
+      }),
+    (error: unknown) =>
+      error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
+  );
+  assert.throws(
+    () =>
+      parseRecipeApiV1Detail({
+        ...detail,
+        steps: detail.steps.map((step, index) =>
+          index === 0
+            ? { ...step, durationSeconds: { ...step.durationSeconds, min: -1 } }
+            : step,
+        ),
+      }),
+    (error: unknown) =>
+      error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
   );
 });
 
