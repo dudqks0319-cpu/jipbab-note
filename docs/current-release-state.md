@@ -2,6 +2,16 @@
 
 Updated: 2026-07-14 KST
 
+## 2026-07-14 FE-006 레시피 카드 실제 메타데이터
+
+- 목록 API가 이미 반환하던 `requiredIngredientCount`, `ownedIngredientCount`, `matchedIngredientIds`, `missingIngredientIds`, `recommendationReason`을 카드 변환과 목록 훅 끝까지 보존한다. 목록에서 재료 이름 문자열로 일치율과 추천 이유를 다시 계산하던 이중 경로를 제거해 서버의 exact 매칭 결과가 화면의 단일 기준이 됐다.
+- 레시피 카드에는 값이 있는 경우에만 시간·인분·난이도를 표시하고 `필수 재료 5개 중 4개 보유`, `부족한 필수 재료 1개`처럼 분모와 실제 개수를 함께 보여 준다. 서버가 만든 자연어 추천 이유와 초보 검수·즐겨찾기 상태는 그대로 유지한다.
+- 실제 사용자 평점 데이터가 없는 목록·홈·상세의 별 아이콘을 제거하고 난이도에는 `Gauge` 아이콘과 `쉬움/보통/어려움` 레이블을 사용한다. 값이 없을 때 임의 수치나 `미표시` 메타데이터를 만들지 않는다.
+- 로컬 메모리 API에 검수 계약을 충족하는 카드 3개만 임시 주입해 인앱 브라우저의 실제 `/recipe` 화면을 확인했다. 413px 앱 콘텐츠 폭에서 가로 넘침 0, 보이는 44px 미만 컨트롤 0개, `5개 중 4개 보유`·`부족 1개`·자연어 이유 표시, 평점/별점 문구 부재, console error/warning 0건이다. 합성 카드는 앱·DB·Git에 저장하지 않았고 운영/사람 증거로 승격하지 않는다.
+- 회귀 테스트를 먼저 실패시킨 뒤 전체 단위 테스트 444/444, TypeScript, production build 40/40 경로, release security 4/4를 통과했다. lint는 오류 0건이며 기존 iOS 생성물 경고 33건만 남았다.
+- 구현 커밋 `ebd3b3a8de6cc1fa5b37d7c80866fffce2ca05e4`를 GitHub에 push하고 같은 깨끗한 archive를 Vercel Preview `dpl_E29GuzqTqf1EtZ6sSQRu59Ck1y52` (`https://jipbab-note-n1kxan6tv-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 배포 메타데이터의 `sourceCommit`은 구현 커밋과 일치하며 `/`와 `/recipe`는 HTTP 200이다.
+- Preview의 `GET /api/v1/recipes?limit=1`은 DB migration 전이라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격, Supabase migration, 실제 조리·실사용자·실기기·스토어·외부 모니터링 증거 변경은 수행하지 않았다.
+
 ## 2026-07-14 FE-005 레시피 목록 필터·이동 상태 복원
 
 - 검색어·카테고리·빠른 필터·난이도·시간·도구·냉장고 조건·정렬·즐겨찾기·상세 패널을 한 번에 기본값으로 돌리는 `필터 초기화`를 추가했다. URL의 가상 빠른 필터 `beginner`와 `quick`도 목록 재진입 때 복원한다.
