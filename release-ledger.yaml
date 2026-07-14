@@ -12,13 +12,13 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase6_performance_e2e_negative_accessibility_security_hardened_happy_path_blocked"
+  phase: "phase7_recipe_completion_preview_ready_external_and_human_gates_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
-  branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_performance_preview_deployment_record_committed"
-  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
+  git_sha: "d0f9c7f9bb7662b11073c27d59e2e58d18f58d75"
+  branch: "agent/phase6-observability-analytics"
+  dirty_state: "current_commits_pushed_user_owned_local_changes_preserved"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/phase-7-recipe-feedback-collection.md, docs/current-release-state.md"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"
@@ -85,7 +85,7 @@ phase2_api_v1:
   rollback: "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql"
   operations: "docs/api-v1-operations.md"
   report: "docs/phase-2-api-v1-report.md"
-  local_contract_status: "verified_14_of_14"
+  local_contract_status: "verified_19_of_19"
   focused_test_status: "verified_21_of_21"
   runtime_negative_path_status: "verified_400_413_429_503"
   production_fail_closed_status: "verified_three_routes_503_without_secret"
@@ -93,7 +93,7 @@ phase2_api_v1:
   staging_healthy_path_status: "blocked_no_reconciled_postgres_and_no_reviewed_v2_fixture"
   production_deploy_status: "code_deployed_dependency_blocked"
   server_secret_status: "not_registered"
-  endpoint_count: 3
+  endpoint_count: 4
   public_v2_candidate_count: 0
 
 phase3_frontend_api_v1:
@@ -128,15 +128,47 @@ phase4_cook_mode:
   local_progress_status: "verified_recipe_scoped_versioned_restore"
   wake_lock_status: "implemented_browser_capability_guarded"
   completion_signal_status: "implemented_audio_vibration_and_aria_live"
-  completion_feedback_status: "verified_local_restore"
-  unit_test_status: "verified_full_suite_343_of_343"
-  production_build_status: "verified_38_pages_and_routes"
+  completion_feedback_status: "verified_fixed_choices_local_restore_and_private_server_contract"
+  completion_followup_status: "verified_elapsed_time_storage_reheat_favorite_reversible_ingredient_consumption"
+  unit_test_status: "verified_full_suite_438_of_438"
+  production_build_status: "verified_40_pages_and_routes"
   mobile_harness_status: "verified_then_removed"
   real_v2_detail_status: "blocked_no_reviewed_v2_fixture"
   real_device_background_status: "blocked_device_qa_required"
   server_progress_sync_status: "not_implemented_product_decision_required"
   production_deploy_status: "deployed_real_device_qa_pending"
   evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
+
+phase7_recipe_completion:
+  implementation_git_sha: "d0f9c7f9bb7662b11073c27d59e2e58d18f58d75"
+  ledger_git_sha: "9ff6ff134792f604ec3242bb6ae0d35790968cd2"
+  branch: "agent/phase6-observability-analytics"
+  feedback_base_migration: "20260714100000_add_recipe_feedback.sql"
+  feedback_completion_migration: "20260714110000_extend_recipe_feedback_completion_details.sql"
+  feedback_completion_rollback: "supabase/rollbacks/20260714110000_extend_recipe_feedback_completion_details.sql"
+  focused_test_status: "verified_19_of_19"
+  full_unit_test_status: "verified_438_of_438"
+  api_v1_contract_status: "verified_19_of_19"
+  ci_static_gate_status: "verified_19_of_19"
+  supabase_contract_status: "verified_146_of_146"
+  release_security_status: "verified_4_of_4"
+  production_build_status: "verified_next_16_2_6_turbopack_40_of_40_routes"
+  mobile_runtime_status: "verified_390x844_zero_overflow_zero_visible_buttons_under_44px_zero_text_inputs_zero_console_errors"
+  reversible_consumption_status: "verified_consume_history_and_restore"
+  preview_deployment_id: "dpl_3nfwe71uvw2kboeeKDWfkLaRFqsy"
+  preview_deployment_url: "https://jipbab-note-4ug0rmf2g-youngbeens-projects.vercel.app"
+  preview_target: "preview"
+  preview_status: "READY"
+  preview_source_commit: "d0f9c7f9bb7662b11073c27d59e2e58d18f58d75"
+  preview_root_http_status: 200
+  preview_feedback_http_status: 503
+  preview_feedback_status_reason: "expected_dependency_not_ready_until_feedback_migrations_and_distributed_limiter_storage"
+  preview_feedback_retry_after_seconds: 60
+  preview_feedback_cache_control: "no-store"
+  production_migration_status: "not_applied"
+  production_promoted: false
+  actual_user_evidence_count: 0
+  evidence: "docs/phase-7-recipe-feedback-collection.md, output/ui-evidence/phase7-cook-completion-390.png, output/ui-evidence/phase7-cook-completion-fridge-390.png, output/ui-evidence/phase7-cook-feedback-saved-390.png"
 
 phase5_core20:
   base_content_git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
@@ -359,6 +391,8 @@ migration_history:
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: false
   phase6_security_definer_migration_recorded_remote: false
+  phase7_feedback_base_migration_recorded_remote: false
+  phase7_feedback_completion_migration_recorded_remote: false
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
@@ -404,8 +438,12 @@ local_checks:
     evidence: "pnpm-lock.yaml"
   - name: "Full local lint, typecheck, and unit suite"
     command: "pnpm test"
-    status: "current_pass_clean_checkout_ios_sync_372_of_372"
-    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts, tests/phase-6-performance-budget.test.ts"
+    status: "current_pass_438_of_438_lint_zero_errors_33_generated_warnings"
+    evidence: "tests/recipe-cook-completion.test.ts, tests/recipe-feedback-contract.test.ts, tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts, tests/phase-6-performance-budget.test.ts"
+  - name: "FE-015 completion and structured feedback focused regression"
+    command: "node --experimental-strip-types --test tests/recipe-cook-completion.test.ts tests/recipe-cook-progress.test.ts tests/recipe-feedback.test.ts tests/recipe-feedback-contract.test.ts"
+    status: "current_pass_19_of_19"
+    evidence: "docs/phase-7-recipe-feedback-collection.md"
   - name: "Phase 0 recipe inventory"
     command: "pnpm test:content"
     status: "current_pass_phase0_and_phase1"
@@ -429,11 +467,11 @@ local_checks:
   - name: "Recipe publication RLS contract"
     command: "pnpm check:supabase-release"
     status: "current_pass_146_of_146"
-    evidence: "supabase/migrations/20260710130000_gate_recipe_publication.sql, supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql, supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql"
+    evidence: "supabase/migrations/20260710130000_gate_recipe_publication.sql, supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql, supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql, supabase/migrations/20260714100000_add_recipe_feedback.sql, supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql"
   - name: "API v1 contract"
     command: "pnpm check:api-v1-contract"
-    status: "current_pass_14_of_14"
-    evidence: "docs/phase-2-api-v1-report.md"
+    status: "current_pass_19_of_19"
+    evidence: "docs/phase-2-api-v1-report.md, docs/phase-7-recipe-feedback-collection.md"
   - name: "API v1 focused tests"
     command: "node --experimental-strip-types --test tests/api-v1-contract.test.ts tests/distributed-rate-limit.test.ts tests/recipe-api-v1.test.ts tests/recipe-recommendation-v1.test.ts"
     status: "current_pass_21_of_21"
@@ -456,7 +494,7 @@ local_checks:
     evidence: "docs/current-release-state.md"
   - name: "CI-safe release gates"
     command: "pnpm release:ci-static-check"
-    status: "current_pass_15_of_15"
+    status: "current_pass_19_of_19"
     evidence: "docs/current-release-state.md"
   - name: "Local release gates"
     command: "pnpm release:check"
@@ -689,6 +727,6 @@ blockers:
     due: "before_cloudflare_primary"
 
 next_action:
-  owner: "ContentQA+BeginnerTesters"
-  command: "Run Wave 1 from docs/phase-5-human-testing-runbook.md, append cooking attempts to docs/phase-5-actual-cooking-template.csv, record four human reviews in docs/phase-5-human-review-template.csv, then run pnpm check:phase5-human-evidence."
-  description: "Do not publish or set human-review flags from code. Record failed attempts as well as successful attempts, then route evidence to separate beginner, food-safety, legal-source, and image-rights reviewers before any DB publication change."
+  owner: "FullStackDev+DBA+Security"
+  command: "Follow section 0 of docs/external-release-unblock-runbook.md: reconcile migration history, verify a restorable backup, apply the Phase 0/1/2/7 bundle only to isolated staging, then run the documented API response matrix."
+  description: "Do not run supabase db push or promote the Preview before migration history, backup, staging rollback, authorization negative paths, and feedback 201/200/400/401/413/429/503 evidence are all recorded."

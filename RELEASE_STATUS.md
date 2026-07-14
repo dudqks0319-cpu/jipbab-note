@@ -2,6 +2,17 @@
 
 ## 한 줄 상태
 
+FE-015 조리 완료 통합 코드는 `d0f9c7f9bb7662b11073c27d59e2e58d18f58d75`, Preview 증거 체크포인트는 `9ff6ff134792f604ec3242bb6ae0d35790968cd2`로 GitHub에 푸시했습니다. 같은 코드 archive의 Vercel Preview `dpl_3nfwe71uvw2kboeeKDWfkLaRFqsy`는 `READY`, 루트 HTTP 200입니다. Production은 승격하지 않았고 Phase 7 DB migration·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+
+## 2026-07-14 최신 웹 Preview
+
+- Preview: `https://jipbab-note-4ug0rmf2g-youngbeens-projects.vercel.app`
+- 브라우저 390x844 실제 컴포넌트 QA: 조리 완료, 어려웠던 단계·맛·재조리 의향, 즐겨찾기, 선택 재료 소진, 냉장고 소진 기록과 되돌리기 통과
+- 검증: unit 438/438, 집중 19/19, API v1 19/19, CI 19/19, Supabase 146/146, security 4/4, production build 40/40 routes
+- 데이터 경계: Preview 피드백 API는 migration 미적용으로 redacted `503 DEPENDENCY_NOT_READY`이며 Production 정상 저장이나 실제 사용자 증거로 간주하지 않음
+
+## 기존 App Store 출시 이력
+
 이미지 포함 최신 iOS build `2026062602`가 App Store Connect에 업로드되고 iOS 앱 버전 `1.0`에 연결된 뒤, 2026-06-27 10:15 KST에 App Review로 제출됐습니다. 2026-06-28 10:07 KST App Store 개발자 출시 요청을 생성했고, App Store Connect API 재확인에서 버전 상태가 `READY_FOR_SALE`로 바뀐 것을 확인했습니다. Release request ID는 `a49b3ba6-b9f5-4d55-97ea-7665ee7e747e`입니다. 연결 빌드는 `2026062602`, 빌드 ID는 `9006b306-e08c-4091-829c-2934615be184`, 빌드 처리 상태는 `VALID`입니다.
 
 2026-06-29 17:02 KST에는 공개 App Store 조회가 계속 `resultCount: 0` / 404로 남아 있어 App Store Connect `appAvailabilityV2` 누락을 확인했고, 한국(KOR)과 미국(USA)만 `available: true`인 국가 가용성 리소스를 생성했습니다. App Store Connect API 재확인에서 `appAvailabilityV2`는 200으로 조회되며, 가격 스케줄도 base territory `KOR`로 유효합니다. 2026-06-29 17:16 KST 공개 App Store 직접 URL은 `/kr/app/집밥노트/id6762567054`로 리다이렉트된 뒤 HTTP 200으로 열렸고, Chrome에서도 `집밥노트 앱 - App Store` 공개 페이지를 확인했습니다. iTunes Lookup API만 아직 `resultCount: 0`으로 지연 중입니다. 증거: `output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`.
@@ -16,9 +27,10 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 - Version: `1.0`
 - Build: `2026062602`
-- Git SHA: `587b993`
-- Branch: `cloudflare-workers-setup`
-- Phase: `appstore_public_url_live_lookup_api_pending`
+- Git SHA: `d0f9c7f9bb7662b11073c27d59e2e58d18f58d75`
+- Preview evidence checkpoint: `9ff6ff134792f604ec3242bb6ae0d35790968cd2`
+- Branch: `agent/phase6-observability-analytics`
+- Phase: `phase7_recipe_completion_preview_ready_external_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
 
 ## 통과 또는 기록된 증거
@@ -47,11 +59,14 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 ## 막힌 항목
 
-- P1: iTunes Lookup API 전파 대기: 공개 App Store 직접 URL은 live지만 Lookup API는 아직 `resultCount: 0`
-- P0: Android Google/Kakao 로그인 완료와 로그인 후 계정삭제 미확정
-- P0: Play Console 제출 증거 미완료
+- P0: Supabase migration history·복구 가능한 백업·격리 staging 미확인으로 Phase 0/1/2/7 DB 적용 및 정상 피드백 저장 미수행
+- P0: 핵심 20개 실제 조리·초보자·식품 안전·출처·이미지 권리 사람 증거 0/20
+- P0: 현재 후보 build `2026062602`의 iOS/Android 전체 실기기 QA 미완료
+- P0: Play Console 내부 테스트 증거 미완료
+- P0: Phase 7 실제 사용자 5~20명 비공개 베타와 공개 승인 미수행
+- P1: 실제 외부 모니터링 채널·보관 정책·합성 경보 수신 미확인
 - P1: Cloudflare secret, custom domain, Supabase Auth redirect, mobile runtime URL 전환
 
 ## 다음 행동
 
-App Store iOS `1.0 (2026062602)`는 `READY_FOR_SALE` 상태이고 KOR/USA 국가 가용성도 생성됐습니다. 공개 App Store 직접 URL은 live입니다. Android/Play Console과 Cloudflare 전환은 별도 릴리스 범위로 남아 있습니다.
+`docs/external-release-unblock-runbook.md` 0단계에 따라 migration history와 백업을 먼저 확인하고 격리 staging에서 Phase 0/1/2/7 bundle, rollback, 권한 음수 경로, 피드백 `201/200/400/401/413/429/503` 행렬을 검증합니다. 이 증거 전에는 `supabase db push`, Production 승격, 실제 사용자 데이터 수집을 진행하지 않습니다.
