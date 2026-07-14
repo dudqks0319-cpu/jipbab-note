@@ -9,6 +9,11 @@ import {
   routeStateStorageTypes,
 } from "../scripts/lib/performance-capture-state.mjs";
 import { summarizeSamples } from "../scripts/lib/performance-statistics.mjs";
+import {
+  buildVercelBypassFetchPatterns,
+  buildVercelBypassRequestHeaders,
+  parseVercelAutomationBypassSecret,
+} from "../scripts/lib/vercel-protection-bypass.mjs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
@@ -39,7 +44,7 @@ test("Phase 6 performance static contract passes", () => {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /Contracts checked: 15/);
+  assert.match(result.stdout, /Contracts checked: 16/);
   assert.match(result.stdout, /Failures: 0/);
 });
 
@@ -71,6 +76,22 @@ test("performance capture rejects unknown measurement profiles", () => {
   });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /must be baseline or release-candidate/);
+});
+
+test("performance capture rejects unsafe Vercel bypass input without echoing it", () => {
+  const unsafeBypassValue = " aaaaaaaaaaaaaaaa";
+  const result = spawnSync("node", ["scripts/capture-phase-6-performance.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PHASE6_PERFORMANCE_URL: "",
+      VERCEL_AUTOMATION_BYPASS_SECRET: unsafeBypassValue,
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /VERCEL_AUTOMATION_BYPASS_SECRET/);
+  assert.doesNotMatch(result.stderr, new RegExp(unsafeBypassValue.trim()));
 });
 
 test("release-candidate performance capture requires an exact deployment SHA", () => {
@@ -176,6 +197,54 @@ test("route state reset preserves authentication and warm network caches", () =>
     () => buildRouteStateResetParams("https://preview.example.com/path"),
     /exact origin/,
   );
+});
+
+test("Vercel automation bypass is scoped to one deployment origin", () => {
+  assert.deepEqual(
+    buildVercelBypassFetchPatterns("https://preview-example.vercel.app"),
+    [{
+      requestStage: "Request",
+      urlPattern: "https://preview-example.vercel.app/*",
+    }],
+  );
+  assert.throws(
+    () => buildVercelBypassFetchPatterns("https://example.com"),
+    /vercel\.app/,
+  );
+  assert.throws(
+    () => buildVercelBypassFetchPatterns("http://preview-example.vercel.app"),
+    /HTTPS/,
+  );
+});
+
+test("Vercel automation bypass preserves normal headers without duplicate secrets", () => {
+  assert.equal(parseVercelAutomationBypassSecret(undefined), null);
+  assert.equal(parseVercelAutomationBypassSecret(""), null);
+  assert.equal(
+    parseVercelAutomationBypassSecret("0123456789abcdef"),
+    "0123456789abcdef",
+  );
+  assert.throws(
+    () => parseVercelAutomationBypassSecret("short"),
+    /at least 16/,
+  );
+  assert.throws(
+    () => parseVercelAutomationBypassSecret(" 0123456789abcdef"),
+    /whitespace/,
+  );
+
+  const headers = buildVercelBypassRequestHeaders(
+    {
+      Accept: "text/html",
+      "X-Vercel-Protection-Bypass": "stale-secret-value",
+    },
+    "0123456789abcdef",
+  );
+  assert.deepEqual(headers, [
+    { name: "Accept", value: "text/html" },
+    { name: "x-vercel-protection-bypass", value: "0123456789abcdef" },
+    { name: "x-vercel-set-bypass-cookie", value: "true" },
+  ]);
 });
 
 function validReleaseCandidateEvidence() {

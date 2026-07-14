@@ -61,6 +61,21 @@ PHASE6_PERFORMANCE_RUNS=5 \
 pnpm capture:phase6-performance
 ```
 
+Git-linked Preview가 Vercel Deployment Protection으로 보호된 경우 [Vercel Protection Bypass for Automation](https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation)에서 프로젝트용 secret을 생성하고, repo 파일이나 명령 인자에 쓰지 않고 server-only 환경변수로만 전달한다. 캡처기는 `*.vercel.app`의 정확한 측정 origin 요청에만 우회 헤더를 추가하며 Supabase·분석·이미지 등 다른 origin에는 전달하지 않는다. secret 값은 JSON 증거와 콘솔에 기록하지 않는다.
+
+```bash
+VERCEL_AUTOMATION_BYPASS_SECRET=<operator-provided-secret> \
+PHASE6_PERFORMANCE_URL=<protected-preview-url> \
+PHASE6_PERFORMANCE_PROFILE=release-candidate \
+PHASE6_PERFORMANCE_RECIPE_ID=<published-recipe-uuid> \
+PHASE6_PERFORMANCE_RECIPE_TITLE=<published-recipe-title> \
+PHASE6_PERFORMANCE_DEPLOYMENT_SHA=<40-character-preview-git-sha> \
+PHASE6_PERFORMANCE_RUNS=5 \
+pnpm capture:phase6-performance
+```
+
+Automation Bypass secret은 Vercel 프로젝트 설정에서 승인된 운영자가 생성·회전하며 `.env*`, 문서, evidence, GitHub comment에 값을 남기지 않는다. secret이 준비되지 않은 현재 상태에서는 보호를 해제하거나 로그인 화면을 측정 결과로 오인하지 않고 `BLOCKED`를 유지한다.
+
 Release Candidate는 화면마다 cold 5회와 warm 5회를 별도로 측정한다. 각 모드의 median, p75, 최대값, 표준편차, 실패율을 기록하고 절대 예산과 회귀 예산은 보수적인 cold p75에 적용한다. 최초 측정은 아직 기준선이 없으므로 절대 성능·runtime 검사를 통과해도 회귀 기준 누락으로 실패하며, Git에서 제외된 증거 JSON은 남긴다. 증거 전체를 사람이 검토한 뒤 실패가 기준선 누락뿐일 때만 다음 명령으로 집계값을 승격한다. 승격기는 명시적 승인, 전체 배포 SHA, cold/warm 각 5회, 9개 필수 화면, 절대 성능 예산, runtime·capture 오류 0건을 다시 검사하며 raw 측정값이나 실패 목록은 baseline에 복사하지 않는다.
 
 ```bash

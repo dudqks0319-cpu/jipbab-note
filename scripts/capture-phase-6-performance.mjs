@@ -13,6 +13,11 @@ import os from "node:os";
 import path from "node:path";
 import { buildRouteStateResetParams } from "./lib/performance-capture-state.mjs";
 import { summarizeSamples } from "./lib/performance-statistics.mjs";
+import {
+  buildVercelBypassFetchPatterns,
+  buildVercelBypassRequestHeaders,
+  parseVercelAutomationBypassSecret,
+} from "./lib/vercel-protection-bypass.mjs";
 
 const requestedUrl = process.env.PHASE6_PERFORMANCE_URL?.trim();
 const chromePath =
@@ -24,6 +29,9 @@ const measurementProfile = process.env.PHASE6_PERFORMANCE_PROFILE?.trim() || "ba
 const populatedRecipeId = process.env.PHASE6_PERFORMANCE_RECIPE_ID?.trim() || "";
 const populatedRecipeTitle = process.env.PHASE6_PERFORMANCE_RECIPE_TITLE?.trim() || "";
 const deploymentSha = process.env.PHASE6_PERFORMANCE_DEPLOYMENT_SHA?.trim() || "";
+const vercelAutomationBypassSecret = parseVercelAutomationBypassSecret(
+  process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+);
 const evidenceDir = path.resolve("output/performance-evidence");
 const evidencePath = path.join(evidenceDir, "phase6-performance-lab.json");
 const baselinePath = path.resolve("docs/phase-6-performance-baseline.json");
@@ -196,9 +204,53 @@ function safeResourceName(value) {
 }
 
 function sanitizeRuntimeMessage(value) {
-  return String(value)
+  const redactedValue = vercelAutomationBypassSecret
+    ? String(value).replaceAll(vercelAutomationBypassSecret, "[redacted]")
+    : String(value);
+  return redactedValue
     .replace(/https?:\/\/[^\s)]+/g, (url) => safeResourceName(url))
     .slice(0, 500);
+}
+
+async function enableVercelProtectionBypass(client) {
+  if (!vercelAutomationBypassSecret) {
+    return {
+      getFailure: () => null,
+      async disable() {},
+    };
+  }
+
+  let requestFailure = null;
+  const removeListener = client.on("Fetch.requestPaused", ({ requestId, request }) => {
+    client.send("Fetch.continueRequest", {
+      requestId,
+      headers: buildVercelBypassRequestHeaders(
+        request.headers,
+        vercelAutomationBypassSecret,
+      ),
+    }).catch((error) => {
+      requestFailure = error instanceof Error
+        ? error
+        : new Error("Vercel automation bypass request failed");
+    });
+  });
+
+  try {
+    await client.send("Fetch.enable", {
+      patterns: buildVercelBypassFetchPatterns(targetOrigin),
+    });
+  } catch (error) {
+    removeListener();
+    throw error;
+  }
+
+  return {
+    getFailure: () => requestFailure,
+    async disable() {
+      removeListener();
+      await client.send("Fetch.disable");
+    },
+  };
 }
 
 const observerSource = `(() => {
@@ -508,6 +560,7 @@ async function captureRun(debugPort, route, runNumber, cacheMode) {
   const expectedDependencyFailures = [];
   const expectedPlatformFailures = [];
   const requestUrls = new Map();
+  let vercelBypassController = null;
 
   try {
     await client.opened;
@@ -589,6 +642,7 @@ async function captureRun(debugPort, route, runNumber, cacheMode) {
       uploadThroughput: device.uploadBitsPerSecond / 8,
       connectionType: "cellular4g",
     });
+    vercelBypassController = await enableVercelProtectionBypass(client);
 
     const domReady = client.waitFor("Page.domContentEventFired", 45_000);
     await client.send("Page.navigate", { url: `${targetOrigin}${route.path}` });
@@ -630,6 +684,9 @@ async function captureRun(debugPort, route, runNumber, cacheMode) {
         };
       })()`,
     );
+    if (vercelBypassController.getFailure()) {
+      throw new Error("Vercel automation bypass request failed");
+    }
 
     assert.ok(snapshot.largestContentfulPaint, `${route.name} run ${runNumber} did not emit LCP`);
     if (route.interaction === "recipe-search") {
@@ -689,6 +746,11 @@ async function captureRun(debugPort, route, runNumber, cacheMode) {
       unexpectedNetworkErrors: networkFailures.slice(0, 5),
     };
   } finally {
+    try {
+      await vercelBypassController?.disable();
+    } catch {
+      // target 종료 전 우회 요청 가로채기 해제가 실패해도 secret이나 내부 오류를 출력하지 않습니다.
+    }
     try {
       await client.send("Page.close");
     } catch {

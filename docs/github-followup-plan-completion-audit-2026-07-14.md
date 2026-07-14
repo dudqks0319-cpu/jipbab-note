@@ -34,6 +34,7 @@ Target branch: `integration/phase6-release-candidate`
 - 모드별 median, p75, 최대값, 표준편차, 실패율을 기록한다.
 - 전체 transfer, JS, 이미지, 요청 수, total long task와 50ms 이상 long task 수를 회귀 기준으로 검증한다.
 - 실제 populated Preview가 인증으로 막혀 있으므로 현재 데모 baseline을 출시 후보 증거로 승격하지 않는다.
+- 승인된 `VERCEL_AUTOMATION_BYPASS_SECRET`이 제공되면 캡처기는 해당 `*.vercel.app` origin에만 우회 헤더를 주입하고 다른 origin이나 증거에는 secret을 전달하지 않는다.
 - Production field p75는 승인된 RUM·동의·최소 표본이 없어 미검증이다.
 
 ## 최종 DoD에서 확인되지 않은 항목
