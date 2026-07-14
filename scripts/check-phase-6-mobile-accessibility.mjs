@@ -48,6 +48,9 @@ const button = readFileSync("components/ui/Button.tsx", "utf8");
 const fridgeIllustration = readFileSync("components/fridge/FridgeIllustration.tsx", "utf8");
 const home = readFileSync("app/page.tsx", "utf8");
 const starterAction = readFileSync("components/home/StarterActionCard.tsx", "utf8");
+const homeUsesPriorityFridge =
+  home.includes("<FridgeIllustration") ||
+  (home.includes('src={HOME_FRIDGE_IMAGE}') && home.includes('loading="eager"'));
 
 const contracts = [
   [
@@ -92,10 +95,10 @@ const contracts = [
     "above-fold image priority",
     fridgeIllustration.includes('loading="eager"') &&
       fridgeIllustration.includes('fetchPriority="high"') &&
-      home.includes('src={HOME_FRIDGE_IMAGE}') &&
-      home.includes('loading="eager"') &&
+      homeUsesPriorityFridge &&
       starterAction.includes('src={FRIDGE_IMAGE_SRC}') &&
-      starterAction.includes('loading="eager"'),
+      starterAction.includes('loading="eager"') &&
+      starterAction.includes('fetchPriority="high"'),
     "every above-fold fridge LCP image needs eager high-priority loading",
   ],
 ];

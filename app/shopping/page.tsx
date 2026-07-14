@@ -19,7 +19,6 @@ import {
   buildMergedIngredientPayloadFromShoppingItem,
   normalizeShoppingIngredientName,
 } from '@/lib/shopping-to-fridge'
-import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
 import { getIngredientPhotoUrl } from '@/lib/utils'
 import { INGREDIENT_CATEGORIES, INGREDIENT_STORAGE_TYPES, type IngredientCatalogItem, type IngredientCategory, type IngredientStorageType } from '@/types'
 import type { ShoppingItem } from '@/types'
@@ -48,8 +47,8 @@ type ShoppingCatalogGroup = ShoppingCatalogScope & {
 }
 
 const QUICK_SHOPPING_CHIPS: Array<{ name: string; quantity: string; category: IngredientCategory }> = [
-  { name: '두부', quantity: '1모', category: '유제품' },
-  { name: '계란', quantity: '10개', category: '유제품' },
+  { name: '두부', quantity: '1모', category: '통조림/가공식품' },
+  { name: '계란', quantity: '10개', category: '육류' },
   { name: '우유', quantity: '1L', category: '유제품' },
   { name: '대파', quantity: '1단', category: '채소' },
   { name: '양파', quantity: '3개', category: '채소' },
@@ -91,7 +90,7 @@ const SHOPPING_CATALOG_GROUPS: ShoppingCatalogGroup[] = [
     subcategories: [
       { id: 'all', label: '전체', imageName: '양파', imageCategory: '채소' },
       { id: 'fresh', label: '채소/과일', categories: ['채소', '과일'], imageName: '상추', imageCategory: '채소' },
-      { id: 'meat-egg', label: '정육/계란', categories: ['육류'], keywords: ['계란', '달걀', '두부'], imageName: '계란', imageCategory: '유제품' },
+      { id: 'meat-egg', label: '정육/계란', categories: ['육류'], keywords: ['계란', '달걀', '두부'], imageName: '계란', imageCategory: '육류' },
       { id: 'seafood', label: '수산/건어물', categories: ['수산물'], imageName: '고등어', imageCategory: '수산물' },
       { id: 'dairy', label: '우유/유제품', categories: ['유제품'], imageName: '우유', imageCategory: '유제품' },
       { id: 'rice-noodle', label: '쌀/면/빵', categories: ['곡물/면/빵'], imageName: '쌀', imageCategory: '곡물/면/빵' },
@@ -120,11 +119,11 @@ const SHOPPING_CATALOG_GROUPS: ShoppingCatalogGroup[] = [
     categories: ['육류'],
     keywords: ['계란', '달걀', '두부'],
     subcategories: [
-      { id: 'all', label: '전체', imageName: '계란', imageCategory: '유제품' },
+      { id: 'all', label: '전체', imageName: '계란', imageCategory: '육류' },
       { id: 'pork', label: '돼지고기', keywords: ['돼지고기', '삼겹살', '목살', '돼지갈비'], imageName: '돼지고기', imageCategory: '육류' },
       { id: 'beef', label: '소고기', keywords: ['소고기', '불고기', '국거리'], imageName: '소고기', imageCategory: '육류' },
       { id: 'chicken', label: '닭/오리', keywords: ['닭고기', '닭가슴살', '닭다리', '닭안심', '오리고기'], imageName: '닭고기', imageCategory: '육류' },
-      { id: 'egg-tofu', label: '계란/두부', keywords: ['계란', '달걀', '두부'], imageName: '두부', imageCategory: '유제품' },
+      { id: 'egg-tofu', label: '계란/두부', keywords: ['계란', '달걀', '두부'], imageName: '두부', imageCategory: '통조림/가공식품' },
       { id: 'ham', label: '햄/소시지', keywords: ['햄', '소시지', '베이컨'], imageName: '소시지', imageCategory: '육류' },
     ],
   },
@@ -337,6 +336,7 @@ export default function ShoppingPage() {
   })
   const partnerLinks = usePartnerLinks()
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showCatalog, setShowCatalog] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [quickInput, setQuickInput] = useState('')
   const [name, setName] = useState('')
@@ -420,7 +420,7 @@ export default function ShoppingPage() {
       setStatusMessage(`${normalizedName} 수량을 기존 장보기 항목과 합쳤어요.`)
     } else if (result.addedCount > 0) {
       setStatusMessage(result.source === 'local'
-        ? `${normalizedName}을 이 기기에 임시 저장했어요. 로그인하면 클라우드에 동기화됩니다.`
+        ? `${normalizedName}을 이 기기에 저장했어요. 로그인되어 있고 인터넷이 연결되면 자동으로 동기화돼요.`
         : `${normalizedName}을 장보기 목록에 추가했어요.`)
     } else if (result.skippedDuplicates.length > 0) {
       setStatusMessage(`${normalizedName}은 이미 장보기 목록에 있어요.`)
@@ -520,6 +520,144 @@ export default function ShoppingPage() {
     await navigator.clipboard?.writeText(text)
   }
 
+  const shoppingListSection = (
+    <section data-testid="shopping-list-section" className="px-5 pt-4">
+      {displayItems.length === 0 ? (
+        <div className="jipbab-panel rounded-[18px] px-4 py-12 text-center">
+          <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
+          <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(true)}
+            className="mt-4 min-h-11 rounded-full bg-[#ea5a1f] px-5 text-[12px] font-black text-white"
+          >
+            재료 직접 추가하기
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <ShoppingGroup title={`미구매 (${uncheckedItems.length})`}>
+            {groupedUncheckedItems.map(([categoryName, group]) => (
+              <div key={categoryName} className="border-b border-[#eadcc9] last:border-b-0">
+                <p className="bg-[#fff7ed] px-3 py-2 text-[11px] font-black text-[#8a5a2a]">{categoryName}</p>
+                {group.map((item) => (
+                  <ShoppingRow
+                    key={item.id}
+                    name={item.name}
+                    category={item.category}
+                    quantity={item.quantity || '수량 미정'}
+                    checked={false}
+                    onToggle={() => toggleItem(item.id)}
+                    onRemove={() => removeItem(item.id)}
+                    onAddToFridge={() => addShoppingItemToFridge(item)}
+                    partnerLinks={partnerLinks}
+                  />
+                ))}
+              </div>
+            ))}
+          </ShoppingGroup>
+
+          {checkedItems.length > 0 ? (
+            <ShoppingGroup title={`구매완료 (${checkedItems.length})`}>
+              <div className="space-y-3 bg-[#f2f7e7] px-3 py-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {INGREDIENT_STORAGE_TYPES.map((storageType) => (
+                    <button
+                      key={storageType}
+                      type="button"
+                      onClick={() => setFridgeStorageType(storageType)}
+                      className={`min-h-11 rounded-[11px] border px-2 text-[11px] font-black ${
+                        fridgeStorageType === storageType
+                          ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
+                          : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                      }`}
+                    >
+                      {storageType}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <p className="mb-2 flex items-center gap-1 text-[11px] font-black text-[#3d7b38]">
+                    <CalendarDays size={13} />
+                    유통기한 빠른 선택
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {EXPIRY_PRESETS.map((preset) => (
+                      <button
+                        key={preset.days}
+                        type="button"
+                        onClick={() => setFridgeExpiryDays(preset.days)}
+                        className={`min-h-11 rounded-[11px] border px-1 text-[11px] font-black ${
+                          fridgeExpiryDays === preset.days
+                            ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
+                            : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={purchasePlace}
+                    onChange={(event) => setPurchasePlace(event.target.value)}
+                    placeholder="구매처 선택"
+                    className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
+                  />
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    value={unitPrice}
+                    onChange={(event) => setUnitPrice(event.target.value)}
+                    placeholder="가격 선택"
+                    className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void addCheckedItemsToFridge()
+                  }}
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#2f2117] px-3 text-[12px] font-black text-white"
+                >
+                  <Refrigerator size={15} />
+                  구매완료 {checkedItems.length}개 냉장고에 반영
+                </button>
+              </div>
+              {checkedItems.map((item) => (
+                <ShoppingRow
+                  key={item.id}
+                  name={item.name}
+                  category={item.category}
+                  quantity={item.quantity || '수량 미정'}
+                  checked
+                  onToggle={() => toggleItem(item.id)}
+                  onRemove={() => removeItem(item.id)}
+                  onAddToFridge={() => addShoppingItemToFridge(item)}
+                  partnerLinks={partnerLinks}
+                  addToFridgeLabel="냉장고 반영"
+                />
+              ))}
+            </ShoppingGroup>
+          ) : null}
+
+          {checkedItems.length > 0 ? (
+            <button
+              type="button"
+              onClick={clearCheckedItems}
+              className="w-full rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] py-3 text-sm font-black text-[#d94d19]"
+            >
+              완료 항목 정리
+            </button>
+          ) : null}
+        </div>
+      )}
+    </section>
+  )
+
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
@@ -527,7 +665,7 @@ export default function ShoppingPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
-              {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.
+              {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하세요. 외부 구매 링크는 새 브라우저 화면에서 열려요.
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -581,16 +719,15 @@ export default function ShoppingPage() {
         {isLocalMode || pendingSyncCount > 0 ? (
           <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
             {pendingSyncCount > 0
-              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 네트워크가 복구되면 자동으로 다시 업로드합니다.`
-              : '장보기 데이터는 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
+              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 로그인되어 있고 인터넷이 연결되면 자동으로 다시 동기화해요.`
+              : '지금 이 기기에 저장했어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.'}
           </p>
         ) : null}
-        <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
-          {PARTNERS_DISCLOSURE}
-        </p>
       </section>
 
-      <section className="px-5 pt-4">
+      {shoppingListSection}
+
+      <section data-testid="shopping-quick-add-section" className="px-5 pt-4">
         <div className="jipbab-panel rounded-[16px] p-3">
           <form
             className="grid grid-cols-[minmax(0,1fr)_72px] gap-2"
@@ -627,92 +764,6 @@ export default function ShoppingPage() {
               >
                 {chip.name} {chip.quantity}
               </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="jipbab-panel mt-3 rounded-[18px] p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-black text-[#d94d19]">로켓프레시식 카테고리</p>
-              <h2 className="mt-1 text-[18px] font-black leading-tight text-[#2f2117]">카테고리 장보기</h2>
-            </div>
-            <p className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
-              {selectedCatalogItems.length}개
-            </p>
-          </div>
-
-          <div className="mt-3 flex gap-4 overflow-x-auto border-b border-[#eadcc9] pb-0">
-            {SHOPPING_CATALOG_GROUPS.map((groupItem) => {
-              const selected = selectedCatalogGroup?.id === groupItem.id
-              return (
-                <button
-                  key={groupItem.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedCatalogGroupId(groupItem.id)
-                    setSelectedCatalogSubcategoryId('all')
-                  }}
-                  className={`relative min-h-11 shrink-0 px-0 pb-3 text-[14px] font-black ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
-                  }`}
-                >
-                  {groupItem.label}
-                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
-            {selectedCatalogGroup?.subcategories.map((subcategory) => {
-              const selected = selectedCatalogSubcategory?.id === subcategory.id
-              const count = selectedCatalogGroup ? getShoppingCatalogSubcategoryItems(selectedCatalogGroup, subcategory).length : 0
-              const photoUrl = getIngredientPhotoUrl(subcategory.imageName, subcategory.imageCategory)
-
-              return (
-                <button
-                  key={subcategory.id}
-                  type="button"
-                  onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
-                  className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
-                >
-                  <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
-                    selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'
-                  }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
-                  </span>
-                  <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
-                  }`}
-                  >
-                    {subcategory.label}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#b5a493]">{count}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-[#fff7ed] px-3 py-2">
-            <p className="truncate text-[12px] font-black text-[#4b3929]">
-              {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
-            </p>
-            <p className="shrink-0 text-[11px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {selectedCatalogItems.map((item) => (
-              <ShoppingCatalogCard
-                key={item.id}
-                item={item}
-                quantity={getShoppingCatalogQuantity(item)}
-                isInShoppingList={shoppingNameSet.has(normalizeShoppingIngredientName(item.name))}
-                onAdd={() => handleCatalogAdd(item)}
-                partnerLinks={partnerLinks}
-              />
             ))}
           </div>
         </div>
@@ -766,156 +817,109 @@ export default function ShoppingPage() {
             </div>
           </div>
         ) : null}
-      </section>
 
-      <section className="px-5 pt-4">
-        {displayItems.length === 0 ? (
-          <div className="jipbab-panel rounded-[18px] px-4 py-12 text-center">
-            <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
-            <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => {
-                const purchaseLink = getCoupangPurchaseLink({
-                  name: item.name,
-                  category: item.category ?? null,
-                }, partnerLinks)
-
-                return (
-                  <a
-                    key={item.name}
-                    href={purchaseLink.href}
-                    target="_blank"
-                    rel={externalLinkRel(purchaseLink.isPartnerLink)}
-                    className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
-                  >
-                    {item.name} 바로 사기
-                  </a>
-                )
-              })}
+        <div data-testid="shopping-catalog-section" className="jipbab-panel mt-3 rounded-[18px] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[18px] font-black leading-tight text-[#2f2117]">재료 찾아 담기</h2>
+              <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">필요할 때 카테고리별 재료를 펼쳐보세요.</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowCatalog((current) => !current)}
+              aria-expanded={showCatalog}
+              aria-controls="shopping-catalog-content"
+              className="min-h-11 shrink-0 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 text-[12px] font-black text-[#d94d19]"
+            >
+              {showCatalog ? '접기' : '펼치기'}
+            </button>
           </div>
-        ) : (
-          <div className="space-y-5">
-            <ShoppingGroup title={`미구매 (${uncheckedItems.length})`}>
-              {groupedUncheckedItems.map(([categoryName, group]) => (
-                <div key={categoryName} className="border-b border-[#eadcc9] last:border-b-0">
-                  <p className="bg-[#fff7ed] px-3 py-2 text-[11px] font-black text-[#8a5a2a]">{categoryName}</p>
-                  {group.map((item) => (
-                    <ShoppingRow
-                      key={item.id}
-                      name={item.name}
-                      category={item.category}
-                      quantity={item.quantity || '수량 미정'}
-                      checked={false}
-                      onToggle={() => toggleItem(item.id)}
-                      onRemove={() => removeItem(item.id)}
-                      onAddToFridge={() => addShoppingItemToFridge(item)}
-                      partnerLinks={partnerLinks}
-                    />
-                  ))}
-                </div>
-              ))}
-            </ShoppingGroup>
 
-            {checkedItems.length > 0 ? (
-              <ShoppingGroup title={`구매완료 (${checkedItems.length})`}>
-                <div className="space-y-3 bg-[#f2f7e7] px-3 py-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    {INGREDIENT_STORAGE_TYPES.map((storageType) => (
-                      <button
-                        key={storageType}
-                        type="button"
-                        onClick={() => setFridgeStorageType(storageType)}
-                        className={`min-h-11 rounded-[11px] border px-2 text-[11px] font-black ${
-                          fridgeStorageType === storageType
-                            ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
-                            : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
-                        }`}
-                      >
-                        {storageType}
-                      </button>
-                    ))}
-                  </div>
-                  <div>
-                    <p className="mb-2 flex items-center gap-1 text-[11px] font-black text-[#3d7b38]">
-                      <CalendarDays size={13} />
-                      유통기한 빠른 선택
-                    </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {EXPIRY_PRESETS.map((preset) => (
-                        <button
-                          key={preset.days}
-                          type="button"
-                          onClick={() => setFridgeExpiryDays(preset.days)}
-                          className={`min-h-11 rounded-[11px] border px-1 text-[11px] font-black ${
-                            fridgeExpiryDays === preset.days
-                              ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
-                              : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={purchasePlace}
-                      onChange={(event) => setPurchasePlace(event.target.value)}
-                      placeholder="구매처 선택"
-                      className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
-                    />
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      value={unitPrice}
-                      onChange={(event) => setUnitPrice(event.target.value)}
-                      placeholder="가격 선택"
-                      className="min-w-0 rounded-[11px] border border-[#dce8c8] bg-white px-3 py-2.5 text-[12px] font-semibold text-[#4b3929] outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void addCheckedItemsToFridge()
-                    }}
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#2f2117] px-3 text-[12px] font-black text-white"
+          {showCatalog ? (
+            <div id="shopping-catalog-content">
+              <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
+                {PARTNERS_DISCLOSURE}
+              </p>
+
+              <div className="mt-3 flex gap-4 overflow-x-auto border-b border-[#eadcc9] pb-0">
+            {SHOPPING_CATALOG_GROUPS.map((groupItem) => {
+              const selected = selectedCatalogGroup?.id === groupItem.id
+              return (
+                <button
+                  key={groupItem.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCatalogGroupId(groupItem.id)
+                    setSelectedCatalogSubcategoryId('all')
+                  }}
+                  className={`relative min-h-11 shrink-0 px-0 pb-3 text-[14px] font-black ${
+                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                  }`}
+                >
+                  {groupItem.label}
+                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
+                </button>
+              )
+            })}
+              </div>
+
+              <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+            {selectedCatalogGroup?.subcategories.map((subcategory) => {
+              const selected = selectedCatalogSubcategory?.id === subcategory.id
+              const count = selectedCatalogGroup ? getShoppingCatalogSubcategoryItems(selectedCatalogGroup, subcategory).length : 0
+              const photoUrl = getIngredientPhotoUrl(subcategory.imageName, subcategory.imageCategory)
+
+              return (
+                <button
+                  key={subcategory.id}
+                  type="button"
+                  onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
+                  className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
+                >
+                  <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
+                    selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'
+                  }`}
                   >
-                    <Refrigerator size={15} />
-                    구매완료 {checkedItems.length}개 냉장고에 반영
-                  </button>
-                </div>
-                {checkedItems.map((item) => (
-                  <ShoppingRow
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
+                  </span>
+                  <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
+                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                  }`}
+                  >
+                    {subcategory.label}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#b5a493]">{count}</span>
+                </button>
+              )
+            })}
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-[#fff7ed] px-3 py-2">
+                <p className="truncate text-[12px] font-black text-[#4b3929]">
+                  {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
+                </p>
+                <p className="shrink-0 text-[11px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {selectedCatalogItems.map((item) => (
+                  <ShoppingCatalogCard
                     key={item.id}
-                    name={item.name}
-                    category={item.category}
-                    quantity={item.quantity || '수량 미정'}
-                    checked
-                    onToggle={() => toggleItem(item.id)}
-                    onRemove={() => removeItem(item.id)}
-                    onAddToFridge={() => addShoppingItemToFridge(item)}
+                    item={item}
+                    quantity={getShoppingCatalogQuantity(item)}
+                    isInShoppingList={shoppingNameSet.has(normalizeShoppingIngredientName(item.name))}
+                    onAdd={() => handleCatalogAdd(item)}
                     partnerLinks={partnerLinks}
-                    addToFridgeLabel="냉장고 반영"
                   />
                 ))}
-              </ShoppingGroup>
-            ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
 
-            {checkedItems.length > 0 ? (
-              <button
-                type="button"
-                onClick={clearCheckedItems}
-                className="w-full rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] py-3 text-sm font-black text-[#d94d19]"
-              >
-                완료 항목 정리
-              </button>
-            ) : null}
-          </div>
-        )}
       </section>
+
     </div>
   )
 }

@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
+import { BadgeCheck, Bookmark, Clock3, Eye, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
@@ -34,6 +34,7 @@ import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import type { RecipeApiV1Sort } from '@/lib/recipe-api-v1-client'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
+import { RECIPE_PREVIEW_CATALOG } from '@/lib/recipe-preview'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
 const curatedRecipeMeta = new Map(
@@ -221,7 +222,9 @@ export default function RecipePage() {
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
               {isAppStoreDemo
                 ? `총 ${baseRecipes.length}개 레시피`
-                : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
+                : publicationEmpty
+                  ? `공개 승인 0개 · 미리보기 ${RECIPE_PREVIEW_CATALOG.length}개`
+                  : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
             </p>
           </div>
           <button
@@ -260,7 +263,7 @@ export default function RecipePage() {
         </div>
       </section>
 
-      {error && !isAppStoreDemo ? (
+      {error && !isAppStoreDemo && !publicationEmpty ? (
         <section className="px-5 pt-3" role="alert">
           <div className="rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-4 py-4 text-sm font-semibold text-[#d94d19]">
             <p>{error}</p>
@@ -392,8 +395,51 @@ export default function RecipePage() {
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#ea5a1f] border-t-transparent" />
             <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>
           </div>
-        ) : error && !isAppStoreDemo ? (
+        ) : error && !isAppStoreDemo && !publicationEmpty ? (
           <div className="sr-only">{error}</div>
+        ) : publicationEmpty ? (
+          <div>
+            <div className="rounded-[20px] border border-[#ffd1bd] bg-[#fff5ed] px-4 py-4">
+              <div className="flex items-start gap-2 text-[#9a431c]">
+                <Eye size={18} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-black">자체 작성 레시피를 먼저 보여드려요</p>
+                  <p className="mt-1 break-keep text-xs font-semibold leading-5">
+                    아래 콘텐츠는 검수 중 미리보기입니다. 실제 조리 검수가 끝날 때까지 추천·장보기·조리 모드는 열리지 않아요.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 space-y-2.5">
+              {RECIPE_PREVIEW_CATALOG.map((recipe) => (
+                <article key={recipe.id} className="jipbab-panel overflow-hidden rounded-[16px]">
+                  <Link href={`/recipe/preview/${recipe.id}`} className="flex gap-3 p-2.5">
+                    <div className="relative flex h-[92px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc]">
+                      <RecipeImage
+                        src={recipe.thumbnailUrl ?? ''}
+                        alt={`${recipe.name} 완성 사진`}
+                        className="absolute inset-0"
+                        imageClassName="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1 py-1">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[10px] font-black text-[#d94d19]">
+                        <Eye size={11} /> 검수 중 미리보기
+                      </span>
+                      <h2 className="mt-2 line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
+                      <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#7d6d5f]">
+                        {recipe.beginnerSummary ?? recipe.featuredReason}
+                      </p>
+                      <div className="mt-2 flex items-center gap-3 text-[11px] font-bold text-[#7d6d5f]">
+                        <span className="inline-flex items-center gap-1"><Clock3 size={12} /> {recipe.totalMinutes}분</span>
+                        <span className="inline-flex items-center gap-1"><Users size={12} /> {recipe.servings}인분</span>
+                      </div>
+                    </div>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </div>
         ) : filteredRecipes.length === 0 ? (
           <div className="rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
             <p className="text-sm font-black text-[#4b3929]">

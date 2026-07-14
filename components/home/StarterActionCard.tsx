@@ -1,12 +1,14 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { Plus, Refrigerator, Search } from 'lucide-react'
+import Image from 'next/image'
+import { Check, Plus, Refrigerator, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { buildHomeHref } from '@/lib/home-actions'
 import { STARTER_INGREDIENT_TEMPLATES } from '@/lib/starter-ingredients'
+import { getIngredientPhotoUrl } from '@/lib/utils'
+import type { IngredientRecord } from '@/types'
 
 type StarterActionCardProps = {
   demoMode?: boolean
@@ -33,12 +35,26 @@ export default function StarterActionCard({
   const visibleStarterNames = starterIngredientNames.slice(0, 8)
   const selectedNameSet = new Set(selectedNames)
   const hasSelection = selectedNames.length > 0
-  const previewIngredients = useMemo(() => {
-    const visibleNameSet = new Set((hasSelection ? selectedNames : visibleStarterNames.slice(0, 3)).map((name) => name.toLowerCase()))
+  const previewIngredients = useMemo<IngredientRecord[]>(() => {
+    const visibleNameSet = new Set(selectedNames.map((name) => name.toLowerCase()))
     return STARTER_INGREDIENT_TEMPLATES
       .filter((item) => visibleNameSet.has(item.name.toLowerCase()))
-      .slice(0, 6)
-  }, [hasSelection, selectedNames, visibleStarterNames])
+      .map((item, index) => ({
+        id: `starter-preview-${index}-${item.name}`,
+        deviceId: 'starter-preview',
+        userId: null,
+        name: item.name,
+        category: item.category ?? null,
+        storageType: item.storageType ?? '냉장',
+        quantity: item.quantity ?? null,
+        expiryDate: null,
+        barcode: null,
+        imageUrl: null,
+        memo: null,
+        createdAt: '',
+        updatedAt: '',
+      }))
+  }, [selectedNames])
   const summaryText = storageCounts
     ? `냉장 ${storageCounts.cold} · 냉동 ${storageCounts.frozen} · 실온 ${storageCounts.room}`
     : null
@@ -67,44 +83,6 @@ export default function StarterActionCard({
 
       {!hasIngredients ? (
         <>
-          <div
-            data-testid="starter-fridge-preview"
-            className="mt-4 overflow-hidden rounded-[18px] border border-[#eadcc9] bg-white shadow-[0_10px_22px_rgba(76,51,28,0.08)]"
-          >
-            <div className="relative h-64 overflow-hidden bg-[#fff7ed]">
-              <Image
-                src={FRIDGE_IMAGE_SRC}
-                alt=""
-                fill
-                loading="eager"
-                fetchPriority="high"
-                sizes="(max-width: 430px) 310px, 350px"
-                className="object-contain object-center p-2"
-              />
-              <div className="relative z-10 flex h-full flex-col bg-gradient-to-b from-white/10 via-white/8 to-[#2f2117]/8 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#2f2117] shadow-[0_6px_14px_rgba(76,51,28,0.10)]">
-                    오늘 메뉴 찾기
-                  </p>
-                  <p className="rounded-full bg-[#ea5a1f] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]">
-                    {hasSelection ? `${selectedNames.length}개 선택` : '미리보기'}
-                  </p>
-                </div>
-                <div className="mx-auto mt-9 grid w-52 grid-cols-2 gap-2">
-                  {previewIngredients.map((item) => (
-                    <span
-                      key={item.name}
-                      className="min-w-0 rounded-[12px] border border-white/90 bg-white/92 px-2 py-1.5 text-center text-[11px] font-black text-[#4b3929] shadow-[0_7px_14px_rgba(47,33,23,0.12)] backdrop-blur-[2px]"
-                    >
-                      <span className="block truncate">{item.name}</span>
-                      <span className="mt-0.5 block text-[8px] font-black text-[#9b8979]">{item.storageType}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="mt-4 flex flex-wrap gap-2">
             {visibleStarterNames.map((name) => {
               const selected = selectedNameSet.has(name)
@@ -120,11 +98,20 @@ export default function StarterActionCard({
                       : 'border-[#eadcc9] bg-white text-[#4b3929]'
                   }`}
                 >
+                  {selected ? <Check size={14} aria-hidden="true" className="mr-1 inline" /> : null}
                   {name}
                 </button>
               )
             })}
           </div>
+          <p
+            aria-live="polite"
+            className="mt-3 min-h-5 text-[13px] font-semibold text-[#7d6d5f]"
+          >
+            {hasSelection
+              ? <>선택한 재료 {selectedNames.length}개</>
+              : '재료를 하나 이상 고르면 추천할 수 있어요.'}
+          </p>
         </>
       ) : null}
 
@@ -149,9 +136,17 @@ export default function StarterActionCard({
             }`}
           >
             <Plus size={15} />
-            {hasSelection ? `${selectedNames.length}개 담고 추천 보기` : '있는 재료를 골라주세요'}
+            {hasSelection ? '이 재료로 메뉴 찾기' : '있는 재료를 골라주세요'}
           </button>
         )}
+
+        {!hasIngredients && hasSelection ? (
+          <StarterFridgePreview
+            ingredients={previewIngredients}
+            selectedCount={selectedNames.length}
+          />
+        ) : null}
+
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={buildHomeHref('/fridge?add=1', { demoMode })}
@@ -173,5 +168,65 @@ export default function StarterActionCard({
         <p className="mt-2 text-center text-[11px] font-semibold text-[#9b8979]">{summaryText}</p>
       ) : null}
     </section>
+  )
+}
+
+function StarterFridgePreview({
+  ingredients,
+  selectedCount,
+}: {
+  ingredients: IngredientRecord[]
+  selectedCount: number
+}) {
+  const visibleIngredients = ingredients.slice(0, 4)
+  const remainingCount = Math.max(0, selectedCount - visibleIngredients.length)
+
+  return (
+    <div
+      data-testid="starter-fridge-preview"
+      className="relative mt-4 h-36 overflow-hidden rounded-[18px] border border-[#e5d6c1] bg-[#f5ead8]"
+    >
+      <Image
+        src={FRIDGE_IMAGE_SRC}
+        alt=""
+        fill
+        loading="eager"
+        fetchPriority="high"
+        sizes="(max-width: 640px) calc(100vw - 72px), 420px"
+        className="object-cover object-[center_30%] opacity-60"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-[#fffaf3]/35 to-[#fffaf3]/90" />
+
+      <div className="relative z-10 flex h-full flex-col justify-between p-3">
+        <p className="w-fit rounded-full bg-white/90 px-3 py-1.5 text-[12px] font-black text-[#4b3929] shadow-sm">
+          냉장고에 담을 재료 {selectedCount}개
+        </p>
+
+        <div className="flex gap-2">
+          {visibleIngredients.map((ingredient) => (
+            <div
+              key={ingredient.id}
+              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[12px] bg-white/95 px-2 py-2 shadow-sm"
+            >
+              <Image
+                src={getIngredientPhotoUrl(ingredient.name, ingredient.category)}
+                alt=""
+                width={28}
+                height={28}
+                className="h-7 w-7 shrink-0 object-contain"
+              />
+              <span className="truncate text-[11px] font-bold text-[#4b3929]">
+                {ingredient.name}
+              </span>
+            </div>
+          ))}
+          {remainingCount > 0 ? (
+            <span className="flex min-h-11 min-w-11 items-center justify-center rounded-[12px] bg-[#2f2117] px-2 text-[11px] font-black text-white shadow-sm">
+              +{remainingCount}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
   )
 }

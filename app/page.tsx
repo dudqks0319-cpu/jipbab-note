@@ -1,7 +1,6 @@
 // 이 파일은 홈 화면을 담당하며 참고 이미지의 앱스토어형 첫 화면을 구현합니다.
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
@@ -18,6 +17,7 @@ import {
   Utensils,
 } from 'lucide-react'
 
+import FridgeIllustration from '@/components/fridge/FridgeIllustration'
 import StarterActionCard from '@/components/home/StarterActionCard'
 import TodayActionCard from '@/components/home/TodayActionCard'
 import RecipeImage from '@/components/recipe/RecipeImage'
@@ -34,22 +34,13 @@ import {
 } from '@/lib/matching'
 import { APPSTORE_DEMO_INGREDIENTS, APPSTORE_DEMO_RECIPES, APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { buildHomeHref } from '@/lib/home-actions'
-import { getIngredientDisplayName } from '@/lib/ingredient-display'
 import { withNormalizedIngredientStorage } from '@/lib/ingredient-storage'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import { RECIPE_PREVIEW_CATALOG } from '@/lib/recipe-preview'
 import { resolveIngredientCatalogIds } from '@/lib/recipe-api-v1-client'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
-import { getDday, getIngredientPhotoUrl } from '@/lib/utils'
-import type { IngredientRecord } from '@/types'
-
-const HOME_FRIDGE_IMAGE = '/images/fridge-freezer-board-animated.png'
-
-type StorageCounts = {
-  cold: number
-  frozen: number
-  room: number
-}
+import { getDday } from '@/lib/utils'
 
 export default function HomePage() {
   const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
@@ -91,7 +82,7 @@ export default function HomePage() {
   } = useRecipeCatalog(12, {
     ingredientIds: recipeIngredientIds,
     sort: 'recommended',
-    enabled: demoModeReady && !isAppStoreDemo,
+    enabled: demoModeReady && !isAppStoreDemo && !ingredientsLoading && activeDisplayIngredients.length > 0,
   })
   const { uncheckedCount } = useShopping()
 
@@ -176,6 +167,13 @@ export default function HomePage() {
       })
   }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group])
   const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 6), [rankedHomeRecipes])
+  const previewRecipes = useMemo(
+    () =>
+      rankRecipeRecommendations(RECIPE_PREVIEW_CATALOG, activeDisplayIngredients)
+        .map(({ recipe, match }) => ({ ...recipe, ...match }))
+        .slice(0, 2),
+    [activeDisplayIngredients],
+  )
   const homeRecipeSections = useMemo(() => {
     const buildSection = (title: string, subtitle: string, recipes: typeof rankedHomeRecipes) => ({
       title,
@@ -213,10 +211,17 @@ export default function HomePage() {
 
   const isLoading = ingredientsLoading || recipesLoading
   const isEmptyFridge = activeDisplayIngredients.length === 0
-  const shouldShowStarterAction = isEmptyFridge
   const hasPublishedRecipes = beginnerHomeRecipeCatalog.length > 0
+  const homeRecoveryKind: 'ingredients' | 'recipes' | null =
+    !isAppStoreDemo && !isLoading
+      ? ingredientsError && isEmptyFridge
+        ? 'ingredients'
+        : recipesError && !hasPublishedRecipes
+          ? 'recipes'
+          : null
+      : null
+  const shouldShowStarterAction = isEmptyFridge && homeRecoveryKind === null
   const shouldShowEmptyHome = isEmptyFridge
-  const syncErrorMessage = !isAppStoreDemo ? ingredientsError?.message ?? recipesError : null
   const handleRetrySync = () => {
     void listIngredients()
     if (group) {
@@ -252,7 +257,13 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pt-4">
-        {shouldShowStarterAction ? (
+        {homeRecoveryKind ? (
+          <HomeRecoveryCard
+            kind={homeRecoveryKind}
+            isRetrying={isLoading}
+            onRetry={handleRetrySync}
+          />
+        ) : shouldShowStarterAction ? (
           <StarterActionCard
             demoMode={isAppStoreDemo}
             hasIngredients={!isEmptyFridge}
@@ -263,7 +274,7 @@ export default function HomePage() {
             storageCounts={storageCounts}
           />
         ) : !hasPublishedRecipes && !isLoading ? (
-          <RecipePublicationEmptyCard onRetry={refreshRecipes} />
+          <RecipePublicationEmptyCard previewRecipe={previewRecipes[0] ?? null} />
         ) : (
           <TodayActionCard
             demoMode={isAppStoreDemo}
@@ -271,25 +282,6 @@ export default function HomePage() {
             recipe={topRecipe ?? null}
           />
         )}
-        {syncErrorMessage ? (
-          <div className="mt-3 flex items-start gap-3 rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3" role="status">
-            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-[#d94d19]" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[12px] font-black text-[#4b3929]">동기화가 지연되고 있어요</p>
-              <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
-                {syncErrorMessage}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleRetrySync}
-              className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
-            >
-              <RefreshCw size={13} />
-              재시도
-            </button>
-          </div>
-        ) : null}
       </section>
 
       {!shouldShowEmptyHome ? (
@@ -315,7 +307,7 @@ export default function HomePage() {
             <FridgeCount label="냉동" value={storageCounts.frozen} />
             <FridgeCount label="실온" value={storageCounts.room} />
           </div>
-          <HomeFridgePreview ingredients={activeDisplayIngredients} storageCounts={storageCounts} />
+          <FridgeIllustration ingredients={activeDisplayIngredients} compact maxItemsPerZone={10} />
           <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
             <Link
               href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })}
@@ -350,7 +342,28 @@ export default function HomePage() {
             </div>
           </div>
         ) : homeRecipeSections.length === 0 ? (
-          <EmptyRecommendation demoMode={isAppStoreDemo} hasIngredients={activeDisplayIngredients.length > 0} />
+          previewRecipes.length > 0 ? (
+            <div>
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-[16px] font-black text-[#2f2117]">먼저 보는 레시피</h2>
+                  <p className="mt-1 text-[11px] font-semibold leading-4 text-[#8f7f70]">
+                    자체 작성 레시피를 검수 완료 전에 미리 보여드려요.
+                  </p>
+                </div>
+                <Link href="/recipe" className="inline-flex min-h-11 items-center text-[11px] font-black text-[#a66a17]">
+                  전체
+                </Link>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {previewRecipes.map((recipe) => (
+                  <RecipeHomeCard key={`preview-${recipe.id}`} recipe={recipe} compact previewMode />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyRecommendation demoMode={isAppStoreDemo} hasIngredients={activeDisplayIngredients.length > 0} />
+          )
         ) : (
           homeRecipeSections.map((section) => (
             <div key={section.title}>
@@ -468,141 +481,12 @@ function FridgeCount({ label, value }: { label: string; value: number }) {
   )
 }
 
-function HomeFridgePreview({
-  ingredients,
-  storageCounts,
-}: {
-  ingredients: IngredientRecord[]
-  storageCounts: StorageCounts
-}) {
-  const coldItems = ingredients.filter((item) => item.storageType === '냉장')
-  const frozenItems = ingredients.filter((item) => item.storageType === '냉동')
-  const coldOverflowCount = Math.max(0, coldItems.length - 16)
-  const frozenOverflowCount = Math.max(0, frozenItems.length - 8)
-  const coldIngredients = coldItems.slice(0, coldOverflowCount > 0 ? 15 : 16)
-  const frozenIngredients = frozenItems.slice(0, frozenOverflowCount > 0 ? 7 : 8)
-  const previewWidth = getHomeFridgePreviewWidth()
-
-  return (
-    <div
-      data-testid="home-fridge-preview"
-      className="relative mt-3 overflow-hidden rounded-[18px] bg-white"
-    >
-      <Image
-        src={HOME_FRIDGE_IMAGE}
-        alt="냉장실과 냉동실이 함께 보이는 내 냉장고"
-        width={887}
-        height={1774}
-        loading="eager"
-        fetchPriority="high"
-        sizes="(max-width: 430px) 318px, 360px"
-        className="h-auto w-full"
-      />
-      <div
-        className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
-        style={{ left: 16, top: 16 }}
-      >
-        냉장 재료 <span className="text-[#8f7f70]">{storageCounts.cold}개</span>
-      </div>
-      {storageCounts.frozen > 0 ? (
-        <div
-          className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
-          style={{ left: 16, top: '68%' }}
-        >
-          냉동 <span className="text-[#8f7f70]">{storageCounts.frozen}개</span>
-        </div>
-      ) : null}
-      {coldIngredients.length > 0 || coldOverflowCount > 0 ? (
-        <div
-          className="absolute grid content-start"
-          style={{
-            gap: '5px 2px',
-            gridTemplateColumns: 'repeat(6, 32px)',
-            left: '50%',
-            top: 76,
-            transform: 'translateX(-50%)',
-            width: previewWidth,
-          }}
-        >
-          {coldIngredients.map((item) => (
-            <HomeFridgeIngredientTile key={item.id} ingredient={item} />
-          ))}
-          {coldOverflowCount > 0 ? <HomeFridgeMoreTile count={coldOverflowCount} /> : null}
-        </div>
-      ) : null}
-      {frozenIngredients.length > 0 || frozenOverflowCount > 0 ? (
-        <div
-          className="absolute grid content-start"
-          style={{
-            gap: '5px 2px',
-            gridTemplateColumns: 'repeat(6, 32px)',
-            left: '50%',
-            top: '73%',
-            transform: 'translateX(-50%)',
-            width: previewWidth,
-          }}
-        >
-          {frozenIngredients.map((item) => (
-            <HomeFridgeIngredientTile key={item.id} ingredient={item} />
-          ))}
-          {frozenOverflowCount > 0 ? <HomeFridgeMoreTile count={frozenOverflowCount} /> : null}
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-function getHomeFridgePreviewWidth() {
-  return 6 * 32 + 5 * 2
-}
-
-function HomeFridgeIngredientTile({ ingredient }: { ingredient: IngredientRecord }) {
-  const displayName = getHomeFridgeIngredientDisplayName(ingredient.name)
-  const photoName = getIngredientDisplayName(ingredient.name)
-
-  return (
-    <div className="w-8 min-w-0 px-0 py-0.5 text-center">
-      <Image
-        src={getIngredientPhotoUrl(photoName, ingredient.category)}
-        alt={photoName}
-        width={30}
-        height={30}
-        sizes="30px"
-        className="mx-auto h-6 w-6 object-contain mix-blend-multiply drop-shadow-[0_1px_1px_rgba(255,255,255,0.75)]"
-      />
-      <p
-        className="mx-auto mt-0.5 max-w-9 overflow-hidden text-ellipsis whitespace-nowrap text-[8px] font-black text-[#2f2117] drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]"
-        style={{ lineHeight: '9px' }}
-        title={photoName}
-      >
-        {displayName}
-      </p>
-    </div>
-  )
-}
-
-function getHomeFridgeIngredientDisplayName(name: string) {
-  const displayName = getIngredientDisplayName(name).replace(/\s+/g, '')
-  const compactName = displayName.startsWith('냉동') && displayName.length > 4
-    ? displayName.replace(/^냉동/, '')
-    : displayName
-
-  return compactName.length > 4 ? `${compactName.slice(0, 3)}…` : compactName
-}
-
-function HomeFridgeMoreTile({ count }: { count: number }) {
-  return (
-    <div className="flex min-h-10 w-8 items-center justify-center px-0 text-center text-[10px] font-black leading-3 text-[#2f2117] drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
-      +{count}개
-    </div>
-  )
-}
-
 function RecipeHomeCard({
   demoMode = false,
   recipe,
   compact = false,
   scope = 'personal',
+  previewMode = false,
 }: {
   demoMode?: boolean
   recipe: {
@@ -619,9 +503,11 @@ function RecipeHomeCard({
   }
   compact?: boolean
   scope?: 'personal' | 'family'
+  previewMode?: boolean
 }) {
   const missingCount = getEssentialMissingIngredients(recipe.missingIngredients).length
-  const recipeHref = buildHomeHref(`/recipe/${recipe.id}`, {
+  const detailPath = previewMode ? `/recipe/preview/${recipe.id}` : `/recipe/${recipe.id}`
+  const recipeHref = buildHomeHref(detailPath, {
     demoMode,
     params: scope === 'family' ? { scope } : undefined,
   })
@@ -664,12 +550,18 @@ function RecipeHomeCard({
             {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
           </span>
         </div>
-        <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
-          {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
-        </p>
-        <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
-          {getBeginnerRecipeBadge(recipe)}
-        </p>
+        {previewMode ? (
+          <p className="mt-1 truncate text-[10px] font-black text-[#d94d19]">검수 중 미리보기</p>
+        ) : (
+          <>
+            <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
+              {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
+            </p>
+            <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
+              {getBeginnerRecipeBadge(recipe)}
+            </p>
+          </>
+        )}
         {!compact ? (
           <div className="mt-2 grid grid-cols-[1fr_1fr] gap-1.5">
             <Link
@@ -746,23 +638,75 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
   )
 }
 
-function RecipePublicationEmptyCard({ onRetry }: { onRetry: () => void }) {
+function RecipePublicationEmptyCard({
+  previewRecipe,
+}: {
+  previewRecipe: {
+    id: string
+    name: string
+    thumbnailUrl: string | null
+    totalMinutes?: number | null
+  } | null
+}) {
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
-      <p className="text-[12px] font-bold text-[#d94d19]">레시피 검수 중</p>
+      <p className="text-[12px] font-bold text-[#d94d19]">검수 중 미리보기</p>
       <h2 className="mt-2 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">
-        현재 공개 가능한 레시피를 준비 중이에요.
+        레시피를 먼저 둘러볼 수 있어요.
       </h2>
       <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
-        출처, 계량, 안전 안내와 실제 조리 확인을 마친 레시피만 추천합니다.
+        자체 작성한 레시피 내용을 먼저 공개했어요. 실제 조리 검수가 끝날 때까지 추천과 조리 모드는 잠겨 있어요.
       </p>
+      {previewRecipe ? (
+        <Link
+          href={`/recipe/preview/${previewRecipe.id}`}
+          className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white"
+        >
+          {previewRecipe.name} · {previewRecipe.totalMinutes ?? '시간 미표시'}분 보기
+        </Link>
+      ) : (
+        <Link
+          href="/recipe"
+          className="mt-5 flex min-h-12 w-full items-center justify-center rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white"
+        >
+          레시피 미리보기 열기
+        </Link>
+      )}
+    </section>
+  )
+}
+
+function HomeRecoveryCard({
+  kind,
+  isRetrying,
+  onRetry,
+}: {
+  kind: 'ingredients' | 'recipes'
+  isRetrying: boolean
+  onRetry: () => void
+}) {
+  const title = kind === 'ingredients' ? '냉장고를 불러오지 못했어요' : '메뉴 추천을 불러오지 못했어요'
+  const description =
+    kind === 'ingredients'
+      ? '입력한 재료는 변경되지 않았어요. 잠시 후 다시 시도해 주세요.'
+      : '냉장고 재료는 그대로예요. 잠시 후 다시 시도해 주세요.'
+
+  return (
+    <section
+      role="alert"
+      className="rounded-[22px] border border-[#ffd1bd] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]"
+    >
+      <AlertTriangle size={22} aria-hidden="true" className="text-[#d94d19]" />
+      <h2 className="mt-3 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">{title}</h2>
+      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">{description}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white"
+        disabled={isRetrying}
+        className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white disabled:cursor-wait disabled:opacity-65"
       >
-        <RefreshCw size={16} />
-        다시 확인
+        <RefreshCw size={16} aria-hidden="true" className={isRetrying ? 'animate-spin' : undefined} />
+        {isRetrying ? '다시 시도 중' : '다시 시도'}
       </button>
     </section>
   )

@@ -70,7 +70,9 @@ test("shopping page exposes category catalog adds and purchase links", () => {
   assert.match(pageSource, /SHOPPING_CATALOG_GROUPS/);
   assert.match(pageSource, /id: 'all'/);
   assert.match(pageSource, /getIngredientCatalog/);
-  assert.match(pageSource, /로켓프레시식 카테고리/);
+  assert.match(pageSource, /재료 찾아 담기/);
+  assert.doesNotMatch(pageSource, /로켓프레시식/);
+  assert.doesNotMatch(pageSource, /Safari에서 여세요/);
   assert.match(pageSource, /getShoppingCatalogSubcategoryItems/);
   assert.match(pageSource, /setSelectedCatalogSubcategoryId\('all'\)/);
   assert.match(pageSource, /상추\/쌈채소/);
@@ -80,6 +82,31 @@ test("shopping page exposes category catalog adds and purchase links", () => {
   assert.match(pageSource, /duplicateMode: 'merge'/);
   assert.match(pageSource, /getCoupangPurchaseLink\(\{ name: item\.name, category: item\.category \}/);
   assert.match(pageSource, /쿠팡 링크/);
+});
+
+test("shopping page prioritizes the user's list before quick add and a collapsed catalog", () => {
+  const pageSource = readFileSync(new URL("../app/shopping/page.tsx", import.meta.url), "utf8");
+  const catalogSource = readFileSync(new URL("../lib/ingredient-catalog.ts", import.meta.url), "utf8");
+
+  const listIndex = pageSource.indexOf('data-testid="shopping-list-section"');
+  const quickAddIndex = pageSource.indexOf('data-testid="shopping-quick-add-section"');
+  const catalogIndex = pageSource.indexOf('data-testid="shopping-catalog-section"');
+
+  assert.ok(listIndex >= 0);
+  assert.ok(quickAddIndex > listIndex);
+  assert.ok(catalogIndex > quickAddIndex);
+  assert.match(pageSource, /const \[showCatalog, setShowCatalog\] = useState\(false\)/);
+  assert.match(pageSource, /aria-expanded=\{showCatalog\}/);
+  assert.match(pageSource, /외부 구매 링크는 새 브라우저 화면에서 열려요/);
+  assert.match(pageSource, /지금 이 기기에 저장했어요/);
+  assert.match(pageSource, /로그인되어 있고 인터넷이 연결되면 자동으로 동기화돼요/);
+  assert.match(pageSource, /로그인되어 있고 인터넷이 연결되면 자동으로 다시 동기화해요/);
+  assert.doesNotMatch(pageSource, /네트워크가 연결되면 자동으로 다시 저장해요/);
+  assert.doesNotMatch(pageSource, /로그인하면 클라우드에 동기화됩니다/);
+  assert.match(pageSource, /name: '계란', quantity: '10개', category: '육류'/);
+  assert.match(pageSource, /name: '두부', quantity: '1모', category: '통조림\/가공식품'/);
+  assert.match(catalogSource, /id: "dairy-egg", category: "육류", name: "계란"/);
+  assert.match(catalogSource, /id: "dairy-tofu", category: "통조림\/가공식품", name: "두부"/);
 });
 
 test("recipe shopping assistant supports scoped and selective missing ingredient adds", () => {
