@@ -11,9 +11,13 @@ import {
   rankRecipeRecommendations,
 } from "../lib/matching.ts";
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
+import { RECIPE_PREVIEW_CATALOG } from "../lib/recipe-preview.ts";
 import {
+  RECIPE_QUICK_FILTERS,
+  getPreviewDisplayCategory,
   getReadinessBadge,
   isBeginnerVerifiedRecipe,
+  matchesPreviewQuickFilter,
   matchesRecipeQuickFilter,
 } from "../lib/recipe-list-labels.ts";
 import {
@@ -309,6 +313,7 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
 
 test("recipe list quick filters expose beginner and ready states", () => {
   const curated = CURATED_JIPBAB_RECIPES.find((item) => item.name === "간장계란밥");
+  assert.ok(curated);
   const recipe = {
     id: curated?.id ?? "beginner-recipe-001",
     name: "간장계란밥",
@@ -331,7 +336,27 @@ test("recipe list quick filters expose beginner and ready states", () => {
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "one-more"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "beginner"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "quick"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "few-ingredients"), false);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "few-tools"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "ready"), false);
+  assert.deepEqual(RECIPE_QUICK_FILTERS.map((item) => item.label), [
+    "10분 이내",
+    "재료 5개 이하",
+    "설거지 적음",
+  ]);
+  const eggPorridge = CURATED_JIPBAB_RECIPES.find((item) => item.name === "달걀죽");
+  assert.ok(eggPorridge);
+  assert.equal(matchesPreviewQuickFilter(eggPorridge, "few-ingredients"), true);
+});
+
+test("recipe preview categories map legacy editorial labels to user-facing groups", () => {
+  const categoryByTitle = new Map(
+    RECIPE_PREVIEW_CATALOG.map((recipe) => [recipe.name, getPreviewDisplayCategory(recipe)]),
+  );
+  assert.equal(categoryByTitle.get("버터간장계란밥"), "밥·한 그릇");
+  assert.equal(categoryByTitle.get("두부부침"), "두부");
+  assert.equal(categoryByTitle.get("된장찌개"), "찌개·전골");
+  assert.equal([...categoryByTitle.values()].includes("기타"), false);
 });
 
 test("recipe list filters cover difficulty, time, tools, fridge fit, and beginner sorting", () => {
@@ -437,6 +462,10 @@ test("recipe page uses the normalized API v1 category rail", () => {
   assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"중식"/);
   assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"간식·디저트"/);
   assert.match(pageSource, /visibleCategories/);
+  assert.match(pageSource, /displayedCategories/);
+  assert.match(pageSource, /PRIMARY_RECIPE_CATEGORIES/);
+  assert.match(pageSource, /재료 \{recipe\.matchedIngredients\.length\}\/\{recipe\.totalRecipeIngredients\}개 보유/);
+  assert.doesNotMatch(pageSource, /<Star/);
   assert.match(pageSource, /DISPLAY_CATEGORY_QUICK_FILTERS/);
   assert.match(pageSource, /setQuickFilter/);
   assert.match(pageSource, /difficultyFilter/);
