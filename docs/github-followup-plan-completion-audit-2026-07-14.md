@@ -20,7 +20,7 @@ Target branch: `integration/phase6-release-candidate`
 | --- | --- | --- | --- |
 | A 통합 기준선 | 부분 완료 | 통합 브랜치, Actions trigger, required checks, PR #1·#3 종료, PR #4 분리 댓글, SHA 일치 Preview | `main` 반영과 release tag는 최종 외부 게이트 전 금지 |
 | B full happy path | 부분 완료 | HttpOnly fixture session, Production 404, `next build`·`next start`, negative 12/12, happy 23/23, redacted artifact, fixture 분석 제외 | 인증 가능한 실제 Preview remote happy path |
-| C 데이터베이스 | 차단 | 로컬 migration·RLS·rollback 계약, 읽기 전용 drift 감사에서 remote history 18개 일치·local-only 13개와 주요 대상 테이블 부재 확인 | 함수·policy exact diff 승인, 복원 가능한 backup, staging apply→rollback→reapply, API v1 200 |
+| C 데이터베이스 | 차단 | remote history 18개 일치·local-only 13개. catalog에서 가족/Storage 일부 수동 적용과 recipe comments·계정삭제 trigger·publication·v2·rate-limit·definer hardening 부재, Security Advisor WARN 13건 확인 | 시간당 `$0.01344` staging branch 비용 승인, exact diff, 복원 가능한 backup, forward apply→rollback→reapply, advisor 재검증, API v1 200 |
 | D UX | 완료 | Starter·홈·목록·장보기·조리 통합, 기본 필터 3개, 계란·두부 분류, browser confirm 제거, 모바일 증거 12/12 | 실기기 VoiceOver·TalkBack은 Phase H에 포함 |
 | E 레시피 | 미완료 | 정확한 핵심 메뉴 20/20, 콘텐츠 SHA 패킷, 자동 점수 20/20 | 실제 조리·초보자·안전·출처·이미지 사람 검수 각각 20/20 |
 | F 영유아식 | 부분 완료 | 공통 recipe v2 확장, 관리자 연구 경로, Production·기본 flag OFF, 공개 0 | 전문가·실제 조리·권리·이미지·staging·실기기 증거 |
@@ -48,3 +48,5 @@ Target branch: `integration/phase6-release-candidate`
 - 외부 alert receipt, incident owner, privacy retention, 승인된 field dashboard
 
 위 증거가 모두 생기기 전에는 계획을 완료로 표시하거나 Production·운영 DB·스토어를 변경하지 않는다.
+
+운영 DB는 부분 적용 상태이고 현재 물리 backup·PITR·staging branch가 없다. 비용 승인과 복원 지점 없이 migration history를 repair하거나 pending migration을 일괄 적용하지 않는다.
