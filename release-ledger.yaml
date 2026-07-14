@@ -122,6 +122,7 @@ phase3_frontend_api_v1:
 
 fe005_recipe_list_navigation:
   implementation_git_sha: "4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444"
+  evidence_checkpoint_git_sha: "e5ac732085751bac5b367e725e911b053eab62ec"
   branch: "agent/phase6-observability-analytics"
   filter_reset_status: "verified_all_list_filter_sort_favorite_and_advanced_states"
   history_validation_status: "verified_exact_location_bounded_page_cursor_filter_and_scroll"

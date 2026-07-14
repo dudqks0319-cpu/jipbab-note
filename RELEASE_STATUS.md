@@ -28,7 +28,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - Version: `1.0`
 - Build: `2026062602`
 - Git SHA: `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`
-- Preview evidence checkpoint: `9ff6ff134792f604ec3242bb6ae0d35790968cd2`
+- Preview evidence checkpoint: `e5ac732085751bac5b367e725e911b053eab62ec`
 - Branch: `agent/phase6-observability-analytics`
 - Phase: `phase7_recipe_completion_and_fe005_navigation_preview_ready_external_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
