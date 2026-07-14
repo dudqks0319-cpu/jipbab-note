@@ -119,6 +119,13 @@ test("goal completion check requires Phase 5 actual cooking and human review evi
   assert.match(source, /phase-5-human-testing-runbook\.md/);
 });
 
+test("goal completion check requires Phase 7 private beta evidence", () => {
+  assert.match(source, /scripts\/check-phase-7-private-beta-evidence\.mjs/);
+  assert.match(source, /phase7PrivateBetaCheck\.evidence/);
+  assert.match(source, /Phase 7 비공개 베타/);
+  assert.match(source, /phase-7-private-beta-runbook\.md/);
+});
+
 test("goal completion check separates monitoring code from actual channel receipt", () => {
   assert.match(source, /scripts\/check-phase-6-monitoring\.mjs/);
   assert.match(source, /오류 모니터링 코드 경계/);

@@ -224,6 +224,10 @@ const phase5HumanEvidenceCheck = runLocalCheck("node --experimental-strip-types 
   "--experimental-strip-types",
   "scripts/check-phase-5-human-evidence.mjs",
 ]);
+const phase7PrivateBetaCheck = runLocalCheck("node --experimental-strip-types scripts/check-phase-7-private-beta-evidence.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-phase-7-private-beta-evidence.mjs",
+]);
 const monitoringDeliveryCheck = runLocalCheck("node scripts/check-phase-6-monitoring.mjs", [
   "scripts/check-phase-6-monitoring.mjs",
 ]);
@@ -293,6 +297,14 @@ addResult(
   "핵심 20개 실제 조리·사람 검수 증거",
   phase5HumanEvidenceCheck.evidence,
   "docs/phase-5-human-testing-runbook.md에 따라 실제 조리와 초보자·식품 안전·출처·이미지 권리 검수를 완료한 뒤 pnpm check:phase5-human-evidence 재실행",
+);
+
+addResult(
+  results,
+  phase7PrivateBetaCheck.status,
+  "Phase 7 비공개 베타",
+  phase7PrivateBetaCheck.evidence,
+  "docs/phase-7-private-beta-runbook.md에 따라 익명 사용자 5~20명 증거와 공개 베타 승인을 완료한 뒤 pnpm check:phase7-private-beta 재실행",
 );
 
 addResult(

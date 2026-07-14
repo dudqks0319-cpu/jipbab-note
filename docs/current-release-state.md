@@ -1,6 +1,18 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-13 KST
+Updated: 2026-07-14 KST
+
+## 2026-07-14 Phase 7 비공개 베타 준비·최신 운영자 인계
+
+- 계획서의 Phase 7을 실제 사용자 증거로만 판정하도록 `docs/phase-7-private-beta-runbook.md`, 익명 세션 CSV, 공개 베타 승인 문서와 `pnpm check:phase7-private-beta` 검증기를 추가했다. 참여자 이름·이메일·전화번호 대신 익명 코드만 허용하고 원본 증거는 Git에서 제외된 `output/phase7-private-beta-evidence/` 아래에 둔다.
+- 검증기는 고유 참여자 5~20명, 참여자별 `product_flow`·`representative_recipe`, 조리 시작 대비 완료율 60% 이상, 대표 레시피 초보자 성공률 80% 이상, 이해하지 못한 단계 평균 1개 미만, 안전 문제 0건, 미해결 P0/P1 0건, 반복 중단 단계 수정과 공개 베타 승인 증거를 함께 요구한다. 이메일·전화번호 형태 값, 증거 경로 이탈, 미동의 세션, 안전 문제, 미해결 P1, 두 번 이상 반복된 미수정 중단 단계의 음수 경로를 회귀 테스트로 고정했다.
+- 정상 예시 5명·10세션은 검증기에서 통과한다. 추적된 실제 템플릿은 세션 0건, 참여자 0명, 공개 베타 승인 미확인이므로 의도적으로 BLOCKED다. 자동 테스트나 합성 데이터를 실제 사용자 성과로 기록하지 않았다.
+- 최신 iOS 읽기 전용 캡처는 `<repo>/.worktrees/phase6-observability-analytics/output/release-evidence/2026-07-14T08-47-10-846Z-real-device-qa-ios`에 생성됐고 기기·아티팩트 캡처 3건 통과, 차단 0건이다. 이 패킷은 연결/아티팩트 증거이며 현재 build의 OAuth·알림·장보기 링크·계정 삭제 수동 완료를 확인하지 않는다.
+- 최신 스토어 패킷은 `<repo>/.worktrees/phase6-observability-analytics/output/release-evidence/2026-07-14T08-47-22-362Z-store-console`에 생성됐다. 로컬 업로드 후보는 준비됐지만 Play Console 내부 테스트와 API credential 증거가 없어 상태는 BLOCKED다. 업로드나 콘솔 변경은 수행하지 않았다.
+- 최신 운영자 인계는 `<repo>/.worktrees/phase6-observability-analytics/output/release-evidence/2026-07-14T08-47-32-598Z-operator-handoff`에 5개 패킷을 묶었다. release security는 통과했고 `appstore-submit-gate`, `playstore-submit-gate`, `goal-check` 세 명령은 현재 외부·사람 증거 부족을 그대로 차단했다.
+- iOS 후보 교체 설치는 연결 목록에서 사용 가능한 기기와 오프라인 기기 레코드를 안전하게 한 대로 확정할 수 없어 중단했다. 설치 명령은 실행되지 않았고 기기 상태는 변경하지 않았다. 같은 선택 방식의 반복 재시도는 하지 않으며, 운영자가 대상 기기를 명시하거나 연결 목록이 한 대로 정리된 뒤 별도 작업으로 재개한다.
+- 검증: Phase 7 집중 6/6, 전체 unit 423/423, TypeScript pass, lint 오류 0건(기존 생성물 경고 33건), Phase 5 감사 11/11, CI-safe release gate 19/19, release security 4/4. `pnpm release:goal-check`는 `15 PASS / 3 BLOCKED / 2 MISSING`이며 새 MISSING은 실제 사용자 0명의 Phase 7 비공개 베타다.
+- 잔여 조치: Owner `Content+Food Safety+Legal`, due `before_phase5_publication` — 핵심 20개 실제 조리·사람 검수. Owner `PM+UX+QA`, due `before_public_beta` — 익명 사용자 5~20명 비공개 베타와 공개 승인. Owner `FullStackDev+SRE+Privacy`, due `before_production_monitoring_signoff` — 실제 경보 채널 수신. Owner `FullStackDev+QA+Operator`, due `before_native_release` — 현재 후보 iOS/Android 전체 실기기 QA. Owner `FullStackDev+ReleaseOperator`, due `before_play_internal_testing` — Play internal track 확인.
 
 ## 2026-07-13 Phase 5 사람 테스트 패킷·콘텐츠 버전 고정
 

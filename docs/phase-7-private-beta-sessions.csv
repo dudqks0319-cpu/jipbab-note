@@ -1,0 +1,1 @@
+session_id,tester_code,session_type,app_build_sha,app_build,platform,recipe_id,recipe_version,started_at,ended_at,outcome,beginner_success,confusing_step_count,failed_step,failure_code,error_code,safety_issue,issue_severity,issue_status,resolution_ref,copy_change_id,recommendation_change_id,evidence_path,consent_status
