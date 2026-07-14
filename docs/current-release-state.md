@@ -2,6 +2,16 @@
 
 Updated: 2026-07-14 KST
 
+## 2026-07-14 FE-002 API 응답 런타임 스키마 검증
+
+- 목록·상세·추천·피드백의 성공 응답을 TypeScript cast로 신뢰하지 않고 exact key, 문자열·숫자 범위, UUID·재료 ID·URL, 카테고리, 발행 증거, 재료 수량 일관성, 단계 순서·시간·출처를 런타임에서 검증한다. 새 런타임 의존성은 추가하지 않았다.
+- 네 fetch 경로 모두 HTTP 200이어도 `data`가 계약과 다르면 `INVALID_RESPONSE` 502로 fail-closed한다. 응답 헤더 또는 meta의 request ID는 허용 문자와 128자 상한을 통과할 때만 보존하며, 원본 payload나 알 수 없는 개인정보 필드는 오류·UI로 전달하지 않는다.
+- 회귀 테스트는 잘못된 보유 개수, 숫자 cursor, 중첩 상세 시간, 알 수 없는 `viewerEmail`·`contact`·`debugUserId`, 네 endpoint의 빈 200 응답을 차단하고 정상 목록·상세·추천·피드백 응답은 그대로 보존하는 것을 확인한다.
+- 로컬 메모리 API가 `q=invalid-runtime`에 알 수 없는 개인정보 필드를 포함한 잘못된 HTTP 200을 반환하도록 일시 구성해 인앱 브라우저의 실제 `/recipe` 화면을 확인했다. 카드 0개, 일반화된 재시도 안내, 알 수 없는 필드 미노출, 가로 넘침 0, console error/warning 0건이었다. 정상 URL로 복귀한 뒤 카드 3개와 `필수 재료 5개 중 4개 보유` 문구가 다시 표시됐다. 합성 응답은 앱·DB·Git에 저장하지 않았고 운영/사람 증거로 승격하지 않는다.
+- 전체 단위 테스트 447/447, TypeScript, production build 40/40 경로, release security 4/4를 통과했다. lint는 오류 0건이며 기존 iOS 생성물 경고 33건만 남았다.
+- 구현 커밋 `7dfc17ad5b6e798101fa5e3b15b24bfb29aaf022`를 GitHub에 push하고 같은 깨끗한 archive를 Vercel Preview `dpl_8K1CM8aFuH3BzJAsqpfpGVXD4LhU` (`https://jipbab-note-2kmez3xax-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 배포 메타데이터의 `sourceCommit`은 구현 커밋과 일치하며 `/`와 `/recipe`는 HTTP 200이다.
+- Preview의 `GET /api/v1/recipes?limit=1`은 DB migration 전이라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격, Supabase migration, 실제 조리·실사용자·실기기·스토어·외부 모니터링 증거 변경은 수행하지 않았다.
+
 ## 2026-07-14 FE-006 레시피 카드 실제 메타데이터
 
 - 목록 API가 이미 반환하던 `requiredIngredientCount`, `ownedIngredientCount`, `matchedIngredientIds`, `missingIngredientIds`, `recommendationReason`을 카드 변환과 목록 훅 끝까지 보존한다. 목록에서 재료 이름 문자열로 일치율과 추천 이유를 다시 계산하던 이중 경로를 제거해 서버의 exact 매칭 결과가 화면의 단일 기준이 됐다.
