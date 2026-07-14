@@ -10,7 +10,8 @@ Updated: 2026-07-14 KST
 - `20260714100000_add_recipe_feedback.sql`은 FK·상태 일관성·시간 상한·자유서술 금지·인덱스를 정의하고 app role의 직접 접근을 전부 거부한다. rollback은 권한만 회수하고 이미 모은 비공개 증거를 보존한다.
 - 전체 단위 테스트 433/433, API v1 계약 18/18, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. 인앱 브라우저 실제 컴포넌트 QA에서 390px 가로 넘침 없음, 최소 버튼 44px, 텍스트 입력 0개, 로컬 저장 문구를 확인했다. 화면 증거는 `output/ui-evidence/phase7-recipe-feedback-failure-390.png`다.
 - 실제 로컬 HTTP 음수 경로는 무서명 `401 UNAUTHORIZED`, 허용되지 않은 `GET` 405, 4KB 초과 본문 `413 INVALID_BODY`를 반환했고 401·413에는 redacted envelope, `Cache-Control: no-store`, request ID가 확인됐다.
-- migration 적용, 정상 서버 저장 HTTP 검증, production 배포는 수행하지 않았다. 실제 사용자·실제 조리 증거도 여전히 0건이며 기존 Phase 5/7 게이트를 대체하지 않는다. 상세: `docs/phase-7-recipe-feedback-collection.md`.
+- 구현 커밋 `06d80200a562ad475ebce1a3f889deb5ef4a4ccd`의 깨끗한 archive를 Vercel Preview `dpl_4rXFEAp5FGERiPfVg7dextGaDHRZ` (`https://jipbab-note-kpux6f35z-youngbeens-projects.vercel.app`)로 배포했다. target은 `preview`, 상태는 `READY`, 메타데이터의 `sourceCommit`은 구현 커밋과 일치하며 루트는 HTTP 200이다.
+- Preview의 무서명 `POST /api/v1/recipe-feedback`은 아직 feedback migration과 분산 limiter 저장소가 없으므로 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환했다. migration 적용, 정상 서버 저장 HTTP 검증, Production 승격은 수행하지 않았다. 실제 사용자·실제 조리 증거도 여전히 0건이며 기존 Phase 5/7 게이트를 대체하지 않는다. 상세: `docs/phase-7-recipe-feedback-collection.md`.
 
 ## 2026-07-14 Phase 7 비공개 베타 준비·최신 운영자 인계
 

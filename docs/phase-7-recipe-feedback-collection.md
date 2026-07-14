@@ -37,6 +37,7 @@ Updated: 2026-07-14 KST
 - 화면 증거: `output/ui-evidence/phase7-recipe-feedback-failure-390.png`이며 `output/` 정책에 따라 Git에는 넣지 않는다.
 - 전체 단위 테스트 433/433, API v1 계약 18/18, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다.
 - 실제 로컬 HTTP에서 무서명 `POST`는 redacted `401 UNAUTHORIZED`와 `no-store`·request ID를, `GET`은 `405`, 4KB 초과 본문은 `413 INVALID_BODY`를 반환했다. 운영 로그에는 허용된 endpoint·status·latency·error code·request ID·deployment SHA만 남았다.
+- 구현 커밋 `06d80200a562ad475ebce1a3f889deb5ef4a4ccd`를 Vercel Preview `dpl_4rXFEAp5FGERiPfVg7dextGaDHRZ`로 배포했고 `READY`, target `preview`, root HTTP 200, `sourceCommit` 일치를 확인했다. Preview 피드백 API는 DB 미적용 상태에서 redacted `503 DEPENDENCY_NOT_READY`, `no-store`, `Retry-After: 60`, request ID로 fail-closed했다. Production alias는 승격하지 않았다.
 
 ## 미완료와 재개 조건
 
