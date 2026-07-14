@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Bookmark, Clock3, Heart, PackageCheck, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils } from 'lucide-react'
+import { BadgeCheck, Bookmark, Clock3, Eye, Heart, PackageCheck, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
@@ -35,6 +35,7 @@ import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 import type { RecipeApiV1Sort } from '@/lib/recipe-api-v1-client'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
+import { RECIPE_PREVIEW_CATALOG } from '@/lib/recipe-preview'
 import { DISPLAY_RECIPE_CATEGORIES, type DisplayRecipeCategory, type RecipeCategory } from '@/types'
 
 const curatedRecipeMeta = new Map(
@@ -231,7 +232,9 @@ export default function RecipePage() {
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
               {isAppStoreDemo
                 ? `총 ${baseRecipes.length}개 레시피`
-                : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
+                : publicationEmpty
+                  ? `공개 승인 0개 · 미리보기 ${RECIPE_PREVIEW_CATALOG.length}개`
+                  : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
             </p>
           </div>
           <button
@@ -392,6 +395,8 @@ export default function RecipePage() {
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#ea5a1f] border-t-transparent" />
             <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>
           </div>
+        ) : publicationEmpty ? (
+          <RecipePreviewCatalog />
         ) : error && !isAppStoreDemo ? (
           <div className="sr-only">{error}</div>
         ) : filteredRecipes.length === 0 ? (
@@ -583,26 +588,80 @@ export default function RecipePage() {
         </div>
       </section>
 
-      <section className="mt-5 flex items-center justify-center gap-2 px-5">
-        <button
-          onClick={prevPage}
-          disabled={page <= 1 || loading}
-          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
-        >
-          이전
-        </button>
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#8f7f70]">
-          <SlidersHorizontal size={13} />
-          {page} / {totalPages}
-        </span>
-        <button
-          onClick={nextPage}
-          disabled={page >= totalPages || loading}
-          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
-        >
-          다음
-        </button>
-      </section>
+      {!publicationEmpty ? (
+        <section className="mt-5 flex items-center justify-center gap-2 px-5">
+          <button
+            onClick={prevPage}
+            disabled={page <= 1 || loading}
+            className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          >
+            이전
+          </button>
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-[#8f7f70]">
+            <SlidersHorizontal size={13} />
+            {page} / {totalPages}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={page >= totalPages || loading}
+            className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          >
+            다음
+          </button>
+        </section>
+      ) : null}
+    </div>
+  )
+}
+
+function RecipePreviewCatalog() {
+  return (
+    <div>
+      <div className="rounded-[18px] border border-[#ffd1bd] bg-[#fff5ed] px-4 py-4">
+        <div className="flex items-start gap-2 text-[#9a431c]">
+          <Eye size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <h2 className="text-[15px] font-black">검수 중 미리보기</h2>
+            <p className="mt-1 break-keep text-[12px] font-semibold leading-5">
+              집밥노트가 자체 작성하고 자체 제작 이미지를 사용한 레시피입니다. 실제 조리·안전 검수가 끝날 때까지 추천, 조리 모드, 장보기 연결은 잠겨 있어요.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        {RECIPE_PREVIEW_CATALOG.map((recipe) => (
+          <Link
+            key={recipe.id}
+            href={`/recipe/preview/${recipe.id}`}
+            data-testid="recipe-preview-card"
+            className="overflow-hidden rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]"
+          >
+            <RecipeImage
+              src={recipe.thumbnailUrl ?? ''}
+              alt={`${recipe.name} 완성 예시 이미지`}
+              className="aspect-[4/3] overflow-hidden bg-[#f1e8dc]"
+              imageClassName="h-full w-full object-cover"
+            />
+            <div className="px-3 py-3">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[10px] font-black text-[#d94d19]">
+                <Eye size={11} /> 미리보기
+              </span>
+              <h3 className="mt-2 line-clamp-2 min-h-10 text-[14px] font-black leading-5 text-[#2f2117]">
+                {recipe.name}
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-bold text-[#7d6d5f]">
+                <span className="inline-flex items-center gap-1">
+                  <Clock3 size={11} /> {recipe.totalMinutes}분
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Users size={11} /> {recipe.servings}인분
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }

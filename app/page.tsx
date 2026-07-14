@@ -38,6 +38,7 @@ import { getIngredientDisplayName } from '@/lib/ingredient-display'
 import { withNormalizedIngredientStorage } from '@/lib/ingredient-storage'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
 import { resolveIngredientCatalogIds } from '@/lib/recipe-api-v1-client'
+import { RECIPE_PREVIEW_CATALOG } from '@/lib/recipe-preview'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday, getIngredientPhotoUrl } from '@/lib/utils'
@@ -176,6 +177,13 @@ export default function HomePage() {
       })
   }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group])
   const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 2), [rankedHomeRecipes])
+  const previewRecipes = useMemo(
+    () =>
+      rankRecipeRecommendations(RECIPE_PREVIEW_CATALOG, activeDisplayIngredients)
+        .map(({ recipe, match }) => ({ ...recipe, ...match }))
+        .slice(0, 2),
+    [activeDisplayIngredients],
+  )
   const homeRecipeSections = useMemo(() => {
     const buildSection = (title: string, subtitle: string, recipes: typeof rankedHomeRecipes) => ({
       title,
@@ -261,7 +269,7 @@ export default function HomePage() {
             storageCounts={storageCounts}
           />
         ) : !hasPublishedRecipes && !isLoading ? (
-          <RecipePublicationEmptyCard onRetry={refreshRecipes} />
+          <RecipePublicationEmptyCard previewRecipe={previewRecipes[0] ?? null} />
         ) : (
           <TodayActionCard
             demoMode={isAppStoreDemo}
@@ -353,7 +361,28 @@ export default function HomePage() {
             </div>
           </div>
         ) : homeRecipeSections.length === 0 ? (
-          <EmptyRecommendation demoMode={isAppStoreDemo} hasIngredients={activeDisplayIngredients.length > 0} />
+          !hasPublishedRecipes && previewRecipes.length > 0 ? (
+            <div>
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-[16px] font-black text-[#2f2117]">먼저 보는 레시피</h2>
+                  <p className="mt-1 text-[11px] font-semibold leading-4 text-[#8f7f70]">
+                    자체 작성 레시피를 검수 완료 전에 미리 보여드려요.
+                  </p>
+                </div>
+                <Link href="/recipe" className="inline-flex min-h-11 items-center text-[11px] font-black text-[#a66a17]">
+                  전체
+                </Link>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {previewRecipes.map((recipe) => (
+                  <RecipeHomeCard key={`preview-${recipe.id}`} recipe={recipe} compact previewMode />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyRecommendation demoMode={isAppStoreDemo} hasIngredients={activeDisplayIngredients.length > 0} />
+          )
         ) : (
           homeRecipeSections.map((section) => (
             <div key={section.title}>
@@ -606,6 +635,7 @@ function RecipeHomeCard({
   recipe,
   compact = false,
   scope = 'personal',
+  previewMode = false,
 }: {
   demoMode?: boolean
   recipe: {
@@ -622,9 +652,11 @@ function RecipeHomeCard({
   }
   compact?: boolean
   scope?: 'personal' | 'family'
+  previewMode?: boolean
 }) {
   const missingCount = getEssentialMissingIngredients(recipe.missingIngredients).length
-  const recipeHref = buildHomeHref(`/recipe/${recipe.id}`, {
+  const detailPath = previewMode ? `/recipe/preview/${recipe.id}` : `/recipe/${recipe.id}`
+  const recipeHref = buildHomeHref(detailPath, {
     demoMode,
     params: scope === 'family' ? { scope } : undefined,
   })
@@ -667,12 +699,18 @@ function RecipeHomeCard({
             {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
           </span>
         </div>
-        <p className="mt-1 truncate text-[12px] font-black text-[#3d7b38]">
-          {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
-        </p>
-        <p className="mt-1 truncate text-[12px] font-black text-[#a66a17]">
-          {getBeginnerRecipeBadge(recipe)}
-        </p>
+        {previewMode ? (
+          <p className="mt-1 truncate text-[12px] font-black text-[#d94d19]">검수 중 미리보기</p>
+        ) : (
+          <>
+            <p className="mt-1 truncate text-[12px] font-black text-[#3d7b38]">
+              {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
+            </p>
+            <p className="mt-1 truncate text-[12px] font-black text-[#a66a17]">
+              {getBeginnerRecipeBadge(recipe)}
+            </p>
+          </>
+        )}
         {!compact ? (
           <div className="mt-2 grid grid-cols-[1fr_1fr] gap-1.5">
             <Link
@@ -749,24 +787,32 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
   )
 }
 
-function RecipePublicationEmptyCard({ onRetry }: { onRetry: () => void }) {
+function RecipePublicationEmptyCard({
+  previewRecipe,
+}: {
+  previewRecipe: {
+    id: string
+    name: string
+    totalMinutes?: number | null
+  } | null
+}) {
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
-      <p className="text-[12px] font-bold text-[#d94d19]">레시피 검수 중</p>
+      <p className="text-[12px] font-bold text-[#d94d19]">검수 중 미리보기</p>
       <h2 className="mt-2 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">
-        현재 공개 가능한 레시피를 준비 중이에요.
+        레시피를 먼저 둘러볼 수 있어요.
       </h2>
       <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
-        출처, 계량, 안전 안내와 실제 조리 확인을 마친 레시피만 추천합니다.
+        자체 작성한 레시피를 미리 보여드려요. 실제 조리 검수가 끝날 때까지 추천과 조리 모드는 잠겨 있어요.
       </p>
-      <button
-        type="button"
-        onClick={onRetry}
+      <Link
+        href={previewRecipe ? `/recipe/preview/${previewRecipe.id}` : '/recipe'}
         className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#2f2117] px-4 text-[14px] font-black text-white"
       >
-        <RefreshCw size={16} />
-        다시 확인
-      </button>
+        {previewRecipe
+          ? `${previewRecipe.name} · ${previewRecipe.totalMinutes ?? '시간 미표시'}분 보기`
+          : '레시피 미리보기 열기'}
+      </Link>
     </section>
   )
 }
