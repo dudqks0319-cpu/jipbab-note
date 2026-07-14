@@ -9,12 +9,12 @@ import {
   AlertTriangle,
   Bell,
   Clock3,
+  Gauge,
   Plus,
   Refrigerator,
   RefreshCw,
   Search,
   ShoppingBasket,
-  Star,
   Utensils,
 } from 'lucide-react'
 
@@ -37,6 +37,7 @@ import { buildHomeHref } from '@/lib/home-actions'
 import { getIngredientDisplayName } from '@/lib/ingredient-display'
 import { withNormalizedIngredientStorage } from '@/lib/ingredient-storage'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
+import { getRecipeDifficultyLabel } from '@/lib/recipe-list-labels'
 import { resolveIngredientCatalogIds } from '@/lib/recipe-api-v1-client'
 import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
@@ -632,6 +633,7 @@ function RecipeHomeCard({
   })
   const thumbnailUrl = recipe.thumbnailUrl
   const isGeneratedRecipeImage = isBeginnerRecipeGeneratedImage(thumbnailUrl)
+  const difficultyLabel = getRecipeDifficultyLabel(recipe.difficultyLevel)
   return (
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
@@ -654,16 +656,22 @@ function RecipeHomeCard({
         <Link href={recipeHref} className="block min-w-0">
           <h3 className="line-clamp-2 min-h-8 text-[12px] font-black leading-4 text-[#2f2117]">{recipe.name}</h3>
         </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
-          <span className="inline-flex items-center gap-1">
-            <Clock3 size={10} />
-            {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '시간 미표시'}
-          </span>
-          <span className="inline-flex items-center gap-1 text-[#a66a17]">
-            <Star size={10} className="shrink-0 fill-[#f0a51c] text-[#f0a51c]" />
-            {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
-          </span>
-        </div>
+        {typeof recipe.totalMinutes === 'number' || difficultyLabel ? (
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
+            {typeof recipe.totalMinutes === 'number' ? (
+              <span className="inline-flex items-center gap-1">
+                <Clock3 size={10} />
+                {recipe.totalMinutes}분
+              </span>
+            ) : null}
+            {difficultyLabel ? (
+              <span className="inline-flex items-center gap-1 text-[#a66a17]">
+                <Gauge size={10} className="shrink-0" />
+                난이도 {difficultyLabel}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
           {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
         </p>

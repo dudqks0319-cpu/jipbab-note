@@ -5,10 +5,10 @@ import {
   BookOpenText,
   ChevronLeft,
   Clock3,
+  Gauge,
   ShieldCheck,
   ShoppingBag,
   ShoppingBasket,
-  Star,
   Users,
   Wrench,
 } from "lucide-react";
@@ -139,7 +139,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <div className="mt-6 grid grid-cols-4 gap-2 text-center">
             <DetailMetric icon={<Clock3 size={16} />} label={`${recipe.totalMinutes}분`} />
             <DetailMetric icon={<Users size={16} />} label={`${recipe.servings}인분`} />
-            <DetailMetric icon={<Star size={16} />} label={difficultyLabel} />
+            <DetailMetric icon={<Gauge size={16} />} label={difficultyLabel} />
             <DetailMetric icon={<ShoppingBasket size={16} />} label={`${ingredientDetails.length}개`} />
           </div>
         </div>

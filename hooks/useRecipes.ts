@@ -6,8 +6,9 @@ import { useIngredients } from "@/hooks/useIngredients";
 import {
   fetchRecipeListV1,
   RecipeApiV1ClientError,
-  recipeApiV1CardToRecord,
+  recipeApiV1CardToMatch,
   resolveIngredientCatalogIds,
+  type RecipeApiV1MatchedCard,
   type RecipeApiV1Sort,
 } from "@/lib/recipe-api-v1-client";
 import { resolveLegacyRecipeCategory } from "@/lib/recipe-category-taxonomy";
@@ -15,18 +16,11 @@ import {
   normalizeRecipeListPaginationState,
   type RecipeListPaginationState,
 } from "@/lib/recipe-list-navigation-state";
-import {
-  buildRecipeRecommendationReason,
-  findExpiringMatchedIngredients,
-  rankRecipeRecommendations,
-  type RecipeRecommendationScore,
-} from "@/lib/matching";
 import { filterPublicationApprovedRecipes } from "@/lib/recipe-publication";
 import type {
   RecipeCategory,
   RecipeCategoryCounts,
   RecipeRecord,
-  RecipeWithMatch,
 } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -45,7 +39,7 @@ function recipeLoadErrorMessage(error: unknown): string {
 }
 
 export interface UseRecipeCatalogResult {
-  recipes: RecipeRecord[];
+  recipes: RecipeApiV1MatchedCard[];
   loading: boolean;
   hasLoaded: boolean;
   loadedPage: number | null;
@@ -66,10 +60,7 @@ export interface UseRecipeCatalogResult {
   refresh: () => void;
 }
 
-export type RecommendedRecipe = RecipeWithMatch & {
-  recommendationScore: RecipeRecommendationScore;
-  recommendationReason: string;
-};
+export type RecommendedRecipe = RecipeApiV1MatchedCard;
 
 export interface UseRecipesResult extends UseRecipeCatalogResult {
   recipes: RecommendedRecipe[];
@@ -103,7 +94,7 @@ export function useRecipeCatalog(
   const safePageSize = Math.min(Math.max(Math.floor(pageSize), 1), 50);
   const ingredientKey = (options.ingredientIds ?? []).join(",");
   const sort = options.sort ?? "recommended";
-  const [recipes, setRecipes] = useState<RecipeRecord[]>([]);
+  const [recipes, setRecipes] = useState<RecipeApiV1MatchedCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadedPage, setLoadedPage] = useState<number | null>(null);
@@ -167,7 +158,7 @@ export function useRecipeCatalog(
       if (requestId !== requestIdRef.current) return;
 
       const mapped = filterPublicationApprovedRecipes(
-        data.recipes.map(recipeApiV1CardToRecord),
+        data.recipes.map(recipeApiV1CardToMatch),
       );
       setRecipes(mapped);
       setNextCursor(data.nextCursor);
@@ -329,30 +320,9 @@ export function useRecipes(
     [activeIngredients],
   );
   const catalog = useRecipeCatalog(pageSize, { ingredientIds, ...options });
-  const approvedRecipes = useMemo(
+  const recipes = useMemo<RecommendedRecipe[]>(
     () => filterPublicationApprovedRecipes(catalog.recipes),
     [catalog.recipes],
-  );
-  const recipes = useMemo<RecommendedRecipe[]>(
-    () =>
-      rankRecipeRecommendations(approvedRecipes, activeIngredients).map(({ recipe, match, score }) => {
-        const expiringIngredients = findExpiringMatchedIngredients(
-          match.matchedIngredients,
-          activeIngredients,
-        );
-        return {
-          ...recipe,
-          ...match,
-          recommendationScore: score,
-          recommendationReason: buildRecipeRecommendationReason({
-            recipeName: recipe.name,
-            matchedIngredients: match.matchedIngredients,
-            missingIngredients: match.missingIngredients,
-            expiringIngredients,
-          }),
-        };
-      }),
-    [activeIngredients, approvedRecipes],
   );
 
   return { ...catalog, recipes, ingredientsLoading };

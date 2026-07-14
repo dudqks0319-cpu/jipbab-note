@@ -3,13 +3,14 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { BadgeCheck, Bookmark, Clock3, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Star, Users, Utensils } from 'lucide-react'
+import { BadgeCheck, Bookmark, Clock3, Gauge, Heart, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
 import { CURATED_JIPBAB_RECIPES } from '@/lib/curated-recipes'
 import {
   RECIPE_QUICK_FILTERS,
+  getRecipeCardMetadataLabels,
   getReadinessBadge,
   matchesRecipeQuickFilter,
   type RecipeQuickFilter,
@@ -583,6 +584,20 @@ export default function RecipePage() {
                 curated?.trustLabel,
               )
               const beginnerVerified = recipe.publicationEvidence?.reviewedForBeginner === true
+              const requiredIngredientCount =
+                'requiredIngredientCount' in recipe && typeof recipe.requiredIngredientCount === 'number'
+                  ? recipe.requiredIngredientCount
+                  : recipe.totalRecipeIngredients
+              const ownedIngredientCount =
+                'ownedIngredientCount' in recipe && typeof recipe.ownedIngredientCount === 'number'
+                  ? recipe.ownedIngredientCount
+                  : recipe.matchedIngredients.length
+              const metadataLabels = getRecipeCardMetadataLabels({
+                difficultyLevel: recipe.difficultyLevel,
+                requiredIngredientCount,
+                ownedIngredientCount,
+                missingIngredientCount: recipe.missingIngredients.length,
+              })
               const recommendationReason = 'recommendationReason' in recipe && typeof recipe.recommendationReason === 'string'
                 ? recipe.recommendationReason
                 : readyLabel.text
@@ -644,18 +659,30 @@ export default function RecipePage() {
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#7d6d5f]">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock3 size={12} />
-                          {typeof minutes === 'number' ? `${minutes}분` : '시간 미표시'}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Users size={12} />
-                          {typeof servings === 'number' ? `${servings}인분` : '인분 미표시'}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-[#d94d19]">
-                          <Star size={12} className="fill-[#f0a51c] text-[#f0a51c]" />
-                          {recipe.matchRate}% ({recipe.totalRecipeIngredients})
-                        </span>
+                        {typeof minutes === 'number' ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Clock3 size={12} />
+                            {minutes}분
+                          </span>
+                        ) : null}
+                        {typeof servings === 'number' ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Users size={12} />
+                            {servings}인분
+                          </span>
+                        ) : null}
+                        {metadataLabels.difficultyLabel ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Gauge size={12} />
+                            난이도 {metadataLabels.difficultyLabel}
+                          </span>
+                        ) : null}
+                        {metadataLabels.ownershipLabel ? (
+                          <span className="inline-flex items-center gap-1 text-[#3d7b38]">
+                            <ShoppingBasket size={12} />
+                            {metadataLabels.ownershipLabel}
+                          </span>
+                        ) : null}
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black ${readyLabel.tone}`}>
                           <ShoppingBasket size={10} />
                           {readyLabel.text}
@@ -675,10 +702,12 @@ export default function RecipePage() {
                       <p className="mt-2 text-[11px] font-semibold text-[#a69585]">
                         {recommendationReason}
                       </p>
-                      <p className="mt-1 text-[11px] font-semibold text-[#a69585]">
-                        부족 재료 {recipe.missingIngredients.length}개 · 보유 {recipe.matchedIngredients.length}개
-                        {beginnerVerified ? ' · 계량/상태 확인 포함' : ''}
-                      </p>
+                      {metadataLabels.missingLabel ? (
+                        <p className="mt-1 text-[11px] font-semibold text-[#a69585]">
+                          {metadataLabels.missingLabel}
+                          {beginnerVerified ? ' · 계량/상태 확인 포함' : ''}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </article>

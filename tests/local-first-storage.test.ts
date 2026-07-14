@@ -108,6 +108,7 @@ test("recipe hook uses the publication-gated API v1 without a stale local fallba
   const recipeHook = readFileSync(new URL("../hooks/useRecipes.ts", import.meta.url), "utf8");
 
   assert.match(recipeHook, /fetchRecipeListV1/);
-  assert.match(recipeHook, /recipeApiV1CardToRecord/);
+  assert.match(recipeHook, /recipeApiV1CardToMatch/);
+  assert.doesNotMatch(recipeHook, /rankRecipeRecommendations/);
   assert.doesNotMatch(recipeHook, /listCachedRecipePage|cacheRecipes|CURATED_RECIPE_RECORDS/);
 });

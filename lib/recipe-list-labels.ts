@@ -12,6 +12,47 @@ export const RECIPE_QUICK_FILTERS: Array<{ id: RecipeQuickFilter; label: string 
   { id: "microwave", label: "전자레인지" },
 ];
 
+function asNonNegativeInteger(value: number): number | null {
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+export function getRecipeDifficultyLabel(difficultyLevel?: number | null): string | null {
+  if (difficultyLevel === 1) return "쉬움";
+  if (difficultyLevel === 2) return "보통";
+  if (difficultyLevel === 3) return "어려움";
+  return null;
+}
+
+export function getRecipeCardMetadataLabels(input: {
+  difficultyLevel?: number | null;
+  requiredIngredientCount: number;
+  ownedIngredientCount: number;
+  missingIngredientCount: number;
+}): {
+  difficultyLabel: string | null;
+  ownershipLabel: string | null;
+  missingLabel: string | null;
+} {
+  const requiredCount = asNonNegativeInteger(input.requiredIngredientCount);
+  const ownedCount = asNonNegativeInteger(input.ownedIngredientCount);
+  const missingCount = asNonNegativeInteger(input.missingIngredientCount);
+  const validOwnership =
+    requiredCount !== null && ownedCount !== null && ownedCount <= requiredCount;
+
+  return {
+    difficultyLabel: getRecipeDifficultyLabel(input.difficultyLevel),
+    ownershipLabel: validOwnership
+      ? `필수 재료 ${requiredCount}개 중 ${ownedCount}개 보유`
+      : null,
+    missingLabel:
+      missingCount === null
+        ? null
+        : missingCount === 0
+          ? "부족한 필수 재료 없음"
+          : `부족한 필수 재료 ${missingCount}개`,
+  };
+}
+
 export function getReadinessBadge(
   missingCount: number,
   matchedCount: number,

@@ -12,6 +12,8 @@ import {
 } from "../lib/matching.ts";
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
 import {
+  getRecipeCardMetadataLabels,
+  getRecipeDifficultyLabel,
   getReadinessBadge,
   isBeginnerVerifiedRecipe,
   matchesRecipeQuickFilter,
@@ -44,6 +46,49 @@ test("calculateRecipeIngredientMatch keeps the existing match result shape", () 
   assert.equal(match.matchRate, 67);
   assert.deepEqual(match.matchedIngredients, ["계란", "파"]);
   assert.deepEqual(match.missingIngredients, ["간장"]);
+});
+
+test("recipe card labels show exact metadata without inventing ratings", () => {
+  assert.equal(getRecipeDifficultyLabel(1), "쉬움");
+  assert.equal(getRecipeDifficultyLabel(2), "보통");
+  assert.equal(getRecipeDifficultyLabel(3), "어려움");
+  assert.equal(getRecipeDifficultyLabel(null), null);
+
+  assert.deepEqual(
+    getRecipeCardMetadataLabels({
+      difficultyLevel: 2,
+      requiredIngredientCount: 5,
+      ownedIngredientCount: 4,
+      missingIngredientCount: 1,
+    }),
+    {
+      difficultyLabel: "보통",
+      ownershipLabel: "필수 재료 5개 중 4개 보유",
+      missingLabel: "부족한 필수 재료 1개",
+    },
+  );
+  assert.equal(
+    getRecipeCardMetadataLabels({
+      difficultyLevel: 1,
+      requiredIngredientCount: 3,
+      ownedIngredientCount: 3,
+      missingIngredientCount: 0,
+    }).missingLabel,
+    "부족한 필수 재료 없음",
+  );
+});
+
+test("recipe surfaces do not style difficulty or pantry fit as a user rating", () => {
+  const listSource = readFileSync(new URL("../app/recipe/page.tsx", import.meta.url), "utf8");
+  const homeSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const detailSource = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
+
+  assert.doesNotMatch(listSource, /\bStar\b/);
+  assert.doesNotMatch(homeSource, /\bStar\b/);
+  assert.doesNotMatch(detailSource, /\bStar\b/);
+  assert.match(listSource, /getRecipeCardMetadataLabels/);
+  assert.match(listSource, /ownershipLabel/);
+  assert.match(listSource, /missingLabel/);
 });
 
 test("ranking prefers recipes with fewer missing ingredients at the same match rate", () => {

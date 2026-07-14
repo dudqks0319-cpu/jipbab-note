@@ -47,6 +47,12 @@ export interface RecipeApiV1Card {
   publicationEvidence: RecipePublicationEvidence;
 }
 
+export type RecipeApiV1MatchedCard = RecipeWithMatch & {
+  requiredIngredientCount: number;
+  ownedIngredientCount: number;
+  recommendationReason: string;
+};
+
 export interface RecipeApiV1ListData {
   recipes: RecipeApiV1Card[];
   nextCursor: string | null;
@@ -248,7 +254,7 @@ export function recipeApiV1CardToRecord(card: RecipeApiV1Card): RecipeRecord {
   };
 }
 
-export function recipeApiV1CardToMatch(card: RecipeApiV1Card): RecipeWithMatch {
+export function recipeApiV1CardToMatch(card: RecipeApiV1Card): RecipeApiV1MatchedCard {
   const matchedIngredients = card.matchedIngredientIds.map(ingredientCatalogName);
   const missingIngredients = card.missingIngredientIds.map(ingredientCatalogName);
   const ingredientList = [...new Set([...matchedIngredients, ...missingIngredients])];
@@ -262,6 +268,9 @@ export function recipeApiV1CardToMatch(card: RecipeApiV1Card): RecipeWithMatch {
     matchedIngredients,
     missingIngredients,
     totalRecipeIngredients: card.requiredIngredientCount,
+    requiredIngredientCount: card.requiredIngredientCount,
+    ownedIngredientCount: card.ownedIngredientCount,
+    recommendationReason: card.recommendationReason,
   };
 }
 

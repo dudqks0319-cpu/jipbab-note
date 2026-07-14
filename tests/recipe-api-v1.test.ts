@@ -17,7 +17,10 @@ import {
   type RecipeV1IngredientRow,
   type RecipeV1StepRow,
 } from "../lib/recipe-api-v1-repository.ts";
-import { recipeApiV1DetailToRecord } from "../lib/recipe-api-v1-client.ts";
+import {
+  recipeApiV1CardToMatch,
+  recipeApiV1DetailToRecord,
+} from "../lib/recipe-api-v1-client.ts";
 
 const REVIEWED_AT = "2026-07-10T05:00:00.000Z";
 
@@ -109,6 +112,27 @@ test("API v1 cards include exact owned and missing ingredient reasons", () => {
   assert.deepEqual(result.recipes[0].missingIngredientIds, ["veg-onion"]);
   assert.equal(result.recipes[0].recommendationReason, "재료 1개만 더 있으면 만들 수 있어요.");
   assert.equal(result.nextCursor, null);
+});
+
+test("API v1 card mapping preserves exact pantry-fit metadata for the UI", () => {
+  const row = recipeRow();
+  const card = buildPublicRecipeListResult(
+    [row],
+    ingredients(row.id),
+    query({ ingredientIds: ["dairy-egg"] }),
+    97,
+  ).recipes[0];
+
+  assert.ok(card);
+  const mapped = recipeApiV1CardToMatch(card);
+
+  assert.equal(mapped.requiredIngredientCount, 2);
+  assert.equal(mapped.ownedIngredientCount, 1);
+  assert.equal(mapped.totalRecipeIngredients, 2);
+  assert.equal(mapped.matchRate, 50);
+  assert.deepEqual(mapped.matchedIngredients, ["계란"]);
+  assert.deepEqual(mapped.missingIngredients, ["양파"]);
+  assert.equal(mapped.recommendationReason, "재료 1개만 더 있으면 만들 수 있어요.");
 });
 
 test("API v1 cards reject excluded ingredients and incomplete publication rows", () => {
