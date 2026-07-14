@@ -21,13 +21,34 @@ export const RECIPE_FEEDBACK_FAILURE_REASONS = [
 export type RecipeFeedbackFailureReason =
   (typeof RECIPE_FEEDBACK_FAILURE_REASONS)[number]["code"];
 
+export const RECIPE_FEEDBACK_TASTE_RESULTS = [
+  { code: "delicious", label: "맛있게 완성됐어요" },
+  { code: "acceptable", label: "먹을 수 있지만 아쉬워요" },
+  { code: "poor", label: "먹기 어려웠어요" },
+] as const;
+
+export type RecipeFeedbackTasteResult =
+  (typeof RECIPE_FEEDBACK_TASTE_RESULTS)[number]["code"];
+
+export const RECIPE_FEEDBACK_REPEAT_INTENTS = [
+  { code: "yes", label: "다시 만들고 싶어요" },
+  { code: "after_adjustment", label: "조금 고친 뒤 다시 만들래요" },
+  { code: "no", label: "다시 만들지 않을래요" },
+] as const;
+
+export type RecipeFeedbackRepeatIntent =
+  (typeof RECIPE_FEEDBACK_REPEAT_INTENTS)[number]["code"];
+
 export type RecipeFeedbackV1Input = {
   clientSubmissionId: string;
   recipeId: string;
   recipeVersion: number;
   completionStatus: RecipeFeedbackCompletionStatus;
+  difficultStepOrder: number | null;
   failedStepOrder: number | null;
   reasonCode: RecipeFeedbackFailureReason | null;
+  tasteResult: RecipeFeedbackTasteResult | null;
+  repeatIntent: RecipeFeedbackRepeatIntent | null;
   actualDurationSeconds: number | null;
 };
 
@@ -45,8 +66,11 @@ const INPUT_KEYS = [
   "recipeId",
   "recipeVersion",
   "completionStatus",
+  "difficultStepOrder",
   "failedStepOrder",
   "reasonCode",
+  "tasteResult",
+  "repeatIntent",
   "actualDurationSeconds",
 ] as const;
 const INPUT_KEY_SET = new Set<string>(INPUT_KEYS);
@@ -84,8 +108,11 @@ export function parseRecipeFeedbackV1Input(value: unknown): RecipeFeedbackV1Inpu
   const recipeId = value.recipeId;
   const recipeVersion = value.recipeVersion;
   const completionStatus = value.completionStatus;
+  const difficultStepOrder = value.difficultStepOrder;
   const failedStepOrder = value.failedStepOrder;
   const reasonCode = value.reasonCode;
+  const tasteResult = value.tasteResult;
+  const repeatIntent = value.repeatIntent;
   const actualDurationSeconds = value.actualDurationSeconds;
 
   if (typeof clientSubmissionId !== "string" || !UUID_PATTERN.test(clientSubmissionId)) {
@@ -109,6 +136,21 @@ export function parseRecipeFeedbackV1Input(value: unknown): RecipeFeedbackV1Inpu
   ) {
     fail("실제 조리시간을 확인해 주세요.");
   }
+  if (difficultStepOrder !== null && !isBoundedInteger(difficultStepOrder, 1, MAX_STEP_ORDER)) {
+    fail("어려웠던 단계를 확인해 주세요.");
+  }
+  if (
+    tasteResult !== null
+    && !RECIPE_FEEDBACK_TASTE_RESULTS.some((result) => result.code === tasteResult)
+  ) {
+    fail("맛 결과를 확인해 주세요.");
+  }
+  if (
+    repeatIntent !== null
+    && !RECIPE_FEEDBACK_REPEAT_INTENTS.some((intent) => intent.code === repeatIntent)
+  ) {
+    fail("다시 만들 의향을 확인해 주세요.");
+  }
 
   if (normalizedCompletionStatus === "failed") {
     if (!isBoundedInteger(failedStepOrder, 1, MAX_STEP_ORDER)) {
@@ -120,8 +162,16 @@ export function parseRecipeFeedbackV1Input(value: unknown): RecipeFeedbackV1Inpu
     ) {
       fail("어려웠던 이유를 확인해 주세요.");
     }
+    if (difficultStepOrder !== null || tasteResult !== null || repeatIntent !== null) {
+      fail("실패한 조리에는 완성 결과를 보낼 수 없습니다.");
+    }
   } else if (failedStepOrder !== null || reasonCode !== null) {
     fail("완성한 조리에는 실패 단계나 이유를 보낼 수 없습니다.");
+  } else if (
+    normalizedCompletionStatus === "completed_independently"
+    && difficultStepOrder !== null
+  ) {
+    fail("어려움 없이 완성한 조리에는 어려웠던 단계를 보낼 수 없습니다.");
   }
 
   return {
@@ -129,8 +179,11 @@ export function parseRecipeFeedbackV1Input(value: unknown): RecipeFeedbackV1Inpu
     recipeId,
     recipeVersion,
     completionStatus: normalizedCompletionStatus,
+    difficultStepOrder: difficultStepOrder as number | null,
     failedStepOrder: failedStepOrder as number | null,
     reasonCode: reasonCode as RecipeFeedbackFailureReason | null,
+    tasteResult: tasteResult as RecipeFeedbackTasteResult | null,
+    repeatIntent: repeatIntent as RecipeFeedbackRepeatIntent | null,
     actualDurationSeconds: actualDurationSeconds as number | null,
   };
 }

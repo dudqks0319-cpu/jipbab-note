@@ -4,7 +4,8 @@
 
 ## 2026-07-14 후속 상태
 
-- 이 문서 작성 당시 후속 범위였던 `/api/v1/recipe-feedback`과 실패 단계 수집은 로컬 구현을 마쳤다. migration 적용과 staging HTTP 검증은 아직 수행하지 않았다.
+- 이 문서 작성 당시 후속 범위였던 `/api/v1/recipe-feedback`, 실패 단계, 어려웠던 단계, 맛 결과, 다시 만들 의향 수집은 로컬 구현을 마쳤다. migration 적용과 staging HTTP 검증은 아직 수행하지 않았다.
+- 모든 단계 완료 후 실제 조리시간·보관/재가열 안내·즐겨찾기·냉장고 재료 소진을 한 완료 화면에서 제공한다. 재료는 사용자가 선택하고 실행한 경우에만 `consume` 기록으로 남으며 냉장고에서 되돌릴 수 있다.
 - 여러 기기 간 진행상태를 동기화하는 `/api/v1/recipe-progress`는 여전히 미구현이다.
 - 현재 계약과 증거는 `docs/phase-7-recipe-feedback-collection.md`를 기준으로 한다.
 
@@ -47,16 +48,16 @@
 - 역사적으로 종료된 timer를 reload할 때 진동·AudioContext를 다시 실행하던 console 경고를 발견해, hydrated expired timer를 이미 알림 처리된 상태로 복원했다. 재검증 console error/warning은 0건이었다.
 - Evidence: `output/ui-evidence/phase4-cook-mode-restored-390.png`.
 
-## 데이터베이스·API·배포
+## 2026-07-11 당시 데이터베이스·API·배포
 
 - 데이터베이스 변경 없음.
-- 새 API 없음. 계획서의 server-side `/api/v1/recipe-progress`와 `/api/v1/recipe-feedback`는 인증·DB migration이 필요한 후속 범위로 남겼다.
+- 당시 새 API는 없었다. 이후 `/api/v1/recipe-feedback`과 두 개의 비공개 feedback migration을 구현했으며 `/api/v1/recipe-progress`는 여전히 후속 범위다.
 - 현재 구현은 기기 로컬 오프라인 진행 복원이며 다른 기기 동기화는 주장하지 않는다.
 - 이후 content commit `a1b7e0f`를 GitHub에 push하고 Vercel production deployment `dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku`로 배포했다. Supabase migration과 server secret은 변경하지 않았다.
 
 ## 보안 게이트와 잔여 위험
 
-- secret, auth token, PII를 저장하지 않는다. local key에는 recipe ID, step index, timer, 완료 시각, 3값 피드백만 저장한다.
+- secret, auth token, PII를 저장하지 않는다. local key에는 recipe ID, step index, timer, 완료 시각과 고정 선택형 피드백만 저장한다.
 - 저장 입력은 버전·타입·step allowlist·timer 상한으로 검증한다.
 - 새 의존성 없음. 기존 release security gate 상태를 유지한다.
 - `P0 / FullStackDev+QA / staging v2 fixture 후`: 실제 공개 상세에서 timer, 앱 background/foreground, 화면 잠금, iOS/Android 진동·소리를 실기기로 재검증해야 한다.

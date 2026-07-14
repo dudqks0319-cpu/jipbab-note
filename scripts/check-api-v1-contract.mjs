@@ -14,6 +14,8 @@ const files = {
   rollback: "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql",
   feedbackMigration: "supabase/migrations/20260714100000_add_recipe_feedback.sql",
   feedbackRollback: "supabase/rollbacks/20260714100000_add_recipe_feedback.sql",
+  feedbackDetailsMigration: "supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql",
+  feedbackDetailsRollback: "supabase/rollbacks/20260714110000_extend_recipe_feedback_completion_details.sql",
   schema: "supabase/schema.sql",
   envExample: ".env.example",
 };
@@ -149,6 +151,9 @@ check(
     source.feedbackRoute.includes('.from("recipe_feedback").insert') &&
     source.feedbackRoute.includes('respond.error("UNAUTHORIZED"') &&
     source.feedbackRoute.includes('error?.code === "23505"') &&
+    source.feedbackRoute.includes("difficult_step_order: input.difficultStepOrder") &&
+    source.feedbackRoute.includes("taste_result: input.tasteResult") &&
+    source.feedbackRoute.includes("repeat_intent: input.repeatIntent") &&
     source.feedback.includes("INPUT_KEY_SET") &&
     !source.feedback.includes('"comment"'),
   "feedback requires a verified signed session, exact bounded fields, and idempotent server-only writes",
@@ -220,9 +225,29 @@ check(
 check(
   "recipe feedback rollback",
   source.feedbackRollback.includes("revoke all on table public.recipe_feedback") &&
+    source.feedbackDetailsRollback.includes("revoke all on table public.recipe_feedback") &&
+    !/drop\s+(?:table|column)|truncate/i.test(source.feedbackDetailsRollback) &&
     !/drop\s+table|truncate/i.test(source.feedbackRollback),
   "rollback revokes runtime access while retaining private beta evidence",
   "feedback rollback must preserve collected evidence and remove runtime access",
+);
+
+check(
+  "recipe feedback completion details",
+  source.feedbackDetailsMigration.includes("add column if not exists difficult_step_order") &&
+    source.feedbackDetailsMigration.includes("add column if not exists taste_result") &&
+    source.feedbackDetailsMigration.includes("add column if not exists repeat_intent") &&
+    source.feedbackDetailsMigration.includes("recipe_feedback_difficult_step_consistent") &&
+    source.feedbackDetailsMigration.includes("recipe_feedback_taste_result_allowed") &&
+    source.feedbackDetailsMigration.includes("recipe_feedback_repeat_intent_allowed") &&
+    source.feedbackDetailsMigration.includes("recipe_feedback_completion_details_consistent") &&
+    source.feedbackDetailsMigration.includes("from public, anon, authenticated") &&
+    source.feedbackDetailsMigration.includes("to service_role") &&
+    !/grant\s+(?:all|insert|select)[^;]*\bto\s+(?:anon|authenticated)\b/i.test(
+      source.feedbackDetailsMigration,
+    ),
+  "completion details are bounded fixed choices and remain service-role only",
+  "completion detail columns, constraints, or least-privilege grants are incomplete",
 );
 
 check(
@@ -238,7 +263,8 @@ check(
   "recipe feedback schema synchronization",
   source.schema.includes("PHASE7_RECIPE_FEEDBACK_SCHEMA_START") &&
     source.schema.includes("public.recipe_feedback") &&
-    source.schema.includes("recipe_feedback_no_free_text"),
+    source.schema.includes("recipe_feedback_no_free_text") &&
+    source.schema.includes("recipe_feedback_completion_details_consistent"),
   "Phase 7 feedback storage is mirrored into the canonical schema",
   "canonical schema is missing the Phase 7 feedback contract",
 );
@@ -258,6 +284,7 @@ const requiredTests = [
   "tests/recipe-recommendation-v1.test.ts",
   "tests/recipe-feedback.test.ts",
   "tests/recipe-feedback-contract.test.ts",
+  "tests/recipe-cook-completion.test.ts",
 ];
 check(
   "API v1 regression coverage",

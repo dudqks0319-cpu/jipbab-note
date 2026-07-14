@@ -8,7 +8,7 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 ## 현재 차단
 
 - Supabase migration history: remote 기록은 `20260508143719`에서 멈추지만 이후 일부 SQL은 운영에 수동 적용된 흔적이 있다. live schema와 로컬 migration을 대조해 이력을 복구하기 전에는 `supabase db push` 또는 SQL bundle 실행을 하지 않는다.
-- Phase 0/1/2와 Phase 7 feedback DB rollout: publication/auth migrations, Phase 1 schema/catalog, `20260710160000_add_distributed_api_rate_limits.sql`, `20260714100000_add_recipe_feedback.sql`은 로컬 검증만 완료됐고 운영에는 미적용이다. 현재 운영의 미검수 레시피 노출과 device-header 권한 경로는 앱/DB 동시 rollout 전까지 남으며, capture/restore, 분산 RPC, 비공개 feedback 권한의 staging PostgreSQL 실행 증거가 아직 없다.
+- Phase 0/1/2와 Phase 7 feedback DB rollout: publication/auth migrations, Phase 1 schema/catalog, `20260710160000_add_distributed_api_rate_limits.sql`, `20260714100000_add_recipe_feedback.sql`, `20260714110000_extend_recipe_feedback_completion_details.sql`은 로컬 검증만 완료됐고 운영에는 미적용이다. 현재 운영의 미검수 레시피 노출과 device-header 권한 경로는 앱/DB 동시 rollout 전까지 남으며, capture/restore, 분산 RPC, 비공개 feedback 권한의 staging PostgreSQL 실행 증거가 아직 없다.
 - 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
 - Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
 - App Store Connect/TestFlight: 2026-07-10 `pnpm check:store-console-confirmation -- --platform=appstore` 재확인에서 build `2026062602`가 `VALID`이고 내부 TestFlight 그룹이 존재했습니다. 제출 직전에는 같은 명령 또는 App Store Connect API로 다시 확인합니다.
@@ -21,7 +21,7 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 
 - live schema에서 `20260521160347` 이후 로컬 migration 각각의 실제 적용 상태를 확인하고 remote migration history를 안전하게 복구합니다.
 - 출력이나 공유 로그에 DB 연결 자격증명이 노출되지 않는 경로로 복원 가능한 운영 백업을 만들고 실제 복원 절차를 확인합니다.
-- staging에 `supabase/migrations/20260710130000_gate_recipe_publication.sql`, `supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql`, `supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql`, `supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql`, `supabase/migrations/20260714100000_add_recipe_feedback.sql`을 순서대로 적용합니다.
+- staging에 `supabase/migrations/20260710130000_gate_recipe_publication.sql`, `supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql`, `supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql`, `supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql`, `supabase/migrations/20260714100000_add_recipe_feedback.sql`, `supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql`을 순서대로 적용합니다.
 - staging에서 version capture/edit/restore 왕복, 같은 recipe 안의 step-ingredient 무결성, alias 유일성, non-destructive rollback을 실제 PostgreSQL로 검증합니다.
 - staging에서 무서명 요청, 위조 `x-device-id`, 다른 signed user, anonymous user의 family/community write가 모두 차단되는지 확인합니다.
 - staging 서버에 32자 이상의 server-only `API_RATE_LIMIT_HMAC_SECRET`을 설정하고 목록·상세·추천 API의 정상, `429`, `503`, 잘못된 입력 경로를 검증합니다. `POST /api/v1/recipe-feedback`은 정상 `201`, 멱등 `200`, 무서명 `401`, 본문 `400`·`413`, 제한 `429`, 저장소 미준비 `503`, app role 직접 테이블 접근 거부를 확인합니다. 자세한 계약은 `docs/api-v1-operations.md`를 따릅니다.

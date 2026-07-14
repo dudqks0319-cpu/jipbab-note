@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChefHat, ChevronLeft, ChevronRight, List, RotateCcw, Timer } from 'lucide-react'
 
+import RecipeCookCompletion from '@/components/recipe/RecipeCookCompletion'
 import RecipeCookFeedbackForm from '@/components/recipe/RecipeCookFeedbackForm'
 import {
   createRecipeCookTimer,
@@ -12,12 +13,23 @@ import {
   type RecipeCookFeedback,
   type RecipeCookTimer,
 } from '@/lib/recipe-cook-progress'
-import type { RecipeDetailStep } from '@/types'
+import type {
+  RecipeDetailStep,
+  RecipeIngredientDetail,
+  RecipePublicationEvidence,
+} from '@/types'
 
 type RecipeCookModeProps = {
   recipeId: string
   recipeVersion: number
   recipeName: string
+  category: string
+  thumbnailUrl: string | null
+  publicationEvidence: RecipePublicationEvidence
+  ingredientList: string[]
+  ingredientDetails: RecipeIngredientDetail[]
+  storageTip: string | null
+  reheatTip: string | null
   steps: RecipeDetailStep[]
 }
 
@@ -65,7 +77,19 @@ function playCompletionSignal(context: AudioContext | null) {
   }
 }
 
-export default function RecipeCookMode({ recipeId, recipeVersion, recipeName, steps }: RecipeCookModeProps) {
+export default function RecipeCookMode({
+  recipeId,
+  recipeVersion,
+  recipeName,
+  category,
+  thumbnailUrl,
+  publicationEvidence,
+  ingredientList,
+  ingredientDetails,
+  storageTip,
+  reheatTip,
+  steps,
+}: RecipeCookModeProps) {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set())
   const [activeTimer, setActiveTimer] = useState<RecipeCookTimer | null>(null)
   const [activeStepIndex, setActiveStepIndex] = useState(0)
@@ -300,6 +324,24 @@ export default function RecipeCookMode({ recipeId, recipeVersion, recipeName, st
               </button>
             ))}
           </div>
+        ) : null}
+
+        {allComplete ? (
+          <RecipeCookCompletion
+            recipeId={recipeId}
+            recipeName={recipeName}
+            category={category}
+            thumbnailUrl={thumbnailUrl}
+            publicationEvidence={publicationEvidence}
+            ingredientList={ingredientList}
+            ingredientDetails={ingredientDetails}
+            steps={steps}
+            storageTip={storageTip}
+            reheatTip={reheatTip}
+            startedAt={startedAt}
+            completedAt={completedAt}
+            feedback={feedback}
+          />
         ) : null}
 
         {feedbackOpen || allComplete ? (

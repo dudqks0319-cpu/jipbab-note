@@ -211,6 +211,13 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         recipeId={recipe.id}
         recipeVersion={recipe.version ?? 1}
         recipeName={recipe.name}
+        category={recipe.category}
+        thumbnailUrl={recipe.thumbnailUrl}
+        publicationEvidence={recipe.publicationEvidence}
+        ingredientList={recipe.ingredientList}
+        ingredientDetails={ingredientDetails}
+        storageTip={recipe.storageTip ?? null}
+        reheatTip={recipe.reheatTip ?? null}
         steps={recipe.steps}
       />
 

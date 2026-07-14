@@ -1,15 +1,22 @@
 import {
   RECIPE_FEEDBACK_COMPLETION_STATUSES,
   RECIPE_FEEDBACK_FAILURE_REASONS,
+  RECIPE_FEEDBACK_REPEAT_INTENTS,
+  RECIPE_FEEDBACK_TASTE_RESULTS,
   type RecipeFeedbackCompletionStatus,
   type RecipeFeedbackFailureReason,
+  type RecipeFeedbackRepeatIntent,
+  type RecipeFeedbackTasteResult,
 } from "./recipe-feedback.ts";
 
 export type RecipeCookFeedback = {
   clientSubmissionId: string;
   completionStatus: RecipeFeedbackCompletionStatus;
+  difficultStepOrder: number | null;
   failedStepOrder: number | null;
   reasonCode: RecipeFeedbackFailureReason | null;
+  tasteResult: RecipeFeedbackTasteResult | null;
+  repeatIntent: RecipeFeedbackRepeatIntent | null;
   actualDurationSeconds: number | null;
   submittedAt: string;
   syncedAt: string | null;
@@ -68,8 +75,11 @@ function normalizeFeedback(value: unknown, validSteps: Set<number>): RecipeCookF
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
   const completionStatus = record.completionStatus;
+  const difficultStepOrder = record.difficultStepOrder ?? null;
   const failedStepOrder = record.failedStepOrder;
   const reasonCode = record.reasonCode;
+  const tasteResult = record.tasteResult ?? null;
+  const repeatIntent = record.repeatIntent ?? null;
   const actualDurationSeconds = record.actualDurationSeconds;
   const submittedAt = normalizeIsoTimestamp(record.submittedAt);
   const syncedAt = record.syncedAt === null ? null : normalizeIsoTimestamp(record.syncedAt);
@@ -94,6 +104,25 @@ function normalizeFeedback(value: unknown, validSteps: Set<number>): RecipeCookF
     return null;
   }
 
+  if (
+    difficultStepOrder !== null
+    && (!Number.isInteger(difficultStepOrder) || !validSteps.has(difficultStepOrder as number))
+  ) {
+    return null;
+  }
+  if (
+    tasteResult !== null
+    && !RECIPE_FEEDBACK_TASTE_RESULTS.some((result) => result.code === tasteResult)
+  ) {
+    return null;
+  }
+  if (
+    repeatIntent !== null
+    && !RECIPE_FEEDBACK_REPEAT_INTENTS.some((intent) => intent.code === repeatIntent)
+  ) {
+    return null;
+  }
+
   if (completionStatus === "failed") {
     if (!Number.isInteger(failedStepOrder) || !validSteps.has(failedStepOrder as number)) {
       return null;
@@ -104,15 +133,23 @@ function normalizeFeedback(value: unknown, validSteps: Set<number>): RecipeCookF
     ) {
       return null;
     }
+    if (difficultStepOrder !== null || tasteResult !== null || repeatIntent !== null) {
+      return null;
+    }
   } else if (failedStepOrder !== null || reasonCode !== null) {
+    return null;
+  } else if (completionStatus === "completed_independently" && difficultStepOrder !== null) {
     return null;
   }
 
   return {
     clientSubmissionId: record.clientSubmissionId,
     completionStatus: completionStatus as RecipeFeedbackCompletionStatus,
+    difficultStepOrder: difficultStepOrder as number | null,
     failedStepOrder: failedStepOrder as number | null,
     reasonCode: reasonCode as RecipeFeedbackFailureReason | null,
+    tasteResult: tasteResult as RecipeFeedbackTasteResult | null,
+    repeatIntent: repeatIntent as RecipeFeedbackRepeatIntent | null,
     actualDurationSeconds: actualDurationSeconds as number | null,
     submittedAt,
     syncedAt,

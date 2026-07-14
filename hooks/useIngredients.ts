@@ -22,6 +22,7 @@ import {
 } from "@/lib/local-db/schema";
 import { syncIngredientsWithSupabase } from "@/lib/sync/ingredient-sync-service";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
+import { buildConsumedIngredientPayload } from "@/lib/recipe-ingredient-consumption";
 import { toDateOnlyString } from "@/lib/utils";
 import type {
   IngredientFormPayload,
@@ -53,6 +54,7 @@ export interface UseIngredientsResult {
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
   updateIngredient: (ingredientId: string, payload: IngredientFormPayload) => Promise<IngredientRecord | null>;
+  consumeIngredient: (ingredientId: string, recipeName: string) => Promise<IngredientRecord | null>;
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
 }
 
@@ -165,6 +167,19 @@ function normalizeIngredientKey(name: string): string {
 
 function visibleIngredients(items: LocalIngredientRecord[]): IngredientRecord[] {
   return items.filter((item) => !item.deletedAt);
+}
+
+function ingredientBelongsToScope(
+  ingredient: LocalIngredientRecord,
+  scopeContext: IngredientScopeContext,
+): boolean {
+  if (scopeContext.scope === "family") {
+    return Boolean(
+      scopeContext.familyGroupId
+      && ingredient.familyGroupId === scopeContext.familyGroupId,
+    );
+  }
+  return !ingredient.familyGroupId;
 }
 
 export function useIngredients(options?: IngredientScopeOptions): UseIngredientsResult {
@@ -318,6 +333,42 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     [deviceId, loadLocalIngredients, queueAndSync],
   );
 
+  const consumeIngredient = useCallback(
+    async (ingredientId: string, recipeName: string): Promise<IngredientRecord | null> => {
+      setLoading(true);
+      setError(null);
+
+      const target = await getLocalIngredient(ingredientId);
+      if (
+        !target
+        || target.deletedAt
+        || target.consumedAt
+        || target.discardedAt
+        || !ingredientBelongsToScope(target, scopeContext)
+      ) {
+        setError(makeError("재료를 소진 처리하지 못했습니다. 냉장고 상태를 확인해주세요.", "local"));
+        setLoading(false);
+        return null;
+      }
+
+      const syncAction: PendingSyncAction = target.syncStatus === "pending_create" ? "create" : "update";
+      const nextRecord = applyPayloadToRecord(
+        target,
+        buildConsumedIngredientPayload(target, recipeName, new Date().toISOString()),
+        syncAction,
+      );
+      await upsertLocalIngredient(nextRecord);
+      await recordFridgeEvent(deviceId, target.userId, nextRecord.id, "consume", nextRecord);
+      const nextItems = await loadLocalIngredients();
+      setIngredients(nextItems);
+      setSource("local");
+      setLoading(false);
+      await queueAndSync(nextRecord, syncAction);
+      return nextRecord;
+    },
+    [deviceId, loadLocalIngredients, queueAndSync, scopeContext],
+  );
+
   const deleteIngredient = useCallback(
     async (ingredientId: string): Promise<boolean> => {
       setLoading(true);
@@ -374,6 +425,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     fetchIngredient,
     addIngredient,
     updateIngredient,
+    consumeIngredient,
     deleteIngredient,
   };
 }

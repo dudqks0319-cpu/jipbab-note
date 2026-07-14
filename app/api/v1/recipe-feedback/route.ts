@@ -73,8 +73,11 @@ export async function POST(request: Request) {
       client_submission_id: input.clientSubmissionId,
       completion_status: input.completionStatus,
       difficulty_feedback: feedbackDifficultyForStatus(input.completionStatus),
+      difficult_step_order: input.difficultStepOrder,
       failed_step_order: input.failedStepOrder,
       reason_code: input.reasonCode,
+      taste_result: input.tasteResult,
+      repeat_intent: input.repeatIntent,
       actual_duration_seconds: input.actualDurationSeconds,
       comment: null,
     });

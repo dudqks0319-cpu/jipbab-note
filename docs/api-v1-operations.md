@@ -17,9 +17,11 @@
 ## 레시피 피드백
 
 - Bearer token은 Supabase에서 다시 검증하며 서명된 익명 사용자와 영구 사용자만 허용한다.
-- 본문은 최대 4KB이고 정해진 7개 필드만 허용한다. 이름, 이메일, 전화번호, 자유서술과 호출자 지정 기기 ID는 받지 않는다.
+- 본문은 최대 4KB이고 정해진 10개 필드만 허용한다. 이름, 이메일, 전화번호, 자유서술과 호출자 지정 기기 ID는 받지 않는다.
 - `completionStatus`는 `completed_independently`, `completed_with_difficulty`, `failed` 중 하나다.
+- `difficultStepOrder`는 `null` 또는 1~100이며 `completed_with_difficulty`에서만 허용한다.
 - `failed`는 1~100 범위의 `failedStepOrder`가 필수이고 `reasonCode`는 계획서의 8개 코드 중 하나거나 `null`이다. 완료 상태에는 실패 단계와 이유를 보낼 수 없다.
+- `tasteResult`는 `delicious`, `acceptable`, `poor`, `repeatIntent`는 `yes`, `after_adjustment`, `no` 중 하나거나 `null`이다. 두 값은 완료 상태에서만 허용한다.
 - `actualDurationSeconds`는 `null` 또는 1~43,200초다.
 - `(user_id, client_submission_id)` 유일성으로 재시도를 멱등 처리한다.
 - `recipe_feedback`은 app role의 직접 접근을 전부 거부하며 서버만 삽입한다. 자유서술용 `comment`는 DB 제약에서도 `null`만 허용한다.
@@ -40,10 +42,11 @@ openssl rand -base64 48
 2. staging에 Phase 0, Phase 1 migration을 순서대로 적용하고 capture/restore 및 권한 음성 경로를 검증한다.
 3. staging에 `20260710160000_add_distributed_api_rate_limits.sql`을 적용한다.
 4. staging 서버에 `API_RATE_LIMIT_HMAC_SECRET`을 설정한다.
-5. staging에 `20260714100000_add_recipe_feedback.sql`을 적용하고 app role 직접 접근 거부와 service role 삽입을 확인한다.
-6. 목록·상세·추천의 정상 경로와 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
-7. matching app build와 DB migration을 조정된 변경 창에 운영 반영한다.
-8. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
+5. staging에 `20260714100000_add_recipe_feedback.sql`, `20260714110000_extend_recipe_feedback_completion_details.sql`을 순서대로 적용하고 app role 직접 접근 거부와 service role 삽입을 확인한다.
+6. 완료·실패 상태별 허용/거부 조합과 비파괴 rollback을 실제 PostgreSQL에서 검증한다.
+7. 목록·상세·추천의 정상 경로와 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
+8. matching app build와 DB migration을 조정된 변경 창에 운영 반영한다.
+9. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
 
 운영 migration history가 현재 로컬과 불일치하므로 이 문서 작성 시점에는 `supabase db push`를 실행하지 않는다.
 
@@ -58,5 +61,6 @@ node --experimental-strip-types --test \
   tests/recipe-api-v1.test.ts \
   tests/recipe-recommendation-v1.test.ts \
   tests/recipe-feedback.test.ts \
-  tests/recipe-feedback-contract.test.ts
+  tests/recipe-feedback-contract.test.ts \
+  tests/recipe-cook-completion.test.ts
 ```

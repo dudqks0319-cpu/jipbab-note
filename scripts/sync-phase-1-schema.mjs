@@ -20,7 +20,10 @@ const schemaBlocks = [
   {
     startMarker: "-- PHASE7_RECIPE_FEEDBACK_SCHEMA_START",
     endMarker: "-- PHASE7_RECIPE_FEEDBACK_SCHEMA_END",
-    migrationPaths: ["supabase/migrations/20260714100000_add_recipe_feedback.sql"],
+    migrationPaths: [
+      "supabase/migrations/20260714100000_add_recipe_feedback.sql",
+      "supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql",
+    ],
   },
 ];
 

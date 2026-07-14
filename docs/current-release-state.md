@@ -2,13 +2,24 @@
 
 Updated: 2026-07-14 KST
 
+## 2026-07-14 FE-015 조리 완료 통합 흐름
+
+- 모든 조리 단계를 체크하면 `요리를 완성했어요` 화면에서 실제 걸린 시간, 어려웠던 단계, 맛 결과, 다시 만들 의향, 남은 음식 보관·재가열 안내를 한 번에 확인한다. 상태·단계·맛·의향은 고정 선택지만 사용하며 이름·이메일·자유서술을 추가하지 않았다.
+- 레시피와 일치하는 보관 중 재료를 내 냉장고 또는 가족 냉장고에서 명시적으로 선택해 소진 처리한다. 처리 전에는 삭제가 아니라 소진 기록이며 냉장고에서 되돌릴 수 있음을 안내한다. `window.confirm` 없이 화면 안 선택과 실행 버튼을 사용하며, 로컬 레코드와 `consume` 냉장고 이벤트를 먼저 저장한 뒤 기존 동기화 큐를 사용한다.
+- 완료 화면에서 현재 즐겨찾기 상태를 확인하고 바로 저장·해제할 수 있다. 기존 상세 상단 즐겨찾기, 하단 보관 안내, 장보기 재료 확인은 유지하되 완료 시점의 후속 행동으로도 연결했다.
+- `/api/v1/recipe-feedback` exact allowlist는 10개 필드로 확장했다. `difficultStepOrder`는 `completed_with_difficulty`에만, `tasteResult`와 `repeatIntent`는 완료 상태에만 허용하며 실패 상태에는 모두 `null`이어야 한다. 기존 version 2 로컬 피드백은 새 필드를 `null`로 복원한다.
+- `20260714110000_extend_recipe_feedback_completion_details.sql`은 세 nullable 열과 고정 선택·상태 일관성 제약을 추가한다. app role 직접 접근은 계속 거부하고 `service_role`에만 select·insert를 허용한다. rollback은 열이나 행을 삭제하지 않고 모든 런타임 권한을 회수한다.
+- 전체 단위 테스트 438/438, 완료·피드백 집중 테스트 19/19, API v1 계약 19/19, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다.
+- 인앱 브라우저의 실제 `RecipeCookMode`를 390x844에서 조작해 완료 요약, 어려웠던 단계·맛·다시 만들 의향 저장, 즐겨찾기, 계란 1개 소진, 냉장고 소진 기록과 되돌리기까지 확인했다. 가로 넘침 0, 보이는 버튼 중 44px 미만 0개, 텍스트 입력 0개, console error/warning 0건이다. 화면 증거는 `output/ui-evidence/phase7-cook-completion-390.png`, `phase7-cook-completion-fridge-390.png`, `phase7-cook-feedback-390.png`, `phase7-cook-feedback-saved-390.png`이며 Git에는 넣지 않는다.
+- staging/production migration 적용, 정상 서버 저장, 실제 사용자 조리, Production 승격은 아직 수행하지 않았다.
+
 ## 2026-07-14 API-007 레시피 피드백·실패 단계 수집
 
 - 계획서의 `혼자서 완성할 수 있었나요?` 3개 선택지, 실패 단계, 8개 선택형 실패 이유를 실제 조리 모드에 연결했다. 이름·이메일·자유서술 입력은 만들지 않았고 서버가 준비되지 않으면 로컬 저장 상태를 분명히 표시한다.
 - 로컬 진행상태를 version 2로 올려 조리 시작·완료 시각과 구조화 피드백을 저장한다. version 1 단계·타이머는 유지하되 예전 난이도 3값을 새 완성 상태로 임의 해석하지 않는다.
 - `POST /api/v1/recipe-feedback`는 4KB 본문, 분당 12회 분산 제한, 검증된 Supabase Bearer 세션, 7개 필드 exact allowlist, 사용자별 제출 UUID 멱등성을 적용한다.
 - `20260714100000_add_recipe_feedback.sql`은 FK·상태 일관성·시간 상한·자유서술 금지·인덱스를 정의하고 app role의 직접 접근을 전부 거부한다. rollback은 권한만 회수하고 이미 모은 비공개 증거를 보존한다.
-- 전체 단위 테스트 433/433, API v1 계약 18/18, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. 인앱 브라우저 실제 컴포넌트 QA에서 390px 가로 넘침 없음, 최소 버튼 44px, 텍스트 입력 0개, 로컬 저장 문구를 확인했다. 화면 증거는 `output/ui-evidence/phase7-recipe-feedback-failure-390.png`다.
+- 전체 단위 테스트 438/438, API v1 계약 19/19, CI-safe 출시 게이트 19/19, Supabase 계약 146/146, 보안 게이트 4/4, 타입 검사와 production build 40개 경로가 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. 인앱 브라우저 실제 컴포넌트 QA에서 390px 가로 넘침 없음, 최소 버튼 44px, 텍스트 입력 0개, 로컬 저장 문구를 확인했다.
 - 실제 로컬 HTTP 음수 경로는 무서명 `401 UNAUTHORIZED`, 허용되지 않은 `GET` 405, 4KB 초과 본문 `413 INVALID_BODY`를 반환했고 401·413에는 redacted envelope, `Cache-Control: no-store`, request ID가 확인됐다.
 - 구현 커밋 `06d80200a562ad475ebce1a3f889deb5ef4a4ccd`의 깨끗한 archive를 Vercel Preview `dpl_4rXFEAp5FGERiPfVg7dextGaDHRZ` (`https://jipbab-note-kpux6f35z-youngbeens-projects.vercel.app`)로 배포했다. target은 `preview`, 상태는 `READY`, 메타데이터의 `sourceCommit`은 구현 커밋과 일치하며 루트는 HTTP 200이다.
 - Preview의 무서명 `POST /api/v1/recipe-feedback`은 아직 feedback migration과 분산 limiter 저장소가 없으므로 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환했다. migration 적용, 정상 서버 저장 HTTP 검증, Production 승격은 수행하지 않았다. 실제 사용자·실제 조리 증거도 여전히 0건이며 기존 Phase 5/7 게이트를 대체하지 않는다. 상세: `docs/phase-7-recipe-feedback-collection.md`.

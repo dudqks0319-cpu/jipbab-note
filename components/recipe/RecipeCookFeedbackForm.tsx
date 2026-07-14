@@ -7,8 +7,12 @@ import type { RecipeCookFeedback } from '@/lib/recipe-cook-progress'
 import {
   calculateRecipeCookDurationSeconds,
   RECIPE_FEEDBACK_FAILURE_REASONS,
+  RECIPE_FEEDBACK_REPEAT_INTENTS,
+  RECIPE_FEEDBACK_TASTE_RESULTS,
   type RecipeFeedbackCompletionStatus,
   type RecipeFeedbackFailureReason,
+  type RecipeFeedbackRepeatIntent,
+  type RecipeFeedbackTasteResult,
 } from '@/lib/recipe-feedback'
 import { getSupabaseClient } from '@/lib/supabase'
 import { ensureSignedSupabaseUser } from '@/lib/supabase-session'
@@ -39,13 +43,19 @@ const COMPLETION_CHOICES: ReadonlyArray<{
 function matchingFeedback(
   feedback: RecipeCookFeedback | null,
   completionStatus: RecipeFeedbackCompletionStatus,
+  difficultStepOrder: number | null,
   failedStepOrder: number | null,
   reasonCode: RecipeFeedbackFailureReason | null,
+  tasteResult: RecipeFeedbackTasteResult | null,
+  repeatIntent: RecipeFeedbackRepeatIntent | null,
 ): RecipeCookFeedback | null {
   if (
     feedback?.completionStatus !== completionStatus
+    || feedback.difficultStepOrder !== difficultStepOrder
     || feedback.failedStepOrder !== failedStepOrder
     || feedback.reasonCode !== reasonCode
+    || feedback.tasteResult !== tasteResult
+    || feedback.repeatIntent !== repeatIntent
   ) {
     return null
   }
@@ -65,11 +75,20 @@ export default function RecipeCookFeedbackForm({
   const [completionStatus, setCompletionStatus] = useState<RecipeFeedbackCompletionStatus | null>(
     initialFeedback?.completionStatus ?? (suggestedFailedStepOrder ? 'failed' : null),
   )
+  const [difficultStepOrder, setDifficultStepOrder] = useState<number | null>(
+    initialFeedback?.difficultStepOrder ?? null,
+  )
   const [failedStepOrder, setFailedStepOrder] = useState<number | null>(
     initialFeedback?.failedStepOrder ?? suggestedFailedStepOrder,
   )
   const [reasonCode, setReasonCode] = useState<RecipeFeedbackFailureReason | null>(
     initialFeedback?.reasonCode ?? null,
+  )
+  const [tasteResult, setTasteResult] = useState<RecipeFeedbackTasteResult | null>(
+    initialFeedback?.tasteResult ?? null,
+  )
+  const [repeatIntent, setRepeatIntent] = useState<RecipeFeedbackRepeatIntent | null>(
+    initialFeedback?.repeatIntent ?? null,
   )
   const [submitState, setSubmitState] = useState<FeedbackSubmitState>(
     initialFeedback?.syncedAt ? 'synced' : initialFeedback ? 'local-only' : 'idle',
@@ -78,11 +97,17 @@ export default function RecipeCookFeedbackForm({
   const selectCompletionStatus = (value: RecipeFeedbackCompletionStatus) => {
     setCompletionStatus(value)
     setSubmitState('idle')
-    if (value !== 'failed') {
+    if (value === 'failed') {
+      setDifficultStepOrder(null)
+      setTasteResult(null)
+      setRepeatIntent(null)
+      if (!failedStepOrder) {
+        setFailedStepOrder(suggestedFailedStepOrder ?? steps[0]?.index ?? null)
+      }
+    } else {
       setFailedStepOrder(null)
       setReasonCode(null)
-    } else if (!failedStepOrder) {
-      setFailedStepOrder(suggestedFailedStepOrder ?? steps[0]?.index ?? null)
+      if (value === 'completed_independently') setDifficultStepOrder(null)
     }
   }
 
@@ -93,14 +118,20 @@ export default function RecipeCookFeedbackForm({
     const saved = matchingFeedback(
       initialFeedback,
       completionStatus,
+      completionStatus === 'completed_with_difficulty' ? difficultStepOrder : null,
       completionStatus === 'failed' ? failedStepOrder : null,
       completionStatus === 'failed' ? reasonCode : null,
+      completionStatus === 'failed' ? null : tasteResult,
+      completionStatus === 'failed' ? null : repeatIntent,
     )
     const localFeedback: RecipeCookFeedback = saved ?? {
       clientSubmissionId: crypto.randomUUID(),
       completionStatus,
+      difficultStepOrder: completionStatus === 'completed_with_difficulty' ? difficultStepOrder : null,
       failedStepOrder: completionStatus === 'failed' ? failedStepOrder : null,
       reasonCode: completionStatus === 'failed' ? reasonCode : null,
+      tasteResult: completionStatus === 'failed' ? null : tasteResult,
+      repeatIntent: completionStatus === 'failed' ? null : repeatIntent,
       actualDurationSeconds: calculateRecipeCookDurationSeconds(
         startedAt,
         completionStatus === 'failed' ? submittedAt : completedAt ?? submittedAt,
@@ -131,8 +162,11 @@ export default function RecipeCookFeedbackForm({
         recipeId,
         recipeVersion,
         completionStatus: localFeedback.completionStatus,
+        difficultStepOrder: localFeedback.difficultStepOrder,
         failedStepOrder: localFeedback.failedStepOrder,
         reasonCode: localFeedback.reasonCode,
+        tasteResult: localFeedback.tasteResult,
+        repeatIntent: localFeedback.repeatIntent,
         actualDurationSeconds: localFeedback.actualDurationSeconds,
       }, accessToken)
 
@@ -224,8 +258,85 @@ export default function RecipeCookFeedbackForm({
         </div>
       ) : null}
 
+      {completionStatus === 'completed_with_difficulty' ? (
+        <div className="mt-4 border-t border-[#d7e7cf] pt-4">
+          <p className="text-[13px] font-black text-[#315f2d]">어느 단계가 가장 어려웠나요? (선택)</p>
+          <div className="mt-2 grid grid-cols-2 gap-2" aria-label="어려웠던 단계">
+            {steps.map((step) => (
+              <button
+                key={step.index}
+                type="button"
+                onClick={() => {
+                  setDifficultStepOrder((current) => current === step.index ? null : step.index)
+                  setSubmitState('idle')
+                }}
+                aria-pressed={difficultStepOrder === step.index}
+                className={`min-h-11 rounded-xl px-3 text-left text-[12px] font-black ${
+                  difficultStepOrder === step.index
+                    ? 'bg-[#74452f] text-white'
+                    : 'bg-white text-[#74452f]'
+                }`}
+              >
+                {step.index}단계{step.title ? ` · ${step.title}` : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {completionStatus && completionStatus !== 'failed' ? (
+        <div className="mt-4 space-y-4 border-t border-[#d7e7cf] pt-4">
+          <div>
+            <p className="text-[13px] font-black text-[#315f2d]">맛은 어땠나요? (선택)</p>
+            <div className="mt-2 grid gap-2" aria-label="맛 결과">
+              {RECIPE_FEEDBACK_TASTE_RESULTS.map((result) => (
+                <button
+                  key={result.code}
+                  type="button"
+                  onClick={() => {
+                    setTasteResult((current) => current === result.code ? null : result.code)
+                    setSubmitState('idle')
+                  }}
+                  aria-pressed={tasteResult === result.code}
+                  className={`min-h-11 rounded-xl px-3 text-left text-[12px] font-black ${
+                    tasteResult === result.code
+                      ? 'bg-[#315f2d] text-white'
+                      : 'bg-white text-[#557b4f]'
+                  }`}
+                >
+                  {result.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[13px] font-black text-[#315f2d]">다시 만들고 싶나요? (선택)</p>
+            <div className="mt-2 grid gap-2" aria-label="다시 만들 의향">
+              {RECIPE_FEEDBACK_REPEAT_INTENTS.map((intent) => (
+                <button
+                  key={intent.code}
+                  type="button"
+                  onClick={() => {
+                    setRepeatIntent((current) => current === intent.code ? null : intent.code)
+                    setSubmitState('idle')
+                  }}
+                  aria-pressed={repeatIntent === intent.code}
+                  className={`min-h-11 rounded-xl px-3 text-left text-[12px] font-black ${
+                    repeatIntent === intent.code
+                      ? 'bg-[#315f2d] text-white'
+                      : 'bg-white text-[#557b4f]'
+                  }`}
+                >
+                  {intent.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <p className="mt-4 rounded-xl bg-white px-3 py-3 text-[12px] font-semibold leading-5 text-[#667d61]">
-        이름·이메일·자유 입력은 받지 않습니다. 선택한 완성 상태와 단계만 개선에 사용합니다.
+        이름·이메일·자유 입력은 받지 않습니다. 선택한 완성 결과와 단계만 개선에 사용합니다.
       </p>
       <button
         type="button"

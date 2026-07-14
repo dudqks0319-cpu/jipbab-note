@@ -29,6 +29,7 @@ const requiredTerms = [
   "20260710151000_seed_phase1_ingredient_catalog.sql",
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260714100000_add_recipe_feedback.sql",
+  "20260714110000_extend_recipe_feedback_completion_details.sql",
   "POST /api/v1/recipe-feedback",
   "iPhone `[redacted-device]`",
   "App Store Connect/TestFlight: confirmed",

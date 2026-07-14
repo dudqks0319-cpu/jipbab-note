@@ -52,6 +52,59 @@ test("saved cook progress restores only current recipe steps", () => {
   assert.equal(recipeCookProgressKey("recipe-1"), "jipbab:recipe-cook-progress:v1:recipe-1");
 });
 
+test("saved completion details restore and older version two feedback defaults additions to null", () => {
+  const progress = normalizeRecipeCookProgress({
+    version: 2,
+    activeStepIndex: 1,
+    checkedStepIndexes: [1, 2],
+    timer: null,
+    startedAt: "2026-07-11T00:00:00.000Z",
+    completedAt: "2026-07-11T00:10:00.000Z",
+    feedback: {
+      clientSubmissionId: "263f627e-39f9-4e74-9a3d-68657698ec87",
+      completionStatus: "completed_with_difficulty",
+      difficultStepOrder: 2,
+      failedStepOrder: null,
+      reasonCode: null,
+      tasteResult: "acceptable",
+      repeatIntent: "after_adjustment",
+      actualDurationSeconds: 600,
+      submittedAt: "2026-07-11T00:10:00.000Z",
+      syncedAt: null,
+    },
+    updatedAt: "2026-07-11T00:10:00.000Z",
+  }, [1, 2]);
+
+  assert.ok(progress);
+  assert.equal(progress.feedback?.difficultStepOrder, 2);
+  assert.equal(progress.feedback?.tasteResult, "acceptable");
+  assert.equal(progress.feedback?.repeatIntent, "after_adjustment");
+
+  const legacyV2 = normalizeRecipeCookProgress({
+    version: 2,
+    activeStepIndex: 0,
+    checkedStepIndexes: [1],
+    timer: null,
+    startedAt: "2026-07-11T00:00:00.000Z",
+    completedAt: null,
+    feedback: {
+      clientSubmissionId: "263f627e-39f9-4e74-9a3d-68657698ec87",
+      completionStatus: "completed_independently",
+      failedStepOrder: null,
+      reasonCode: null,
+      actualDurationSeconds: 60,
+      submittedAt: "2026-07-11T00:01:00.000Z",
+      syncedAt: null,
+    },
+    updatedAt: "2026-07-11T00:01:00.000Z",
+  }, [1]);
+
+  assert.ok(legacyV2);
+  assert.equal(legacyV2.feedback?.difficultStepOrder, null);
+  assert.equal(legacyV2.feedback?.tasteResult, null);
+  assert.equal(legacyV2.feedback?.repeatIntent, null);
+});
+
 test("version one progress migrates without reinterpreting legacy difficulty feedback", () => {
   const progress = normalizeRecipeCookProgress({
     version: 1,

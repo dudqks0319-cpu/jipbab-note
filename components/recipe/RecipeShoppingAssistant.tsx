@@ -51,7 +51,6 @@ export default function RecipeShoppingAssistant({
     ingredients,
     loading,
     error: ingredientError,
-    updateIngredient,
     listIngredients,
   } = useIngredients({ scope: activeScope, familyGroupId });
   const {
@@ -147,42 +146,6 @@ export default function RecipeShoppingAssistant({
         .slice(0, 3),
     [detailByName, match.missingIngredients, ownedCategories, partnerLinks, recipeName],
   );
-
-  const matchedInventoryItems = useMemo(
-    () =>
-      activeIngredients.filter((item) =>
-        match.matchedIngredients.some(
-          (ingredient) => ingredient.trim().toLowerCase() === item.name.trim().toLowerCase(),
-        ),
-      ),
-    [activeIngredients, match.matchedIngredients],
-  );
-
-  const removeCookedIngredients = async () => {
-    if (matchedInventoryItems.length === 0) return;
-    const shouldRemove = window.confirm(
-      `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 소진 처리할까요? 삭제하지 않고 소진 기록으로 남깁니다.`,
-    );
-    if (!shouldRemove) return;
-    await Promise.all(matchedInventoryItems.map((item) => updateIngredient(item.id, {
-      name: item.name,
-      category: item.category,
-      storageType: item.storageType,
-      quantity: item.quantity,
-      expiryDate: item.expiryDate,
-      purchaseDate: item.purchaseDate,
-      openedAt: item.openedAt,
-      storageLocation: item.storageLocation,
-      unitPrice: item.unitPrice,
-      purchasePlace: item.purchasePlace,
-      consumedAt: new Date().toISOString(),
-      discardedAt: null,
-      repeatPurchase: item.repeatPurchase,
-      barcode: item.barcode,
-      imageUrl: item.imageUrl,
-      memo: [item.memo, `${recipeName} 조리 후 소진`].filter(Boolean).join(" · ") || null,
-    })));
-  };
 
   useEffect(() => {
     const nextNames = selectableMissingIngredientKey
@@ -437,25 +400,6 @@ export default function RecipeShoppingAssistant({
             )}
           </div>
         </div>
-        {matchedInventoryItems.length > 0 ? (
-          <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
-            <p className="text-sm font-black text-[#2f2117]">
-              조리 후 사용한 재료를 바로 뺄 수 있어요.
-            </p>
-            <p className="mt-1 text-xs text-[#7d6d5f]">
-              수량 단위가 제각각이어도 삭제하지 않고 소진 상태로 기록합니다.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                void removeCookedIngredients();
-              }}
-              className="mt-3 rounded-full bg-[#3d7b38] px-4 py-2 text-sm font-bold text-white"
-            >
-              사용한 재료 소진 처리
-            </button>
-          </div>
-        ) : null}
       </div>
     </section>
   );

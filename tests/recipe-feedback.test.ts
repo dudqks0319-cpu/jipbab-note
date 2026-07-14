@@ -13,8 +13,11 @@ const baseInput = {
   recipeId: "a36e34ec-5f17-4e4a-8e07-246b8082447e",
   recipeVersion: 3,
   completionStatus: "completed_independently",
+  difficultStepOrder: null,
   failedStepOrder: null,
   reasonCode: null,
+  tasteResult: null,
+  repeatIntent: null,
   actualDurationSeconds: 870,
 } as const;
 
@@ -36,6 +39,18 @@ test("recipe feedback accepts a failed step and optional reason code", () => {
   assert.deepEqual(parseRecipeFeedbackV1Input(input), input);
 });
 
+test("recipe feedback accepts bounded completion details without free text", () => {
+  const input = {
+    ...baseInput,
+    completionStatus: "completed_with_difficulty",
+    difficultStepOrder: 2,
+    tasteResult: "delicious",
+    repeatIntent: "after_adjustment",
+  } as const;
+
+  assert.deepEqual(parseRecipeFeedbackV1Input(input), input);
+});
+
 test("recipe feedback rejects free text, unknown fields, and inconsistent failure fields", () => {
   assert.throws(
     () => parseRecipeFeedbackV1Input({ ...baseInput, comment: "전화 주세요" }),
@@ -46,10 +61,23 @@ test("recipe feedback rejects free text, unknown fields, and inconsistent failur
     RecipeFeedbackValidationError,
   );
   assert.throws(
+    () => parseRecipeFeedbackV1Input({ ...baseInput, difficultStepOrder: 2 }),
+    RecipeFeedbackValidationError,
+  );
+  assert.throws(
     () => parseRecipeFeedbackV1Input({
       ...baseInput,
       completionStatus: "failed",
       failedStepOrder: null,
+    }),
+    RecipeFeedbackValidationError,
+  );
+  assert.throws(
+    () => parseRecipeFeedbackV1Input({
+      ...baseInput,
+      completionStatus: "failed",
+      failedStepOrder: 2,
+      tasteResult: "delicious",
     }),
     RecipeFeedbackValidationError,
   );

@@ -26,6 +26,7 @@ test("release unblock runbook covers all remaining external blocker surfaces", (
   assert.match(runbook, /Android 물리 기기/);
   assert.match(runbook, /com\.jipbab\.note/);
   assert.match(runbook, /20260714100000_add_recipe_feedback\.sql/);
+  assert.match(runbook, /20260714110000_extend_recipe_feedback_completion_details\.sql/);
   assert.match(runbook, /POST \/api\/v1\/recipe-feedback/);
 });
 
