@@ -54,6 +54,11 @@ test("preview surface is explicit and cannot start cooking or shopping", () => {
 test("preview list prioritizes recipe discovery over inactive or secondary controls", () => {
   const list = readFileSync("app/recipe/page.tsx", "utf8");
 
+  assert.match(list, /지금 볼 수 있는 레시피 \$\{RECIPE_PREVIEW_CATALOG\.length\}개/);
+  assert.doesNotMatch(list, /공개 승인 0개/);
+  assert.match(list, /먼저 둘러볼 수 있는 쉬운 집밥이에요/);
+  assert.match(list, /실제 조리 검수가 끝날 때까지 장보기와 조리 시작은 잠겨 있어요/);
+  assert.match(list, /<Eye size=\{11\} \/> 조리 검수 중/);
   assert.match(list, /\{!previewMode \? \(\s*<section className="px-5 pt-3">/);
   assert.match(list, /\{!previewMode && totalPages > 1 \? \(\s*<section/);
   assert.ok(

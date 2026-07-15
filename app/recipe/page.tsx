@@ -276,7 +276,7 @@ export default function RecipePage() {
               {isAppStoreDemo
                 ? `총 ${baseRecipes.length}개 레시피`
                 : previewMode
-                  ? `공개 승인 0개 · 미리보기 ${RECIPE_PREVIEW_CATALOG.length}개`
+                  ? `지금 볼 수 있는 레시피 ${RECIPE_PREVIEW_CATALOG.length}개`
                   : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
             </p>
           </div>
@@ -468,9 +468,9 @@ export default function RecipePage() {
               <div className="flex items-start gap-2 text-[#9a431c]">
                 <Eye size={18} className="mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-black">자체 작성 레시피를 먼저 보여드려요</p>
-                  <p className="mt-1 break-keep text-xs font-semibold leading-5">
-                    아래 콘텐츠는 검수 중 미리보기입니다. 실제 조리 검수가 끝날 때까지 추천·장보기·조리 모드는 열리지 않아요.
+                  <p className="text-sm font-black">먼저 둘러볼 수 있는 쉬운 집밥이에요</p>
+                  <p className="mt-1 break-keep text-[13px] font-semibold leading-5">
+                    집밥노트가 직접 작성한 레시피예요. 실제 조리 검수가 끝날 때까지 장보기와 조리 시작은 잠겨 있어요.
                   </p>
                 </div>
               </div>
@@ -491,7 +491,7 @@ export default function RecipePage() {
                   }}
                   className="mt-4 min-h-11 rounded-full bg-[#2f2117] px-4 text-[12px] font-black text-white"
                 >
-                  전체 미리보기 보기
+                  레시피 {RECIPE_PREVIEW_CATALOG.length}개 모두 보기
                 </button>
               </div>
             ) : (
@@ -509,7 +509,7 @@ export default function RecipePage() {
                     </div>
                     <div className="min-w-0 flex-1 py-1">
                       <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[11px] font-black text-[#d94d19]">
-                        <Eye size={11} /> 검수 중 미리보기
+                        <Eye size={11} /> 조리 검수 중
                       </span>
                       <h2 className="mt-2 line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
                       <p className="mt-1 line-clamp-1 text-[12px] font-semibold text-[#7d6d5f]">

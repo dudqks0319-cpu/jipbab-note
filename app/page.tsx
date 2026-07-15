@@ -553,7 +553,7 @@ function RecipeHomeCard({
           </span>
         </div>
         {previewMode ? (
-          <p className="mt-1.5 truncate text-[12px] font-black text-[#d94d19]">검수 중 미리보기</p>
+          <p className="mt-1.5 truncate text-[12px] font-black text-[#d94d19]">조리 검수 중</p>
         ) : (
           <>
             <p className="mt-1.5 truncate text-[12px] font-black text-[#3d7b38]">
@@ -665,12 +665,12 @@ function RecipePublicationEmptyCard({
 }) {
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
-      <p className="text-[12px] font-bold text-[#d94d19]">검수 중 미리보기</p>
+      <p className="text-[12px] font-bold text-[#d94d19]">레시피 미리보기</p>
       <h2 className="mt-2 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">
         레시피를 먼저 둘러볼 수 있어요.
       </h2>
       <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
-        자체 작성한 레시피 내용을 먼저 공개했어요. 실제 조리 검수가 끝날 때까지 추천과 조리 모드는 잠겨 있어요.
+        집밥노트가 직접 작성한 레시피예요. 실제 조리 검수가 끝날 때까지 추천과 조리 시작은 잠겨 있어요.
       </p>
       {previewRecipe ? (
         <Link

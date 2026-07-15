@@ -61,7 +61,9 @@ test("home recipe cards use plain-language difficulty instead of a rating star",
 test("home recipe cards keep core preview information readable", () => {
   assert.match(homePage, /min-h-10 text-\[14px\] font-black leading-5/);
   assert.match(homePage, /text-\[12px\] font-bold text-\[#7d6d5f\]/);
-  assert.match(homePage, /text-\[12px\] font-black text-\[#d94d19\]">검수 중 미리보기/);
+  assert.match(homePage, /text-\[12px\] font-black text-\[#d94d19\]">조리 검수 중/);
+  assert.match(homePage, /집밥노트가 직접 작성한 레시피예요/);
+  assert.match(homePage, /실제 조리 검수가 끝날 때까지 추천과 조리 시작은 잠겨 있어요/);
 });
 
 test("home recovery prevents parallel retries and keeps one clear action label", () => {
