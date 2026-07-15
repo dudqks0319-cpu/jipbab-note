@@ -13,6 +13,8 @@ const routeSources = [
   readFileSync("app/api/v1/recipes/[id]/route.ts", "utf8"),
   readFileSync("app/api/v1/recommendations/route.ts", "utf8"),
   readFileSync("app/api/v1/recipe-feedback/route.ts", "utf8"),
+  readFileSync("app/api/v1/recipe-progress/route.ts", "utf8"),
+  readFileSync("app/api/v1/shopping/items/from-recipe/route.ts", "utf8"),
 ];
 
 test("Phase 6 observability contract is wired into package and release gates", () => {

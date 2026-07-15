@@ -6,10 +6,12 @@ const files = {
   recommendationRoute: "app/api/v1/recommendations/route.ts",
   feedbackRoute: "app/api/v1/recipe-feedback/route.ts",
   progressRoute: "app/api/v1/recipe-progress/route.ts",
+  shoppingRoute: "app/api/v1/shopping/items/from-recipe/route.ts",
   repository: "lib/recipe-api-v1-repository.ts",
   recommendation: "lib/recipe-recommendation-v1.ts",
   feedback: "lib/recipe-feedback.ts",
   progress: "lib/recipe-progress.ts",
+  shopping: "lib/shopping-from-recipe.ts",
   response: "lib/api-v1-response.ts",
   limiter: "lib/distributed-rate-limit.ts",
   migration: "supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql",
@@ -53,6 +55,7 @@ const routes = [
   source.recommendationRoute,
   source.feedbackRoute,
   source.progressRoute,
+  source.shoppingRoute,
 ];
 
 check(
@@ -66,7 +69,7 @@ check(
     source.response.includes("apiV1Success(data, requestId, status)") &&
     source.response.includes("apiV1Error(") &&
     source.response.includes("createApiOperationRecorder"),
-  "list, detail, recommendation, feedback, and progress routes share request IDs, envelopes, operational telemetry, and distributed limits",
+  "list, detail, recommendation, feedback, progress, and shopping routes share request IDs, envelopes, operational telemetry, and distributed limits",
   "every route must use the common responder and distributed rate-limit contracts",
 );
 
@@ -185,6 +188,27 @@ check(
     !/comment|memo|note|description/i.test(source.progress),
   "progress requires a permanent signed user, exact bounded fields, server-only storage, and optimistic conflicts",
   "progress authentication, input minimization, or conflict protection is incomplete",
+);
+
+check(
+  "private shopping merge API",
+  source.shoppingRoute.includes("readBoundedJsonObject") &&
+    source.shoppingRoute.includes("getBearerAccessToken") &&
+    source.shoppingRoute.includes("getAuthenticatedServerUser") &&
+    source.shoppingRoute.includes("getPublicRecipeDetailV1(input.recipeId)") &&
+    source.shoppingRoute.includes("getServerSupabaseAdminClient") &&
+    source.shoppingRoute.includes('.from("shopping_items")') &&
+    source.shoppingRoute.includes('.eq("user_id", user.id)') &&
+    source.shoppingRoute.includes('.is("family_group_id", null)') &&
+    source.shoppingRoute.includes("buildShoppingFromRecipeCandidates") &&
+    source.shoppingRoute.includes("buildShoppingFromRecipeUpserts") &&
+    source.shopping.includes("INPUT_KEY_SET") &&
+    source.shopping.includes("MAX_SELECTED_INGREDIENTS = 50") &&
+    !/name|quantity|user|device|family|category/i.test(
+      source.shopping.match(/const INPUT_KEYS = \[([\s\S]*?)\] as const;/)?.[1] ?? "",
+    ),
+  "shopping merge accepts only signed, bounded recipe selections and scopes every server write to the verified user",
+  "shopping merge authentication, server-derived fields, or user isolation is incomplete",
 );
 
 check(
@@ -366,6 +390,8 @@ const requiredTests = [
   "tests/recipe-serving-variants.test.ts",
   "tests/recipe-progress.test.ts",
   "tests/recipe-progress-contract.test.ts",
+  "tests/shopping-from-recipe.test.ts",
+  "tests/shopping-from-recipe-contract.test.ts",
 ];
 check(
   "API v1 regression coverage",

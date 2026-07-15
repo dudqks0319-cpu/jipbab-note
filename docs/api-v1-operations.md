@@ -2,7 +2,7 @@
 
 ## 범위
 
-`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. `POST /api/v1/recipe-feedback`는 검증된 서명 세션의 최소 조리 결과만 비공개로 저장한다. `GET|POST /api/v1/recipe-progress`는 영구 로그인 사용자의 레시피·인분별 구조화 진행만 비공개로 조회·저장한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구, 복구 안내 또는 기준 인분을 포함한 2개 이상의 정확한 `serving_variants`가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
+`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. `POST /api/v1/recipe-feedback`는 검증된 서명 세션의 최소 조리 결과만 비공개로 저장한다. `GET|POST /api/v1/recipe-progress`는 영구 로그인 사용자의 레시피·인분별 구조화 진행만 비공개로 조회·저장한다. `POST /api/v1/shopping/items/from-recipe`는 검증된 서명 세션과 공개 승인 레시피의 선택 재료만 개인 장보기에 추가·병합한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구, 복구 안내 또는 기준 인분을 포함한 2개 이상의 정확한 `serving_variants`가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
 
 목록의 `sort`는 `recommended`(기본값), `most-owned`, `least-missing`, `fastest`, `recent`만 허용한다. `recent`는 발행 시각·ID keyset cursor를 사용하고, 나머지 정렬은 현재 출시 최대치인 200개 후보 안에서 정렬 고정 offset cursor를 사용한다. cursor는 정렬 종류와 일치하지 않으면 거부된다.
 
@@ -36,6 +36,15 @@
 - `recipe_progress.updated_at`은 DB trigger가 `clock_timestamp()`로 소유한다. 클라이언트 `updatedAt`은 병합 안내용일 뿐 잠금 기준으로 신뢰하지 않는다.
 - `(user_id, recipe_id, servings)`는 유일하고 app role 직접 접근은 전부 거부한다. `service_role`만 select·insert·update할 수 있다.
 
+## 레시피 장보기 병합
+
+- Supabase Bearer token을 서버에서 다시 검증하며 서명된 익명 사용자와 영구 사용자만 허용한다. 호출자 지정 사용자·기기·가족 범위는 받지 않고 검증된 `user.id`의 개인 장보기만 조회·저장한다.
+- 본문은 최대 8KB이고 `recipeId`, `servings`, `selectedIngredientIds` 세 필드만 허용한다. 레시피와 선택 재료는 UUID, 인분은 1~20, 선택 재료는 중복 없는 1~50개여야 한다. 이름·수량·카테고리·레시피 출처는 클라이언트 입력으로 받지 않는다.
+- 서버가 공개 승인된 v2 레시피를 다시 조회하고 정확한 recipe ingredient ID와 편집자 검수 `serving_variants`에서 이름·수량·카테고리·출처를 만든다. 공개되지 않은 레시피는 `404`, 레시피 밖 재료나 검수되지 않은 인분은 `400`으로 닫힌다.
+- 기존 개인 장보기는 `.eq("user_id", user.id).is("family_group_id", null)`로 제한한다. `달걀`·`계란` 같은 등록 별칭은 한 항목으로 보고 호환 수량을 합치며 구매 완료 항목은 미구매로 되돌리고 레시피 출처를 중복 없이 보존한다.
+- 새 항목 ID는 검증된 사용자와 정규화 재료 identity로 안정적으로 만들므로 같은 재시도가 중복 행을 만들지 않는다. 기존 항목의 사용자·기기·ID는 보존하며 다른 사용자나 가족 범위 행이 병합 함수에 들어오면 쓰기를 거부한다.
+- 이 경로는 기존 `shopping_items`와 가족 범위 migration을 재사용하며 새 DB migration을 추가하지 않는다. 프런트 로컬-first 병합을 서버 API로 전환하는 작업은 격리 staging에서 서명 익명·영구 사용자 `200/201`, 무서명 `401`, 교차 사용자 차단과 실제 수량 병합을 확인한 뒤 진행한다.
+
 ## 분산 레이트 리밋
 
 운영에서는 `API_RATE_LIMIT_HMAC_SECRET`이 32자 이상이어야 한다. 원본 IP 또는 사용자 키는 저장하지 않고 HMAC-SHA256 가명값만 `api_rate_limit_buckets`에 저장한다. 원자적 fixed-window RPC는 `service_role`만 실행할 수 있다. 운영 비밀 또는 RPC가 준비되지 않으면 API는 in-memory 제한기로 우회하지 않고 `503 DEPENDENCY_NOT_READY`로 닫힌다.
@@ -56,7 +65,7 @@ openssl rand -base64 48
 6. staging에 `20260715100000_add_recipe_serving_variants.sql`을 적용하고 각 공개 후보에 기준 인분을 포함한 2개 이상의 편집자 검수 수량·도구·시간 값을 입력한다.
 7. staging에 `20260715110000_add_recipe_progress.sql`을 적용하고 app role 직접 접근 거부, 영구 사용자별 격리, 서버 시각 trigger와 비파괴 rollback을 확인한다.
 8. 완료·실패 상태별 허용/거부 조합과 모든 비파괴 rollback을 실제 PostgreSQL에서 검증한다.
-9. 목록·상세·추천의 정상 경로, 불완전한 serving variant의 목록·상세 동시 차단, 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다. 진행 API는 생성 `201`, 수정 `200`, 조회 `200`, 무서명·익명 `401`, 오래된 `baseServerUpdatedAt`과 생성 경쟁 `409`, 본문 `400`·`413`, `429`, 저장소 미준비 `503`을 확인한다.
+9. 목록·상세·추천의 정상 경로, 불완전한 serving variant의 목록·상세 동시 차단, 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다. 진행 API는 생성 `201`, 수정 `200`, 조회 `200`, 무서명·익명 `401`, 오래된 `baseServerUpdatedAt`과 생성 경쟁 `409`, 본문 `400`·`413`, `429`, 저장소 미준비 `503`을 확인한다. 장보기 병합 API는 새 항목 `201`, 기존 별칭·수량 병합 `200`, 무서명 `401`, 레시피 밖 재료·검수되지 않은 인분 `400`, 과대 본문 `413`, 제한 `429`, 저장소 미준비 `503`, 개인·사용자 범위 격리를 확인한다.
 10. matching app build, DB migration, 검수된 serving variant 데이터를 조정된 변경 창에 운영 반영한다.
 11. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
 
@@ -76,5 +85,7 @@ node --experimental-strip-types --test \
   tests/recipe-feedback-contract.test.ts \
   tests/recipe-cook-completion.test.ts \
   tests/recipe-progress.test.ts \
-  tests/recipe-progress-contract.test.ts
+  tests/recipe-progress-contract.test.ts \
+  tests/shopping-from-recipe.test.ts \
+  tests/shopping-from-recipe-contract.test.ts
 ```

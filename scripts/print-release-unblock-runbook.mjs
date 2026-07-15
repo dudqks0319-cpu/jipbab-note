@@ -35,6 +35,7 @@ const requiredTerms = [
   "serving_variants",
   "POST /api/v1/recipe-feedback",
   "POST /api/v1/recipe-progress",
+  "POST /api/v1/shopping/items/from-recipe",
   "iPhone `[redacted-device]`",
   "App Store Connect/TestFlight: confirmed",
   "Play Console internal testing: confirmed",

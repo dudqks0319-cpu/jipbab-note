@@ -30,6 +30,7 @@ test("release unblock runbook covers all remaining external blocker surfaces", (
   assert.match(runbook, /20260715100000_add_recipe_serving_variants\.sql/);
   assert.match(runbook, /serving_variants/);
   assert.match(runbook, /POST \/api\/v1\/recipe-feedback/);
+  assert.match(runbook, /POST \/api\/v1\/shopping\/items\/from-recipe/);
 });
 
 test("release unblock runbook includes the post-unblock verification commands", () => {

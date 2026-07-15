@@ -20,6 +20,7 @@ const routeSources = [
   readFileSync("app/api/v1/recommendations/route.ts", "utf8"),
   readFileSync("app/api/v1/recipe-feedback/route.ts", "utf8"),
   readFileSync("app/api/v1/recipe-progress/route.ts", "utf8"),
+  readFileSync("app/api/v1/shopping/items/from-recipe/route.ts", "utf8"),
 ];
 
 const checks = [];
@@ -73,8 +74,9 @@ check(
     '"POST /api/v1/recipe-feedback"',
     '"GET /api/v1/recipe-progress"',
     '"POST /api/v1/recipe-progress"',
+    '"POST /api/v1/shopping/items/from-recipe"',
   ]),
-  "API v1 list, detail, recommendation, feedback, and progress endpoints are named without raw URLs",
+  "API v1 list, detail, recommendation, feedback, progress, and shopping endpoints are named without raw URLs",
 );
 check(
   "one-shot request recorder",
