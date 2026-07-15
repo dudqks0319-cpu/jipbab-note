@@ -7,6 +7,7 @@ import {
   searchIngredientCatalog,
 } from "../lib/ingredient-catalog.ts";
 import {
+  normalizeLegacyIngredientCategory,
   normalizeIngredientInput,
   suggestIngredientCategory,
 } from "../lib/ingredient-category.ts";
@@ -109,4 +110,13 @@ test("ingredient input normalization trims whitespace and conservative trailing 
   assert.equal(normalizeIngredientInput("  테스트재료ㅍ  "), "테스트재료");
   assert.equal(normalizeIngredientInput("청양 고추"), "청양 고추");
   assert.equal(normalizeIngredientInput("ㅋㅋ"), "ㅋㅋ");
+});
+
+test("repairs only known legacy dairy misclassifications", () => {
+  assert.equal(normalizeLegacyIngredientCategory("계란", "유제품"), "육류");
+  assert.equal(normalizeLegacyIngredientCategory("달걀", "유제품"), "육류");
+  assert.equal(normalizeLegacyIngredientCategory("두부", "유제품"), "통조림/가공식품");
+  assert.equal(normalizeLegacyIngredientCategory("우유", "유제품"), "유제품");
+  assert.equal(normalizeLegacyIngredientCategory("계란", "수산물"), "육류");
+  assert.equal(normalizeLegacyIngredientCategory("두부", "채소"), "통조림/가공식품");
 });

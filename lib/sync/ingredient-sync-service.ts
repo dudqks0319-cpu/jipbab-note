@@ -1,4 +1,5 @@
 import { INGREDIENT_SYNC_TIMEOUT_MS, mergeIngredientRecords, withTimeout } from "../ingredient-sync.ts";
+import { normalizeLegacyIngredientCategory } from "../ingredient-category.ts";
 import {
   hardDeleteLocalIngredient,
   listLocalIngredients,
@@ -91,7 +92,7 @@ function rowToRecord(row: RawIngredientRow, syncedAt = new Date().toISOString())
     userId: row.user_id,
     familyGroupId: row.family_group_id ?? null,
     name: row.name,
-    category: row.category,
+    category: normalizeLegacyIngredientCategory(row.name, row.category),
     storageType: row.storage_type,
     quantity: row.quantity,
     expiryDate: row.expiry_date,
@@ -150,7 +151,7 @@ function toRemotePayload(record: LocalIngredientRecord, userId: string): RemoteI
     user_id: userId,
     ...(record.familyGroupId ? { family_group_id: record.familyGroupId } : {}),
     name: record.name,
-    category: record.category,
+    category: normalizeLegacyIngredientCategory(record.name, record.category),
     storage_type: record.storageType,
     quantity: record.quantity,
     expiry_date: record.expiryDate,

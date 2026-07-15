@@ -9,7 +9,7 @@ type StarterIngredientTemplate = Omit<IngredientFormPayload, "expiryDate"> & {
 export const STARTER_INGREDIENT_TEMPLATES: StarterIngredientTemplate[] = [
   {
     name: "계란",
-    category: "유제품",
+    category: "육류",
     storageType: "냉장",
     quantity: "10개",
     expiryOffsetDays: 10,
@@ -18,7 +18,7 @@ export const STARTER_INGREDIENT_TEMPLATES: StarterIngredientTemplate[] = [
   },
   {
     name: "두부",
-    category: "유제품",
+    category: "통조림/가공식품",
     storageType: "냉장",
     quantity: "1모",
     expiryOffsetDays: 5,

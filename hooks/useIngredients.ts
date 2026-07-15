@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
+import { normalizeLegacyIngredientCategory } from "@/lib/ingredient-category";
 import {
   getLocalIngredient,
   listLocalIngredients,
@@ -59,9 +60,10 @@ export interface UseIngredientsResult {
 }
 
 function normalizeFormPayload(payload: IngredientFormPayload): IngredientFormPayload {
+  const name = payload.name.trim();
   return {
-    name: payload.name.trim(),
-    category: payload.category ?? null,
+    name,
+    category: normalizeLegacyIngredientCategory(name, payload.category ?? null),
     storageType: payload.storageType ?? DEFAULT_STORAGE_TYPE,
     quantity: payload.quantity?.trim() || null,
     expiryDate: toDateOnlyString(payload.expiryDate) ?? null,

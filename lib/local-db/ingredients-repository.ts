@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
+import { normalizeLegacyIngredientCategory } from "../ingredient-category.ts";
+
 import {
   deleteLocalRecord,
   putLocalRecord,
@@ -106,7 +108,7 @@ function coerceLegacyIngredient(value: unknown): LocalIngredientRecord | null {
     userId: stringOrNull(value.userId),
     familyGroupId: stringOrNull(value.familyGroupId),
     name,
-    category: categoryOrNull(value.category),
+    category: normalizeLegacyIngredientCategory(name, categoryOrNull(value.category)),
     storageType: storageTypeOrDefault(value.storageType),
     quantity: stringOrNull(value.quantity),
     expiryDate: stringOrNull(value.expiryDate),
@@ -127,6 +129,11 @@ function coerceLegacyIngredient(value: unknown): LocalIngredientRecord | null {
     syncStatus: syncStatusOrDefault(value.syncStatus, "pending_update"),
     lastSyncedAt: stringOrNull(value.lastSyncedAt),
   };
+}
+
+function normalizeStoredIngredient(record: LocalIngredientRecord): LocalIngredientRecord {
+  const category = normalizeLegacyIngredientCategory(record.name, record.category);
+  return category === record.category ? record : { ...record, category };
 }
 
 async function migrateLegacyIngredients(): Promise<void> {
@@ -199,13 +206,15 @@ export async function listLocalIngredients(
   return records
     .filter((item) => belongsToIngredientScope(item, deviceId, scopeContext))
     .filter((item) => options.includeDeleted || !item.deletedAt)
+    .map(normalizeStoredIngredient)
     .sort(compareNewestFirst);
 }
 
 export async function getLocalIngredient(ingredientId: string): Promise<LocalIngredientRecord | null> {
   await ensureIngredientsMigrated();
   const records = await readAllFromStore<LocalIngredientRecord>(LOCAL_DB_STORES.ingredients);
-  return records.find((item) => item.id === ingredientId) ?? null;
+  const record = records.find((item) => item.id === ingredientId);
+  return record ? normalizeStoredIngredient(record) : null;
 }
 
 export async function replaceScopedLocalIngredients(
@@ -215,20 +224,22 @@ export async function replaceScopedLocalIngredients(
 ): Promise<LocalIngredientRecord[]> {
   await ensureIngredientsMigrated();
   const current = await readAllFromStore<LocalIngredientRecord>(LOCAL_DB_STORES.ingredients);
+  const normalizedScopedItems = nextScopedItems.map(normalizeStoredIngredient);
   const nextItems = [
-    ...nextScopedItems,
+    ...normalizedScopedItems,
     ...current.filter((item) => !belongsToIngredientScope(item, deviceId, scopeContext)),
   ];
   await putLocalRecords(LOCAL_DB_STORES.ingredients, nextItems);
-  return nextScopedItems.filter((item) => !item.deletedAt).sort(compareNewestFirst);
+  return normalizedScopedItems.filter((item) => !item.deletedAt).sort(compareNewestFirst);
 }
 
 export async function upsertLocalIngredient(
   record: LocalIngredientRecord,
 ): Promise<LocalIngredientRecord> {
   await ensureIngredientsMigrated();
-  await putLocalRecord(LOCAL_DB_STORES.ingredients, record);
-  return record;
+  const normalizedRecord = normalizeStoredIngredient(record);
+  await putLocalRecord(LOCAL_DB_STORES.ingredients, normalizedRecord);
+  return normalizedRecord;
 }
 
 export async function hardDeleteLocalIngredient(ingredientId: string): Promise<void> {
