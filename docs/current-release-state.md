@@ -2,6 +2,16 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 OPS-005 조리 모드 점진 활성화
+
+- 서버 전용 `COOK_MODE_ROLLOUT_PERCENT`로 조리 모드를 레시피 단위 0~100% 범위에서 안정적으로 활성화한다. 값이 없으면 기존 동작을 보존하도록 100%, 공백·소수·범위 밖 값 등 명시된 잘못된 값은 0%로 fail-closed한다. 버킷은 레시피 ID만 사용하는 결정적 FNV-1a 해시이며 사용자·기기·세션·IP 추적은 추가하지 않았다.
+- 서버 route가 활성화 여부 boolean만 client에 전달한다. 활성 상태는 기존 `조리 시작`과 한 단계 조리 모드를 유지하고, 비활성 상태는 `순서 보기` CTA와 `한 단계 조리 모드 준비 중` 안내를 표시하면서 재료·도구·장보기·일반 조리순서는 그대로 제공한다. 운영 적용·즉시 중지·복구 절차는 `docs/cook-mode-rollout.md`와 기존 롤백 리허설 문서에 연결했다.
+- 집중 계약 18/18과 전체 단위 테스트 482/482, TypeScript, production build 40/40 경로, integration, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. CI-safe 정적 게이트는 앱·저장소 검사 18개를 통과했고 폐기된 npm audit endpoint HTTP 410만 실패했다. 최신 pnpm bulk 감사에서는 moderate/high/critical 0건, 기존 low 1건이며 새 의존성이나 lockfile 변경은 없다.
+- 390x844 로컬 합성 검수 route에서 100% 활성 상태의 실제 한 단계 화면과 2초 타이머 완료 시각 안내, 0% 비활성 상태의 접근 가능한 fallback과 기존 재료·장보기·조리순서 보존을 확인했다. 본문 폭/스크롤 폭은 390/390, 보이는 조작부 최소 높이는 44px다. 합성 route는 검수 뒤 제거했으며 실제 사용자·운영 레시피 증거로 승격하지 않았다.
+- 구현 커밋 `3f930a0f74bdf632db959f0d891ba92ced72f6f5`을 `origin/agent/phase6-observability-analytics`에 push했다. Vercel Git Preview `dpl_4Wu2YccTGDGcjurbbryRrc5r2rgF` (`https://jipbab-note-lwdzmph0v-youngbeens-projects.vercel.app`)은 `dudqks0319-cpu/jipbab-note`의 정확한 branch와 SHA를 clone하고 compile, TypeScript, 40/40 경로를 통과해 `READY`가 됐다. target은 Preview이며 Production 승격·alias 변경은 하지 않았다.
+- 보호된 Preview의 루트와 `/fridge?demo=appstore`는 인증된 Vercel fetch에서 HTTP 200을 반환했다. 만료형 접근 경로로 실제 Preview 홈을 인앱 브라우저 390px에서 열어 제목 `집밥노트`, `있는 재료로 오늘 메뉴 정해요`, 하단 홈·냉장고·레시피·장보기·마이, 본문 폭/스크롤 폭 390/390, 보이는 조작부 최소 높이 44px를 확인했다. 임시 접근 토큰은 문서나 Git에 기록하지 않았다.
+- 실제 운영 비율 변경, rollout cohort 관측, 실제 사용자·iOS·Android 실기기 검증은 Owner `ReleaseOperator`, due `before_store_candidate_signoff`로 남긴다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`, 운영 DB, 사람·실제 조리·스토어 증거는 변경하지 않았다.
+
 ## 2026-07-15 FE-018 반응형 이미지 최적화
 
 - 로컬 레시피 이미지는 `next/image`의 반응형 `sizes`, WebP, lazy loading, blur placeholder를 사용한다. 첫 화면 핵심 이미지만 preload하고 로컬 SVG는 원본으로 유지한다. 임의 외부 사용자 URL은 원격 도메인을 전역 허용하지 않으며 실패 시 검증된 로컬 대체 이미지로 전환하고, 대체 이미지도 실패하면 기존 박스 크기를 유지한 한국어 상태를 표시한다.
