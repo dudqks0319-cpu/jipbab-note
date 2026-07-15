@@ -172,6 +172,7 @@ export default function RecipeServingWorkspace({
         publicationEvidence={publicationEvidence}
         ingredientList={ingredientList}
         ingredientDetails={selectedIngredients}
+        requiredTools={requiredTools}
         servings={selectedServings}
         baseServings={baseServings}
         storageTip={storageTip}

@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChefHat, ChevronLeft, ChevronRight, List, RotateCcw, Timer } from 'lucide-react'
+import { Check, ChefHat, ChevronLeft, ChevronRight, List, RotateCcw, Timer, Wrench } from 'lucide-react'
 
 import RecipeCookCompletion from '@/components/recipe/RecipeCookCompletion'
 import RecipeCookFeedbackForm from '@/components/recipe/RecipeCookFeedbackForm'
+import RecipeImage from '@/components/recipe/RecipeImage'
+import { resolveRecipeCookStepIngredients } from '@/lib/recipe-cook-step'
 import {
   createRecipeCookTimer,
   normalizeRecipeCookProgress,
@@ -30,6 +32,7 @@ type RecipeCookModeProps = {
   publicationEvidence: RecipePublicationEvidence
   ingredientList: string[]
   ingredientDetails: RecipeIngredientDetail[]
+  requiredTools: string[]
   storageTip: string | null
   reheatTip: string | null
   steps: RecipeDetailStep[]
@@ -61,6 +64,16 @@ function stepTimerSeconds(step: RecipeDetailStep): number | null {
   return typeof seconds === 'number' && Number.isInteger(seconds) && seconds > 0 ? seconds : null
 }
 
+function stepDurationLabel(step: RecipeDetailStep): string | null {
+  const minimum = step.durationSecondsMin
+  if (typeof minimum !== 'number' || !Number.isInteger(minimum) || minimum <= 0) return null
+  const maximum = step.durationSecondsMax
+  if (typeof maximum !== 'number' || !Number.isInteger(maximum) || maximum <= minimum) {
+    return formatDurationLabel(minimum)
+  }
+  return `${formatDurationLabel(minimum)}~${formatDurationLabel(maximum)}`
+}
+
 function playCompletionSignal(context: AudioContext | null) {
   navigator.vibrate?.([180, 100, 180])
   if (!context) return
@@ -90,6 +103,7 @@ export default function RecipeCookMode({
   publicationEvidence,
   ingredientList,
   ingredientDetails,
+  requiredTools,
   storageTip,
   reheatTip,
   steps,
@@ -115,6 +129,11 @@ export default function RecipeCookMode({
   const timerRunning = Boolean(activeTimer && remainingSeconds > 0)
   const allComplete = steps.length > 0 && checkedSteps.size === steps.length
   const progress = steps.length === 0 ? 0 : Math.round((checkedSteps.size / steps.length) * 100)
+  const activeStep = steps[Math.min(activeStepIndex, steps.length - 1)] ?? null
+  const activeStepIngredients = useMemo(
+    () => activeStep ? resolveRecipeCookStepIngredients(activeStep, ingredientDetails) : [],
+    [activeStep, ingredientDetails],
+  )
 
   useEffect(() => {
     try {
@@ -219,18 +238,32 @@ export default function RecipeCookMode({
     }
   }, [allComplete, completedAt])
 
-  if (steps.length === 0) return null
-  const activeStep = steps[Math.min(activeStepIndex, steps.length - 1)]
+  if (!activeStep) return null
   const activeTimerSeconds = stepTimerSeconds(activeStep)
+  const activeDurationLabel = stepDurationLabel(activeStep)
+  const activeStepComplete = checkedSteps.has(activeStep.index)
+  const isLastStep = activeStepIndex === steps.length - 1
 
-  const toggleStep = (index: number) => {
-    if (!startedAt && !checkedSteps.has(index)) setStartedAt(new Date().toISOString())
+  const markStepComplete = (index: number) => {
+    if (!startedAt) setStartedAt(new Date().toISOString())
     setCheckedSteps((previous) => {
+      if (previous.has(index)) return previous
       const next = new Set(previous)
-      if (next.has(index)) next.delete(index)
-      else next.add(index)
+      next.add(index)
       return next
     })
+  }
+  const undoStepComplete = (index: number) => {
+    setCheckedSteps((previous) => {
+      if (!previous.has(index)) return previous
+      const next = new Set(previous)
+      next.delete(index)
+      return next
+    })
+  }
+  const completeAndContinue = () => {
+    markStepComplete(activeStep.index)
+    if (!isLastStep) setActiveStepIndex((current) => Math.min(steps.length - 1, current + 1))
   }
   const startTimer = (step: RecipeDetailStep) => {
     const duration = stepTimerSeconds(step)
@@ -277,36 +310,93 @@ export default function RecipeCookMode({
           <div className="h-full rounded-full bg-[#ea5a1f]" style={{ width: `${progress}%` }} />
         </div>
 
+        <p className="sr-only" aria-live="polite">
+          {activeStep.index}단계, {activeStep.title || activeStep.action || activeStep.description}
+        </p>
+
         <div className="mt-4 rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
           <div className="flex items-center justify-between gap-3">
-            <span className="rounded-full bg-[#2f2117] px-3 py-1 text-[11px] font-black text-white">{activeStep.index}/{steps.length}</span>
-            <button type="button" onClick={() => setShowAllSteps((current) => !current)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[#eadcc9] px-3 text-[11px] font-black text-[#7d6d5f]">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#2f2117] px-3 py-1 text-[11px] font-black text-white">{activeStep.index}/{steps.length}단계</span>
+              <span className={`rounded-full px-3 py-1 text-[11px] font-black ${activeStepComplete ? 'bg-[#e7f4df] text-[#315f2d]' : 'bg-white text-[#7d6d5f]'}`}>
+                {activeStepComplete ? '완료한 단계' : '진행 중'}
+              </span>
+            </div>
+            <button type="button" aria-expanded={showAllSteps} aria-controls="cook-step-list" onClick={() => setShowAllSteps((current) => !current)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[#eadcc9] px-3 text-[11px] font-black text-[#7d6d5f]">
               <List size={13} /> {showAllSteps ? '한 단계씩' : '전체보기'}
             </button>
           </div>
-          <h3 className="mt-3 text-[18px] font-black leading-6 text-[#2f2117]">{activeStep.title || `${activeStep.index}단계`}</h3>
-          <p className="mt-2 text-[15px] font-bold leading-7 text-[#4b3929]">{activeStep.action || activeStep.description}</p>
-          <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] font-black">
-            <span className="rounded-[12px] bg-[#fff0e4] px-3 py-2 text-[#d94d19]">불: {activeStep.heat}</span>
-            <span className="rounded-[12px] bg-[#eef6df] px-3 py-2 text-[#3d7b38]">시간: {formatDurationLabel(activeStep.durationSecondsMin ?? 0)}</span>
-          </div>
-          <div className="mt-3 space-y-2 text-[12px] font-semibold leading-5">
+          {activeStep.imageUrl ? (
+            <RecipeImage
+              src={activeStep.imageUrl}
+              alt={activeStep.imageAlt || `${recipeName} 조리 ${activeStep.index}단계`}
+              caption={activeStep.imageCaption}
+              className="relative mt-4 aspect-[16/10] w-full overflow-hidden rounded-[14px] bg-[#f2eee8]"
+              imageClassName="h-full w-full object-cover"
+            />
+          ) : null}
+          <h3 className="mt-5 break-keep text-[19px] font-black leading-7 text-[#2f2117]">{activeStep.title || `${activeStep.index}단계`}</h3>
+          <p className="mt-2 break-keep text-[21px] font-bold leading-[1.55] text-[#4b3929]">{activeStep.action || activeStep.description}</p>
+
+          {activeStepIngredients.length > 0 ? (
+            <section className="mt-5 rounded-[14px] border border-[#eadcc9] bg-white px-3 py-3" aria-labelledby={`cook-step-${activeStep.index}-ingredients`}>
+              <h4 id={`cook-step-${activeStep.index}-ingredients`} className="text-[13px] font-black text-[#6f4b2e]">이 단계 재료</h4>
+              <ul className="mt-2 divide-y divide-[#f0e8de]">
+                {activeStepIngredients.map((ingredient) => (
+                  <li key={ingredient.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2 first:pt-0 last:pb-0">
+                    <span className="min-w-0 text-[14px] font-bold leading-6 text-[#4b3929]">
+                      {ingredient.name}
+                      {ingredient.usageText ? <small className="block text-[11px] font-semibold leading-4 text-[#8f7f70]">{ingredient.usageText}</small> : null}
+                    </span>
+                    <strong className="text-right text-[14px] leading-6 text-[#2f2117]">{ingredient.display}</strong>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {requiredTools.length > 0 ? (
+            <div className="mt-3 flex items-start gap-2 rounded-[12px] bg-[#f4fbef] px-3 py-3 text-[#426e35]">
+              <Wrench size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <p className="text-[12px] font-bold leading-5"><strong>이 레시피 도구:</strong> {requiredTools.join(' · ')}</p>
+            </div>
+          ) : null}
+
+          {activeStep.heat || activeDurationLabel ? (
+            <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] font-black">
+              {activeStep.heat ? <span className="rounded-[12px] bg-[#fff0e4] px-3 py-2 text-[#d94d19]">불: {activeStep.heat}</span> : <span />}
+              {activeDurationLabel ? <span className="rounded-[12px] bg-[#eef6df] px-3 py-2 text-[#3d7b38]">시간: {activeDurationLabel}</span> : null}
+            </div>
+          ) : null}
+          <div className="mt-3 space-y-2 text-[13px] font-semibold leading-6">
             {activeStep.visualCue ? <p className="rounded-[12px] bg-white px-3 py-2 text-[#6e431d]">눈으로 확인: {activeStep.visualCue}</p> : null}
             {activeStep.beginnerTip ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">초보 팁: {activeStep.beginnerTip}</p> : null}
             {activeStep.safetyNote ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">안전: {activeStep.safetyNote}</p> : null}
+            {activeStep.commonMistake ? <p className="rounded-[12px] bg-[#fff4f0] px-3 py-2 text-[#9d4b34]">주의: {activeStep.commonMistake}</p> : null}
             {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">막혔을 때: {activeStep.rescueTip}</p> : null}
           </div>
-          <div className="mt-4 grid grid-cols-[0.8fr_1.2fr_0.8fr] gap-2">
-            <button type="button" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] text-[12px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전</button>
-            <button type="button" onClick={() => toggleStep(activeStep.index)} className={`flex min-h-12 items-center justify-center gap-2 rounded-[14px] text-[13px] font-black text-white ${checkedSteps.has(activeStep.index) ? 'bg-[#3d7b38]' : 'bg-[#2f2117]'}`}><Check size={15} /> {checkedSteps.has(activeStep.index) ? '완료됨' : '완료 체크'}</button>
-            <button type="button" onClick={() => setActiveStepIndex((current) => Math.min(steps.length - 1, current + 1))} disabled={activeStepIndex >= steps.length - 1} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] bg-[#ea5a1f] text-[12px] font-black text-white disabled:opacity-40">다음 <ChevronRight size={15} /></button>
-          </div>
           {activeTimerSeconds ? (
-            <button type="button" onClick={() => startTimer(activeStep)} className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-[13px] bg-[#fff0e4] px-3 text-[13px] font-black text-[#d94d19]">
+            <button type="button" onClick={() => startTimer(activeStep)} style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#fff0e4] px-3 text-[14px] font-black text-[#d94d19]">
               <Timer size={14} />
               {activeTimer?.stepIndex === activeStep.index ? (remainingSeconds === 0 ? '타이머 완료' : formatRemainingTime(remainingSeconds)) : `${formatDurationLabel(activeTimerSeconds)} 타이머`}
             </button>
           ) : null}
+          <button
+            type="button"
+            onClick={completeAndContinue}
+            style={{ minHeight: 56 }}
+            className="mt-3 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 text-[15px] font-black text-white shadow-[0_8px_20px_rgba(234,90,31,0.2)]"
+          >
+            <Check size={17} />
+            {isLastStep ? '요리 완성하기' : activeStepComplete ? '다음 단계로' : '이 단계 완료하고 다음으로'}
+            {!isLastStep ? <ChevronRight size={17} /> : null}
+          </button>
+          <div className={`mt-2 grid gap-2 ${activeStepComplete ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <button type="button" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] bg-white text-[13px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전 단계</button>
+            {activeStepComplete ? (
+              <button type="button" onClick={() => undoStepComplete(activeStep.index)} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center rounded-[14px] border border-[#eadcc9] bg-white px-3 text-[13px] font-black text-[#7d6d5f]">완료 취소</button>
+            ) : null}
+          </div>
           {!allComplete ? (
             <button
               type="button"
@@ -323,9 +413,9 @@ export default function RecipeCookMode({
         </div>
 
         {showAllSteps ? (
-          <div className="mt-3 space-y-2">
+          <div id="cook-step-list" className="mt-3 space-y-2">
             {steps.map((step) => (
-              <button key={step.index} type="button" onClick={() => { setActiveStepIndex(steps.findIndex((candidate) => candidate.index === step.index)); setShowAllSteps(false) }} className="flex min-h-12 w-full items-start gap-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-left">
+              <button key={step.index} type="button" aria-current={activeStep.index === step.index ? 'step' : undefined} onClick={() => { setActiveStepIndex(steps.findIndex((candidate) => candidate.index === step.index)); setShowAllSteps(false) }} style={{ minHeight: 52 }} className="flex min-h-[52px] w-full items-start gap-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-left">
                 <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${checkedSteps.has(step.index) ? 'border-[#3d7b38] bg-[#3d7b38] text-white' : 'border-[#c9b7a4] text-[#8f7f70]'}`}>{checkedSteps.has(step.index) ? <Check size={13} /> : step.index}</span>
                 <span className="text-sm font-semibold leading-6 text-[#4b3929]">{step.description}</span>
               </button>

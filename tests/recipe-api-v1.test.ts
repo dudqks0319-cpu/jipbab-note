@@ -486,6 +486,9 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
   assert.equal(displayRecord.steps[0]?.minutes, 1);
   assert.equal(displayRecord.steps[0]?.durationSecondsMin, 60);
   assert.equal(displayRecord.steps[0]?.timerPresetSeconds, 60);
+  assert.deepEqual(displayRecord.steps[0]?.ingredientUsages, [
+    { recipeIngredientId: "ingredient-1", usageText: "단계에서 사용한다." },
+  ]);
   assert.equal(displayRecord.steps[0]?.safetyNote, "뜨거운 냄비를 조심한다.");
   assert.equal(displayRecord.steps[0]?.rescueTip, "너무 익으면 불을 끄고 물을 조금 넣는다.");
   assert.deepEqual(displayRecord.safetyNotes, ["달걀은 충분히 익힌다."]);

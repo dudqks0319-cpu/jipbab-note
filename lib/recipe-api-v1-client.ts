@@ -421,6 +421,10 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     safetyNote: step.safetyNote,
     visualCue: step.cues.visual,
     rescueTip: step.recoveryTip,
+    ingredientUsages: step.ingredientUsages.map((usage) => ({
+      recipeIngredientId: usage.recipeIngredientId,
+      usageText: usage.usageText,
+    })),
   }));
 
   return {

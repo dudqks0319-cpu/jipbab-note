@@ -47,3 +47,19 @@ test("FE-009 shopping UI separates exact, alias, reviewed substitute, and unreso
   assert.match(shoppingAssistant, /판정 보류/);
   assert.doesNotMatch(shoppingAssistant, /calculateRecipeIngredientMatch/);
 });
+
+test("FE-011 cook mode presents one large step with exact ingredients and one primary action", () => {
+  assert.match(detailPage, /href="#cook-mode"/);
+  assert.match(detailPage, /조리 시작/);
+  assert.match(cookMode, /resolveRecipeCookStepIngredients/);
+  assert.match(cookMode, /activeStep\.imageUrl/);
+  assert.match(cookMode, /이 단계 재료/);
+  assert.match(cookMode, /이 단계 완료하고 다음으로/);
+  assert.match(cookMode, /요리 완성하기/);
+  assert.match(cookMode, /text-\[21px\]/);
+  assert.match(cookMode, /min-h-\[52px\]/);
+  assert.match(cookMode, /minHeight: 52/);
+  assert.match(cookMode, /minHeight: 56/);
+  assert.match(cookMode, /aria-live="polite"/);
+  assert.match(cookMode, /aria-current=.*'step'/);
+});

@@ -492,6 +492,12 @@ export interface RecipeDetailStep {
   rescueTip?: string | null;
   imageAlt?: string | null;
   imageCaption?: string | null;
+  ingredientUsages?: RecipeStepIngredientUsage[];
+}
+
+export interface RecipeStepIngredientUsage {
+  recipeIngredientId: string;
+  usageText: string | null;
 }
 
 export interface RecipeIngredientSubstitution {

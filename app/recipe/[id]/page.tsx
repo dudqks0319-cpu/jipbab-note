@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   BookOpenText,
+  ChefHat,
   ChevronLeft,
   Clock3,
   Gauge,
@@ -148,8 +149,8 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <a href="#ingredients" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#fff5e9] px-2 text-sm font-black text-[#d94d19]">
             <ShoppingBasket size={18} /> 재료 확인
           </a>
-          <a href="#instructions" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]">
-            <BookOpenText size={18} /> 조리 순서
+          <a href="#cook-mode" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]">
+            <ChefHat size={18} /> 조리 시작
           </a>
           <a href="#shopping-assistant" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#f2edfb] px-2 text-sm font-black text-[#7652b7]">
             <ShoppingBag size={18} /> 장보기
