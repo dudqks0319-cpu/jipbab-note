@@ -142,10 +142,10 @@ check(
   "legacy strings and ambiguous categories remain unconverted",
 );
 check(
-  "rollout blocker documented",
+  "rollout safety evidence documented",
   dataContract.includes("migration-history drift") &&
     dryRunReport.includes("restorable-backup requirement"),
-  "staging, history reconciliation, and backup remain required",
+  "staging, migration-history evidence, and restorable backup stay documented",
 );
 check(
   "generated evidence contains no credential material",

@@ -104,7 +104,7 @@ phase1_recipe_data:
   rollback: "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql"
   local_contract_status: "verified_28_of_28"
   production_migration_status: "schema_and_reconciled_catalog_seed_recorded_live_verified"
-  staging_execution_status: "production_catalog_seed_verified_historical_version_repair_pending"
+  staging_execution_status: "production_catalog_seed_verified_history_repaired"
   canonical_category_count: 15
   ingredient_catalog_count: 173
   exact_alias_count: 258
@@ -384,17 +384,36 @@ phase0_to_phase4_vercel_deployment:
 
 migration_history:
   remote_latest_recorded: "20260715135424"
-  local_unrecorded_before_publication:
+  local_unrecorded_before_repair:
     - "20260521160347"
     - "20260523090000"
     - "20260526093000"
     - "20260527093000"
     - "20260528010000"
     - "20260530000000"
+    - "20260710140000"
+    - "20260710151000"
+    - "20260711113000"
+  local_unrecorded_after_repair: []
+  repaired_as_applied:
+    - "20260521160347"
+    - "20260523090000"
+    - "20260526093000"
+    - "20260527093000"
+    - "20260528010000"
+    - "20260530000000"
+    - "20260710140000"
+    - "20260710151000"
+    - "20260711113000"
+  remote_bridge_versions:
+    - "20260715101534"
+    - "20260715101553"
+    - "20260715101658"
+    - "20260715101716"
   publication_migration_recorded_remote: true
   signed_guest_auth_migration_recorded_remote: true
   phase1_schema_migration_recorded_remote: true
-  phase1_catalog_seed_recorded_remote: false
+  phase1_catalog_seed_recorded_remote: true
   phase1_catalog_reconciled_seed_recorded_remote: true
   phase2_rate_limit_migration_recorded_remote: true
   phase6_security_definer_migration_recorded_remote: true
@@ -402,7 +421,8 @@ migration_history:
   ingredient_category_migrations_recorded_remote: true
   publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
   phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
-  db_push_status: "blocked_for_full_push_until_six_older_local_versions_are_repaired"
+  local_remote_version_count: 40
+  db_push_status: "dry_run_remote_database_up_to_date_no_pending_migrations"
   reconciliation_evidence: "docs/migration-history-reconciliation-2026-07-15.md"
 
 local_checks:
@@ -642,11 +662,11 @@ blockers:
     due: "before_any_phase5_recipe_publication"
   - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
     severity: "P0"
-    status: "open"
-    title: "Production schema and catalog seed are live, but six older local migration versions still need official history repair after semantic equivalence verification."
+    status: "closed_20260715"
+    title: "Official history repair completed for nine semantically applied local versions; local and remote now match at 40 versions and db push dry-run is clean."
     owner: "FullStackDev+DBA"
     evidence: "docs/migration-history-reconciliation-2026-07-15.md"
-    due: "before_any_supabase_db_push"
+    due: "completed_before_any_future_supabase_db_push"
   - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
     severity: "P0"
     status: "open"

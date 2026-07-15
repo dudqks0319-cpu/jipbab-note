@@ -127,6 +127,10 @@ const requiredMigrationFiles = [
   "20260710151000_seed_phase1_ingredient_catalog.sql",
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260711113000_harden_security_definer_privileges.sql",
+  "20260715101534_add_recipe_comments_sync_prerequisite_20260715.sql",
+  "20260715101553_replace_device_guest_auth_with_signed_sessions_20260715.sql",
+  "20260715101658_cascade_user_deletion_sync_prerequisite_20260715.sql",
+  "20260715101716_harden_security_definer_privileges_20260715.sql",
   "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715.sql",
   "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715.sql",
 ];

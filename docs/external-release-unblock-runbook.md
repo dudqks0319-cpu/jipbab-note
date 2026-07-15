@@ -7,8 +7,8 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 
 ## 현재 차단
 
-- Supabase migration history: remote에는 publication `20260710130000`, Phase 1 schema `20260710150000`, Phase 2 rate limit `20260710160000`, signed-session hardening `20260715101716`까지 기록돼 있고 2026-07-15 live schema 대조도 완료했다. 다만 그보다 앞선 로컬 누락 이력 6개와 Phase 1 catalog seed `20260710151000`은 아직 정리되지 않았으므로 전체 `supabase db push` 또는 SQL bundle 재실행은 금지한다.
-- Phase 0/1/2 DB rollout: publication gate, Phase 1 schema, distributed rate limit, signed guest auth는 운영에 적용돼 있다. 운영 DB의 미검수 recipes 1,152건은 승인·발행·evidence-ready 모두 0건이고 공개 API는 빈 승인 목록만 반환한다. 남은 DB 작업은 catalog seed와 과거 이력 정리, 복원 rehearsal, 실제 승인 staging fixture 검증이다.
+- Supabase migration history: 공식 repair와 로컬 bridge 추가 후 로컬·원격 40개 버전이 모두 일치한다. `supabase db push --dry-run --linked`는 `Remote database is up to date.`를 반환했으며, 실제 `db push`나 스키마 DDL 재실행은 하지 않았다.
+- Phase 0/1/2 DB rollout: publication gate, Phase 1 schema·catalog seed, distributed rate limit, signed guest auth는 운영에 적용돼 있다. 운영 DB의 미검수 recipes 1,152건은 승인·발행·evidence-ready 모두 0건이고 공개 API는 빈 승인 목록만 반환한다. 남은 DB 작업은 복원 rehearsal과 실제 승인 staging fixture 검증이다.
 - 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
 - Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
 - App Store Connect/TestFlight: 2026-07-10 `pnpm check:store-console-confirmation -- --platform=appstore` 재확인에서 build `2026062602`가 `VALID`이고 내부 TestFlight 그룹이 존재했습니다. 제출 직전에는 같은 명령 또는 App Store Connect API로 다시 확인합니다.
@@ -19,9 +19,10 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 
 운영자가 먼저 해야 할 일:
 
-- live schema에서 `20260521160347` 이후 로컬 migration 각각의 실제 적용 상태를 확인하고, 아직 기록되지 않은 과거 이력 6개만 안전하게 복구합니다. 이미 적용된 `20260710130000`, `20260710150000`, `20260710160000`은 재실행하지 않습니다.
+- 공식 history repair는 완료됐습니다. 향후 새 migration 적용 전 `supabase migration list --linked`와 `supabase db push --dry-run --linked`를 다시 실행하고, 기존 적용 버전은 재실행하지 않습니다.
+- 운영 적용 완료 기준 파일은 `20260710130000_gate_recipe_publication.sql`, `20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `20260710150000_add_recipe_v2_schema_and_versioning.sql`, `20260710151000_seed_phase1_ingredient_catalog.sql`이며 새 빈 환경이 아닌 운영 DB에서 다시 실행하지 않습니다.
 - 비공개 `ops_backup`에는 Phase 0/1 적용 전 recipes 1,152건·정책 8건·migration history 19건과 signed-session 적용 전 동기화 데이터·정책·함수·history가 보존돼 있습니다. 이 스냅샷을 대상으로 실제 복원 rehearsal을 완료합니다.
-- staging에는 현재 원격 이력과 live schema를 기준으로 미적용인 `supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql`과 필요한 과거 이력 복구만 적용합니다. publication/auth/schema/rate-limit migration은 새 빈 staging branch가 아닌 이상 중복 실행하지 않습니다.
+- staging에는 현재 원격 이력과 live schema를 기준으로 새 migration만 적용합니다. publication/auth/schema/catalog/rate-limit migration은 새 빈 staging branch가 아닌 이상 중복 실행하지 않습니다.
 - staging에서 version capture/edit/restore 왕복, 같은 recipe 안의 step-ingredient 무결성, alias 유일성, non-destructive rollback을 실제 PostgreSQL로 검증합니다.
 - staging에서 무서명 요청, 위조 `x-device-id`, 다른 signed user, anonymous user의 family/community write가 모두 차단되는지 확인합니다.
 - staging 서버에 32자 이상의 server-only `API_RATE_LIMIT_HMAC_SECRET`을 설정하고 목록·상세·추천 API의 정상, `429`, `503`, 잘못된 입력 경로를 검증합니다. 자세한 계약은 `docs/api-v1-operations.md`를 따릅니다.
