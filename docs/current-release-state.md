@@ -2,7 +2,17 @@
 
 Updated: 2026-07-15 KST
 
-## 2026-07-15 FE-001 핵심 공통 API 클라이언트
+## 2026-07-15 FE-001 전체 프런트 공통 API 경계
+
+- `lib/api-client.ts`의 공통 경계가 API v1 `{ data }` envelope뿐 아니라 기존 최상위 JSON과 `204 No Content`를 처리한다. GET/HEAD는 기본 1회 bounded retry, mutation은 명시하지 않으면 재시도하지 않으며, 8초 timeout·호출자 취소·bounded request ID·안전한 오류 형식을 유지한다.
+- 댓글, 가족 공유, 바코드 조회, 직접 계정 삭제, 운영자 삭제 요청, 익명 사용자 병합을 공통 클라이언트로 옮겨 FE-001의 프런트 직접 `fetch` 마이그레이션을 완료했다. 앱 코드에 남은 `fetch`는 공통 경계 내부와 서버가 Open Food Facts를 조회하는 `app/api/products/route.ts`뿐이며, 서버 외부 dependency transport는 프런트 마이그레이션 범위가 아니다.
+- 공통 클라이언트·프런트 경계 계약 13개와 관련 테스트 68/68, 전체 단위 테스트 495/495, TypeScript, integration, 콘텐츠 검증, production build 40/40 경로, CI-safe 19/19, release security 4/4가 통과했다. lint는 오류 0건이며 기존 생성 iOS 산출물·업로드 스크립트 경고 33건만 남았다.
+- 로컬 인앱 브라우저 390x844에서 실제 `/barcode` 최상위 JSON과 상품 없음 수동 입력 fallback, `/account-delete` 로그아웃 안내, `/family` 기본 화면을 확인했다. 가로 넘침과 44px 미만 조작부는 0건이고 새 탭 console error·warning도 0건이다. 이 과정에서 발견한 바코드 카메라 지원 여부 hydration 불일치는 서버와 첫 client render를 고정하고 마운트 뒤 capability를 판정하도록 수정했다.
+- 구현 커밋 `1444d79d3570655017a39fd586d900e35d3ace9c`을 `origin/agent/phase6-observability-analytics`에 push했다. Vercel Preview `dpl_7ht4YLQeKLnLbprkNBA3ZaQqKtaY` (`https://jipbab-note-mvwv2al6l-youngbeens-projects.vercel.app`)은 같은 branch와 exact SHA를 clone해 compile, TypeScript, 40/40 경로를 통과하고 `READY`가 됐다. target은 Preview이며 Production 승격·alias 변경은 하지 않았다.
+- 보호된 Preview의 `/`, `/barcode`, `/account-delete`, `/api/products?barcode=8801007071046`은 인증된 Vercel fetch에서 모두 HTTP 200을 반환했다. 실제 배포 홈도 인앱 브라우저 390x844에서 열어 제목·홈 콘텐츠·하단 5개 탭, 본문/문서 폭 390/390, console error·warning 0건을 확인했다. 바코드 API의 최상위 JSON 상품 없음 fallback도 확인했다.
+- 댓글·가족·계정 삭제의 인증 성공 경로는 실제 계정과 운영 DB 증거 없이 브라우저 통과로 승격하지 않는다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`, 운영 DB, Production, 사람·실제 조리·스토어 증거는 변경하지 않았다.
+
+## 2026-07-15 FE-001 핵심 공통 API 클라이언트 (이전 단계 기록)
 
 - 공통 `lib/api-client.ts`가 JSON 기본 헤더, bearer token, bounded client/server request ID, 8초 timeout, 호출자 취소, bounded 오류 parsing을 한 경계에서 처리한다. GET/HEAD는 retryable 상태와 네트워크·timeout에서 기본 한 번만 재시도하고, POST는 기본 재시도하지 않는다. 읽기 전용 추천과 `clientSubmissionId`로 멱등인 피드백만 호출부에서 명시적으로 한 번 재시도한다.
 - `401`은 재시도하지 않는 typed 인증 오류로 전달한다. `429`의 `Retry-After`가 허용된 지연 예산을 넘으면 한 번의 요청 뒤 즉시 중단하며, transport 원문·bearer token·요청 본문을 오류나 로그에 복사하지 않는다. 레시피 목록·추천·상세·피드백 네 경로는 중복 fetch/envelope 코드를 제거하고 이 공통 경계를 사용한다.

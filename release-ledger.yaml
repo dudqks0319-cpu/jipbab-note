@@ -12,10 +12,10 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase7_recipe_completion_fe001_core_preview_ready_external_and_human_gates_blocked"
+  phase: "phase7_recipe_completion_fe001_frontend_complete_preview_ready_external_and_human_gates_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "21b89a79a066cec448718a799a215a9fe51d4785"
+  git_sha: "1444d79d3570655017a39fd586d900e35d3ace9c"
   branch: "agent/phase6-observability-analytics"
   dirty_state: "current_commits_pushed_user_owned_local_changes_preserved"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/api-client.md, docs/phase-4-cook-mode-report.md, docs/cook-mode-rollout.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/phase-7-recipe-feedback-collection.md, docs/current-release-state.md"
@@ -205,12 +205,12 @@ ops005_cook_mode_rollout:
   residual_due: "before_store_candidate_signoff"
   evidence: "docs/cook-mode-rollout.md, docs/current-release-state.md, output/ui-evidence/ops005-cook-mode-enabled-390.png, output/ui-evidence/ops005-cook-mode-disabled-fallback-390.png, output/ui-evidence/ops005-vercel-preview-home-390.png"
 
-fe001_api_client_core:
-  implementation_git_sha: "21b89a79a066cec448718a799a215a9fe51d4785"
-  evidence_checkpoint_git_sha: "e6d020d4a7b9b805a9eace43dd929ba7caffdcfb"
+fe001_frontend_api_client:
+  implementation_git_sha: "1444d79d3570655017a39fd586d900e35d3ace9c"
+  evidence_checkpoint_git_sha: "pending_after_fe001_frontend_evidence_commit"
   branch: "agent/phase6-observability-analytics"
-  scope: "recipe_api_v1_list_recommendation_detail_feedback"
-  overall_fe001_status: "partial_core_complete_legacy_frontend_fetches_remaining"
+  scope: "all_frontend_jipbab_api_calls_recipe_v1_comments_family_barcode_account_deletion_admin_and_anonymous_merge"
+  overall_fe001_status: "frontend_complete_authenticated_external_evidence_pending"
   default_headers_status: "verified_json_accept_content_type_and_bearer_when_explicit"
   request_correlation_status: "verified_bounded_id_stable_across_retries"
   timeout_and_cancellation_status: "verified_default_8s_timeout_and_caller_abort"
@@ -218,8 +218,8 @@ fe001_api_client_core:
   auth_401_status: "verified_typed_non_retryable"
   rate_limit_429_status: "verified_retry_after_preserved_and_no_hammer_beyond_delay_budget"
   secret_logging_status: "verified_transport_token_and_body_not_copied_to_errors_or_logs"
-  focused_contract_status: "verified_18_of_18"
-  full_unit_test_status: "verified_489_of_489"
+  focused_contract_status: "verified_68_of_68_related_13_of_13_common_boundary_and_migration"
+  full_unit_test_status: "verified_495_of_495"
   lint_status: "verified_zero_errors_33_preexisting_generated_warnings"
   typecheck_status: "verified"
   production_build_status: "verified_next_16_2_6_turbopack_40_of_40_routes"
@@ -228,22 +228,27 @@ fe001_api_client_core:
   ci_static_gate_status: "verified_19_of_19"
   release_security_status: "verified_4_of_4_pinned_pnpm11_bulk_fallback_for_retired_410_endpoint"
   dependency_audit_status: "verified_moderate_high_critical_zero_existing_low_one_no_dependency_or_lockfile_change"
-  local_browser_status: "verified_390x844_retry_two_calls_same_id_rate_limit_one_call_cancel_no_retry_console_errors_zero"
-  qa_fixture_boundary: "local_synthetic_only_removed_after_qa"
-  preview_deployment_id: "dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5"
-  preview_deployment_url: "https://jipbab-note-5hamo78k2-youngbeens-projects.vercel.app"
+  local_browser_status: "verified_390x844_barcode_top_level_json_null_fallback_account_delete_logged_out_family_layout_no_overflow_no_visible_control_below_44px_console_errors_warnings_zero"
+  barcode_hydration_status: "verified_ssr_and_first_client_render_stable_then_capability_detected_after_mount"
+  qa_fixture_boundary: "real_local_surfaces_and_public_stub_product_response_not_authenticated_or_production_db_evidence"
+  preview_deployment_id: "dpl_7ht4YLQeKLnLbprkNBA3ZaQqKtaY"
+  preview_deployment_url: "https://jipbab-note-mvwv2al6l-youngbeens-projects.vercel.app"
   preview_target: "preview"
   preview_status: "READY"
-  preview_source_commit: "21b89a79a066cec448718a799a215a9fe51d4785"
+  preview_source_commit: "1444d79d3570655017a39fd586d900e35d3ace9c"
   preview_root_http_status: 200
-  preview_recipe_http_status: 200
-  preview_recipe_api_status: "expected_redacted_503_dependency_not_ready_no_store_retry_after_60"
-  preview_mobile_status: "verified_390x844_home_and_recipe_main_388_document_390_controls_minimum_44px_console_errors_warnings_zero"
+  preview_barcode_http_status: 200
+  preview_account_delete_http_status: 200
+  preview_product_lookup_http_status: 200
+  preview_product_lookup_status: "verified_top_level_json_product_null_manual_entry_fallback"
+  preview_mobile_status: "verified_actual_home_390x844_body_and_document_390_console_errors_warnings_zero"
   production_promoted: false
   production_alias_changed: false
-  remaining_legacy_frontend_paths: "recipe_comments,family_share,account_delete,barcode,anonymous_user_merge,account_deletion_admin"
-  residual_owner: "FullStackDev"
-  residual_due: "next_nonblocked_local_slice"
+  remaining_legacy_frontend_paths: "none"
+  server_external_fetch_boundary: "app/api/products/route.ts_open_food_facts_out_of_frontend_scope"
+  authenticated_success_browser_status: "not_claimed_requires_real_account_and_operational_db_evidence"
+  residual_owner: "ReleaseOperator"
+  residual_due: "before_store_candidate_signoff"
   evidence: "docs/api-client.md, docs/current-release-state.md"
 
 phase7_recipe_completion:
