@@ -332,7 +332,6 @@ export default function HomePage() {
       </section>
       ) : null}
 
-      {!shouldShowEmptyHome ? (
       <section className="space-y-5 px-5 pt-5">
         {isLoading && recommendedRecipes.length === 0 ? (
           <div>
@@ -406,7 +405,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      ) : null}
 
       {!shouldShowEmptyHome ? (
       <section className="px-5 pt-5">

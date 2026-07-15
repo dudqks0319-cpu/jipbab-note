@@ -39,6 +39,16 @@ test("home shows the safe recipe preview instead of a blocking API error", () =>
   assert.match(homePage, /label="메뉴" value=\{`\$\{visibleRecipeCount\}개`\}/);
 });
 
+test("home exposes recipe previews before the user has saved fridge ingredients", () => {
+  assert.match(homePage, /const shouldShowEmptyHome = isEmptyFridge/);
+  assert.match(homePage, /<StarterActionCard[\s\S]*<section className="space-y-5 px-5 pt-5">/);
+  assert.doesNotMatch(
+    homePage,
+    /\{!shouldShowEmptyHome \? \(\s*<section className="space-y-5 px-5 pt-5">/,
+  );
+  assert.match(homePage, /<h2 className="text-\[16px\] font-black text-\[#2f2117\]">먼저 보는 레시피<\/h2>/);
+});
+
 test("home recovery prevents parallel retries and keeps one clear action label", () => {
   assert.match(homePage, /disabled=\{isRetrying\}/);
   assert.match(homePage, /isRetrying\s*\?\s*'다시 시도 중'\s*:\s*'다시 시도'/);
