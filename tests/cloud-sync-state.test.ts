@@ -44,12 +44,16 @@ test("inventory screens distinguish local-only storage from a real sync error", 
   assert.match(fridgePage, /cloudSyncState !== 'local-only' && item\.syncStatus/);
 });
 
-test("fridge shows an accessible success state only after cloud sync settles", () => {
-  assert.match(
-    fridgePage,
-    /cloudSyncState === 'synced' && pendingSyncCount === 0/,
-  );
-  assert.match(fridgePage, /role="status"/);
-  assert.match(fridgePage, /클라우드 동기화 완료/);
+test("inventory screens show an accessible success state only after cloud sync settles", () => {
+  for (const page of [fridgePage, shoppingPage]) {
+    assert.match(
+      page,
+      /cloudSyncState === 'synced' && pendingSyncCount === 0/,
+    );
+    assert.match(page, /role="status"/);
+    assert.match(page, /클라우드 동기화 완료/);
+  }
+
   assert.match(fridgePage, /재료 변경사항을 안전하게 저장했어요/);
+  assert.match(shoppingPage, /장보기와 냉장고 변경사항을 안전하게 저장했어요/);
 });

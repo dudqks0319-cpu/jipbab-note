@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { CalendarDays, Check, ExternalLink, Plus, RefreshCw, Refrigerator, Share2, Trash2 } from 'lucide-react'
+import { CalendarDays, Check, CheckCircle2, ExternalLink, Plus, RefreshCw, Refrigerator, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
@@ -753,6 +753,20 @@ export default function ShoppingPage() {
             >
               로그인하고 동기화
             </Link>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'synced' && pendingSyncCount === 0 ? (
+          <div
+            role="status"
+            className="mt-3 flex items-start gap-2 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]"
+          >
+            <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[13px] font-black">클라우드 동기화 완료</p>
+              <p className="mt-1 text-[12px] font-bold leading-relaxed">
+                장보기와 냉장고 변경사항을 안전하게 저장했어요.
+              </p>
+            </div>
           </div>
         ) : null}
         {!isAppStoreDemo && cloudSyncState === 'error' ? (
