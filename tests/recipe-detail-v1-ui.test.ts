@@ -49,7 +49,7 @@ test("FE-009 shopping UI separates exact, alias, reviewed substitute, and unreso
 });
 
 test("FE-011 cook mode presents one large step with exact ingredients and one primary action", () => {
-  assert.match(detailPage, /href="#cook-mode"/);
+  assert.match(detailPage, /cookModeRollout\.enabled \? "#cook-mode" : "#instructions"/);
   assert.match(detailPage, /조리 시작/);
   assert.match(cookMode, /resolveRecipeCookStepIngredients/);
   assert.match(cookMode, /activeStep\.imageUrl/);

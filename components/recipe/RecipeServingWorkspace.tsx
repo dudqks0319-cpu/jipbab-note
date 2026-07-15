@@ -17,6 +17,7 @@ import type {
 type RecipeServingWorkspaceProps = {
   recipeId: string;
   recipeVersion: number;
+  cookModeEnabled: boolean;
   recipeName: string;
   category: string;
   thumbnailUrl: string | null;
@@ -34,6 +35,7 @@ type RecipeServingWorkspaceProps = {
 export default function RecipeServingWorkspace({
   recipeId,
   recipeVersion,
+  cookModeEnabled,
   recipeName,
   category,
   thumbnailUrl,
@@ -162,23 +164,36 @@ export default function RecipeServingWorkspace({
       />
 
       <RecipeInstructionView recipeName={recipeName} steps={steps} />
-      <RecipeCookMode
-        key={`${recipeId}-${selectedServings}`}
-        recipeId={recipeId}
-        recipeVersion={recipeVersion}
-        recipeName={recipeName}
-        category={category}
-        thumbnailUrl={thumbnailUrl}
-        publicationEvidence={publicationEvidence}
-        ingredientList={ingredientList}
-        ingredientDetails={selectedIngredients}
-        requiredTools={requiredTools}
-        servings={selectedServings}
-        baseServings={baseServings}
-        storageTip={storageTip}
-        reheatTip={reheatTip}
-        steps={steps}
-      />
+      {cookModeEnabled ? (
+        <RecipeCookMode
+          key={`${recipeId}-${selectedServings}`}
+          recipeId={recipeId}
+          recipeVersion={recipeVersion}
+          recipeName={recipeName}
+          category={category}
+          thumbnailUrl={thumbnailUrl}
+          publicationEvidence={publicationEvidence}
+          ingredientList={ingredientList}
+          ingredientDetails={selectedIngredients}
+          requiredTools={requiredTools}
+          servings={selectedServings}
+          baseServings={baseServings}
+          storageTip={storageTip}
+          reheatTip={reheatTip}
+          steps={steps}
+        />
+      ) : (
+        <section id="cook-mode" className="scroll-mt-24 px-5 pb-8 pt-5" aria-labelledby="cook-mode-rollout-title">
+          <div className="border-t border-[#ece8e2] pt-6">
+            <h2 id="cook-mode-rollout-title" className="text-[19px] font-black text-[#2f2117]">
+              한 단계 조리 모드 준비 중
+            </h2>
+            <p className="mt-2 break-keep text-[14px] font-semibold leading-6 text-[#6f655b]">
+              조리 모드는 순차적으로 열고 있어요. 위의 조리순서는 그대로 확인할 수 있어요.
+            </p>
+          </div>
+        </section>
+      )}
     </>
   );
 }

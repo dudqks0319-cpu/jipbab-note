@@ -23,6 +23,7 @@ import {
   recipeApiV1DetailToRecord,
 } from "@/lib/recipe-api-v1-client";
 import { getPublicRecipeDetailV1 } from "@/lib/recipe-api-v1-repository";
+import { resolveCookModeRollout } from "@/lib/cook-mode-rollout";
 import { isBeginnerRecipeGeneratedImage } from "@/lib/recipe-images";
 import { isRecipeDetailPublicationApproved } from "@/lib/recipe-publication";
 import type { RecipeDetailRecord } from "@/types";
@@ -88,6 +89,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     : false;
   const ingredientDetails = recipe.ingredientDetails ?? [];
   const difficultyLabel = formatDifficulty(recipe.difficulty);
+  const cookModeRollout = resolveCookModeRollout(recipe.id);
 
   return (
     <div className="min-h-full bg-white pb-8 text-[#2b2b2b]">
@@ -151,8 +153,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <a href="#ingredients" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#fff5e9] px-2 text-sm font-black text-[#a63b13]">
             <ShoppingBasket size={18} /> 재료 확인
           </a>
-          <a href="#cook-mode" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]">
-            <ChefHat size={18} /> 조리 시작
+          <a
+            href={cookModeRollout.enabled ? "#cook-mode" : "#instructions"}
+            className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]"
+          >
+            {cookModeRollout.enabled ? <ChefHat size={18} /> : <BookOpenText size={18} />}
+            {cookModeRollout.enabled ? "조리 시작" : "순서 보기"}
           </a>
           <a href="#shopping-assistant" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#f2edfb] px-2 text-sm font-black text-[#7652b7]">
             <ShoppingBag size={18} /> 장보기
@@ -163,6 +169,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
       <RecipeServingWorkspace
         recipeId={recipe.id}
         recipeVersion={recipe.version ?? 1}
+        cookModeEnabled={cookModeRollout.enabled}
         recipeName={recipe.name}
         category={recipe.category}
         thumbnailUrl={recipe.thumbnailUrl}

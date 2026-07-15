@@ -77,6 +77,8 @@ pnpm capture:phase6-rollback \
 
 이 실행기는 `vercel rollback`, alias 변경 또는 production promotion을 호출하지 않는다. 코드 롤백 후보가 local production build와 smoke를 통과해도 실제 Vercel rollback은 장애 시 운영자 승인, 직전 정상 deployment ID 확인, rollback 후 HTTP·로그 재검증이 필요하다.
 
+조리 모드만 차단해야 할 때는 `docs/cook-mode-rollout.md`의 OPS-005 절차에 따라 서버 전용 `COOK_MODE_ROLLOUT_PERCENT=0`으로 새 배포를 만든다. 이 경로는 일반 조리순서, 재료와 장보기 기능을 유지하며 Production 값 변경이나 alias 전환은 운영자 승인 없이 실행하지 않는다.
+
 ## 현재 증거와 남은 위험
 
 - 로컬 코드 rollback: `7c36bf2 -> c21b4ae`, `passed_local_code_rehearsal`.
