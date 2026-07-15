@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-012 타이머 상시 표시·백그라운드 복원
+
+- 조리 단계에서 시작한 타이머를 단계 카드 밖의 고정 영역으로 올렸다. 다른 단계로 이동해도 실행 단계·전체 설정 시간·남은 시간을 계속 표시하고, 원래 단계로 이동하거나 명시적으로 취소할 수 있다. 한 번에 한 타이머만 허용하며 다른 단계의 시작 버튼은 현재 타이머를 취소하기 전까지 비활성화한다.
+- 타이머는 증가·감소 횟수가 아니라 저장된 절대 종료 시각으로 계산한다. 조리 상태의 레시피·인분별 로컬 저장 계약을 그대로 사용해 앱 내부 화면을 나갔다 돌아오거나 브라우저가 다시 보일 때 실제 현재 시각 기준으로 복원한다. 복원 시 이미 끝난 타이머는 완료 상태와 접근성 안내를 표시하며 새 타이머로 덮어쓰지 않는다.
+- 실행 중 영역은 40px tabular 숫자와 `role="timer"`, 52px 이동·취소 조작부를 사용한다. 실제 종료 시 소리·진동을 시도하고 지원·권한이 없더라도 녹색 완료 상태와 `완료 알림 닫기`를 남긴다. 취소·완료 닫기·복원 완료는 `aria-live` 문장으로도 전달한다.
+- 인앱 브라우저의 실제 413px 집밥노트 레시피에서 1단계 타이머를 시작하고 2단계로 이동했다. 1단계 타이머가 2단계 위에 유지됐고 2단계 시작 버튼은 `1단계 타이머 실행 중 · 취소 후 시작`으로 잠겼다. `/shopping`을 다녀온 뒤 같은 조리 화면에서 `0:28`이 `0:24`로 복원됐으며, 실제 종료 후 `타이머 완료 · 1단계`와 시각 폴백을 확인하고 알림을 닫자 2단계 시작 버튼이 다시 활성화됐다. 타이머 글자 40px, 조작부 52px, 조리 섹션 413/413px로 가로 넘침 0이다.
+- 전체 단위 테스트 468/468, TypeScript, production build 40/40 경로, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. 저장소의 pnpm audit transport는 폐기된 npm quick endpoint HTTP 410으로 종료됐고 CI-safe gate의 다른 18개 항목은 통과했다. 최신 `pnpm@11.13.0 audit --prod --audit-level moderate` bulk transport 재검사는 moderate/high/critical 0건, 기존 low 1건을 보고했다. 의존성·lockfile 변경은 없으며 이전 상세 검사에서 확인한 optional `@babel/core@7.29.0` 경로는 Owner `FullStackDev`, due `before_dependency_maintenance_release`로 유지한다.
+- 구현 커밋 `80311900b55df0bfab1c115841ec0b10567fef18`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_BnqdrxS1amJtyZM3rVFFuARtKWPS` (`https://jipbab-note-7gzzoomb2-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 원격 build는 40/40 경로를 통과했고 `/`와 `/recipe/[id]`는 HTTP 200이다. 런타임 허용목록 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다.
+- Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다. 다음 계획 항목은 FE-013 화면 꺼짐 방지의 사용자 동의·지원 상태·실패 폴백이다.
+
 ## 2026-07-15 FE-011 조리 모드 한 단계 화면
 
 - 상세 상단의 `조리 시작`이 한 단계 화면으로 직접 이동한다. 현재 단계는 큰 21px 행동 문장, 단계/전체 수, 완료 상태, 불 세기, 최소~최대 시간, 시각 완료 신호, 초보·안전·주의·복구 안내를 한 카드에서 제공한다. 검수된 단계 이미지가 있으면 실제 이미지와 대체 텍스트·캡션을 표시하고, 이미지가 없을 때는 자리표시자를 만들지 않는다.
