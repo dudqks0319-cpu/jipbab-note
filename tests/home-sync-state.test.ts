@@ -35,6 +35,8 @@ test("home shows the safe recipe preview instead of a blocking API error", () =>
   assert.match(homePage, /<RecipePublicationEmptyCard previewRecipe=\{previewRecipes\[0\] \?\? null\}/);
   assert.match(homePage, /레시피를 먼저 둘러볼 수 있어요/);
   assert.match(homePage, /previewRecipes\.length > 0/);
+  assert.match(homePage, /const visibleRecipeCount = hasPublishedRecipes[\s\S]{0,120}RECIPE_PREVIEW_CATALOG\.length/);
+  assert.match(homePage, /label="메뉴" value=\{`\$\{visibleRecipeCount\}개`\}/);
 });
 
 test("home recovery prevents parallel retries and keeps one clear action label", () => {

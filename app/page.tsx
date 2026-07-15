@@ -213,6 +213,9 @@ export default function HomePage() {
   const isEmptyFridge = activeDisplayIngredients.length === 0
   const hasPublishedRecipes = beginnerHomeRecipeCatalog.length > 0
   const hasRecipePreview = previewRecipes.length > 0
+  const visibleRecipeCount = hasPublishedRecipes
+    ? displayRecipeCatalog.length
+    : RECIPE_PREVIEW_CATALOG.length
   const homeRecoveryKind: 'ingredients' | 'recipes' | null =
     !isAppStoreDemo && !isLoading
       ? ingredientsError && isEmptyFridge
@@ -465,7 +468,7 @@ export default function HomePage() {
       {!shouldShowEmptyHome ? (
       <section className="grid grid-cols-3 gap-2 px-5 pt-5">
         <QuickLink href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })} icon={<Refrigerator size={18} />} label="냉장고" value={`${activeDisplayIngredients.length}개`} />
-        <QuickLink href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} icon={<Utensils size={18} />} label="메뉴" value={`${displayRecipeCatalog.length}개`} />
+        <QuickLink href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} icon={<Utensils size={18} />} label="메뉴" value={`${visibleRecipeCount}개`} />
         <QuickLink href={buildHomeHref('/shopping', { demoMode: isAppStoreDemo })} icon={<Search size={18} />} label="장보기" value={`${displayUncheckedCount}개`} />
       </section>
       ) : null}
