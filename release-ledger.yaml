@@ -207,6 +207,7 @@ ops005_cook_mode_rollout:
 
 fe001_api_client_core:
   implementation_git_sha: "21b89a79a066cec448718a799a215a9fe51d4785"
+  evidence_checkpoint_git_sha: "e6d020d4a7b9b805a9eace43dd929ba7caffdcfb"
   branch: "agent/phase6-observability-analytics"
   scope: "recipe_api_v1_list_recommendation_detail_feedback"
   overall_fe001_status: "partial_core_complete_legacy_frontend_fetches_remaining"
