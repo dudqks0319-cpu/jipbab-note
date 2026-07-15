@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase6_performance_e2e_negative_accessibility_security_hardened_happy_path_blocked"
+  phase: "phase6_recipe_preview_and_signed_guest_sync_preview_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
-  branch: "ux/home-today-action-v2"
-  dirty_state: "phase6_performance_preview_deployment_record_committed"
+  git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
+  branch: "agent/sync-ux-release"
+  dirty_state: "sync_runtime_verified_release_ledger_update_pending"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -57,12 +57,15 @@ signed_guest_auth:
   rollback: "supabase/rollbacks/20260710140000_replace_device_guest_auth_with_signed_sessions.sql"
   design: "docs/guest-session-security.md"
   local_code_status: "verified"
-  production_migration_status: "not_applied"
-  production_deploy_status: "code_deployed_migration_not_applied"
+  production_migration_status: "applied_20260715101553_with_prerequisites_and_hardening"
+  production_deploy_status: "preview_code_deployed_and_browser_verified_production_alias_not_promoted"
   anonymous_auth_feature_flag_default: false
+  preview_anonymous_auth_feature_flag: true
   ownership_contract: "verified_supabase_auth_uid_only"
   permanent_user_only_features: "family,community_writes,recipe_comments,community_images,account_operations"
-  legacy_null_user_rows: "inaccessible_after_migration_not_claimed_by_device_id"
+  legacy_null_user_rows: "preserved_ingredients_51_shopping_18_not_claimed_by_device_id"
+  browser_sync_status: "verified_8_signed_ingredients_reload_persistence_pending_zero"
+  signed_user_count: 1
 
 phase1_recipe_data:
   schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
@@ -354,11 +357,11 @@ migration_history:
     - "20260528010000"
     - "20260530000000"
   publication_migration_recorded_remote: false
-  signed_guest_auth_migration_recorded_remote: false
+  signed_guest_auth_migration_recorded_remote: true
   phase1_schema_migration_recorded_remote: false
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: false
-  phase6_security_definer_migration_recorded_remote: false
+  phase6_security_definer_migration_recorded_remote: true
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 
 local_checks:
@@ -619,8 +622,8 @@ blockers:
     due: "before_next_production_deploy"
   - id: "P0-JIPBAB-GUEST-AUTHORIZATION"
     severity: "P0"
-    status: "local_fix_verified_production_not_applied"
-    title: "Local code and migration use signed auth UID only, but production retains the device-header authorization path until coordinated rollout."
+    status: "production_db_hardened_preview_code_verified_production_alias_not_promoted"
+    title: "Production DB now authorizes signed auth UID only and the official Preview synced 8 signed rows; the old Production web alias has not been promoted to the matching client build."
     owner: "FullStackDev+Security"
     evidence: "docs/phase-0-baseline-2026-07-10.md"
     due: "before_next_production_deploy"
@@ -640,8 +643,8 @@ blockers:
     due: "before_any_api_v1_client_cutover"
   - id: "P0-JIPBAB-PHASE6-DEFINER-ROLLOUT"
     severity: "P0"
-    status: "local_contract_verified_staging_execution_pending"
-    title: "SECURITY DEFINER search paths and EXECUTE grants are hardened locally, but the migration and fail-closed rollback have not run in isolated PostgreSQL or production."
+    status: "production_applied_contract_verified_advisor_followup_open"
+    title: "Production hardening removed PUBLIC/anon SECURITY DEFINER grants and header-based policies; remaining advisor search-path warnings and authenticated family RPC intent require follow-up documentation."
     owner: "FullStackDev+DBA+Security"
     evidence: "docs/phase-6-security-definer-review.md"
     due: "before_next_supabase_production_rollout"
@@ -690,8 +693,11 @@ blockers:
 
 sync_preview_backup_20260715:
   branch: "agent/sync-ux-release"
-  git_sha: "fcf34220448840c3f53d628755aefe717b6b6330"
-  preview_deployment_id: "dpl_DnWA4rbBr4NpmSHda78yH3Sn2dty"
+  recipe_preview_git_sha: "fcf34220448840c3f53d628755aefe717b6b6330"
+  sync_rekey_git_sha: "46e1ed0918141c788c079ca5646c79830d17e3c6"
+  sync_ui_git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
+  preview_deployment_id: "dpl_8ZF5FmQgeEx88JjaA4dNon8exner"
+  preview_url: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
   preview_status: "READY"
   production_promoted: false
   recipe_preview_count: 8
@@ -702,8 +708,24 @@ sync_preview_backup_20260715:
   backup_scope: "migration_scoped_ops_backup_not_full_disaster_recovery"
   backup_app_role_schema_privileges: 0
   backup_app_role_table_privileges: 0
-  signed_session_migration_applied: false
-  signed_session_blocker: "legacy_null_user_rows_and_unreconciled_remote_migration_history"
+  prerequisite_migrations_applied:
+    - "20260715101534_add_recipe_comments_sync_prerequisite_20260715"
+    - "20260715101658_cascade_user_deletion_sync_prerequisite_20260715"
+  signed_session_migration_applied: true
+  signed_session_migration: "20260715101553_replace_device_guest_auth_with_signed_sessions_20260715"
+  security_hardening_migration: "20260715101716_harden_security_definer_privileges_20260715"
+  anonymous_auth_enabled: true
+  header_based_policy_count: 0
+  anonymous_or_public_security_definer_grant_count: 0
+  signed_ingredient_count: 8
+  signed_user_count: 1
+  legacy_ingredient_count_preserved: 51
+  legacy_shopping_count_preserved: 18
+  browser_reload_persistence_verified: true
+  browser_pending_sync_count: 0
+  browser_console_warning_error_count: 0
+  browser_evidence: "/tmp/jipbab-sync-verified.png"
+  residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
 
 next_action:
   owner: "ContentQA+BeginnerTesters"
