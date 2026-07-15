@@ -1,3 +1,4 @@
+import { ApiClientError, requestApiData } from "./api-client.ts";
 import { getIngredientCatalog } from "./ingredient-catalog.ts";
 import type { RecipeFeedbackV1Input } from "./recipe-feedback.ts";
 import type { CanonicalRecipeCategoryId } from "./recipe-category-taxonomy.ts";
@@ -13,6 +14,8 @@ import type {
   RecipeRecord,
   RecipeWithMatch,
 } from "../types/index.ts";
+
+export { ApiClientError as RecipeApiV1ClientError } from "./api-client.ts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "";
 const ingredientCatalog = getIngredientCatalog();
@@ -151,32 +154,10 @@ export interface RecipeApiV1Detail {
   publicationEvidence: RecipePublicationEvidence;
 }
 
-export class RecipeApiV1ClientError extends Error {
-  readonly code: string;
-  readonly status: number;
-  readonly requestId: string | null;
-  readonly retryAfter: number | null;
-
-  constructor(options: {
-    code: string;
-    message: string;
-    status: number;
-    requestId?: string | null;
-    retryAfter?: number | null;
-  }) {
-    super(options.message);
-    this.name = "RecipeApiV1ClientError";
-    this.code = options.code;
-    this.status = options.status;
-    this.requestId = options.requestId ?? null;
-    this.retryAfter = options.retryAfter ?? null;
-  }
-}
-
 type ApiResponseGuard<T> = (value: unknown) => value is T;
 
 function invalidResponse(requestId: string | null = null): never {
-  throw new RecipeApiV1ClientError({
+  throw new ApiClientError({
     code: "INVALID_RESPONSE",
     message: "레시피 응답 형식을 확인하지 못했습니다.",
     status: 502,
@@ -224,59 +205,6 @@ export function parseRecipeApiV1Detail(
 function resolveApiUrl(path: string): string {
   if (!API_BASE_URL) return path;
   return `${API_BASE_URL.replace(/\/$/, "")}${path}`;
-}
-
-function asObject(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
-async function readJson(response: Response): Promise<unknown> {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-function safeRequestId(value: unknown): string | null {
-  return typeof value === "string" && /^[0-9A-Za-z._:-]{1,128}$/.test(value)
-    ? value
-    : null;
-}
-
-function successRequestId(
-  response: Response,
-  payload: Record<string, unknown> | null,
-): string | null {
-  const meta = asObject(payload?.meta);
-  return safeRequestId(response.headers.get("x-request-id")) ?? safeRequestId(meta?.requestId);
-}
-
-async function readApiData<T>(
-  response: Response,
-  parser: (value: unknown, requestId?: string | null) => T,
-): Promise<T> {
-  const payload = asObject(await readJson(response));
-  if (!response.ok) {
-    const error = asObject(payload?.error);
-    const retryAfterHeader = Number(response.headers.get("retry-after"));
-    throw new RecipeApiV1ClientError({
-      code: typeof error?.code === "string" ? error.code : "INTERNAL_ERROR",
-      message:
-        typeof error?.message === "string"
-          ? error.message
-          : "레시피 정보를 불러오지 못했습니다.",
-      status: response.status,
-      requestId: typeof error?.requestId === "string" ? error.requestId : null,
-      retryAfter: Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader : null,
-    });
-  }
-  if (!("data" in (payload ?? {}))) {
-    invalidResponse(successRequestId(response, payload));
-  }
-  return parser(payload?.data, successRequestId(response, payload));
 }
 
 export function resolveIngredientCatalogIds(names: string[]): string[] {
@@ -509,11 +437,11 @@ export async function fetchRecipeListV1(
   if (input.cursor) params.set("cursor", input.cursor);
   params.set("limit", String(Math.min(Math.max(input.limit ?? 24, 1), 50)));
 
-  const response = await fetch(resolveApiUrl(`/api/v1/recipes?${params.toString()}`), {
-    cache: "no-store",
+  return requestApiData(resolveApiUrl(`/api/v1/recipes?${params.toString()}`), {
     signal,
+    invalidResponseMessage: "레시피 응답 형식을 확인하지 못했습니다.",
+    parseData: parseRecipeApiV1ListData,
   });
-  return readApiData(response, parseRecipeApiV1ListData);
 }
 
 export async function fetchRecipeRecommendationsV1(
@@ -529,14 +457,14 @@ export async function fetchRecipeRecommendationsV1(
   },
   signal?: AbortSignal,
 ): Promise<RecipeApiV1RecommendationData> {
-  const response = await fetch(resolveApiUrl("/api/v1/recommendations"), {
+  return requestApiData(resolveApiUrl("/api/v1/recommendations"), {
     method: "POST",
-    cache: "no-store",
     signal,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    json: input,
+    retry: true,
+    invalidResponseMessage: "추천 응답 형식을 확인하지 못했습니다.",
+    parseData: parseRecipeApiV1RecommendationData,
   });
-  return readApiData(response, parseRecipeApiV1RecommendationData);
 }
 
 export async function submitRecipeFeedbackV1(
@@ -544,26 +472,24 @@ export async function submitRecipeFeedbackV1(
   accessToken: string,
   signal?: AbortSignal,
 ): Promise<RecipeFeedbackV1Response> {
-  const response = await fetch(resolveApiUrl("/api/v1/recipe-feedback"), {
+  return requestApiData(resolveApiUrl("/api/v1/recipe-feedback"), {
     method: "POST",
-    cache: "no-store",
     signal,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(input),
+    bearerToken: accessToken,
+    json: input,
+    retry: true,
+    invalidResponseMessage: "피드백 응답 형식을 확인하지 못했습니다.",
+    parseData: parseRecipeFeedbackV1Response,
   });
-  return readApiData(response, parseRecipeFeedbackV1Response);
 }
 
 export async function fetchRecipeDetailV1(
   id: string,
   signal?: AbortSignal,
 ): Promise<RecipeApiV1Detail> {
-  const response = await fetch(resolveApiUrl(`/api/v1/recipes/${encodeURIComponent(id)}`), {
-    cache: "no-store",
+  return requestApiData(resolveApiUrl(`/api/v1/recipes/${encodeURIComponent(id)}`), {
     signal,
+    invalidResponseMessage: "레시피 상세 응답 형식을 확인하지 못했습니다.",
+    parseData: parseRecipeApiV1Detail,
   });
-  return readApiData(response, parseRecipeApiV1Detail);
 }

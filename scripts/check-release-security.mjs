@@ -47,11 +47,25 @@ function oneLine(value) {
     .join(" | ");
 }
 
-const audit = run("pnpm", ["audit", "--prod", "--audit-level", "moderate"]);
+const auditArgs = ["audit", "--prod", "--audit-level", "moderate"];
+let audit = run("pnpm", auditArgs);
+let auditCommand = "pnpm audit --prod --audit-level moderate";
+const auditOutput = `${audit.stdout ?? ""}\n${audit.stderr ?? ""}`;
+
+// pnpm 10 still calls npm's retired audit endpoint and receives HTTP 410.
+// Retry only that tooling failure with a pinned pnpm release that uses the bulk endpoint.
+if (
+  audit.status !== 0
+  && /(?:audit endpoint[\s\S]*\b410\b|\b410\b[\s\S]*audit endpoint)/i.test(auditOutput)
+) {
+  audit = run("npx", ["--yes", "pnpm@11.0.0", ...auditArgs]);
+  auditCommand = "npx --yes pnpm@11.0.0 audit --prod --audit-level moderate";
+}
+
 if (audit.error) {
   fail("production dependency audit", audit.error.message);
 } else if (audit.status === 0) {
-  pass("production dependency audit", "pnpm audit --prod --audit-level moderate reported no known vulnerabilities");
+  pass("production dependency audit", `${auditCommand} reported no known vulnerabilities at moderate-or-higher severity`);
 } else {
   fail(
     "production dependency audit",

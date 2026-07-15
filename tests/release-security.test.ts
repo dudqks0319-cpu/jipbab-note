@@ -15,7 +15,10 @@ test("release security check is wired into package scripts", () => {
 });
 
 test("release security check audits production dependencies at moderate severity", () => {
-  assert.match(source, /"pnpm", \["audit", "--prod", "--audit-level", "moderate"\]/);
+  assert.match(source, /auditArgs = \["audit", "--prod", "--audit-level", "moderate"\]/);
+  assert.match(source, /run\("pnpm", auditArgs\)/);
+  assert.match(source, /pnpm@11\.0\.0/);
+  assert.match(source, /audit endpoint.*410|410.*audit endpoint/i);
   assert.match(source, /production dependency audit/);
   assert.match(source, /No known vulnerabilities|no known vulnerabilities/i);
 });
