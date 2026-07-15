@@ -65,11 +65,8 @@ test("preview list prioritizes recipe discovery over inactive or secondary contr
 });
 
 test("preview search stays visible while the approved catalog refreshes", () => {
-  const hook = readFileSync("hooks/useRecipes.ts", "utf8");
   const list = readFileSync("app/recipe/page.tsx", "utf8");
 
-  assert.match(hook, /catalogResolved:\s*boolean/);
-  assert.match(hook, /setCatalogResolved\(true\)/);
-  assert.match(list, /catalogResolved\s*&&\s*visibleTotalCount\s*===\s*0/);
+  assert.match(list, /!isAppStoreDemo\s*&&\s*visibleTotalCount\s*===\s*0/);
   assert.match(list, /loading\s*&&\s*!previewMode/);
 });

@@ -89,7 +89,6 @@ export default function RecipePage() {
   const {
     recipes,
     loading,
-    catalogResolved,
     error,
     page,
     totalCount,
@@ -117,7 +116,7 @@ export default function RecipePage() {
     [isAppStoreDemo, recipes],
   )
   const visibleTotalCount = isAppStoreDemo ? baseRecipes.length : Math.max(totalCount, baseRecipes.length)
-  const previewMode = !isAppStoreDemo && catalogResolved && visibleTotalCount === 0
+  const previewMode = !isAppStoreDemo && visibleTotalCount === 0
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
   useEffect(() => {
