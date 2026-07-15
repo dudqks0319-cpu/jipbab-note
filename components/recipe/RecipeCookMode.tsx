@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChefHat, ChevronLeft, ChevronRight, List, RotateCcw, Timer, Wrench } from 'lucide-react'
 
 import RecipeCookCompletion from '@/components/recipe/RecipeCookCompletion'
@@ -39,11 +39,29 @@ type RecipeCookModeProps = {
 }
 
 type WakeLockSentinelLike = {
+  released?: boolean
   release: () => Promise<void>
+  addEventListener?: (
+    type: 'release',
+    listener: () => void,
+    options?: { once?: boolean },
+  ) => void
 }
 
 type NavigatorWithWakeLock = Navigator & {
   wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinelLike> }
+}
+
+type WakeLockStatus = 'off' | 'requesting' | 'active' | 'waiting' | 'released' | 'unsupported' | 'failed'
+
+const WAKE_LOCK_STATUS_COPY: Record<WakeLockStatus, string> = {
+  off: '기본은 꺼짐이에요. 배터리를 더 사용할 수 있으니 조리 중 필요할 때만 직접 켜세요.',
+  requesting: '이 기기에 화면 유지를 요청하고 있어요.',
+  active: '화면 유지 중이에요. 다른 앱으로 이동하면 잠시 해제되며, 돌아오면 다시 요청합니다.',
+  waiting: '앱을 벗어나 화면 유지가 잠시 해제됐어요. 돌아오면 다시 요청합니다.',
+  released: '기기 설정이나 절전 모드로 화면 유지가 해제됐어요. 필요하면 다시 시도하세요.',
+  unsupported: '이 기기에서는 자동 화면 유지가 지원되지 않아요. 조리 중 화면을 직접 켜 주세요.',
+  failed: '화면 유지를 켜지 못했어요. 절전 모드·브라우저 설정을 확인하거나 화면을 직접 켜 주세요.',
 }
 
 function formatRemainingTime(seconds: number): string {
@@ -120,8 +138,12 @@ export default function RecipeCookMode({
   const [now, setNow] = useState(() => Date.now())
   const [hydrated, setHydrated] = useState(false)
   const [timerAnnouncement, setTimerAnnouncement] = useState('')
+  const [wakeLockStatus, setWakeLockStatus] = useState<WakeLockStatus>('off')
   const signaledTimerRef = useRef<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const wakeLockConsentRef = useRef(false)
+  const wakeLockSentinelRef = useRef<WakeLockSentinelLike | null>(null)
+  const wakeLockRequestIdRef = useRef(0)
   const storageKey = recipeCookProgressKey(recipeId, servings)
   const legacyStorageKey = recipeCookProgressKey(recipeId)
   const stepIndexes = useMemo(() => steps.map((step) => step.index), [steps])
@@ -138,6 +160,60 @@ export default function RecipeCookMode({
     () => activeStep ? resolveRecipeCookStepIngredients(activeStep, ingredientDetails) : [],
     [activeStep, ingredientDetails],
   )
+  const wakeLockSelected = wakeLockStatus === 'requesting'
+    || wakeLockStatus === 'active'
+    || wakeLockStatus === 'waiting'
+
+  const releaseScreenWakeLock = useCallback(() => {
+    wakeLockConsentRef.current = false
+    wakeLockRequestIdRef.current += 1
+    const sentinel = wakeLockSentinelRef.current
+    wakeLockSentinelRef.current = null
+    setWakeLockStatus('off')
+    if (sentinel && !sentinel.released) void sentinel.release().catch(() => undefined)
+  }, [])
+
+  const requestScreenWakeLock = useCallback(async () => {
+    const wakeLock = (navigator as NavigatorWithWakeLock).wakeLock
+    if (!wakeLock) {
+      wakeLockConsentRef.current = false
+      setWakeLockStatus('unsupported')
+      return
+    }
+    if (document.visibilityState !== 'visible') {
+      setWakeLockStatus('waiting')
+      return
+    }
+
+    const requestId = wakeLockRequestIdRef.current + 1
+    wakeLockRequestIdRef.current = requestId
+    setWakeLockStatus('requesting')
+    try {
+      const sentinel = await wakeLock.request('screen')
+      if (requestId !== wakeLockRequestIdRef.current || !wakeLockConsentRef.current) {
+        if (!sentinel.released) void sentinel.release().catch(() => undefined)
+        return
+      }
+      wakeLockSentinelRef.current = sentinel
+      sentinel.addEventListener?.('release', () => {
+        if (wakeLockSentinelRef.current !== sentinel) return
+        wakeLockSentinelRef.current = null
+        if (!wakeLockConsentRef.current) return
+        setWakeLockStatus(document.visibilityState === 'visible' ? 'released' : 'waiting')
+      }, { once: true })
+      setWakeLockStatus('active')
+    } catch {
+      if (requestId !== wakeLockRequestIdRef.current) return
+      wakeLockConsentRef.current = false
+      wakeLockSentinelRef.current = null
+      setWakeLockStatus('failed')
+    }
+  }, [])
+
+  const enableScreenWakeLock = () => {
+    wakeLockConsentRef.current = true
+    void requestScreenWakeLock()
+  }
 
   useEffect(() => {
     try {
@@ -208,33 +284,37 @@ export default function RecipeCookMode({
 
   useEffect(() => () => {
     if (audioContextRef.current) void audioContextRef.current.close()
+    wakeLockConsentRef.current = false
+    wakeLockRequestIdRef.current += 1
+    const sentinel = wakeLockSentinelRef.current
+    wakeLockSentinelRef.current = null
+    if (sentinel && !sentinel.released) void sentinel.release().catch(() => undefined)
   }, [])
 
   useEffect(() => {
-    if (!activeTimer || !timerRunning) return
-    let sentinel: WakeLockSentinelLike | null = null
-    const acquire = async () => {
-      if (document.visibilityState !== 'visible') return
-      try {
-        sentinel = await (navigator as NavigatorWithWakeLock).wakeLock?.request('screen') ?? null
-      } catch {
-        sentinel = null
-      }
-    }
-    void acquire()
-    const reacquire = () => {
+    if (!(navigator as NavigatorWithWakeLock).wakeLock) setWakeLockStatus('unsupported')
+  }, [])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!wakeLockConsentRef.current) return
       if (document.visibilityState !== 'visible') {
-        sentinel = null
+        setWakeLockStatus('waiting')
         return
       }
-      if (document.visibilityState === 'visible' && !sentinel) void acquire()
+      const sentinel = wakeLockSentinelRef.current
+      if (sentinel && !sentinel.released) {
+        setWakeLockStatus('active')
+        return
+      }
+      wakeLockSentinelRef.current = null
+      void requestScreenWakeLock()
     }
-    document.addEventListener('visibilitychange', reacquire)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
-      document.removeEventListener('visibilitychange', reacquire)
-      if (sentinel) void sentinel.release()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [activeTimer, timerRunning])
+  }, [requestScreenWakeLock])
 
   useEffect(() => {
     if (allComplete && !completedAt) setCompletedAt(new Date().toISOString())
@@ -242,6 +322,10 @@ export default function RecipeCookMode({
       setCompletedAt(null)
     }
   }, [allComplete, completedAt])
+
+  useEffect(() => {
+    if (allComplete && wakeLockConsentRef.current) releaseScreenWakeLock()
+  }, [allComplete, releaseScreenWakeLock])
 
   if (!activeStep) return null
   const activeTimerSeconds = stepTimerSeconds(activeStep)
@@ -296,6 +380,7 @@ export default function RecipeCookMode({
     setTimerAnnouncement(announcement)
   }
   const resetProgress = () => {
+    releaseScreenWakeLock()
     setCheckedSteps(new Set())
     setActiveStepIndex(0)
     setActiveTimer(null)
@@ -323,6 +408,52 @@ export default function RecipeCookMode({
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f1e4d7]" role="progressbar" aria-label="조리 진행률" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
           <div className="h-full rounded-full bg-[#ea5a1f]" style={{ width: `${progress}%` }} />
         </div>
+
+        <section className="mt-4 rounded-[16px] border border-[#e6d7c8] bg-[#fffdf9] px-4 py-4" aria-labelledby="screen-wake-lock-title">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p id="screen-wake-lock-title" className="text-[13px] font-black text-[#3f3025]">조리 중 화면 유지</p>
+              <p id="screen-wake-lock-status" aria-live="polite" className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#74675b]">
+                {WAKE_LOCK_STATUS_COPY[wakeLockStatus]}
+              </p>
+            </div>
+            <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${wakeLockStatus === 'active' ? 'bg-[#e7f6df] text-[#315f2d]' : wakeLockStatus === 'failed' || wakeLockStatus === 'released' ? 'bg-[#fff0e4] text-[#b75022]' : 'bg-[#f1ece6] text-[#74675b]'}`}>
+              {wakeLockStatus === 'active'
+                ? '켜짐'
+                : wakeLockStatus === 'requesting'
+                  ? '요청 중'
+                  : wakeLockStatus === 'waiting'
+                    ? '복귀 대기'
+                    : wakeLockStatus === 'unsupported'
+                      ? '미지원'
+                      : wakeLockStatus === 'failed' || wakeLockStatus === 'released'
+                        ? '확인 필요'
+                        : '꺼짐'}
+            </span>
+          </div>
+          <p className="mt-2 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+            켜기를 누르면 조리 중 화면 유지에 동의합니다. 페이지를 나가거나 조리를 완료하면 자동으로 종료합니다.
+          </p>
+          <button
+            type="button"
+            onClick={wakeLockSelected ? releaseScreenWakeLock : enableScreenWakeLock}
+            disabled={wakeLockStatus === 'requesting' || wakeLockStatus === 'unsupported'}
+            aria-pressed={wakeLockSelected}
+            aria-describedby="screen-wake-lock-status"
+            style={{ minHeight: 52 }}
+            className="mt-3 inline-flex min-h-[52px] w-full items-center justify-center rounded-[13px] border border-[#dec9b7] bg-white px-4 text-[13px] font-black text-[#6f4b2e] disabled:cursor-not-allowed disabled:bg-[#eee9e3] disabled:text-[#8f7f70]"
+          >
+            {wakeLockStatus === 'active' || wakeLockStatus === 'waiting'
+              ? '화면 꺼짐 방지 끄기'
+              : wakeLockStatus === 'requesting'
+                ? '화면 유지 요청 중'
+                : wakeLockStatus === 'released' || wakeLockStatus === 'failed'
+                  ? '화면 유지 다시 시도'
+                  : wakeLockStatus === 'unsupported'
+                    ? '이 기기에서는 지원하지 않음'
+                    : '화면 꺼짐 방지 켜기'}
+          </button>
+        </section>
 
         {activeTimer && activeTimerStep ? (
           <section

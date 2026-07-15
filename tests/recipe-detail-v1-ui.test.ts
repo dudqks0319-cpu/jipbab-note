@@ -74,3 +74,18 @@ test("FE-012 keeps one visible timer across steps with explicit cancel and resto
   assert.match(cookMode, /취소 후 시작/);
   assert.match(cookMode, /타이머가 이미 끝났습니다/);
 });
+
+test("FE-013 requests screen wake lock only after explicit consent and keeps a manual fallback", () => {
+  assert.match(cookMode, /화면 꺼짐 방지 켜기/);
+  assert.match(cookMode, /기본은 꺼짐/);
+  assert.match(cookMode, /wakeLockConsentRef\.current = true/);
+  assert.match(cookMode, /aria-pressed/);
+  assert.match(cookMode, /visibilitychange/);
+  assert.match(cookMode, /sentinel && !sentinel\.released/);
+  assert.match(cookMode, /화면을 직접 켜 주세요/);
+  assert.match(cookMode, /release/);
+  assert.doesNotMatch(
+    cookMode,
+    /if \(!activeTimer \|\| !timerRunning\) return[\s\S]{0,600}wakeLock\?\.request/,
+  );
+});
