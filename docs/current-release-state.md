@@ -11,7 +11,9 @@ Updated: 2026-07-15 KST
 - 운영 홈은 재료가 없어도 레시피 미리보기를 먼저 노출하고, 재료가 있으면 조건에 맞는 미리보기 CTA를 보여준다. `/recipe`는 `공개 승인 0개 · 미리보기 8개`와 8개 카드, 검색·빠른 필터를 표시하며 달걀죽 상세의 도구·재료·조리순서와 `아직 조리 승인 전이에요` 잠금 상태를 확인했다. 증거 화면은 `/tmp/jipbab-production-recipes-visible.png`, `/tmp/jipbab-production-recipe-list-ready.png`다.
 - 운영 `/api/v1/recipes?limit=1`은 HTTP 200, `Cache-Control: no-store`, `X-Request-Id`와 함께 빈 승인 목록을 반환한다. 운영 DB의 미검수 legacy rows가 공개 API로 새지 않으면서 자체 작성 미리보기만 별도 UI 경로에 표시된다.
 - 코드 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
-- 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, Phase 0 publication migration 및 과거 migration history 정리, Phase 5 사람 증거 20/20이다.
+- 2026-07-15 운영 DB 재감사에서 `20260710130000_gate_recipe_publication`, `20260710150000_add_recipe_v2_schema_and_versioning`, `20260710160000_add_distributed_api_rate_limits`가 원격 migration history에 기록돼 있고 실제 컬럼·제약조건·인덱스·RLS와 일치함을 확인했다. 중복 migration은 실행하지 않았다. 운영 recipes 1,152건 중 `approved`, `published_at`, publication evidence-ready는 모두 0건이며 `/api/v1/recipes`는 빈 승인 목록만 반환한다.
+- publication 적용 전 `ops_backup`에는 recipes 1,152건, recipe_sources 0건, 정책 8건, 당시 migration history 19건이 보존돼 있다. signed-session 백업과 함께 앱 역할의 backup table privilege는 0건이다.
+- 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, 과거 로컬 누락 migration history와 Phase 1 catalog seed 정리, Phase 5 사람 증거 20/20이다.
 
 ## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
 

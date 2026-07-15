@@ -12,10 +12,10 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "phase6_recipe_preview_and_signed_guest_sync_preview_verified"
+  phase: "production_recipe_preview_signed_sync_and_publication_gate_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
+  git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
   branch: "agent/sync-ux-release"
   dirty_state: "release_ledger_matches_security_gate_checkpoint"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
@@ -45,8 +45,8 @@ publication_gate:
   migration: "20260710130000_gate_recipe_publication.sql"
   rollback: "supabase/rollbacks/20260710130000_gate_recipe_publication.sql"
   local_code_status: "verified"
-  production_migration_status: "not_applied"
-  production_deploy_status: "code_deployed_migration_not_applied"
+  production_migration_status: "recorded_and_live_schema_verified_20260715"
+  production_deploy_status: "code_deployed_and_database_gate_verified"
   local_public_recipe_count: 0
   production_plan_gate_eligible_recipe_count: 0
   policy: "approved_with_beginner_actual_cooking_food_safety_image_rights_source_and_complete_v2_content_only"
@@ -72,8 +72,8 @@ phase1_recipe_data:
   catalog_seed_migration: "20260710151000_seed_phase1_ingredient_catalog.sql"
   rollback: "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql"
   local_contract_status: "verified_25_of_25"
-  production_migration_status: "not_applied"
-  staging_execution_status: "blocked_no_local_postgres_and_migration_history_unreconciled"
+  production_migration_status: "schema_migration_recorded_and_live_schema_verified_catalog_seed_not_recorded"
+  staging_execution_status: "publication_and_schema_verified_catalog_seed_and_historical_drift_pending"
   canonical_category_count: 15
   ingredient_catalog_count: 173
   exact_alias_count: 258
@@ -91,11 +91,11 @@ phase2_api_v1:
   local_contract_status: "verified_14_of_14"
   focused_test_status: "verified_21_of_21"
   runtime_negative_path_status: "verified_400_413_429_503"
-  production_fail_closed_status: "verified_three_routes_503_without_secret"
-  production_migration_status: "not_applied"
+  production_fail_closed_status: "verified_recipe_list_200_empty_approved_result_no_store_request_id"
+  production_migration_status: "rate_limit_migration_recorded_and_live_schema_present"
   staging_healthy_path_status: "blocked_no_reconciled_postgres_and_no_reviewed_v2_fixture"
-  production_deploy_status: "code_deployed_dependency_blocked"
-  server_secret_status: "not_registered"
+  production_deploy_status: "active_production_code_and_empty_approved_api_verified"
+  server_secret_status: "registered_on_active_production_project_value_not_logged"
   endpoint_count: 3
   public_v2_candidate_count: 0
 
@@ -348,7 +348,7 @@ phase0_to_phase4_vercel_deployment:
   server_hmac_secret_registered: false
 
 migration_history:
-  remote_latest_recorded: "20260508143719"
+  remote_latest_recorded: "20260715101716"
   local_unrecorded_before_publication:
     - "20260521160347"
     - "20260523090000"
@@ -356,13 +356,15 @@ migration_history:
     - "20260527093000"
     - "20260528010000"
     - "20260530000000"
-  publication_migration_recorded_remote: false
+  publication_migration_recorded_remote: true
   signed_guest_auth_migration_recorded_remote: true
-  phase1_schema_migration_recorded_remote: false
+  phase1_schema_migration_recorded_remote: true
   phase1_catalog_seed_recorded_remote: false
-  phase2_rate_limit_migration_recorded_remote: false
+  phase2_rate_limit_migration_recorded_remote: true
   phase6_security_definer_migration_recorded_remote: true
-  db_push_status: "blocked_until_live_schema_and_history_reconciled"
+  publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
+  phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
+  db_push_status: "blocked_for_full_push_until_older_local_missing_history_and_catalog_seed_reconciled"
 
 local_checks:
   - name: "Phase 6 performance static contract"
