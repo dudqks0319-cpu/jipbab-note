@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "production_recipe_preview_signed_sync_and_publication_gate_verified"
+  phase: "exact_sha_preview_catalog_reconciled_and_runtime_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
+  git_sha: "3560df2c300cfcffd2a0e23fdced07d28e3079ed"
   branch: "agent/sync-ux-release"
-  dirty_state: "release_ledger_matches_immediate_recipe_preview_hotfix"
+  dirty_state: "clean_commit_pushed_and_exact_sha_preview_verified"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -40,6 +40,28 @@ phase0_baseline:
   external_alignment_status: "decision_required"
   inventory: "docs/recipe-inventory.csv"
   source_ledger: "docs/recipe-source-ledger.csv"
+
+source_alignment_20260715:
+  canonical_repo: "https://github.com/dudqks0319-cpu/jipbab-note"
+  canonical_repo_vercel_clone_verified: true
+  canonical_repo_vercel_clone_evidence_deployment: "dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5"
+  github_default_branch: "main"
+  github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
+  candidate_branch: "agent/sync-ux-release"
+  candidate_git_sha: "3560df2c300cfcffd2a0e23fdced07d28e3079ed"
+  candidate_remote_head_matches: true
+  exact_sha_preview_deployment_id: "dpl_6ew7yrR35Y3BeW1Fj8jjWCQLbLxu"
+  exact_sha_preview_url: "https://jipbab-note-2pmudzwmm-youngbeens-projects.vercel.app"
+  exact_sha_preview_status: "READY"
+  exact_sha_preview_recipe_http: 200
+  exact_sha_preview_recipe_count: 20
+  exact_sha_preview_console_warning_error_count: 0
+  exact_sha_preview_screenshot: "/tmp/jipbab-exact-sha-preview-recipes.png"
+  exact_sha_preview_api_status: 503
+  exact_sha_preview_api_status_reason: "preview_server_dependency_not_configured_fail_closed"
+  production_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
+  production_promoted: false
+  alignment_status: "canonical_repo_connected_default_branch_candidate_and_production_sha_differ"
 
 publication_gate:
   migration: "20260710130000_gate_recipe_publication.sql"
@@ -628,7 +650,7 @@ blockers:
   - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
     severity: "P0"
     status: "open"
-    title: "Public source repository, GitHub default branch, Vercel linked repository, and deployed feature SHA are not aligned."
+    title: "Vercel is connected to the canonical public repository, but GitHub default branch, latest verified candidate, and production runtime SHA are not aligned."
     owner: "project_owner"
     evidence: "docs/official-production-sources.md"
     due: "before_next_non_hotfix_production_deploy"
@@ -747,7 +769,7 @@ sync_preview_backup_20260715:
   recipe_preview_detail_runtime_verified: true
   recipe_preview_console_log_count: 0
   recipe_preview_unit_status: "verified_396_of_396"
-  latest_unit_status: "verified_408_of_408"
+  latest_unit_status: "verified_409_of_409"
   recipe_preview_build_status: "verified_38_of_38_routes"
   dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
   dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
@@ -842,7 +864,7 @@ sync_preview_backup_20260715:
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
   production_alias_runtime_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
-  production_alias_runtime_alignment: "runtime_hotfix_verified_git_integration_source_mismatch_open"
+  production_alias_runtime_alignment: "runtime_hotfix_verified_canonical_repo_connected_branch_and_production_sha_mismatch_open"
 
 next_action:
   owner: "ContentQA+BeginnerTesters"

@@ -25,7 +25,9 @@ Updated: 2026-07-15 KST
 - Phase 1 카탈로그 생성 산출물이 권위 소스와 달리 계란·두부를 `유제품`으로 되돌리던 결함을 수정했다. SQL·CSV·정적 추천 카탈로그는 계란 `육류`, 두부 `통조림/가공식품`으로 일치하며 `check:phase1-data-contract`가 같은 드리프트를 차단한다.
 - 운영 적용 전 `20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715`로 비공개 스냅샷을 만든 뒤 `20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715`를 적용했다. 적용 후 카탈로그 173개, 별칭 258개, 중복 별칭 0개이며 두 내부 테이블에 대한 anon/authenticated SELECT 권한은 모두 false다.
 - 적용 직후 같은 운영 Chrome 세션에서 `/fridge`의 `클라우드 동기화 완료`, 두부 `통조림/가공식품`, 계란 `육류`를 다시 확인했고 `/recipe`에는 고유 미리보기 20개가 표시됐다. 최신 화면 증거는 `/tmp/jipbab-production-sync-complete.png`, `/tmp/jipbab-production-recipes-visible.png`다.
-- 상세 대조와 후속 공식 history repair 절차는 `docs/migration-history-reconciliation-2026-07-15.md`에 기록했다. 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, 과거 로컬 누락 migration version 6건의 공식 history repair, Phase 5 사람 증거 20/20이다.
+- 상세 대조와 후속 공식 history repair 절차는 `docs/migration-history-reconciliation-2026-07-15.md`에 기록했다. 남은 P0는 GitHub 기본 브랜치·최신 후보·production SHA 통합, 과거 로컬 누락 migration version 6건의 공식 history repair, Phase 5 사람 증거 20/20이다.
+- GitHub 원격 `agent/sync-ux-release`와 clean local HEAD는 `3560df2c300cfcffd2a0e23fdced07d28e3079ed`로 일치한다. 동일 입력을 Vercel Preview `dpl_6ew7yrR35Y3BeW1Fj8jjWCQLbLxu` (`https://jipbab-note-2pmudzwmm-youngbeens-projects.vercel.app`)에 배포했고 상태는 `READY`다. `/recipe`는 HTTP 200, Chrome에서 미리보기 20개, 차단 오류 문구 0개, console warning/error 0개를 확인했다. 화면 증거는 `/tmp/jipbab-exact-sha-preview-recipes.png`다.
+- 별도 Git 배포 `dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5`의 원격 빌드 로그가 `github.com/dudqks0319-cpu/jipbab-note`를 실제 clone한 것을 확인해 Vercel 저장소 연결은 canonical repo로 교정된 상태다. 남은 source P0는 저장소가 아니라 `main`(`86e2bc2`), 최신 후보(`3560df2`), production(`3a8f72f`)의 branch·SHA 불일치다.
 
 ## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
 
@@ -45,7 +47,7 @@ Updated: 2026-07-15 KST
 - 최신 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. bulk response가 비정상 JSON·알 수 없는 severity·HTTP 오류를 반환하면 통과시키지 않으며 `--ignore-registry-errors`를 사용하지 않는다.
 - 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 이후 제한된 운영 웹 hotfix가 배포됐지만 전체 출시 승격은 계속 차단한다.
 - 잔여 보안 항목: 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화, authenticated 역할이 의도적으로 호출하는 가족 SECURITY DEFINER 함수 5개의 정기 재검토가 남아 있다. `app.current_device_id`, `app.is_permanent_user` search-path 경고는 `20260715120555`에서 해소했다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
-- 실제 운영 별칭은 별도 Vercel 프로젝트 `jipbab-note-app`의 최신 hotfix deployment `dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ`를 가리킨다. 런타임 코드는 `3a8f72f`와 일치하도록 배포했지만 Vercel Git 연결 자체는 canonical 저장소와 아직 통합되지 않았으므로 재현성 P0는 계속 열린다.
+- 실제 운영 별칭은 Vercel 프로젝트 `jipbab-note-app`의 최신 hotfix deployment `dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ`를 가리킨다. 런타임 코드는 `3a8f72f`와 일치하고 Vercel Git 연결은 canonical 저장소로 교정됐지만, 기본 브랜치와 최신 후보·운영 SHA가 아직 하나로 정리되지 않아 재현성 P0는 계속 열린다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
