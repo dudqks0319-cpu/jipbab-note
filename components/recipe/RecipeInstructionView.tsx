@@ -104,6 +104,7 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                     alt={step.imageAlt || `${recipeName} 조리 순서 ${step.index}`}
                     className="relative mt-1 h-[74px] w-full overflow-hidden rounded-[8px] bg-[#f2eee8] min-[390px]:h-[82px]"
                     imageClassName="h-full w-full object-cover"
+                    sizes="(max-width: 430px) 28vw, 120px"
                   />
                 ) : null}
               </div>

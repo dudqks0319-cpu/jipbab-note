@@ -118,6 +118,8 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             alt={recipe.imageAlt || `${recipe.name} 완성 사진`}
             className="h-[320px] w-full overflow-hidden bg-[#eee7dd] min-[390px]:h-[360px]"
             imageClassName={`h-full w-full ${generatedImage ? "object-contain p-2" : "object-cover"}`}
+            sizes="(max-width: 430px) 100vw, 430px"
+            preload
           />
         ) : (
           <div className="flex h-[250px] w-full items-center justify-center bg-[#f3eee7] text-sm font-bold text-[#81766d]">

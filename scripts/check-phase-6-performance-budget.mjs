@@ -5,6 +5,15 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const captureSource = readFileSync("scripts/capture-phase-6-performance.mjs", "utf8");
 const localGate = readFileSync("scripts/run-release-gates.mjs", "utf8");
 const ciGate = readFileSync("scripts/run-ci-release-gates.mjs", "utf8");
+const nextConfig = readFileSync("next.config.ts", "utf8");
+const recipeImage = readFileSync("components/recipe/RecipeImage.tsx", "utf8");
+const todayAction = readFileSync("components/home/TodayActionCard.tsx", "utf8");
+const recipeDetail = readFileSync("app/recipe/[id]/page.tsx", "utf8");
+const authScreen = readFileSync("components/auth/AuthScreen.tsx", "utf8");
+const fridge = readFileSync("app/fridge/page.tsx", "utf8");
+const shopping = readFileSync("app/shopping/page.tsx", "utf8");
+const favorites = readFileSync("app/favorites/page.tsx", "utf8");
+const fridgeIllustration = readFileSync("components/fridge/FridgeIllustration.tsx", "utf8");
 
 const contracts = [
   {
@@ -85,6 +94,58 @@ const contracts = [
     pass:
       localGate.includes("scripts/check-phase-6-performance-budget.mjs") &&
       ciGate.includes("scripts/check-phase-6-performance-budget.mjs"),
+  },
+  {
+    name: "responsive local image optimization",
+    pass:
+      recipeImage.includes('import Image from "next/image"') &&
+      recipeImage.includes("isLocalAsset") &&
+      recipeImage.includes("fill") &&
+      recipeImage.includes("sizes={sizes}") &&
+      nextConfig.includes('formats: ["image/webp"]') &&
+      nextConfig.includes("deviceSizes:") &&
+      nextConfig.includes("imageSizes:"),
+  },
+  {
+    name: "lazy loading and low resolution placeholder",
+    pass:
+      recipeImage.includes("RECIPE_IMAGE_BLUR_DATA_URL") &&
+      recipeImage.includes('placeholder={isVectorAsset ? "empty" : "blur"}') &&
+      recipeImage.includes('loading={preload ? undefined : "lazy"}'),
+  },
+  {
+    name: "above fold image preload",
+    pass:
+      todayAction.includes("preload") &&
+      recipeDetail.includes("preload") &&
+      authScreen.includes("preload"),
+  },
+  {
+    name: "stable image failure state",
+    pass:
+      recipeImage.includes("if (failed)") &&
+      recipeImage.includes('role="img"') &&
+      recipeImage.includes("fallbackLabel") &&
+      recipeImage.includes("setFailed(true)"),
+  },
+  {
+    name: "core local image surfaces use Next Image",
+    pass:
+      [authScreen, fridge, shopping, favorites, fridgeIllustration].every((source) =>
+        source.includes("<Image") || source.includes("<RecipeImage"),
+      ) &&
+      [authScreen, fridge, shopping, favorites, fridgeIllustration].every(
+        (source) => !source.includes("@next/next/no-img-element"),
+      ),
+  },
+  {
+    name: "runtime image transfer guard",
+    pass:
+      captureSource.includes("largestImageTransferBytes: 250_000") &&
+      captureSource.includes("requiresOptimizedImages") &&
+      captureSource.includes("optimizedImageCount") &&
+      captureSource.includes("rawLocalRasterCount") &&
+      captureSource.includes("largestImageTransferP75Bytes"),
   },
 ];
 

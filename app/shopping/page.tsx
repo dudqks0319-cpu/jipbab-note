@@ -1,6 +1,7 @@
 // 이 파일은 장보기 리스트 화면을 담당하며 참고 이미지의 체크리스트 UI를 구현합니다.
 'use client'
 
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { CalendarDays, Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
@@ -680,12 +681,11 @@ export default function ShoppingPage() {
                   onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
                   className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
                 >
-                  <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
+                  <span className={`relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 bg-white ${
                     selected ? 'border-[#ea5a1f]' : 'border-[#eadcc9]'
                   }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
+                    <Image src={photoUrl} alt={subcategory.label} fill sizes="56px" className="object-cover mix-blend-multiply" />
                   </span>
                   <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
                     selected ? 'text-[#a63b13]' : 'text-[#5f5145]'
@@ -953,13 +953,15 @@ function ShoppingCatalogCard({
         onClick={onAdd}
         className="flex min-h-[66px] w-full items-center gap-2 rounded-[11px] text-left"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photoUrl}
-          alt={item.name}
-          className="h-10 w-10 shrink-0 rounded-[10px] object-contain mix-blend-multiply"
-          loading="lazy"
-        />
+        <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[10px]">
+          <Image
+            src={photoUrl}
+            alt={item.name}
+            fill
+            sizes="40px"
+            className="object-contain mix-blend-multiply"
+          />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13px] font-black text-[#2f2117]">{item.name}</span>
           <span className="mt-0.5 block truncate text-[11px] font-bold text-[#6b5f55]">{quantity}</span>

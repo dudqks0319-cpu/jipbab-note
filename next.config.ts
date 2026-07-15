@@ -13,6 +13,11 @@ const connectSrc = isProduction
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   devIndicators: false,
+  images: {
+    formats: ["image/webp"],
+    deviceSizes: [360, 390, 430, 640, 750, 828, 1080],
+    imageSizes: [24, 32, 40, 48, 56, 64, 80, 96, 128, 160, 192, 256],
+  },
   outputFileTracingRoot: path.dirname(new URL(import.meta.url).pathname),
   async headers() {
     return [

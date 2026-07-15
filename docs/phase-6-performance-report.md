@@ -1,6 +1,15 @@
 # Phase 6 모바일 성능 예산 보고서
 
-Updated: 2026-07-13 KST
+Updated: 2026-07-15 KST
+
+## FE-018 반응형 이미지 최적화
+
+- 로컬 레시피·냉장고·장보기·웰컴 이미지는 `next/image`의 반응형 `sizes`와 WebP 출력을 사용한다. 상단 레시피·웰컴 이미지는 preload하고 나머지는 lazy load한다. 로컬 SVG는 변환하지 않고, 임의 외부 사용자 URL은 원격 도메인을 전역 허용하지 않은 채 원본 경로와 실패 fallback을 유지한다.
+- 레시피 이미지는 저해상도 blur placeholder를 거쳐 표시하며 첫 URL이 실패하면 검증된 로컬 fallback으로 교체한다. fallback까지 실패하면 기존 박스 크기를 유지한 한국어 대체 상태를 표시해 레이아웃 이동을 막는다.
+- 성능 캡처는 홈·웰컴·냉장고·즐겨찾기 이미지 실패·레시피 목록 검색·장보기 6개 화면을 3회씩 측정한다. 이미지별 최적화 요청 수, 원본 로컬 raster 우회, 단일 이미지 전송량을 별도 검사한다. 즐겨찾기 실패 경로는 임시 Chrome 프로필에만 합성 항목을 넣고 누락 이미지를 로컬 fallback으로 복원하며 80x80 영역과 CLS를 검증한다.
+- 로컬 production build에서 390x844, CPU 4x, 1.6Mbps/150ms RTT, cold run 3회 기준 LCP p75는 홈 792ms, 웰컴 472ms, 냉장고 432ms, 이미지 실패 복구 444ms, 레시피 목록 432ms, 장보기 504ms다. CLS p75는 전 화면 0, 상호작용 p75 24ms, 검색 입력 반영 p75 16.5ms다.
+- 최적화 이미지 최소 요청 수는 홈 1, 웰컴 1, 냉장고 10, 이미지 실패 복구 2, 장보기 30이다. 원본 로컬 PNG·JPEG·WebP 직접 요청 0건, 가장 큰 최적화 이미지 15,018B, console error 0건, unexpected network error 0건이다. 의도한 이미지 실패는 별도로 분류했고 fallback 카드 크기와 대체 이미지 복구가 3/3회 통과했다.
+- 이 측정은 동일 기기의 production-like 로컬 lab guard이며 실제 사용자 field p75나 Vercel Preview 측정이 아니다. Production field p75와 보호된 Preview 원격 재측정은 별도 증거로 유지한다.
 
 ## 결과
 

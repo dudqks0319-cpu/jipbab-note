@@ -1,6 +1,7 @@
 // 이 파일은 로그인/회원가입/웰컴 화면의 공통 인증 UI를 담당합니다.
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { FormEvent, ReactNode } from 'react'
@@ -41,11 +42,13 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
     return (
       <div className="relative min-h-full overflow-hidden bg-[#fbf6ee]">
         <div className="absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/recipes/jipbab-curated/doenjang-jjigae-basic.png"
             alt="집밥이 놓인 식탁"
-            className="h-full w-full object-cover opacity-45"
+            fill
+            sizes="(max-width: 430px) 100vw, 430px"
+            preload
+            className="object-cover opacity-45"
           />
           <div className="absolute inset-0 bg-[#fbf6ee]/55" />
         </div>

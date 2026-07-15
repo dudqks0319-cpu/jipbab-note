@@ -1,6 +1,7 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
@@ -896,12 +897,13 @@ export default function FridgePage() {
                 return (
                   <div key={item.id} className="jipbab-panel rounded-[16px] p-2.5">
                     <div className="flex gap-2">
-                      <div className={`h-14 w-14 shrink-0 overflow-hidden rounded-[13px] ${getCategoryBg(item.category)}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-[13px] ${getCategoryBg(item.category)}`}>
+                        <Image
                           src={getIngredientPhotoUrl(item.name, item.category)}
                           alt={item.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="56px"
+                          className="object-cover"
                         />
                       </div>
                       <div className="min-w-0 flex-1 pt-1">
@@ -1042,11 +1044,12 @@ export default function FridgePage() {
                         }}
                       >
                         <div className={`relative h-[62px] w-[62px] shrink-0 overflow-hidden rounded-[14px] ${getCategoryBg(item.category)}`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={getIngredientPhotoUrl(item.name, item.category)}
                             alt={item.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="62px"
+                            className="object-cover"
                           />
                         </div>
 

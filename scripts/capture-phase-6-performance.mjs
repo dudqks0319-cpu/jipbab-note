@@ -26,6 +26,7 @@ const budgets = Object.freeze({
   cls: 0.1,
   inpMilliseconds: 200,
   searchInputMilliseconds: 100,
+  largestImageTransferBytes: 250_000,
 });
 
 const device = Object.freeze({
@@ -43,6 +44,27 @@ const routes = [
     name: "guest-home",
     path: "/",
     expectedText: "있는 재료만 골라주세요",
+    requiresOptimizedImages: true,
+  },
+  {
+    name: "welcome",
+    path: "/welcome",
+    expectedText: "오늘의 집밥을",
+    requiresOptimizedImages: true,
+  },
+  {
+    name: "demo-fridge",
+    path: "/fridge?demo=appstore",
+    expectedText: "냉장고",
+    requiresOptimizedImages: true,
+  },
+  {
+    name: "favorite-image-fallback",
+    path: "/favorites",
+    expectedText: "이미지 실패 복구 QA",
+    expectedImageAlt: "이미지 실패 복구 QA",
+    requiresOptimizedImages: true,
+    setup: "favorite-image-fallback",
   },
   {
     name: "demo-recipe-list",
@@ -54,6 +76,7 @@ const routes = [
     name: "demo-shopping",
     path: "/shopping?demo=appstore",
     expectedText: "장보기",
+    requiresOptimizedImages: true,
   },
 ];
 
@@ -262,6 +285,54 @@ async function waitForPageText(client, expectedText) {
   throw new Error(`Expected app text not found: ${expectedText}\n${body}`);
 }
 
+async function seedFavoriteImageFallback(client) {
+  const initialLoad = client.waitFor("Page.domContentEventFired", 45_000);
+  await client.send("Page.navigate", { url: `${targetOrigin}/favorites` });
+  await initialLoad;
+  await waitForPageText(client, "아직 저장한 레시피가 없어요");
+  await evaluate(
+    client,
+    `new Promise((resolve, reject) => {
+      const request = indexedDB.open('jipbab-note-local-first');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction('favorite_recipes', 'readwrite');
+        const now = new Date().toISOString();
+        transaction.objectStore('favorite_recipes').put({
+          id: 'fe018-image-fallback-qa',
+          name: '이미지 실패 복구 QA',
+          category: 'QA',
+          thumbnailUrl: '/images/recipes/__missing-fe018.png',
+          savedAt: now,
+          publicationEvidence: {
+            reviewStatus: 'approved',
+            reviewedForBeginner: true,
+            beginnerReviewedAt: now,
+            actualCookingTested: true,
+            actualCookingTestedAt: now,
+            foodSafetyReviewed: true,
+            foodSafetyReviewedAt: now,
+            imageRightsStatus: 'no_image_approved',
+            imageRightsReviewedAt: now,
+            sourceRecorded: true,
+            sourceReviewedAt: now,
+            publishedAt: now,
+            reviewer: 'FE-018 synthetic browser QA',
+            requirementsVerified: true
+          },
+          deletedAt: null,
+          syncStatus: 'pending_update',
+          lastSyncedAt: null
+        });
+        transaction.oncomplete = () => { db.close(); resolve(true); };
+        transaction.onerror = () => reject(transaction.error);
+        transaction.onabort = () => reject(transaction.error);
+      };
+    })`,
+  );
+}
+
 async function trustedClick(client, selector) {
   const rect = await evaluate(
     client,
@@ -339,6 +410,15 @@ function summarizeResources(entries, navigation) {
     transferBytes: entry.transferSize,
   }));
   const navigationTransferBytes = navigation?.transferSize ?? 0;
+  const imageResources = resources.filter(
+    (resource) =>
+      resource.initiatorType === "img" || resource.name.startsWith("/_next/image"),
+  );
+  const rawLocalRasterResources = imageResources.filter(
+    (resource) =>
+      !resource.name.startsWith("/_next/image") &&
+      /\.(?:png|jpe?g|webp)(?:$|\?)/i.test(resource.name),
+  );
   return {
     count: resources.length,
     totalDecodedBodyBytes:
@@ -350,6 +430,19 @@ function summarizeResources(entries, navigation) {
     largestTransfers: [...resources]
       .sort((left, right) => right.transferBytes - left.transferBytes)
       .slice(0, 5),
+    images: {
+      count: imageResources.length,
+      optimizedCount: imageResources.filter((resource) => resource.name.startsWith("/_next/image")).length,
+      rawLocalRasterCount: rawLocalRasterResources.length,
+      rawLocalRasterResources: rawLocalRasterResources.map((resource) => resource.name).slice(0, 5),
+      totalTransferBytes: imageResources.reduce(
+        (total, resource) => total + resource.transferBytes,
+        0,
+      ),
+      largestTransferBytes: imageResources.length
+        ? Math.max(...imageResources.map((resource) => resource.transferBytes))
+        : 0,
+    },
   };
 }
 
@@ -363,6 +456,7 @@ async function captureRun(debugPort, route, runNumber) {
   const client = createClient(target.webSocketDebuggerUrl);
   const consoleErrors = [];
   const networkFailures = [];
+  const expectedImageFailures = [];
   const expectedDependencyFailures = [];
   const expectedPlatformFailures = [];
   const requestUrls = new Map();
@@ -394,7 +488,9 @@ async function captureRun(debugPort, route, runNumber) {
         status: response.status,
         url: safeResourceName(response.url),
       };
-      if (response.status === 503 && failure.url.startsWith("/api/v1/")) {
+      if (response.url.includes("__missing-fe018")) {
+        expectedImageFailures.push(failure);
+      } else if (response.status === 503 && failure.url.startsWith("/api/v1/")) {
         expectedDependencyFailures.push(failure);
       } else {
         networkFailures.push(failure);
@@ -413,7 +509,9 @@ async function captureRun(debugPort, route, runNumber) {
         status: null,
         url: safeResourceName(requestUrl),
       };
-      if (blockedReason === "csp" && requestUrl.startsWith("https://vercel.live/")) {
+      if (requestUrl.includes("__missing-fe018")) {
+        expectedImageFailures.push(failure);
+      } else if (blockedReason === "csp" && requestUrl.startsWith("https://vercel.live/")) {
         expectedPlatformFailures.push(failure);
       } else {
         networkFailures.push(failure);
@@ -440,6 +538,16 @@ async function captureRun(debugPort, route, runNumber) {
       uploadThroughput: device.uploadBitsPerSecond / 8,
       connectionType: "cellular4g",
     });
+
+    if (route.setup === "favorite-image-fallback") {
+      await seedFavoriteImageFallback(client);
+      consoleErrors.length = 0;
+      networkFailures.length = 0;
+      expectedDependencyFailures.length = 0;
+      expectedPlatformFailures.length = 0;
+      expectedImageFailures.length = 0;
+      requestUrls.clear();
+    }
 
     const domReady = client.waitFor("Page.domContentEventFired", 45_000);
     await client.send("Page.navigate", { url: `${targetOrigin}${route.path}` });
@@ -478,6 +586,18 @@ async function captureRun(debugPort, route, runNumber) {
             transferSize: navigation.transferSize,
           } : null,
           resources,
+          imageFallback: ${JSON.stringify(route.expectedImageAlt ?? null)} ? (() => {
+            const image = Array.from(document.images).find(
+              (candidate) => candidate.alt === ${JSON.stringify(route.expectedImageAlt ?? "")},
+            );
+            if (!image) return null;
+            const bounds = image.parentElement?.getBoundingClientRect();
+            return {
+              currentSrc: image.currentSrc,
+              height: bounds?.height ?? 0,
+              width: bounds?.width ?? 0,
+            };
+          })() : null,
           searchInputLatency: state.searchInputLatency,
           unsupported: state.unsupported,
         };
@@ -494,6 +614,16 @@ async function captureRun(debugPort, route, runNumber) {
         Number.isFinite(snapshot.searchInputLatency),
         `${route.name} run ${runNumber} did not measure input paint latency`,
       );
+    }
+    if (route.expectedImageAlt) {
+      assert.ok(snapshot.imageFallback, `${route.name} did not render the fallback image`);
+      assert.match(
+        snapshot.imageFallback.currentSrc,
+        /kimchi-fried-rice/,
+        `${route.name} did not replace the failed image with the local fallback`,
+      );
+      assert.equal(Math.round(snapshot.imageFallback.width), 80);
+      assert.equal(Math.round(snapshot.imageFallback.height), 80);
     }
 
     const maxInteractionDuration = snapshot.events.length
@@ -533,6 +663,8 @@ async function captureRun(debugPort, route, runNumber) {
       expectedDependencyErrors: expectedDependencyFailures.slice(0, 5),
       expectedPlatformErrorCount: expectedPlatformFailures.length,
       expectedPlatformErrors: expectedPlatformFailures.slice(0, 5),
+      expectedImageErrorCount: expectedImageFailures.length,
+      expectedImageErrors: expectedImageFailures.slice(0, 5),
       unexpectedNetworkErrorCount: networkFailures.length,
       unexpectedNetworkErrors: networkFailures.slice(0, 5),
     };
@@ -618,6 +750,17 @@ const routeSummaries = routes.map((route) => {
       routeResults.map((result) => result.resources.totalTransferBytes),
       0.75,
     ),
+    optimizedImageCount: Math.min(
+      ...routeResults.map((result) => result.resources.images.optimizedCount),
+    ),
+    rawLocalRasterCount: routeResults.reduce(
+      (total, result) => total + result.resources.images.rawLocalRasterCount,
+      0,
+    ),
+    largestImageTransferP75Bytes: percentile(
+      routeResults.map((result) => result.resources.images.largestTransferBytes),
+      0.75,
+    ),
     consoleErrorCount: routeResults.reduce(
       (total, result) => total + result.consoleErrorCount,
       0,
@@ -628,6 +771,10 @@ const routeSummaries = routes.map((route) => {
     ),
     expectedPlatformErrorCount: routeResults.reduce(
       (total, result) => total + result.expectedPlatformErrorCount,
+      0,
+    ),
+    expectedImageErrorCount: routeResults.reduce(
+      (total, result) => total + result.expectedImageErrorCount,
       0,
     ),
     unexpectedNetworkErrorCount: routeResults.reduce(
@@ -676,6 +823,18 @@ for (const summary of routeSummaries) {
       `${summary.route} emitted ${summary.unexpectedNetworkErrorCount} unexpected network errors`,
     );
   }
+  const route = routes.find((candidate) => candidate.name === summary.route);
+  if (route?.requiresOptimizedImages && summary.optimizedImageCount === 0) {
+    failures.push(`${summary.route} did not request an optimized image`);
+  }
+  if (summary.rawLocalRasterCount > 0) {
+    failures.push(`${summary.route} requested ${summary.rawLocalRasterCount} raw local raster images`);
+  }
+  if (summary.largestImageTransferP75Bytes > budgets.largestImageTransferBytes) {
+    failures.push(
+      `${summary.route} largest image p75 ${summary.largestImageTransferP75Bytes}B > ${budgets.largestImageTransferBytes}B`,
+    );
+  }
 }
 if (interactionP75Milliseconds === null) {
   failures.push("INP proxy is missing trusted interaction timing");
@@ -713,7 +872,7 @@ console.log(`Origin: ${targetOrigin}`);
 console.log(`Profile: 390x844, CPU ${device.cpuSlowdownMultiplier}x, 1.6 Mbps / 150ms RTT`);
 for (const summary of routeSummaries) {
   console.log(
-    `- ${summary.route}: LCP p75=${summary.lcpP75Milliseconds}ms, CLS p75=${summary.clsP75}, FCP p75=${summary.fcpP75Milliseconds}ms, TTFB p75=${summary.ttfbP75Milliseconds}ms, transfer p75=${summary.transferP75Bytes}B, console errors=${summary.consoleErrorCount}, unexpected network errors=${summary.unexpectedNetworkErrorCount}, expected dependency errors=${summary.expectedDependencyErrorCount}, expected platform errors=${summary.expectedPlatformErrorCount}`,
+    `- ${summary.route}: LCP p75=${summary.lcpP75Milliseconds}ms, CLS p75=${summary.clsP75}, FCP p75=${summary.fcpP75Milliseconds}ms, TTFB p75=${summary.ttfbP75Milliseconds}ms, transfer p75=${summary.transferP75Bytes}B, optimized images>=${summary.optimizedImageCount}, raw local raster=${summary.rawLocalRasterCount}, largest image p75=${summary.largestImageTransferP75Bytes}B, console errors=${summary.consoleErrorCount}, unexpected network errors=${summary.unexpectedNetworkErrorCount}, expected dependency errors=${summary.expectedDependencyErrorCount}, expected platform errors=${summary.expectedPlatformErrorCount}, expected image fallback errors=${summary.expectedImageErrorCount}`,
   );
 }
 console.log(`- interaction p75=${interactionP75Milliseconds ?? "missing"}ms`);

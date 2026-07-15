@@ -226,9 +226,8 @@ function IngredientChip({
           {urgentBadge.label}
         </span>
       ) : null}
-      <span className={`block overflow-hidden rounded-full bg-white/70 ${dense ? "h-6 w-6" : "h-8 w-8"}`} aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageSrc} alt="" className="h-full w-full object-contain p-0.5" />
+      <span className={`relative block overflow-hidden rounded-full bg-white/70 ${dense ? "h-6 w-6" : "h-8 w-8"}`} aria-hidden="true">
+        <Image src={imageSrc} alt="" fill sizes={dense ? "24px" : "32px"} className="object-contain p-0.5" />
       </span>
       <span className="block w-full min-w-0 px-0.5">
         <span className={`mt-1 block max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-black leading-tight ${dense ? "text-[10px]" : "text-[11px]"}`}>

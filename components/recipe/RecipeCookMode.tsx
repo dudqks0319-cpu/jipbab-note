@@ -537,6 +537,7 @@ export default function RecipeCookMode({
               caption={activeStep.imageCaption}
               className="relative mt-4 aspect-[16/10] w-full overflow-hidden rounded-[14px] bg-[#f2eee8]"
               imageClassName="h-full w-full object-cover"
+              sizes="(max-width: 430px) calc(100vw - 40px), 390px"
             />
           ) : null}
           <h3 className="mt-5 break-keep text-[19px] font-black leading-7 text-[#2f2117]">{activeStep.title || `${activeStep.index}단계`}</h3>

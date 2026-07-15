@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { Heart, Trash2 } from "lucide-react";
 
+import RecipeImage from "@/components/recipe/RecipeImage";
 import { useFavorites } from "@/hooks/useFavorites";
 
 const FALLBACK_IMAGE =
@@ -50,14 +51,13 @@ export default function FavoritesPage() {
             {favorites.map((recipe) => (
               <div key={recipe.id} className="overflow-hidden rounded-3xl bg-white shadow-soft">
                 <Link href={`/recipe/${recipe.id}`} className="flex items-center gap-4 px-4 py-4">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={recipe.thumbnailUrl || FALLBACK_IMAGE}
+                  <RecipeImage
+                    src={recipe.thumbnailUrl}
+                    fallbackSrc={FALLBACK_IMAGE}
                     alt={recipe.name}
-                    onError={(event) => {
-                      event.currentTarget.src = FALLBACK_IMAGE
-                    }}
-                    className="h-20 w-20 rounded-2xl object-cover"
+                    className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#f2eee8]"
+                    imageClassName="object-cover"
+                    sizes="80px"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold tracking-[0.16em] text-gray-400">{recipe.category}</p>

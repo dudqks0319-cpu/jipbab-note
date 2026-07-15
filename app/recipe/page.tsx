@@ -626,6 +626,7 @@ export default function RecipePage() {
                           alt={recipe.name}
                           className="absolute inset-0"
                           imageClassName={`h-full w-full ${isGeneratedRecipeImage ? 'object-contain p-1' : 'object-cover'}`}
+                          sizes="(max-width: 430px) 45vw, 180px"
                         />
                       ) : null}
                     </Link>
