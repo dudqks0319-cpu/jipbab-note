@@ -12,10 +12,10 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "exact_sha_preview_catalog_reconciled_and_runtime_verified"
+  phase: "exact_sha_user_first_recipe_preview_runtime_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "3560df2c300cfcffd2a0e23fdced07d28e3079ed"
+  git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
   branch: "agent/sync-ux-release"
   dirty_state: "clean_commit_pushed_and_exact_sha_preview_verified"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
@@ -48,15 +48,22 @@ source_alignment_20260715:
   github_default_branch: "main"
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
-  candidate_git_sha: "3560df2c300cfcffd2a0e23fdced07d28e3079ed"
+  candidate_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
   candidate_remote_head_matches: true
-  exact_sha_preview_deployment_id: "dpl_6ew7yrR35Y3BeW1Fj8jjWCQLbLxu"
-  exact_sha_preview_url: "https://jipbab-note-2pmudzwmm-youngbeens-projects.vercel.app"
+  exact_sha_preview_deployment_id: "dpl_PvBPZCR5cTePdkUwp1rkKgdFt2Xh"
+  exact_sha_preview_url: "https://jipbab-note-3d2rro9mj-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
+  exact_sha_preview_source: "cli_with_explicit_github_commit_metadata"
+  exact_sha_preview_metadata_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
+  exact_sha_preview_metadata_git_ref: "agent/sync-ux-release"
+  exact_sha_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
   exact_sha_preview_recipe_http: 200
   exact_sha_preview_recipe_count: 20
-  exact_sha_preview_console_warning_error_count: 0
-  exact_sha_preview_screenshot: "/tmp/jipbab-exact-sha-preview-recipes.png"
+  exact_sha_preview_mobile_width: 390
+  exact_sha_preview_horizontal_overflow: 0
+  exact_sha_preview_lock_verified: true
+  exact_sha_preview_vercel_error_log_count: 0
+  exact_sha_preview_screenshot: "/tmp/jipbab-exact-sha-preview-recipes-0f0aab0.png"
   exact_sha_preview_api_status: 503
   exact_sha_preview_api_status_reason: "preview_server_dependency_not_configured_fail_closed"
   production_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
