@@ -2,11 +2,11 @@
 
 작성일: 2026-07-11 KST
 
-## 2026-07-14 후속 상태
+## 2026-07-15 후속 상태
 
 - 이 문서 작성 당시 후속 범위였던 `/api/v1/recipe-feedback`, 실패 단계, 어려웠던 단계, 맛 결과, 다시 만들 의향 수집은 로컬 구현을 마쳤다. migration 적용과 staging HTTP 검증은 아직 수행하지 않았다.
 - 모든 단계 완료 후 실제 조리시간·보관/재가열 안내·즐겨찾기·냉장고 재료 소진을 한 완료 화면에서 제공한다. 재료는 사용자가 선택하고 실행한 경우에만 `consume` 기록으로 남으며 냉장고에서 되돌릴 수 있다.
-- 여러 기기 간 진행상태를 동기화하는 `/api/v1/recipe-progress`는 여전히 미구현이다.
+- 영구 로그인 사용자를 위한 `GET|POST /api/v1/recipe-progress`, 비공개 `recipe_progress` migration과 비파괴 rollback, 서버 시각 낙관적 충돌 계약을 로컬 구현했다. 앱 조리 화면의 로그인 병합·충돌 선택 UI와 staging DB 적용은 아직 수행하지 않았다.
 - 현재 계약과 증거는 `docs/phase-7-recipe-feedback-collection.md`를 기준으로 한다.
 
 ## 변경 전 상태와 원인
@@ -51,8 +51,8 @@
 ## 2026-07-11 당시 데이터베이스·API·배포
 
 - 데이터베이스 변경 없음.
-- 당시 새 API는 없었다. 이후 `/api/v1/recipe-feedback`과 두 개의 비공개 feedback migration을 구현했으며 `/api/v1/recipe-progress`는 여전히 후속 범위다.
-- 현재 구현은 기기 로컬 오프라인 진행 복원이며 다른 기기 동기화는 주장하지 않는다.
+- 당시 새 API는 없었다. 이후 `/api/v1/recipe-feedback`, 두 개의 비공개 feedback migration, `/api/v1/recipe-progress` 서버 기반과 비공개 progress migration을 구현했다.
+- 현재 사용자 화면은 기기 로컬 오프라인 진행 복원만 사용한다. 진행 API는 아직 UI에 연결하지 않았고 staging의 정상 저장·충돌 왕복 증거도 없으므로 다른 기기 동기화 완료를 주장하지 않는다.
 - 이후 content commit `a1b7e0f`를 GitHub에 push하고 Vercel production deployment `dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku`로 배포했다. Supabase migration과 server secret은 변경하지 않았다.
 
 ## 보안 게이트와 잔여 위험
@@ -61,5 +61,5 @@
 - 저장 입력은 버전·타입·step allowlist·timer 상한으로 검증한다.
 - 새 의존성 없음. 기존 release security gate 상태를 유지한다.
 - `P0 / FullStackDev+QA / staging v2 fixture 후`: 실제 공개 상세에서 timer, 앱 background/foreground, 화면 잠금, iOS/Android 진동·소리를 실기기로 재검증해야 한다.
-- `P1 / FullStackDev+Backend / 로그인 동기화 결정 후`: 여러 기기 진행 동기화가 제품 요구라면 인증된 progress/feedback API와 RLS migration을 별도 설계한다.
+- `P1 / FullStackDev+Frontend / progress staging 검증 후`: 로그인 조리 화면에 서버 조회·저장과 충돌 선택 UI를 연결하고 익명·오프라인 fallback을 실기기에서 확인한다.
 - `P1 / Product+QA / beta 전`: 완료 피드백 문구와 timer 종료 음량·진동 패턴을 초보자 5명 이상으로 확인한다.

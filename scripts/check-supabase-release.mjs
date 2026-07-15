@@ -31,6 +31,7 @@ const requiredTables = [
   "account_deletion_requests",
   "account_deletion_request_events",
   "api_rate_limit_buckets",
+  "recipe_progress",
   ...phaseOneTables,
 ];
 
@@ -128,6 +129,7 @@ const requiredMigrationFiles = [
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260711113000_harden_security_definer_privileges.sql",
   "20260715100000_add_recipe_serving_variants.sql",
+  "20260715110000_add_recipe_progress.sql",
 ];
 
 function readSqlBundle() {

@@ -6,6 +6,7 @@ export type ApiV1ErrorCode =
   | "INVALID_LIMIT"
   | "UNAUTHORIZED"
   | "NOT_FOUND"
+  | "CONFLICT"
   | "RATE_LIMITED"
   | "DEPENDENCY_NOT_READY"
   | "INTERNAL_ERROR";

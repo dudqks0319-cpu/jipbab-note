@@ -91,6 +91,7 @@
     "phase1:catalog:generate": "node --experimental-strip-types scripts/generate-phase-1-ingredient-seed.mjs",
     "phase1:schema:sync": "node scripts/sync-phase-1-schema.mjs",
     "phase2:schema:sync": "node scripts/sync-phase-1-schema.mjs",
+    "phase4:schema:sync": "node scripts/sync-phase-1-schema.mjs",
     "phase7:schema:sync": "node scripts/sync-phase-1-schema.mjs",
     "phase1:migration:dry-run": "node --experimental-strip-types scripts/generate-phase-1-migration-dry-run.mjs",
     "phase5:audit": "node --experimental-strip-types scripts/generate-phase-5-core-recipe-audit.mjs",

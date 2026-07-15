@@ -5,9 +5,11 @@ const files = {
   detailRoute: "app/api/v1/recipes/[id]/route.ts",
   recommendationRoute: "app/api/v1/recommendations/route.ts",
   feedbackRoute: "app/api/v1/recipe-feedback/route.ts",
+  progressRoute: "app/api/v1/recipe-progress/route.ts",
   repository: "lib/recipe-api-v1-repository.ts",
   recommendation: "lib/recipe-recommendation-v1.ts",
   feedback: "lib/recipe-feedback.ts",
+  progress: "lib/recipe-progress.ts",
   response: "lib/api-v1-response.ts",
   limiter: "lib/distributed-rate-limit.ts",
   migration: "supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql",
@@ -18,6 +20,8 @@ const files = {
   feedbackDetailsRollback: "supabase/rollbacks/20260714110000_extend_recipe_feedback_completion_details.sql",
   servingMigration: "supabase/migrations/20260715100000_add_recipe_serving_variants.sql",
   servingRollback: "supabase/rollbacks/20260715100000_add_recipe_serving_variants.sql",
+  progressMigration: "supabase/migrations/20260715110000_add_recipe_progress.sql",
+  progressRollback: "supabase/rollbacks/20260715110000_add_recipe_progress.sql",
   schema: "supabase/schema.sql",
   envExample: ".env.example",
 };
@@ -48,6 +52,7 @@ const routes = [
   source.detailRoute,
   source.recommendationRoute,
   source.feedbackRoute,
+  source.progressRoute,
 ];
 
 check(
@@ -61,7 +66,7 @@ check(
     source.response.includes("apiV1Success(data, requestId, status)") &&
     source.response.includes("apiV1Error(") &&
     source.response.includes("createApiOperationRecorder"),
-  "list, detail, recommendation, and feedback routes share request IDs, envelopes, operational telemetry, and distributed limits",
+  "list, detail, recommendation, feedback, and progress routes share request IDs, envelopes, operational telemetry, and distributed limits",
   "every route must use the common responder and distributed rate-limit contracts",
 );
 
@@ -160,6 +165,26 @@ check(
     !source.feedback.includes('"comment"'),
   "feedback requires a verified signed session, exact bounded fields, and idempotent server-only writes",
   "feedback authentication, input minimization, or idempotent storage is incomplete",
+);
+
+check(
+  "private recipe progress API",
+  source.progressRoute.includes("export async function GET") &&
+    source.progressRoute.includes("export async function POST") &&
+    source.progressRoute.includes("readBoundedJsonObject") &&
+    source.progressRoute.includes("getBearerAccessToken") &&
+    source.progressRoute.includes("getAuthenticatedServerUser") &&
+    source.progressRoute.includes("user.is_anonymous === true") &&
+    source.progressRoute.includes("getServerSupabaseAdminClient") &&
+    source.progressRoute.includes('.from("recipe_progress")') &&
+    source.progressRoute.includes('.eq("user_id", user.id)') &&
+    source.progressRoute.includes('.eq("updated_at", existing.updated_at)') &&
+    source.progressRoute.includes('respond.error("CONFLICT"') &&
+    source.progress.includes("INPUT_KEY_SET") &&
+    source.progress.includes("TIMER_KEY_SET") &&
+    !/comment|memo|note|description/i.test(source.progress),
+  "progress requires a permanent signed user, exact bounded fields, server-only storage, and optimistic conflicts",
+  "progress authentication, input minimization, or conflict protection is incomplete",
 );
 
 check(
@@ -265,6 +290,33 @@ check(
 );
 
 check(
+  "recipe progress database contract",
+  source.progressMigration.includes("create table if not exists public.recipe_progress") &&
+    source.progressMigration.includes("recipe_progress_checked_steps_canonical") &&
+    source.progressMigration.includes("recipe_progress_timer_fields_consistent") &&
+    source.progressMigration.includes("unique (user_id, recipe_id, servings)") &&
+    source.progressMigration.includes("new.updated_at = clock_timestamp()") &&
+    source.progressMigration.includes("enable row level security") &&
+    source.progressMigration.includes("from public, anon, authenticated") &&
+    source.progressMigration.includes("to service_role") &&
+    !/grant\s+(?:all|select|insert|update)[^;]*\bto\s+(?:anon|authenticated)\b/i.test(
+      source.progressMigration,
+    ),
+  "progress rows are bounded, private, server-clock owned, and service-role only",
+  "progress storage constraints, clock ownership, or least-privilege grants are incomplete",
+);
+
+check(
+  "recipe progress rollback",
+  source.progressRollback.includes(
+    "revoke all on table public.recipe_progress from public, anon, authenticated, service_role",
+  ) &&
+    !/drop\s+(?:table|function)|truncate|delete\s+from/i.test(source.progressRollback),
+  "rollback revokes every runtime role while retaining cook progress",
+  "progress rollback must preserve rows and remove runtime access",
+);
+
+check(
   "schema synchronization",
   source.schema.includes("PHASE2_API_FOUNDATION_SCHEMA_START") &&
     source.schema.includes("public.api_rate_limit_buckets") &&
@@ -286,6 +338,16 @@ check(
 );
 
 check(
+  "recipe progress schema synchronization",
+  source.schema.includes("PHASE4_RECIPE_PROGRESS_SCHEMA_START") &&
+    source.schema.includes("public.recipe_progress") &&
+    source.schema.includes("recipe_progress_checked_steps_canonical") &&
+    source.schema.includes("recipe_progress_timer_fields_consistent"),
+  "Phase 4 private progress storage is mirrored into the canonical schema",
+  "canonical schema is missing the Phase 4 progress contract",
+);
+
+check(
   "server-only rate-limit secret",
   source.envExample.includes("API_RATE_LIMIT_HMAC_SECRET=") &&
     !source.envExample.includes("NEXT_PUBLIC_API_RATE_LIMIT_HMAC_SECRET"),
@@ -302,6 +364,8 @@ const requiredTests = [
   "tests/recipe-feedback-contract.test.ts",
   "tests/recipe-cook-completion.test.ts",
   "tests/recipe-serving-variants.test.ts",
+  "tests/recipe-progress.test.ts",
+  "tests/recipe-progress-contract.test.ts",
 ];
 check(
   "API v1 regression coverage",

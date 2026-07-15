@@ -26,6 +26,11 @@ const schemaBlocks = [
       "supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql",
     ],
   },
+  {
+    startMarker: "-- PHASE4_RECIPE_PROGRESS_SCHEMA_START",
+    endMarker: "-- PHASE4_RECIPE_PROGRESS_SCHEMA_END",
+    migrationPaths: ["supabase/migrations/20260715110000_add_recipe_progress.sql"],
+  },
 ];
 
 let schema = readFileSync(schemaPath, "utf8");

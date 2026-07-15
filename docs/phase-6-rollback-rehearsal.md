@@ -1,6 +1,6 @@
 # Phase 6 비파괴 롤백 연습
 
-Updated: 2026-07-13 KST
+Updated: 2026-07-15 KST
 
 ## 최신 실행 증거
 
@@ -10,7 +10,8 @@ Updated: 2026-07-13 KST
 - 결과: `passed_local_code_rehearsal`
 - 필수 command: 9/9 pass
 - HTTP smoke: 10/10 pass
-- DB rollback pair: 6/6 present, destructive statement 0
+- DB rollback pair at this historical run: 6/6 present, destructive statement 0
+- Current static rollback contract: 10/10 present, destructive statement 0; live execution remains `blocked_external`
 - Evidence: `output/rollback-evidence/2026-07-13T10-26-31-100Z/rollback-rehearsal.{json,md}`
 
 연습 중 첫 clean archive에는 Git에서 제외된 `ios/App/App/capacitor.config.json`이 없어 unit test 1건이 실패했다. `pnpm mobile:sync:ios`를 필수 순서에 추가했다. 다음 실행은 `CAPACITOR_SERVER_URL`을 명시하지 않아 안전하게 중단됐으므로 commit과 paired Preview URL을 모두 필수 입력으로 고정했다. 세 번째 실행은 production용 `NODE_ENV`가 integration의 Next dev server에 전달돼 500을 만들었고 test/dev 환경과 production start 환경을 분리했다. 계약이나 테스트를 약화하지 않고 세 원인을 수정한 뒤 최종 실행이 통과했다.
@@ -62,7 +63,10 @@ pnpm capture:phase6-rollback \
 - `20260710151000_seed_phase1_ingredient_catalog.sql`
 - `20260710160000_add_distributed_api_rate_limits.sql`
 - `20260711113000_harden_security_definer_privileges.sql`
+- `20260714100000_add_recipe_feedback.sql`
+- `20260714110000_extend_recipe_feedback_completion_details.sql`
 - `20260715100000_add_recipe_serving_variants.sql`
+- `20260715110000_add_recipe_progress.sql`
 
 자동 검사는 rollback에서 `drop table`, `drop column`, `truncate`를 거부한다. 이 통과는 PostgreSQL 실행 증거가 아니다. 다음 조건이 준비된 뒤 실제 staging PostgreSQL에서 forward migration, 음성 권한 검사, rollback, 데이터 보존, 재적용을 수행해야 한다.
 
