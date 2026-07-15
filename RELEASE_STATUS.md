@@ -2,14 +2,14 @@
 
 ## 한 줄 상태
 
-FE-005 레시피 목록 필터 초기화·뒤로가기 상태 복원 코드는 `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`로 GitHub에 푸시했습니다. 같은 코드 archive의 Vercel Preview `dpl_GrvKCCkRFbArg63j2SKkpvtz8Cbj`는 `READY`이고 `/`·`/recipe` HTTP 200입니다. Production은 승격하지 않았고 DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+OPS-005 조리 모드 점진 활성화 코드는 `3f930a0f74bdf632db959f0d891ba92ced72f6f5`로 GitHub에 푸시했습니다. Vercel Git Preview `dpl_4Wu2YccTGDGcjurbbryRrc5r2rgF`는 정확한 SHA를 clone해 `READY`이고 `/`·`/fridge?demo=appstore` HTTP 200입니다. Production은 승격하지 않았고 DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
 
-## 2026-07-14 최신 웹 Preview
+## 2026-07-15 OPS-005 웹 Preview
 
-- Preview: `https://jipbab-note-5lqu7aepk-youngbeens-projects.vercel.app`
-- 브라우저 390x844 실제 목록 QA: 전체 필터 초기화, 검색·초보 필터, cursor 2페이지, 상세 이동 후 뒤로가기 페이지·스크롤 복원 통과
-- 검증: unit 441/441, TypeScript pass, lint 오류 0, security 4/4, production build 40/40 routes, 가로 overflow 0, 최소 버튼 44px
-- 데이터 경계: 카드·cursor용 30개 fixture는 로컬 메모리에만 사용했고 Preview API는 migration 미적용으로 redacted `503 DEPENDENCY_NOT_READY`를 유지함
+- Preview: `https://jipbab-note-lwdzmph0v-youngbeens-projects.vercel.app`
+- 브라우저 390x844 QA: 로컬 100% 조리 모드·2초 타이머 완료, 0% 접근 가능한 fallback·기존 재료·장보기·조리순서 보존, 실제 원격 홈 390/390·최소 조작부 44px 통과
+- 검증: unit 482/482, TypeScript pass, lint 오류 0, production build 40/40 routes, Vercel compile/typecheck/40 routes, preview error·fatal runtime log 0
+- 데이터 경계: 조리 QA 레시피는 로컬 합성 fixture로만 사용하고 route를 제거했으며 실제 운영 비율·사용자·실기기 증거로 승격하지 않음
 
 ## 기존 App Store 출시 이력
 
@@ -27,10 +27,10 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 - Version: `1.0`
 - Build: `2026062602`
-- Git SHA: `4c6d5cf9a3fd1c59c2bd39604e481ece2dce6444`
-- Preview evidence checkpoint: `e5ac732085751bac5b367e725e911b053eab62ec`
+- Git SHA: `3f930a0f74bdf632db959f0d891ba92ced72f6f5`
+- Preview evidence checkpoint: `36c8819ed2f0dc5babacc9c0d289c9f6a3e73c99`
 - Branch: `agent/phase6-observability-analytics`
-- Phase: `phase7_recipe_completion_and_fe005_navigation_preview_ready_external_and_human_gates_blocked`
+- Phase: `phase7_recipe_completion_and_ops005_rollout_preview_ready_external_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
 
 ## 통과 또는 기록된 증거
@@ -42,6 +42,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - App Store version `READY_FOR_SALE` 재확인: `output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md`
 - App Store 국가 가용성 생성(KOR/USA only), `appAvailabilityV2` 200 확인, KR/US 공개 App Store 직접 URL HTTP 200 확인, iTunes Lookup API 지연 기록: `output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`
 - App Store 출시 앱 원격 WebView production UX 갱신: `output/ui-evidence/shopping-production-vercel-cdp-390.png`
+- OPS-005 레시피 단위 점진 활성화·즉시 비활성 fallback·Vercel Preview·390px 증거: `docs/current-release-state.md`
 - App Store Review 제출 완료 UI 증거: `output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md`
 - App Store 최신 스크린샷 5장 교체 완료 증거: `output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`
 - 케이블 연결 iPhone 12 Pro build `2026062601` install/launch/process/display 증거: `output/release-evidence/2026-06-26T11-10-cable-ios-qa/summary.md`
@@ -65,6 +66,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - P0: Play Console 내부 테스트 증거 미완료
 - P0: Phase 7 실제 사용자 5~20명 비공개 베타와 공개 승인 미수행
 - P1: 실제 외부 모니터링 채널·보관 정책·합성 경보 수신 미확인
+- P1: OPS-005 실제 운영 비율 적용·cohort 관측·iOS/Android 실기기 검증 미확인
 - P1: Cloudflare secret, custom domain, Supabase Auth redirect, mobile runtime URL 전환
 
 ## 다음 행동
