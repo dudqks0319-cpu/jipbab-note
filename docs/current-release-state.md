@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-009 재료 매칭 UI
+
+- 레시피 상세 변환이 API v1의 `ingredientId`, pantry staple 여부와 모든 검수 대체관계의 재료 ID·이름·비율·주의를 보존한다. 장보기 도우미는 더 이상 레시피와 냉장고 이름을 합친 문자열 매처를 사용하지 않는다.
+- 새 판정기는 로컬 재료 카탈로그의 정확한 정식명과 별칭만 비교하며 부분 문자열을 사용하지 않는다. 동일 ID의 정식명 `exact`, 동일 ID의 별칭 `alias`, 편집자가 재료 ID로 등록한 `substitute`, `missing`, 카탈로그 밖 `unknown`을 구분한다. 원재료가 있으면 대체재보다 우선하고, 모호한 별칭·텍스트뿐인 대체관계·알 수 없는 ID는 보유 재료로 승격하지 않는다.
+- UI는 같은 재료·검수된 대체·부족·확인 필요 수를 각각 표시한다. 정확 일치와 별칭에는 실제 냉장고 이름을, 검수 대체에는 `양파 대신 대파`와 사용량·주의를 표시한다. 부족 재료만 선택·중복 제거·제휴 제안·장보기 추가 대상으로 삼고 `판정 보류`는 자동 장보기에서 제외한다. 재료 목록의 대체 문구도 `검수된 대체`로 명확히 바꿨다.
+- 인앱 브라우저의 실제 `/recipe/[id]` 428px 모바일 셸에서 냉장고 UI로 `계란`, `대파`, `꽃소금`을 추가했다. `달걀`은 `정확히 일치 · 냉장고: 계란`, `소금`은 `같은 재료 · 별칭 · 냉장고: 꽃소금`, `양파`는 `양파 대신 대파 · 같은 부피 · 향이 더 강해요`로 분리됐고 같은 재료 2개·검수 대체 1개·부족 0개·확인 필요 0개였다. 부족 0개라 장보기 추가 버튼은 노출되지 않았고 console error 0건이었다. 검증 데이터는 로컬 Supabase fixture와 브라우저 로컬 저장소에만 있으며 앱·DB·Git·운영 증거로 승격하지 않는다.
+- 전체 단위 테스트 459/459, TypeScript, production build 40/40 경로, 통합·콘텐츠 검사, 접근성 229개 상호작용 요소·8개 계약·실패 0건, API v1 계약 20/20, `SECURITY DEFINER` 14/14, 롤백 15/15가 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore와 추적된 secret 부재, `SECURITY DEFINER` 검사를 통과했다. 기존 release script의 폐기된 audit endpoint는 HTTP 410으로 종료되어 최신 `pnpm@11.13.0 audit --prod --audit-level moderate`로 재검사했고 moderate/high/critical 0건, Next의 optional `@babel/core@7.29.0` 경로에 low 1건(`GHSA-4x5r-pxfx-6jf8`, patched `>=7.29.1`)을 확인했다. 새 의존성이나 lockfile 변경은 없다. 잔여 리스크는 Owner `FullStackDev`, due `before_dependency_maintenance_release` — Next가 해당 패치를 반영하는 의존성 유지보수 때 재검토한다.
+- 구현 커밋 `765e89501aad2dd27ae755011a2e7a699f1fb438`를 `origin/agent/phase6-observability-analytics`에 push했다. 같은 깨끗한 detached worktree를 Vercel Preview `dpl_DVHB2ejQ5pce18ohduWgRBWQJPrX` (`https://jipbab-note-3aj8z71si-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 메타데이터의 `sourceCommit`·`sourceBranch`·`feature=FE-009`이 일치하고 `gitDirty=0`이며 `/`, `/recipe`, `/recipe/[id]`는 HTTP 200이다.
+- Preview의 목록 API는 운영 DB migration과 검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거 변경은 수행하지 않았다. 다음 계획 항목은 FE-010 장보기 선택과 중복 처리다.
+
 ## 2026-07-15 FE-008 검수된 인분 변경
 
 - 인분 선택은 재료 이름이나 일괄 배수 계산으로 만들지 않는다. DB/API가 편집 검수한 인분별 정확한 재료 값·표시 문자열·단위, 도구 안내, 시간 안내를 제공하며 기본 인분을 포함한 2~20 범위의 완전하고 고유한 선택지만 허용한다. 누락·중복·부분 데이터, 기본 재료와 다른 기본 인분 값은 목록과 상세에서 모두 fail-closed한다.
