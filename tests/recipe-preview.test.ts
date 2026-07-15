@@ -31,3 +31,14 @@ test("preview surface is explicit and cannot start cooking or shopping", () => {
   assert.match(detail, /아직 조리 승인 전이에요/);
   assert.doesNotMatch(detail, /RecipeCookMode|RecipeShoppingAssistant|RecipeFavoriteButton/);
 });
+
+test("preview list prioritizes recipe discovery over inactive or secondary controls", () => {
+  const list = readFileSync("app/recipe/page.tsx", "utf8");
+
+  assert.match(list, /\{!previewMode \? \(\s*<section className="px-5 pt-3">/);
+  assert.match(list, /\{!previewMode && totalPages > 1 \? \(\s*<section/);
+  assert.ok(
+    list.indexOf('placeholder="레시피 검색"') < list.indexOf('id="recipe-more-tools"'),
+    "secondary recipe tools must stay below the primary discovery controls",
+  );
+});

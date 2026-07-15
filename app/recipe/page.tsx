@@ -289,15 +289,6 @@ export default function RecipePage() {
             {favorites.length}
           </button>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Link href="/meal-plan" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
-            주간 식단
-          </Link>
-          <Link href="/recipe/import" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
-            레시피 가져오기
-          </Link>
-        </div>
-
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
           <Search size={16} className="text-[#b5a493]" />
           <input
@@ -394,6 +385,7 @@ export default function RecipePage() {
         ))}
       </section>
 
+      {!previewMode ? (
       <section className="px-5 pt-3">
         <div className="jipbab-panel rounded-[16px] px-3 py-3">
           <button
@@ -454,6 +446,7 @@ export default function RecipePage() {
           ) : null}
         </div>
       </section>
+      ) : null}
 
       <section className="px-5 pt-4">
         {!isAppStoreDemo && loading ? (
@@ -507,14 +500,14 @@ export default function RecipePage() {
                       />
                     </div>
                     <div className="min-w-0 flex-1 py-1">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[10px] font-black text-[#d94d19]">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[11px] font-black text-[#d94d19]">
                         <Eye size={11} /> 검수 중 미리보기
                       </span>
                       <h2 className="mt-2 line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
-                      <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#7d6d5f]">
+                      <p className="mt-1 line-clamp-1 text-[12px] font-semibold text-[#7d6d5f]">
                         {recipe.beginnerSummary ?? recipe.featuredReason}
                       </p>
-                      <div className="mt-2 flex items-center gap-3 text-[11px] font-bold text-[#7d6d5f]">
+                      <div className="mt-2 flex items-center gap-3 text-[12px] font-bold text-[#7d6d5f]">
                         <span className="inline-flex items-center gap-1"><Clock3 size={12} /> {recipe.totalMinutes}분</span>
                         <span className="inline-flex items-center gap-1"><Users size={12} /> {recipe.servings}인분</span>
                       </div>
@@ -686,6 +679,7 @@ export default function RecipePage() {
         )}
       </section>
 
+      {!previewMode && totalPages > 1 ? (
       <section className="mt-5 flex items-center justify-center gap-2 px-5">
         <button
           onClick={prevPage}
@@ -705,6 +699,19 @@ export default function RecipePage() {
         >
           다음
         </button>
+      </section>
+      ) : null}
+
+      <section aria-labelledby="recipe-more-tools" className="px-5 pt-7">
+        <h2 id="recipe-more-tools" className="text-[14px] font-black text-[#4b3929]">더 활용하기</h2>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Link href="/meal-plan" className="flex min-h-11 items-center justify-center rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-center text-[12px] font-black text-[#4b3929]">
+            주간 식단
+          </Link>
+          <Link href="/recipe/import" className="flex min-h-11 items-center justify-center rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-center text-[12px] font-black text-[#4b3929]">
+            레시피 가져오기
+          </Link>
+        </div>
       </section>
     </div>
   )
