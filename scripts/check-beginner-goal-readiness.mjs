@@ -306,6 +306,24 @@ addCheck(
   missingRequiredDocs.length === 0 ? "all docs present" : `missing: ${missingRequiredDocs.join(", ")}`,
 );
 
+const beginnerWritingGuide = fileText("docs/beginner-recipes.md");
+const missingWritingGuideTerms = missingTerms(beginnerWritingGuide, [
+  "## 금지 표현과 교정 예시",
+  "피해야 할 문장",
+  "집밥노트 문장",
+  "중불에서 3분",
+  "분홍색이 남지 않았는지",
+  "물 2큰술과 두부 100g",
+  "인물·브랜드·공식성 오인",
+]);
+addCheck(
+  "레시피 문체 가이드에 금지 표현과 교정 예시 포함",
+  missingWritingGuideTerms.length === 0,
+  missingWritingGuideTerms.length === 0
+    ? "vague language, safety, recovery, and attribution examples"
+    : `missing: ${missingWritingGuideTerms.join(", ")}`,
+);
+
 const packageJson = JSON.parse(fileText("package.json"));
 addCheck(
   "검증 스크립트 package script 연결",

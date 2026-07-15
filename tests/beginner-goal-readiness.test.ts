@@ -51,6 +51,8 @@ test("beginner goal readiness audits the user-visible completion surfaces", () =
   assert.match(source, /sortRecipeListRecipes/);
   assert.match(source, /Supabase 가족 scope\/RLS migration/);
   assert.match(source, /docs\/recipe-content-rights\.md/);
+  assert.match(source, /레시피 문체 가이드에 금지 표현과 교정 예시 포함/);
+  assert.match(source, /## 금지 표현과 교정 예시/);
 });
 
 test("beginner mobile evidence checker validates captured mobile widths", () => {
@@ -91,4 +93,5 @@ test("beginner goal readiness command passes against the current local implement
   assert.match(output, /PASS - 사용자 지정 기본 100개 후보 전체 포함/);
   assert.match(output, /PASS - 홈 초보자 추천\/상태\/섹션 연결/);
   assert.match(output, /PASS - 레시피 목록\/검색\/필터\/정렬 연결/);
+  assert.match(output, /PASS - 레시피 문체 가이드에 금지 표현과 교정 예시 포함/);
 });
