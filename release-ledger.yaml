@@ -15,9 +15,9 @@ candidate:
   phase: "phase6_recipe_preview_and_signed_guest_sync_preview_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
+  git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
   branch: "agent/sync-ux-release"
-  dirty_state: "sync_runtime_verified_release_ledger_update_pending"
+  dirty_state: "release_ledger_matches_recipe_discovery_runtime_checkpoint"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -697,12 +697,23 @@ sync_preview_backup_20260715:
   sync_rekey_git_sha: "46e1ed0918141c788c079ca5646c79830d17e3c6"
   sync_ui_git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
   shopping_sync_ui_git_sha: "729a1df"
-  preview_deployment_id: "dpl_DeJ2qD1KD7hKVzLt1fGz66s8uGZw"
-  preview_url: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
+  recipe_discovery_ui_git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
+  preview_deployment_id: "dpl_D6NUcCjGCVuUJNRvh4Jkft3fmBRm"
+  preview_url: "https://jipbab-note-ltixq8wbj-youngbeens-projects.vercel.app"
+  preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
   preview_status: "READY"
   production_promoted: false
   recipe_preview_count: 8
   recipe_preview_runtime_verified: true
+  recipe_preview_search_runtime_verified: true
+  recipe_preview_quick_filter_runtime_verified: true
+  recipe_preview_detail_runtime_verified: true
+  recipe_preview_console_log_count: 0
+  recipe_preview_unit_status: "verified_392_of_392"
+  recipe_preview_build_status: "verified_38_of_38_routes"
+  dependency_audit_status: "blocked_registry_audit_endpoint_retired_http_410_client_update_required"
+  dependency_audit_followup_owner: "FullStackDev"
+  dependency_audit_followup_due: "before_next_production_promotion"
   local_only_sync_copy_verified: true
   backup_migration_version: "20260715095212"
   backup_migration_name: "backup_sync_domain_pre_signed_session_20260715"

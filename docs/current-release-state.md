@@ -14,7 +14,10 @@ Updated: 2026-07-15 KST
 - Vercel 공식 Preview에 Supabase 공개 URL, publishable key, 익명 동기화 feature flag를 등록하고 Supabase 익명 로그인을 활성화했다. 냉장고 성공 표시는 `ac6229a8b4e3cd86935315f29e1955135da2499f`, 장보기 성공 표시까지 맞춘 최신 UI는 `729a1df`이며 Git Preview `dpl_DeJ2qD1KD7hKVzLt1fGz66s8uGZw`가 `READY`다.
 - Chrome에서 냉장고 8개가 원격 반영된 뒤 새로고침해도 유지되고 `클라우드 동기화 완료`가 정확히 1개, `동기화 대기`가 0개인 것을 확인했다. 운영 DB에는 서명된 재료 8건·서명 사용자 1명이 있고 브라우저 console warning/error는 0건이다. 증거 화면은 `/tmp/jipbab-sync-verified.png`다.
 - Chrome 장보기 화면도 냉장고와 동일한 원격 완료 조건에서 `클라우드 동기화 완료`가 1개, 대기 표시는 0개, console warning/error는 0건으로 확인했다. 증거 화면은 `/tmp/jipbab-shopping-sync-verified.png`다.
-- 검증: unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, release security, production build 38/38 routes, Chrome runtime 확인. Production alias는 승격하지 않았다.
+- 레시피 탐색 우선순위 개선은 `661c97489748e52c6fb4108d88d82c913dd31869`다. 미리보기 모드에서 실제로 적용되지 않던 상세 필터와 의미 없는 1/1 페이지네이션을 숨기고, `주간 식단`·`레시피 가져오기`를 8개 카드 아래 `더 활용하기`로 이동했다. 카드의 검수 배지·요약·시간·인분 글자 크기도 높였다.
+- Git Preview `dpl_D6NUcCjGCVuUJNRvh4Jkft3fmBRm` (`https://jipbab-note-ltixq8wbj-youngbeens-projects.vercel.app`)은 `READY`다. Chrome에서 전체 미리보기 8개, `두부` 검색 결과, `10분 이내` 3개, 버터간장계란밥 상세의 도구·재료·4단계 조리 설명을 확인했고 console log는 0건이다.
+- 최신 검증은 unit 392/392, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. 보안 계약의 secret ignore·tracked secret·SECURITY DEFINER 3개 검사는 통과했지만, production dependency audit는 npm이 기존 audit endpoint를 410으로 폐기해 현재 pnpm 클라이언트에서 실행 증거를 갱신하지 못했다. 이는 배포 전 audit 도구 갱신이 필요한 별도 운영 blocker다.
+- 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 현재도 Production alias는 승격하지 않았다.
 - 잔여 보안 항목: Supabase advisor의 `app.current_device_id`, `app.is_permanent_user` search-path 경고 재검토, 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화가 남아 있다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
 - 실제 운영 별칭 `https://jipbab-note-app.vercel.app`은 별도 Vercel 프로젝트 `jipbab-note-app`의 과거 커밋 `a1b7e0f79d0e5004caac7b305e40feb3496c347d`를 계속 가리킨다. 현재 수정은 공식 `jipbab-note` Preview에서 검증됐으며, 두 프로젝트의 원본 통합과 Production 승격 승인 전에는 운영 앱에 반영됐다고 주장하지 않는다.
 
