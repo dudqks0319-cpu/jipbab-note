@@ -15,9 +15,9 @@ candidate:
   phase: "production_recipe_preview_signed_sync_and_publication_gate_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
+  git_sha: "58df42b208b8e28ede0dd518cf32d575fc37a5e9"
   branch: "agent/sync-ux-release"
-  dirty_state: "release_ledger_matches_ingredient_category_hotfix"
+  dirty_state: "release_ledger_matches_recipe_readability_hotfix"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -712,6 +712,7 @@ sync_preview_backup_20260715:
   home_recipe_visibility_git_sha: "556c37452e87dde56abe966d02ec9b7462d0d265"
   difficulty_label_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
   ingredient_category_fix_git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
+  recipe_readability_git_sha: "58df42b208b8e28ede0dd518cf32d575fc37a5e9"
   preview_deployment_id: "dpl_FNSVuHw3aW5iNj6jzv8gRb9KegeG"
   preview_url: "https://jipbab-note-95m5agmad-youngbeens-projects.vercel.app"
   preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
@@ -719,8 +720,8 @@ sync_preview_backup_20260715:
   production_promoted: false
   production_web_hotfix_deployed: true
   production_full_release_promoted: false
-  production_deployment_id: "dpl_DmAQEEMaZx1VmPLQUcGY2VSHcLf2"
-  production_deployment_url: "https://jipbab-note-5zx4n5wgk-youngbeens-projects.vercel.app"
+  production_deployment_id: "dpl_9wEbHSS6yrz4aaAw5atpyXRvyyFW"
+  production_deployment_url: "https://jipbab-note-96yq5v513-youngbeens-projects.vercel.app"
   production_alias: "https://jipbab-note-app.vercel.app"
   production_status: "READY"
   production_anonymous_auth_feature_flag_enabled: true
@@ -731,7 +732,7 @@ sync_preview_backup_20260715:
   recipe_preview_detail_runtime_verified: true
   recipe_preview_console_log_count: 0
   recipe_preview_unit_status: "verified_396_of_396"
-  latest_unit_status: "verified_404_of_404"
+  latest_unit_status: "verified_406_of_406"
   recipe_preview_build_status: "verified_38_of_38_routes"
   dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
   dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
@@ -790,9 +791,16 @@ sync_preview_backup_20260715:
   production_fridge_category_browser_verified: true
   production_fridge_tofu_recipe_link_verified: true
   production_fridge_category_browser_console_warning_error_count: 0
+  production_recipe_card_heading_font_px: 14
+  production_recipe_card_meta_font_px: 12
+  production_recipe_card_app_width_px: 428
+  production_recipe_card_horizontal_overflow_px: 0
+  production_recipe_card_detail_navigation_verified: true
+  production_recipe_card_browser_console_warning_error_count: 0
+  external_recipe_link_copy_platform_neutral: true
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
-  production_alias_runtime_git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
+  production_alias_runtime_git_sha: "58df42b208b8e28ede0dd518cf32d575fc37a5e9"
   production_alias_runtime_alignment: "runtime_hotfix_verified_git_integration_source_mismatch_open"
 
 next_action:

@@ -4,13 +4,13 @@ Updated: 2026-07-15 KST
 
 ## 2026-07-15 운영 동기화·레시피 웹 hotfix
 
-- 운영 별칭 `https://jipbab-note-app.vercel.app`은 Vercel Production deployment `dpl_DmAQEEMaZx1VmPLQUcGY2VSHcLf2` (`https://jipbab-note-5zx4n5wgk-youngbeens-projects.vercel.app`)을 가리키며 상태는 `READY`다. 배포 산출물은 GitHub `agent/sync-ux-release`의 `9f7a9473f55d062c1ed156ff1874dd346ad5b290`에서 분리한 깨끗한 detached worktree를 운영 환경으로 사전 빌드해 배포했다.
+- 운영 별칭 `https://jipbab-note-app.vercel.app`은 Vercel Production deployment `dpl_9wEbHSS6yrz4aaAw5atpyXRvyyFW` (`https://jipbab-note-96yq5v513-youngbeens-projects.vercel.app`)을 가리키며 상태는 `READY`다. 배포 산출물은 GitHub `agent/sync-ux-release`의 `58df42b`를 운영 환경에서 빌드해 배포했다.
 - 운영 Vercel 프로젝트 `jipbab-note-app`에 `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED=true`를 추가했다. Supabase URL·anon key·server-only rate-limit HMAC은 기존 Production 설정을 유지했고 값은 문서나 로그에 노출하지 않았다.
 - 배포 전 같은 Chrome 세션에서 계란·두부 2개가 `동기화 대기`로 남는 현상을 재현했다. 배포 후 새로고침만으로 `클라우드 동기화 완료` 1개, `동기화 대기` 0개가 됐고 다시 새로고침해도 두 재료가 유지됐다. 증거 화면은 `/tmp/jipbab-production-sync-before.png`, `/tmp/jipbab-production-sync-fixed.png`다.
 - 운영 장보기 화면도 `클라우드 동기화 완료` 1개, `동기화 대기` 0개이며 Chrome console warning/error는 0건이다.
 - 운영 홈은 재료가 없어도 레시피 미리보기를 먼저 노출하고, 재료가 있으면 조건에 맞는 미리보기 CTA를 보여준다. `/recipe`는 `공개 승인 0개 · 미리보기 8개`와 8개 카드, 검색·빠른 필터를 표시하며 달걀죽 상세의 도구·재료·조리순서와 `아직 조리 승인 전이에요` 잠금 상태를 확인했다. 증거 화면은 `/tmp/jipbab-production-recipes-visible.png`, `/tmp/jipbab-production-recipe-list-ready.png`다.
 - 운영 `/api/v1/recipes?limit=1`은 HTTP 200, `Cache-Control: no-store`, `X-Request-Id`와 함께 빈 승인 목록을 반환한다. 운영 DB의 미검수 legacy rows가 공개 API로 새지 않으면서 자체 작성 미리보기만 별도 UI 경로에 표시된다.
-- 코드 검증은 unit 404/404, TypeScript, 변경 파일 ESLint, production build 38/38 routes, SECURITY DEFINER 16/16, Supabase release contract 146/146, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
+- 코드 검증은 unit 406/406, TypeScript, 변경 파일 ESLint, production build 38/38 routes, 모바일 접근성 계약 8/8, Supabase release contract 146/146, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
 - 2026-07-15 운영 DB 재감사에서 `20260710130000_gate_recipe_publication`, `20260710150000_add_recipe_v2_schema_and_versioning`, `20260710160000_add_distributed_api_rate_limits`가 원격 migration history에 기록돼 있고 실제 컬럼·제약조건·인덱스·RLS와 일치함을 확인했다. 중복 migration은 실행하지 않았다. 운영 recipes 1,152건 중 `approved`, `published_at`, publication evidence-ready는 모두 0건이며 `/api/v1/recipes`는 빈 승인 목록만 반환한다.
 - publication 적용 전 `ops_backup`에는 recipes 1,152건, recipe_sources 0건, 정책 8건, 당시 migration history 19건이 보존돼 있다. signed-session 백업과 함께 앱 역할의 backup table privilege는 0건이다.
 - 운영 DB migration `20260715120555_fix_app_helper_search_paths_20260715`에서 `app.current_device_id()`는 `pg_catalog`, `app.is_permanent_user()`는 `pg_catalog, auth`로 search path를 고정했다. 함수 본문과 호출 역할은 유지했고 Supabase advisor의 mutable search-path 경고는 2건에서 0건이 됐다.
@@ -18,6 +18,7 @@ Updated: 2026-07-15 KST
 - 오래된 starter/demo 데이터와 로컬·원격 저장값에서 `계란`·`두부`가 `유제품` 등 잘못된 분류로 남는 문제를 `9f7a9473f55d062c1ed156ff1874dd346ad5b290`에서 수정했다. 입력·로컬 저장·원격 읽기/쓰기 경계에서 정확한 이름만 표준화하며, 계란·달걀은 `육류`, 두부는 `통조림/가공식품`으로 교정한다.
 - 운영 DB에는 `20260715121727_fix_legacy_ingredient_categories_20260715`과 `20260715121937_enforce_canonical_egg_tofu_categories_20260715`를 적용했다. `ops_backup.ingredients_pre_category_fix_20260715` 20건과 `ops_backup.ingredients_pre_canonical_category_fix_20260715` 1건을 보존했고 앱 역할의 backup privilege는 0건이다. 최종 운영 데이터는 계란 12건이 모두 `육류`, 두부 9건이 모두 `통조림/가공식품`이다.
 - 최신 운영 Chrome에서 `/fridge`의 두부 `통조림/가공식품`, 계란 `육류`, `클라우드 동기화 완료`를 확인했다. 두부의 `이 재료로 요리`를 눌러 `/recipe?q=두부`로 이동했고 두부부침·두부조림·된장찌개 미리보기가 표시됐다. 이 상호작용 전후 console warning/error는 0건이다.
+- 레시피 미리보기 가독성 개선 `58df42b`에서 홈 카드 제목을 14px, 시간·난이도·검수 상태를 12px로 높이고 외부 레시피 링크의 `Safari` 고정 문구를 플랫폼 중립 안내로 바꿨다. 운영 Chrome의 428px 앱 폭에서 가로 overflow 0, 계산된 카드 글자 크기 14/12px, 달걀죽 카드에서 상세 이동, console warning/error 0건을 확인했다.
 - 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, 과거 로컬 누락 migration history와 Phase 1 catalog seed 정리, Phase 5 사람 증거 20/20이다.
 
 ## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
@@ -38,7 +39,7 @@ Updated: 2026-07-15 KST
 - 최신 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. bulk response가 비정상 JSON·알 수 없는 severity·HTTP 오류를 반환하면 통과시키지 않으며 `--ignore-registry-errors`를 사용하지 않는다.
 - 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 이후 제한된 운영 웹 hotfix가 배포됐지만 전체 출시 승격은 계속 차단한다.
 - 잔여 보안 항목: 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화, authenticated 역할이 의도적으로 호출하는 가족 SECURITY DEFINER 함수 5개의 정기 재검토가 남아 있다. `app.current_device_id`, `app.is_permanent_user` search-path 경고는 `20260715120555`에서 해소했다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
-- 실제 운영 별칭은 이제 별도 Vercel 프로젝트 `jipbab-note-app`의 hotfix deployment `dpl_DmAQEEMaZx1VmPLQUcGY2VSHcLf2`를 가리킨다. 런타임 코드는 `9f7a947`과 일치하도록 배포했지만 Vercel Git 연결 자체는 canonical 저장소와 아직 통합되지 않았으므로 재현성 P0는 계속 열린다.
+- 실제 운영 별칭은 이제 별도 Vercel 프로젝트 `jipbab-note-app`의 hotfix deployment `dpl_9wEbHSS6yrz4aaAw5atpyXRvyyFW`를 가리킨다. 런타임 코드는 `58df42b`와 일치하도록 배포했지만 Vercel Git 연결 자체는 canonical 저장소와 아직 통합되지 않았으므로 재현성 P0는 계속 열린다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
