@@ -52,8 +52,8 @@ source_alignment_20260715:
   candidate_remote_head_matches: false
   candidate_runtime_sha_is_remote_ancestor: true
   candidate_remote_head_note: "remote head adds release-ledger evidence only; runtime preview remains bound to candidate_git_sha"
-  exact_sha_preview_deployment_id: "dpl_PvBPZCR5cTePdkUwp1rkKgdFt2Xh"
-  exact_sha_preview_url: "https://jipbab-note-3d2rro9mj-youngbeens-projects.vercel.app"
+  exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
+  exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
   exact_sha_preview_source: "cli_with_explicit_github_commit_metadata"
   exact_sha_preview_metadata_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
@@ -61,13 +61,15 @@ source_alignment_20260715:
   exact_sha_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
   exact_sha_preview_recipe_http: 200
   exact_sha_preview_recipe_count: 20
-  exact_sha_preview_mobile_width: 390
+  exact_sha_preview_mobile_widths: "360,390,430"
   exact_sha_preview_horizontal_overflow: 0
   exact_sha_preview_lock_verified: true
   exact_sha_preview_vercel_error_log_count: 0
-  exact_sha_preview_screenshot: "/tmp/jipbab-exact-sha-preview-recipes-0f0aab0.png"
+  exact_sha_preview_screenshot: "output/ui-evidence/phase6-accessibility-home-390-cdp.png"
   exact_sha_preview_api_status: 503
-  exact_sha_preview_api_status_reason: "preview_server_dependency_not_configured_fail_closed"
+  exact_sha_preview_api_hmac_status: "registered_preview_encrypted_value_not_logged"
+  exact_sha_preview_api_status_reason: "preview_hmac_ready_but_isolated_supabase_server_dependency_not_configured_fail_closed"
+  exact_sha_preview_production_service_role_copied: false
   production_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
   production_promoted: false
   alignment_status: "canonical_repo_connected_default_branch_candidate_and_production_sha_differ"

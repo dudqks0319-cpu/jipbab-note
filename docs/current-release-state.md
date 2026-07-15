@@ -1,6 +1,13 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-15 KST
+Updated: 2026-07-16 KST
+
+## 2026-07-16 레시피 20개 우선 노출 Preview 재검증
+
+- 사용자 중심 레시피 런타임 후보 `0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1`을 새 Vercel Preview `dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3` (`https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app`)에 다시 배포했고 상태는 `READY`다. 배포 메타데이터의 Git SHA, ref, repo, org는 각각 해당 커밋, `agent/sync-ux-release`, `jipbab-note`, `dudqks0319-cpu`와 일치한다. Production 별칭과 Production 환경 변수는 변경하지 않았다.
+- `/recipe` 서버 HTML에서 `지금 볼 수 있는 레시피 20개` 1건과 `조리 검수 중` 20건을 확인했고 `공개 승인 0개`는 노출되지 않는다. 설치된 Chrome CDP로 360·390·430px를 다시 측정해 각 너비에서 가로 overflow 0, 44px 미만 컨트롤 0건을 확인했다. 390px 증거 화면은 `output/ui-evidence/phase6-accessibility-home-390-cdp.png`다.
+- 달걀죽 미리보기 상세는 `아직 조리 승인 전이에요`, 필수·선택 재료 구분을 유지하고 `조리 시작`, `장보기에 추가` 실행 버튼을 노출하지 않는다. 검증 시간대의 Vercel error 로그는 0건이다.
+- `API_RATE_LIMIT_HMAC_SECRET`은 Preview 전용 encrypted 값으로 등록했고 값은 출력하거나 문서화하지 않았다. API는 HMAC 등록 뒤에도 격리된 Preview용 Supabase 서버 연결이 없어 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`를 유지했다. Production의 service-role key를 공개 Preview로 복제해 보안 경계를 넓히지 않았으며, 승인 API 200 검증은 격리 staging DB가 준비된 뒤 진행한다. 사용자에게 필요한 자체 작성 레시피 20개 미리보기는 API와 독립된 안전한 UI 경로로 정상 노출된다.
 
 ## 2026-07-15 운영 동기화·레시피 웹 hotfix
 
