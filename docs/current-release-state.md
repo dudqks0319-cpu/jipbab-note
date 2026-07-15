@@ -10,9 +10,11 @@ Updated: 2026-07-15 KST
 - 운영 장보기 화면도 `클라우드 동기화 완료` 1개, `동기화 대기` 0개이며 Chrome console warning/error는 0건이다.
 - 운영 홈은 재료가 없어도 레시피 미리보기를 먼저 노출하고, 재료가 있으면 조건에 맞는 미리보기 CTA를 보여준다. `/recipe`는 `공개 승인 0개 · 미리보기 8개`와 8개 카드, 검색·빠른 필터를 표시하며 달걀죽 상세의 도구·재료·조리순서와 `아직 조리 승인 전이에요` 잠금 상태를 확인했다. 증거 화면은 `/tmp/jipbab-production-recipes-visible.png`, `/tmp/jipbab-production-recipe-list-ready.png`다.
 - 운영 `/api/v1/recipes?limit=1`은 HTTP 200, `Cache-Control: no-store`, `X-Request-Id`와 함께 빈 승인 목록을 반환한다. 운영 DB의 미검수 legacy rows가 공개 API로 새지 않으면서 자체 작성 미리보기만 별도 UI 경로에 표시된다.
-- 코드 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
+- 코드 검증은 unit 398/398, TypeScript, 변경 파일 ESLint, production build 38/38 routes, SECURITY DEFINER 16/16, Supabase release contract 146/146, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
 - 2026-07-15 운영 DB 재감사에서 `20260710130000_gate_recipe_publication`, `20260710150000_add_recipe_v2_schema_and_versioning`, `20260710160000_add_distributed_api_rate_limits`가 원격 migration history에 기록돼 있고 실제 컬럼·제약조건·인덱스·RLS와 일치함을 확인했다. 중복 migration은 실행하지 않았다. 운영 recipes 1,152건 중 `approved`, `published_at`, publication evidence-ready는 모두 0건이며 `/api/v1/recipes`는 빈 승인 목록만 반환한다.
 - publication 적용 전 `ops_backup`에는 recipes 1,152건, recipe_sources 0건, 정책 8건, 당시 migration history 19건이 보존돼 있다. signed-session 백업과 함께 앱 역할의 backup table privilege는 0건이다.
+- 운영 DB migration `20260715120555_fix_app_helper_search_paths_20260715`에서 `app.current_device_id()`는 `pg_catalog`, `app.is_permanent_user()`는 `pg_catalog, auth`로 search path를 고정했다. 함수 본문과 호출 역할은 유지했고 Supabase advisor의 mutable search-path 경고는 2건에서 0건이 됐다.
+- 보안 migration 적용 후 운영 `/api/v1/recipes?limit=1`을 다시 호출해 HTTP 200, `Cache-Control: no-store`, `X-Request-Id`, 빈 승인 목록을 확인했다. 같은 Chrome 세션에서 `/recipe`의 미리보기 8개 카드와 `/fridge`의 재료 2개, `클라우드 동기화 완료`를 재확인했으며 보안 보강이 레시피 표시나 익명 동기화를 회귀시키지 않았다.
 - 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, 과거 로컬 누락 migration history와 Phase 1 catalog seed 정리, Phase 5 사람 증거 20/20이다.
 
 ## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
@@ -32,7 +34,7 @@ Updated: 2026-07-15 KST
 - 최신 보안 게이트 복구는 `b81fbee8b0c9d80697089ce9b45eb67ed9307baf`다. pnpm 10이 폐기된 quick audit endpoint에서 HTTP 410을 받던 경로를 npm 공식 bulk advisory endpoint와 설치된 production dependency tree 기반 fail-closed 검사로 교체했다. 운영 의존성 107개를 실제 조회해 moderate 이상 advisory 0건, secret ignore, tracked secret 부재, SECURITY DEFINER 계약까지 4/4 통과했다.
 - 최신 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. bulk response가 비정상 JSON·알 수 없는 severity·HTTP 오류를 반환하면 통과시키지 않으며 `--ignore-registry-errors`를 사용하지 않는다.
 - 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 이후 제한된 운영 웹 hotfix가 배포됐지만 전체 출시 승격은 계속 차단한다.
-- 잔여 보안 항목: Supabase advisor의 `app.current_device_id`, `app.is_permanent_user` search-path 경고 재검토, 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화가 남아 있다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
+- 잔여 보안 항목: 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화, authenticated 역할이 의도적으로 호출하는 가족 SECURITY DEFINER 함수 5개의 정기 재검토가 남아 있다. `app.current_device_id`, `app.is_permanent_user` search-path 경고는 `20260715120555`에서 해소했다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
 - 실제 운영 별칭은 이제 별도 Vercel 프로젝트 `jipbab-note-app`의 hotfix deployment `dpl_Ff1Rqm7ovh1mSAuTKWwjvZAwbrkw`를 가리킨다. 런타임 코드는 `c7fbbbf`와 일치하도록 배포했지만 Vercel Git 연결 자체는 canonical 저장소와 아직 통합되지 않았으므로 재현성 P0는 계속 열린다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview

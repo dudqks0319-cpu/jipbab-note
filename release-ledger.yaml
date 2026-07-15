@@ -66,6 +66,10 @@ signed_guest_auth:
   legacy_null_user_rows: "preserved_ingredients_51_shopping_18_not_claimed_by_device_id"
   browser_sync_status: "verified_8_signed_ingredients_reload_persistence_pending_zero"
   signed_user_count: 1
+  app_helper_search_path_migration: "20260715120555_fix_app_helper_search_paths_20260715"
+  app_helper_search_path_status: "production_applied_current_device_pg_catalog_permanent_user_pg_catalog_auth"
+  mutable_search_path_advisor_count: 0
+  post_search_path_migration_regression: "production_api_200_preview_recipes_8_cloud_sync_complete_2_ingredients"
 
 phase1_recipe_data:
   schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
@@ -348,7 +352,7 @@ phase0_to_phase4_vercel_deployment:
   server_hmac_secret_registered: false
 
 migration_history:
-  remote_latest_recorded: "20260715101716"
+  remote_latest_recorded: "20260715120555"
   local_unrecorded_before_publication:
     - "20260521160347"
     - "20260523090000"
@@ -362,6 +366,7 @@ migration_history:
   phase1_catalog_seed_recorded_remote: false
   phase2_rate_limit_migration_recorded_remote: true
   phase6_security_definer_migration_recorded_remote: true
+  app_helper_search_path_migration_recorded_remote: true
   publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
   phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
   db_push_status: "blocked_for_full_push_until_older_local_missing_history_and_catalog_seed_reconciled"

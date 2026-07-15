@@ -7,6 +7,8 @@ const paths = {
   rateLimit: "supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql",
   hardening: "supabase/migrations/20260711113000_harden_security_definer_privileges.sql",
   rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql",
+  appHelpers: "supabase/migrations/20260715120555_fix_app_helper_search_paths_20260715.sql",
+  appHelpersRollback: "supabase/rollbacks/20260715120555_fix_app_helper_search_paths_20260715.sql",
 };
 
 const source = Object.fromEntries(
@@ -108,6 +110,28 @@ check(
   "no anonymous definer grants",
   !/grant\s+execute\s+on\s+function[\s\S]*?\s+to\s+(public|anon)\s*;/i.test(source.hardening),
   "the effective hardening migration grants no SECURITY DEFINER function to PUBLIC or anon",
+);
+
+check(
+  "app helper search paths",
+  includesAll(source.appHelpers, [
+    "alter function app.current_device_id()\nset search_path = pg_catalog",
+    "alter function app.is_permanent_user()\nset search_path = pg_catalog, auth",
+    "revoke all on function app.current_device_id()\nfrom public, anon, authenticated, service_role",
+    "revoke all on function app.is_permanent_user()\nfrom public, anon, authenticated, service_role",
+    "grant execute on function app.is_permanent_user() to authenticated",
+  ]),
+  "SECURITY INVOKER helpers use trusted lookup paths and keep the existing minimum access map",
+);
+
+check(
+  "app helper fail-closed rollback",
+  includesAll(source.appHelpersRollback, [
+    "alter function app.current_device_id()\nset search_path = pg_catalog",
+    "alter function app.is_permanent_user()\nset search_path = pg_catalog, auth",
+    "revoke all on function app.is_permanent_user()\nfrom public, anon, authenticated, service_role",
+  ]) && !/\bgrant\s+execute\b|\bdrop\s+table\b|\btruncate\b/i.test(source.appHelpersRollback),
+  "rollback preserves fixed lookup paths and disables helper execution without deleting data",
 );
 
 check(

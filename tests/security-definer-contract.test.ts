@@ -14,6 +14,14 @@ const rollback = readFileSync(
   "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql",
   "utf8",
 );
+const appHelperHardening = readFileSync(
+  "supabase/migrations/20260715120555_fix_app_helper_search_paths_20260715.sql",
+  "utf8",
+);
+const appHelperRollback = readFileSync(
+  "supabase/rollbacks/20260715120555_fix_app_helper_search_paths_20260715.sql",
+  "utf8",
+);
 
 test("SECURITY DEFINER contract is wired into the release security gate", () => {
   assert.equal(
@@ -47,4 +55,30 @@ test("rollback fails closed without destructive data changes", () => {
   assert.doesNotMatch(rollback, /\bdrop table\b|\btruncate\b/i);
   assert.match(rollback, /revoke all on function public\.consume_api_rate_limit/);
   assert.match(rollback, /revoke all on function public\.handle_user_deletion/);
+});
+
+test("app helper functions use fixed search paths and preserve least privilege", () => {
+  assert.match(
+    appHelperHardening,
+    /alter function app\.current_device_id\(\)\s+set search_path = pg_catalog/,
+  );
+  assert.match(
+    appHelperHardening,
+    /alter function app\.is_permanent_user\(\)\s+set search_path = pg_catalog, auth/,
+  );
+  assert.match(
+    appHelperHardening,
+    /revoke all on function app\.current_device_id\(\)\s+from public, anon, authenticated, service_role/,
+  );
+  assert.match(
+    appHelperHardening,
+    /grant execute on function app\.is_permanent_user\(\) to authenticated/,
+  );
+  assert.doesNotMatch(appHelperHardening, /grant execute[^;]+to (?:public|anon)/i);
+});
+
+test("app helper rollback keeps the hardened lookup path and fails closed", () => {
+  assert.match(appHelperRollback, /set search_path = pg_catalog, auth/);
+  assert.match(appHelperRollback, /revoke all on function app\.is_permanent_user/);
+  assert.doesNotMatch(appHelperRollback, /\bgrant execute\b|\bdrop table\b|\btruncate\b/i);
 });

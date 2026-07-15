@@ -20,11 +20,13 @@ Status: `runtime hotfix aligned; Git source mismatch open`
 | 운영 recipes | 1,152 legacy rows | 앱 공개 목록은 승인 0개, 명시적 미리보기 8개만 노출 |
 | 운영 recipe_sources | 0 rows | 출처 FK 연결 없음 |
 | 계획서 기준 공개 가능 recipes | 0 rows | 초보자 검수·출처 ledger·실조리 증거 미충족 |
-| 원격 migration history | publication `20260710130000`, Phase 1 schema `20260710150000`, Phase 2 rate limit `20260710160000`, signed-session hardening `20260715101716`까지 기록 | 세 migration은 실제 live schema와 일치, 그 이전 로컬 누락 이력과 Phase 1 catalog seed는 별도 정리 필요 |
+| 원격 migration history | publication `20260710130000`, Phase 1 schema `20260710150000`, Phase 2 rate limit `20260710160000`, app helper hardening `20260715120555`까지 기록 | 적용 migration은 실제 live schema와 일치, 그 이전 로컬 누락 이력과 Phase 1 catalog seed는 별도 정리 필요 |
 
 현재 production 런타임은 canonical 저장소의 `c7fbbbf`를 깨끗한 detached worktree에서 운영 환경으로 사전 빌드한 제한된 웹 hotfix와 일치한다. 다만 Vercel 프로젝트의 Git 연결은 여전히 오래된 private 저장소 `jipbab-note-app/main`이므로 다음 일반 배포는 Git integration만으로 재현할 수 없고 P0 source mismatch가 남는다.
 
 `20260710130000`, `20260710150000`, `20260710160000`은 원격 migration history에 기록돼 있고, 2026-07-15 재감사에서 publication 컬럼 21개, 제약조건 4개, partial index, `recipes`·`recipe_sources` RLS 정책과 Phase 1 `schema_version`을 live schema에서 확인했다. `recipes` 1,152건은 모두 `approved=0`, `published_at=0`, publication evidence-ready 0건이며 공개 API는 빈 승인 목록만 반환한다. `20260715101534`, `20260715101553`, `20260715101658`, `20260715101716`의 동기화 prerequisite·signed-session·삭제 cascade·SECURITY DEFINER hardening도 운영 DB에 적용됐다. 다만 과거 로컬 누락 이력과 `20260710151000` catalog seed는 별도 정리가 필요하므로 전체 `supabase db push`는 계속 금지한다.
+
+`20260715120555_fix_app_helper_search_paths_20260715`은 app helper 두 함수의 mutable search path만 고정했다. `current_device_id`는 postgres owner만 실행 가능하고, `is_permanent_user`는 기존대로 authenticated와 postgres만 실행 가능하다. Supabase security advisor의 `function_search_path_mutable` 경고는 2건에서 0건으로 감소했다.
 
 운영 백업은 비공개 `ops_backup` schema에 존재한다. Phase 0/1 적용 전 스냅샷은 recipes 1,152건, recipe_sources 0건, 정책 8건, 당시 migration history 19건을 보존하고, signed-session 적용 전 스냅샷은 냉장고 51건, 장보기 18건, 가족 그룹 1건, 가족 구성원 2건, 계정 삭제 요청 21건, 이벤트 18건, 정책 36건, 함수 8건, 당시 migration history 21건을 보존한다. `anon`, `authenticated`, `service_role`, `PUBLIC`의 `ops_backup` table privilege는 0건이다.
 

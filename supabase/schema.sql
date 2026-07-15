@@ -21,6 +21,7 @@ create or replace function app.current_device_id()
 returns text
 language sql
 stable
+set search_path = pg_catalog
 as $$
   select null::text;
 $$;
@@ -34,6 +35,7 @@ create or replace function app.is_permanent_user()
 returns boolean
 language sql
 stable
+set search_path = pg_catalog, auth
 as $$
   select
     (select auth.uid()) is not null
@@ -1354,6 +1356,7 @@ create or replace function app.current_device_id()
 returns text
 language sql
 stable
+set search_path = pg_catalog
 as $$
   select null::text;
 $$;
@@ -1367,6 +1370,7 @@ create or replace function app.is_permanent_user()
 returns boolean
 language sql
 stable
+set search_path = pg_catalog, auth
 as $$
   select
     (select auth.uid()) is not null
