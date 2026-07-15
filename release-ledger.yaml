@@ -49,7 +49,9 @@ source_alignment_20260715:
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
   candidate_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
-  candidate_remote_head_matches: true
+  candidate_remote_head_matches: false
+  candidate_runtime_sha_is_remote_ancestor: true
+  candidate_remote_head_note: "remote head adds release-ledger evidence only; runtime preview remains bound to candidate_git_sha"
   exact_sha_preview_deployment_id: "dpl_PvBPZCR5cTePdkUwp1rkKgdFt2Xh"
   exact_sha_preview_url: "https://jipbab-note-3d2rro9mj-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
