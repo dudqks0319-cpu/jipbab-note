@@ -130,6 +130,10 @@ export default function RecipeCookMode({
   const allComplete = steps.length > 0 && checkedSteps.size === steps.length
   const progress = steps.length === 0 ? 0 : Math.round((checkedSteps.size / steps.length) * 100)
   const activeStep = steps[Math.min(activeStepIndex, steps.length - 1)] ?? null
+  const activeTimerStepPosition = activeTimer
+    ? steps.findIndex((step) => step.index === activeTimer.stepIndex)
+    : -1
+  const activeTimerStep = activeTimerStepPosition >= 0 ? steps[activeTimerStepPosition] : null
   const activeStepIngredients = useMemo(
     () => activeStep ? resolveRecipeCookStepIngredients(activeStep, ingredientDetails) : [],
     [activeStep, ingredientDetails],
@@ -146,6 +150,7 @@ export default function RecipeCookMode({
         setActiveTimer(saved.timer)
         if (saved.timer && remainingTimerSeconds(saved.timer) === 0) {
           signaledTimerRef.current = saved.timer.endsAt
+          setTimerAnnouncement(`${saved.timer.stepIndex}단계 타이머가 이미 끝났습니다.`)
         }
         setStartedAt(saved.startedAt)
         setCompletedAt(saved.completedAt)
@@ -266,6 +271,7 @@ export default function RecipeCookMode({
     if (!isLastStep) setActiveStepIndex((current) => Math.min(steps.length - 1, current + 1))
   }
   const startTimer = (step: RecipeDetailStep) => {
+    if (activeTimer && timerRunning) return
     const duration = stepTimerSeconds(step)
     if (!duration) return
     const timer = createRecipeCookTimer(step.index, duration)
@@ -280,6 +286,14 @@ export default function RecipeCookMode({
     setTimerAnnouncement('')
     setNow(Date.now())
     setActiveTimer(timer)
+  }
+  const dismissTimer = () => {
+    const announcement = remainingSeconds > 0
+      ? `${activeTimer?.stepIndex ?? ''}단계 타이머를 취소했습니다.`
+      : '완료한 타이머를 닫았습니다.'
+    setActiveTimer(null)
+    signaledTimerRef.current = null
+    setTimerAnnouncement(announcement)
   }
   const resetProgress = () => {
     setCheckedSteps(new Set())
@@ -309,6 +323,65 @@ export default function RecipeCookMode({
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f1e4d7]" role="progressbar" aria-label="조리 진행률" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
           <div className="h-full rounded-full bg-[#ea5a1f]" style={{ width: `${progress}%` }} />
         </div>
+
+        {activeTimer && activeTimerStep ? (
+          <section
+            className={`mt-4 rounded-[16px] border px-4 py-4 ${timerRunning ? 'border-[#efc6a7] bg-[#fff4e9]' : 'border-[#bcd8ad] bg-[#f2faed]'}`}
+            aria-labelledby="active-cook-timer-title"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p id="active-cook-timer-title" className={`text-[12px] font-black ${timerRunning ? 'text-[#b75022]' : 'text-[#315f2d]'}`}>
+                  {timerRunning ? '실행 중 타이머' : '타이머 완료'} · {activeTimer.stepIndex}단계
+                </p>
+                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-[#5d4b3d]">
+                  {activeTimerStep.title || `${activeTimer.stepIndex}단계`}
+                </p>
+              </div>
+              <span className={`rounded-full bg-white px-3 py-1 text-[11px] font-black ${timerRunning ? 'text-[#b75022]' : 'text-[#315f2d]'}`}>
+                {formatDurationLabel(activeTimer.durationSeconds)} 설정
+              </span>
+            </div>
+            <p
+              role="timer"
+              aria-label={`${activeTimer.stepIndex}단계 타이머 ${remainingSeconds === 0 ? '완료' : `${formatRemainingTime(remainingSeconds)} 남음`}`}
+              className={`mt-3 font-mono text-[40px] font-black tabular-nums leading-none ${timerRunning ? 'text-[#d94d19]' : 'text-[#315f2d]'}`}
+            >
+              {remainingSeconds === 0 ? '완료' : formatRemainingTime(remainingSeconds)}
+            </p>
+            <p className="mt-3 break-keep text-[12px] font-semibold leading-5 text-[#7d6d5f]">
+              {timerRunning
+                ? '다른 단계로 이동해도 계속 계산해요. 앱을 나갔다 돌아오면 저장된 종료 시각으로 남은 시간을 복원합니다.'
+                : '소리·진동과 함께 완료 상태를 표시했어요. 알림 권한이 없어도 이 화면에서 확인할 수 있습니다.'}
+            </p>
+            <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+              한 번에 하나만 실행됩니다. 다른 단계 타이머는 현재 타이머를 취소한 뒤 시작하세요.
+            </p>
+            <div className={`mt-3 grid gap-2 ${activeTimerStepPosition !== activeStepIndex ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {activeTimerStepPosition !== activeStepIndex ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStepIndex(activeTimerStepPosition)
+                    setShowAllSteps(false)
+                  }}
+                  style={{ minHeight: 52 }}
+                  className="flex min-h-[52px] items-center justify-center rounded-[13px] bg-white px-3 text-[13px] font-black text-[#6f4b2e]"
+                >
+                  {activeTimer.stepIndex}단계로 이동
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={dismissTimer}
+                style={{ minHeight: 52 }}
+                className="flex min-h-[52px] items-center justify-center rounded-[13px] border border-[#e4cbb8] bg-white px-3 text-[13px] font-black text-[#7d5a45]"
+              >
+                {timerRunning ? '타이머 취소' : '완료 알림 닫기'}
+              </button>
+            </div>
+          </section>
+        ) : null}
 
         <p className="sr-only" aria-live="polite">
           {activeStep.index}단계, {activeStep.title || activeStep.action || activeStep.description}
@@ -376,10 +449,20 @@ export default function RecipeCookMode({
             {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">막혔을 때: {activeStep.rescueTip}</p> : null}
           </div>
           {activeTimerSeconds ? (
-            <button type="button" onClick={() => startTimer(activeStep)} style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#fff0e4] px-3 text-[14px] font-black text-[#d94d19]">
-              <Timer size={14} />
-              {activeTimer?.stepIndex === activeStep.index ? (remainingSeconds === 0 ? '타이머 완료' : formatRemainingTime(remainingSeconds)) : `${formatDurationLabel(activeTimerSeconds)} 타이머`}
-            </button>
+            activeTimer?.stepIndex === activeStep.index && timerRunning ? (
+              <p className="mt-4 rounded-[13px] bg-[#fff0e4] px-3 py-3 text-center text-[13px] font-black text-[#d94d19]">
+                이 단계 타이머가 위에서 실행 중이에요.
+              </p>
+            ) : activeTimer && timerRunning ? (
+              <button type="button" disabled style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#eee9e3] px-3 text-[13px] font-black text-[#8f7f70]">
+                <Timer size={14} /> {activeTimer.stepIndex}단계 타이머 실행 중 · 취소 후 시작
+              </button>
+            ) : (
+              <button type="button" onClick={() => startTimer(activeStep)} style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#fff0e4] px-3 text-[14px] font-black text-[#d94d19]">
+                <Timer size={14} />
+                {activeTimer?.stepIndex === activeStep.index ? `${formatDurationLabel(activeTimerSeconds)} 타이머 다시 시작` : `${formatDurationLabel(activeTimerSeconds)} 타이머 시작`}
+              </button>
+            )
           ) : null}
           <button
             type="button"

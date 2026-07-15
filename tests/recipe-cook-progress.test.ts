@@ -9,6 +9,11 @@ import {
 } from "../lib/recipe-cook-progress.ts";
 
 test("cook timer uses an absolute deadline across background gaps", () => {
+  const thirtySeconds = createRecipeCookTimer(1, 30, 1_000);
+  assert.ok(thirtySeconds);
+  assert.equal(thirtySeconds.endsAt, 31_000);
+  assert.equal(remainingTimerSeconds(thirtySeconds, 16_000), 15);
+
   const timer = createRecipeCookTimer(2, 90, 1_000);
   assert.ok(timer);
   assert.equal(timer.endsAt, 91_000);

@@ -63,3 +63,14 @@ test("FE-011 cook mode presents one large step with exact ingredients and one pr
   assert.match(cookMode, /aria-live="polite"/);
   assert.match(cookMode, /aria-current=.*'step'/);
 });
+
+test("FE-012 keeps one visible timer across steps with explicit cancel and restore guidance", () => {
+  assert.match(cookMode, /role="timer"/);
+  assert.match(cookMode, /text-\[40px\]/);
+  assert.match(cookMode, /다른 단계로 이동해도 계속 계산해요/);
+  assert.match(cookMode, /저장된 종료 시각으로 남은 시간을 복원합니다/);
+  assert.match(cookMode, /한 번에 하나만 실행됩니다/);
+  assert.match(cookMode, /타이머 취소/);
+  assert.match(cookMode, /취소 후 시작/);
+  assert.match(cookMode, /타이머가 이미 끝났습니다/);
+});
