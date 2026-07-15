@@ -218,6 +218,47 @@ export async function putLocalRecords<T extends { id: string }>(
   notifyStore(storeName);
 }
 
+export async function replaceLocalStoreRecords(
+  replacements: ReadonlyArray<{
+    storeName: LocalDbStoreName;
+    records: ReadonlyArray<{ id: string }>;
+  }>,
+): Promise<void> {
+  if (replacements.length === 0) {
+    return;
+  }
+
+  const storeNames = Array.from(new Set(replacements.map((item) => item.storeName)));
+
+  if (!isLocalDbSupported()) {
+    for (const replacement of replacements) {
+      const store = getMemoryStore(replacement.storeName);
+      store.clear();
+      for (const record of replacement.records) {
+        store.set(record.id, record);
+      }
+    }
+    for (const storeName of storeNames) {
+      notifyStore(storeName);
+    }
+    return;
+  }
+
+  const db = await openLocalDb();
+  const transaction = db.transaction(storeNames, "readwrite");
+  for (const replacement of replacements) {
+    const store = transaction.objectStore(replacement.storeName);
+    store.clear();
+    for (const record of replacement.records) {
+      store.put(record);
+    }
+  }
+  await transactionComplete(transaction);
+  for (const storeName of storeNames) {
+    notifyStore(storeName);
+  }
+}
+
 export async function deleteLocalRecord(storeName: LocalDbStoreName, recordId: string): Promise<void> {
   if (!isLocalDbSupported()) {
     getMemoryStore(storeName).delete(recordId);

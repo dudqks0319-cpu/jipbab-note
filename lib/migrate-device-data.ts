@@ -1,5 +1,9 @@
+import { v4 as uuidv4 } from "uuid";
+
 import { getDeviceId } from "./device-id.ts";
-import { putLocalRecords, readAllFromStore } from "./local-db/index.ts";
+import { ensureFavoritesMigrated } from "./local-db/favorites-repository.ts";
+import { ensureIngredientsMigrated } from "./local-db/ingredients-repository.ts";
+import { replaceLocalStoreRecords, readAllFromStore } from "./local-db/index.ts";
 import {
   LOCAL_DB_STORES,
   type FavoriteRecipeRecord,
@@ -8,6 +12,7 @@ import {
   type LocalShoppingItem,
   type PendingSyncQueueEntry,
 } from "./local-db/schema.ts";
+import { ensureShoppingMigrated } from "./local-db/shopping-repository.ts";
 import type { DeviceDataMigrationResult, DeviceDataMigrationTableResult } from "../types/index.ts";
 
 interface MigrateDeviceDataOptions {
@@ -95,24 +100,119 @@ function withOwnedUserId<T extends { deviceId?: string | null; userId?: string |
   };
 }
 
+function hasOwnedGuestIdentity(
+  record: { deviceId?: string | null; userId?: string | null },
+  deviceId: string,
+): boolean {
+  return record.deviceId === deviceId && !record.userId;
+}
+
+function queueId(tableName: PendingSyncQueueEntry["tableName"], recordId: string): string {
+  return `${tableName}:${recordId}`;
+}
+
+function parsePayload(payloadJson: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(payloadJson) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function rekeyGuestRecords<T extends {
+  id: string;
+  deviceId: string;
+  userId: string | null;
+  deletedAt?: string | null;
+  syncStatus?: LocalIngredientRecord["syncStatus"];
+  lastSyncedAt?: string | null;
+}>(
+  records: T[],
+  deviceId: string,
+  userId: string,
+): { records: T[]; idMap: Map<string, string>; migratedCount: number } {
+  const idMap = new Map<string, string>();
+  let migratedCount = 0;
+
+  const nextRecords = records.map((record) => {
+    if (!hasOwnedGuestIdentity(record, deviceId)) {
+      return record;
+    }
+
+    const nextId = uuidv4();
+    idMap.set(record.id, nextId);
+    migratedCount += 1;
+    return {
+      ...record,
+      id: nextId,
+      userId,
+      syncStatus: record.deletedAt ? "pending_delete" : "pending_create",
+      lastSyncedAt: null,
+    };
+  });
+
+  return { records: nextRecords, idMap, migratedCount };
+}
+
+function findRekeyedRecord<T extends { id: string }>(
+  records: T[],
+  idMap: Map<string, string>,
+  previousId: string,
+): T | null {
+  const nextId = idMap.get(previousId);
+  return nextId ? records.find((record) => record.id === nextId) ?? null : null;
+}
+
+function appendMissingQueueEntries<T extends { id: string; deletedAt?: string | null }>(
+  tableName: PendingSyncQueueEntry["tableName"],
+  records: T[],
+  idMap: Map<string, string>,
+  existingQueueIds: Set<string>,
+  queueRows: PendingSyncQueueEntry[],
+  now: string,
+): void {
+  for (const [previousId, nextId] of idMap) {
+    const id = queueId(tableName, nextId);
+    if (existingQueueIds.has(id)) {
+      continue;
+    }
+    const record = findRekeyedRecord(records, idMap, previousId);
+    if (!record) {
+      continue;
+    }
+    queueRows.push({
+      id,
+      tableName,
+      recordId: nextId,
+      action: record.deletedAt ? "delete" : "create",
+      payloadJson: JSON.stringify(record),
+      retryCount: 0,
+      lastError: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+}
+
 async function migrateLocalDatabase(deviceId: string, userId: string): Promise<number> {
+  await Promise.all([
+    ensureIngredientsMigrated(),
+    ensureShoppingMigrated(),
+    ensureFavoritesMigrated(),
+  ]);
+
   let migratedCount = 0;
 
   const ingredientRows = await readAllFromStore<LocalIngredientRecord>(LOCAL_DB_STORES.ingredients);
-  const nextIngredients = ingredientRows.map((row) => {
-    const result = withOwnedUserId(row, deviceId, userId);
-    migratedCount += Number(result.migrated);
-    return result.record;
-  });
-  await putLocalRecords(LOCAL_DB_STORES.ingredients, nextIngredients);
+  const ingredientMigration = rekeyGuestRecords(ingredientRows, deviceId, userId);
+  migratedCount += ingredientMigration.migratedCount;
 
   const shoppingRows = await readAllFromStore<LocalShoppingItem>(LOCAL_DB_STORES.shoppingItems);
-  const nextShoppingRows = shoppingRows.map((row) => {
-    const result = withOwnedUserId(row, deviceId, userId);
-    migratedCount += Number(result.migrated);
-    return result.record;
-  });
-  await putLocalRecords(LOCAL_DB_STORES.shoppingItems, nextShoppingRows);
+  const shoppingMigration = rekeyGuestRecords(shoppingRows, deviceId, userId);
+  migratedCount += shoppingMigration.migratedCount;
 
   const favoriteRows = await readAllFromStore<FavoriteRecipeRecord>(LOCAL_DB_STORES.favoriteRecipes);
   const nextFavoriteRows = favoriteRows.map((row) => {
@@ -120,30 +220,93 @@ async function migrateLocalDatabase(deviceId: string, userId: string): Promise<n
     migratedCount += Number(result.migrated);
     return result.record;
   });
-  await putLocalRecords(LOCAL_DB_STORES.favoriteRecipes, nextFavoriteRows);
 
   const eventRows = await readAllFromStore<FridgeEventRecord>(LOCAL_DB_STORES.fridgeEvents);
   const nextEventRows = eventRows.map((row) => {
     const result = withOwnedUserId(row, deviceId, userId);
-    migratedCount += Number(result.migrated);
-    return result.record;
+    const nextIngredientId = ingredientMigration.idMap.get(row.ingredientId) ?? row.ingredientId;
+    const payload = parsePayload(row.payloadJson);
+    const nextPayload = payload && payload.id === row.ingredientId
+      ? { ...payload, id: nextIngredientId, userId }
+      : payload;
+    const changed = result.migrated || nextIngredientId !== row.ingredientId;
+    migratedCount += Number(changed);
+    return {
+      ...result.record,
+      ingredientId: nextIngredientId,
+      payloadJson: nextPayload ? JSON.stringify(nextPayload) : row.payloadJson,
+    };
   });
-  await putLocalRecords(LOCAL_DB_STORES.fridgeEvents, nextEventRows);
 
   const queueRows = await readAllFromStore<PendingSyncQueueEntry>(LOCAL_DB_STORES.pendingSyncQueue);
-  const nextQueueRows = queueRows.map((entry) => {
-    try {
-      const payload = JSON.parse(entry.payloadJson) as Record<string, unknown>;
-      if (payload.deviceId !== deviceId || (typeof payload.userId === "string" && payload.userId.trim())) {
-        return entry;
+  const replacedQueueIds = new Set<string>();
+  const nextQueueRows = queueRows.flatMap((entry) => {
+    const idMap = entry.tableName === LOCAL_DB_STORES.ingredients
+      ? ingredientMigration.idMap
+      : entry.tableName === LOCAL_DB_STORES.shoppingItems
+        ? shoppingMigration.idMap
+        : null;
+    const nextRecord = idMap && entry.recordId
+      ? entry.tableName === LOCAL_DB_STORES.ingredients
+        ? findRekeyedRecord(ingredientMigration.records, idMap, entry.recordId)
+        : findRekeyedRecord(shoppingMigration.records, idMap, entry.recordId)
+      : null;
+
+    if (nextRecord && idMap) {
+      const nextId = idMap.get(entry.recordId);
+      if (!nextId) {
+        return [entry];
       }
       migratedCount += 1;
-      return { ...entry, payloadJson: JSON.stringify({ ...payload, userId }) };
-    } catch {
-      return entry;
+      replacedQueueIds.add(queueId(entry.tableName, nextId));
+      return [{
+        ...entry,
+        id: queueId(entry.tableName, nextId),
+        recordId: nextId,
+        action: nextRecord.deletedAt ? "delete" as const : "create" as const,
+        payloadJson: JSON.stringify(nextRecord),
+        retryCount: 0,
+        lastError: null,
+      }];
     }
+
+    const payload = parsePayload(entry.payloadJson);
+    if (
+      !payload ||
+      payload.deviceId !== deviceId ||
+      (typeof payload.userId === "string" && payload.userId.trim())
+    ) {
+      return [entry];
+    }
+    migratedCount += 1;
+    return [{ ...entry, payloadJson: JSON.stringify({ ...payload, userId }) }];
   });
-  await putLocalRecords(LOCAL_DB_STORES.pendingSyncQueue, nextQueueRows);
+
+  const now = new Date().toISOString();
+  appendMissingQueueEntries(
+    LOCAL_DB_STORES.ingredients,
+    ingredientMigration.records,
+    ingredientMigration.idMap,
+    replacedQueueIds,
+    nextQueueRows,
+    now,
+  );
+  appendMissingQueueEntries(
+    LOCAL_DB_STORES.shoppingItems,
+    shoppingMigration.records,
+    shoppingMigration.idMap,
+    replacedQueueIds,
+    nextQueueRows,
+    now,
+  );
+
+  await replaceLocalStoreRecords([
+    { storeName: LOCAL_DB_STORES.ingredients, records: ingredientMigration.records },
+    { storeName: LOCAL_DB_STORES.shoppingItems, records: shoppingMigration.records },
+    { storeName: LOCAL_DB_STORES.favoriteRecipes, records: nextFavoriteRows },
+    { storeName: LOCAL_DB_STORES.fridgeEvents, records: nextEventRows },
+    { storeName: LOCAL_DB_STORES.pendingSyncQueue, records: nextQueueRows },
+  ]);
 
   return migratedCount;
 }

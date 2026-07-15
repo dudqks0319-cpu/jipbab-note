@@ -688,6 +688,23 @@ blockers:
     evidence: "docs/current-release-state.md"
     due: "before_cloudflare_primary"
 
+sync_preview_backup_20260715:
+  branch: "agent/sync-ux-release"
+  git_sha: "fcf34220448840c3f53d628755aefe717b6b6330"
+  preview_deployment_id: "dpl_DnWA4rbBr4NpmSHda78yH3Sn2dty"
+  preview_status: "READY"
+  production_promoted: false
+  recipe_preview_count: 8
+  recipe_preview_runtime_verified: true
+  local_only_sync_copy_verified: true
+  backup_migration_version: "20260715095212"
+  backup_migration_name: "backup_sync_domain_pre_signed_session_20260715"
+  backup_scope: "migration_scoped_ops_backup_not_full_disaster_recovery"
+  backup_app_role_schema_privileges: 0
+  backup_app_role_table_privileges: 0
+  signed_session_migration_applied: false
+  signed_session_blocker: "legacy_null_user_rows_and_unreconciled_remote_migration_history"
+
 next_action:
   owner: "ContentQA+BeginnerTesters"
   command: "Run Wave 1 from docs/phase-5-human-testing-runbook.md, append cooking attempts to docs/phase-5-actual-cooking-template.csv, record four human reviews in docs/phase-5-human-review-template.csv, then run pnpm check:phase5-human-evidence."

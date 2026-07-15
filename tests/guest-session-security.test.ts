@@ -101,6 +101,7 @@ test("anonymous merge verifies both users and delegates only to the service-role
 test("verified login re-owns local records without remote device-id queries", async () => {
   const deviceId = `guest-security-${Date.now()}`;
   const userId = "5f3d5ac2-4439-4e16-b7fb-04176506622c";
+  const now = new Date().toISOString();
   const stores = [
     LOCAL_DB_STORES.ingredients,
     LOCAL_DB_STORES.shoppingItems,
@@ -111,13 +112,70 @@ test("verified login re-owns local records without remote device-id queries", as
 
   try {
     await Promise.all(stores.map((store) => clearLocalStore(store)));
-    await putLocalRecords(LOCAL_DB_STORES.ingredients, [{ id: "ingredient", deviceId, userId: null }]);
-    await putLocalRecords(LOCAL_DB_STORES.shoppingItems, [{ id: "shopping", deviceId, userId: null }]);
-    await putLocalRecords(LOCAL_DB_STORES.favoriteRecipes, [{ id: "favorite", deviceId, userId: null }]);
-    await putLocalRecords(LOCAL_DB_STORES.fridgeEvents, [{ id: "event", deviceId, userId: null }]);
-    await putLocalRecords(LOCAL_DB_STORES.pendingSyncQueue, [{
-      id: "queue",
+    await putLocalRecords(LOCAL_DB_STORES.ingredients, [{
+      id: "ingredient",
+      deviceId,
+      userId: null,
+      familyGroupId: null,
+      name: "계란",
+      category: "유제품",
+      storageType: "냉장",
+      quantity: "2개",
+      expiryDate: null,
+      barcode: null,
+      imageUrl: null,
+      memo: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      syncStatus: "synced",
+      lastSyncedAt: now,
+    }]);
+    await putLocalRecords(LOCAL_DB_STORES.shoppingItems, [{
+      id: "shopping",
+      deviceId,
+      userId: null,
+      familyGroupId: null,
+      name: "두부",
+      quantity: "1모",
+      category: "유제품",
+      checked: false,
+      sourceRecipeId: null,
+      sourceRecipeName: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      syncStatus: "synced",
+      lastSyncedAt: now,
+    }]);
+    await putLocalRecords(LOCAL_DB_STORES.favoriteRecipes, [{
+      id: "favorite",
+      deviceId,
+      userId: null,
+      name: "김치볶음밥",
+      category: "밥",
+      thumbnailUrl: null,
+      savedAt: now,
+    }]);
+    await putLocalRecords(LOCAL_DB_STORES.fridgeEvents, [{
+      id: "event",
+      deviceId,
+      userId: null,
+      ingredientId: "ingredient",
+      action: "create",
       payloadJson: JSON.stringify({ id: "ingredient", deviceId, userId: null }),
+      createdAt: now,
+    }]);
+    await putLocalRecords(LOCAL_DB_STORES.pendingSyncQueue, [{
+      id: "ingredients:ingredient",
+      tableName: LOCAL_DB_STORES.ingredients,
+      recordId: "ingredient",
+      action: "create",
+      payloadJson: JSON.stringify({ id: "ingredient", deviceId, userId: null }),
+      retryCount: 2,
+      lastError: "legacy collision",
+      createdAt: now,
+      updatedAt: now,
     }]);
 
     const result = await migrateDeviceData({ deviceId, userId });
@@ -125,14 +183,75 @@ test("verified login re-owns local records without remote device-id queries", as
     assert.equal(result.totalMigratedCount, 5);
     assert.equal(result.remoteMigrationMode, "signed_session_sync");
 
-    for (const store of stores.slice(0, 4)) {
-      const rows = await readAllFromStore<{ id: string; userId: string | null }>(store);
-      assert.equal(rows[0]?.userId, userId);
-    }
-    const queueRows = await readAllFromStore<{ id: string; payloadJson: string }>(
+    const ingredientRows = await readAllFromStore<{
+      id: string;
+      userId: string | null;
+      syncStatus: string;
+      lastSyncedAt: string | null;
+    }>(LOCAL_DB_STORES.ingredients);
+    assert.equal(ingredientRows[0]?.userId, userId);
+    assert.notEqual(ingredientRows[0]?.id, "ingredient");
+    assert.equal(ingredientRows[0]?.syncStatus, "pending_create");
+    assert.equal(ingredientRows[0]?.lastSyncedAt, null);
+
+    const shoppingRows = await readAllFromStore<{
+      id: string;
+      userId: string | null;
+      syncStatus: string;
+      lastSyncedAt: string | null;
+    }>(LOCAL_DB_STORES.shoppingItems);
+    assert.equal(shoppingRows[0]?.userId, userId);
+    assert.notEqual(shoppingRows[0]?.id, "shopping");
+    assert.equal(shoppingRows[0]?.syncStatus, "pending_create");
+    assert.equal(shoppingRows[0]?.lastSyncedAt, null);
+
+    const favoriteRows = await readAllFromStore<{ id: string; userId: string | null }>(
+      LOCAL_DB_STORES.favoriteRecipes,
+    );
+    assert.equal(favoriteRows[0]?.id, "favorite");
+    assert.equal(favoriteRows[0]?.userId, userId);
+
+    const eventRows = await readAllFromStore<{
+      id: string;
+      userId: string | null;
+      ingredientId: string;
+      payloadJson: string;
+    }>(LOCAL_DB_STORES.fridgeEvents);
+    assert.equal(eventRows[0]?.userId, userId);
+    assert.equal(eventRows[0]?.ingredientId, ingredientRows[0]?.id);
+    assert.equal(JSON.parse(eventRows[0]?.payloadJson ?? "{}").id, ingredientRows[0]?.id);
+
+    const queueRows = await readAllFromStore<{
+      id: string;
+      tableName: string;
+      recordId: string;
+      action: string;
+      retryCount: number;
+      lastError: string | null;
+      payloadJson: string;
+    }>(
       LOCAL_DB_STORES.pendingSyncQueue,
     );
-    assert.equal(JSON.parse(queueRows[0]?.payloadJson ?? "{}").userId, userId);
+    assert.equal(queueRows.length, 2);
+    const ingredientQueue = queueRows.find((entry) => entry.tableName === LOCAL_DB_STORES.ingredients);
+    const shoppingQueue = queueRows.find((entry) => entry.tableName === LOCAL_DB_STORES.shoppingItems);
+    assert.equal(ingredientQueue?.recordId, ingredientRows[0]?.id);
+    assert.equal(ingredientQueue?.id, `${LOCAL_DB_STORES.ingredients}:${ingredientRows[0]?.id}`);
+    assert.equal(ingredientQueue?.action, "create");
+    assert.equal(ingredientQueue?.retryCount, 0);
+    assert.equal(ingredientQueue?.lastError, null);
+    assert.equal(JSON.parse(ingredientQueue?.payloadJson ?? "{}").userId, userId);
+    assert.equal(JSON.parse(ingredientQueue?.payloadJson ?? "{}").id, ingredientRows[0]?.id);
+    assert.equal(shoppingQueue?.recordId, shoppingRows[0]?.id);
+    assert.equal(JSON.parse(shoppingQueue?.payloadJson ?? "{}").id, shoppingRows[0]?.id);
+    assert.equal(JSON.parse(shoppingQueue?.payloadJson ?? "{}").userId, userId);
+
+    const secondResult = await migrateDeviceData({ deviceId, userId });
+    assert.equal(secondResult.localMigratedCount, 0);
+    const secondIngredientRows = await readAllFromStore<{ id: string }>(LOCAL_DB_STORES.ingredients);
+    const secondShoppingRows = await readAllFromStore<{ id: string }>(LOCAL_DB_STORES.shoppingItems);
+    assert.equal(secondIngredientRows[0]?.id, ingredientRows[0]?.id);
+    assert.equal(secondShoppingRows[0]?.id, shoppingRows[0]?.id);
   } finally {
     await Promise.all(stores.map((store) => clearLocalStore(store)));
   }

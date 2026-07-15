@@ -1,6 +1,16 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-13 KST
+Updated: 2026-07-15 KST
+
+## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
+
+- `agent/sync-ux-release`의 `fcf34220448840c3f53d628755aefe717b6b6330`에서 공개 승인 레시피가 0개여도 자체 작성 레시피 8개를 `검수 중 미리보기`로 홈과 레시피 목록에 표시한다. 홈의 API 503 오류가 미리보기를 가리던 조건을 수정했고 하단 메뉴 수도 `0개`가 아닌 `8개`로 표시한다.
+- Vercel Git Preview `dpl_DnWA4rbBr4NpmSHda78yH3Sn2dty`는 `READY`다. Chrome에서 홈의 양파계란덮밥·김치볶음밥 카드, `메뉴 8개`, 미리보기 상세 진입을 확인했다. Production alias는 승격하지 않았다.
+- 로컬 전용 저장을 실제 Supabase 동기화 오류로 표시하던 문제를 수정했다. 냉장고·장보기는 `checking`, `local-only`, `synced`, `error`를 구분하고, 비로그인 상태에서는 `지금 이 기기에 저장했어요`로 안내한다.
+- Supabase Free 플랜에는 예약 백업이 없다. 운영 DB에는 마이그레이션 범위만 보호하는 비공개 `ops_backup` 스냅샷을 `20260715095212_backup_sync_domain_pre_signed_session_20260715`로 생성했다. 앱 역할의 schema/table privilege는 모두 0건이다.
+- 백업은 냉장고 51건, 장보기 18건, 가족 그룹 1건, 가족 구성원 2건, 계정 삭제 요청 21건, 요청 이벤트 18건과 관련 정책 36건, 함수 정의 8건, 기존 migration history 21건을 보존한다. 이 스냅샷은 마이그레이션 롤백용이며 전체 프로젝트 재해복구 백업은 아니다.
+- 원격 migration history에는 여러 과거 로컬 버전이 누락되어 있고, `20260710140000_replace_device_guest_auth_with_signed_sessions.sql`은 아직 적용하지 않았다. 기존 냉장고·장보기 행은 모두 `user_id is null`이므로 서명 세션 전환 전에 레거시 행 격리와 ID 충돌 처리의 staging 검증이 필요하다.
+- 검증: unit 388/388, TypeScript, 변경 파일 ESLint, production build 38/38 routes, Chrome runtime 확인. 운영 DB 변경은 위 백업 스냅샷 생성만 수행했다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
