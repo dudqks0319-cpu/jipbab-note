@@ -10,16 +10,13 @@ import {
   ShoppingBag,
   ShoppingBasket,
   Users,
-  Wrench,
 } from "lucide-react";
 
 import RecipeComments from "@/components/recipe/RecipeComments";
-import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeImage from "@/components/recipe/RecipeImage";
-import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
+import RecipeServingWorkspace from "@/components/recipe/RecipeServingWorkspace";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
-import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import {
   parseRecipeApiV1Detail,
   recipeApiV1DetailToRecord,
@@ -139,7 +136,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           ) : null}
           <div className="mt-6 grid grid-cols-4 gap-2 text-center">
             <DetailMetric icon={<Clock3 size={16} />} label={`${recipe.totalMinutes}분`} />
-            <DetailMetric icon={<Users size={16} />} label={`${recipe.servings}인분`} />
+            <DetailMetric icon={<Users size={16} />} label={`${recipe.servings}인분 기준`} />
             <DetailMetric icon={<Gauge size={16} />} label={difficultyLabel} />
             <DetailMetric icon={<ShoppingBasket size={16} />} label={`${ingredientDetails.length}개`} />
           </div>
@@ -160,55 +157,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         </div>
       </section>
 
-      {recipe.requiredTools?.length ? (
-        <section className="px-5 pt-6">
-          <div className="rounded-2xl border border-[#dcebd2] bg-[#f4fbef] px-4 py-4">
-            <div className="flex items-center gap-2 text-[#4f8740]">
-              <Wrench size={18} />
-              <h2 className="text-[17px] font-black">필요한 조리도구</h2>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {recipe.requiredTools.map((tool) => (
-                <span key={tool} className="rounded-full bg-white px-3 py-2 text-[13px] font-bold text-[#426e35]">
-                  {tool}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section id="ingredients" className="scroll-mt-24 px-5 py-8">
-        <div className="border-b-2 border-[#2d2d2d] pb-3">
-          <h2 className="text-[26px] font-black text-[#242424]">재료</h2>
-          <p className="mt-1 text-sm font-semibold text-[#7a7168]">{recipe.servings}인분 기준</p>
-        </div>
-        <ul className="divide-y divide-[#ededed]">
-          {ingredientDetails.map((ingredient) => (
-            <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-4">
-              <div className="min-w-0">
-                <p className="break-keep text-[18px] font-bold leading-7 text-[#303030]">
-                  {ingredient.name}
-                  {ingredient.required === false ? <span className="ml-2 text-xs text-[#8d8177]">선택</span> : null}
-                </p>
-                {ingredient.prepNote ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p> : null}
-                {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
-              </div>
-              <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">{ingredient.display}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <RecipeShoppingAssistant
-        recipeId={recipe.id}
-        recipeName={recipe.name}
-        ingredientList={recipe.ingredientList}
-        ingredientDetails={ingredientDetails}
-      />
-
-      <RecipeInstructionView recipeName={recipe.name} steps={recipe.steps} />
-      <RecipeCookMode
+      <RecipeServingWorkspace
         recipeId={recipe.id}
         recipeVersion={recipe.version ?? 1}
         recipeName={recipe.name}
@@ -217,6 +166,9 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         publicationEvidence={recipe.publicationEvidence}
         ingredientList={recipe.ingredientList}
         ingredientDetails={ingredientDetails}
+        baseServings={recipe.servings}
+        servingOptions={recipe.servingOptions}
+        requiredTools={recipe.requiredTools}
         storageTip={recipe.storageTip ?? null}
         reheatTip={recipe.reheatTip ?? null}
         steps={recipe.steps}

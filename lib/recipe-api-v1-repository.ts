@@ -89,6 +89,7 @@ export type PublicRecipeRow = {
   storage_guide: string | null;
   reheating_guide: string | null;
   safety_notes?: unknown;
+  serving_variants: unknown;
   cuisine_type?: string | null;
   schema_version: number;
   version?: number;
@@ -295,7 +296,7 @@ export async function listPublicRecipesV1(
   let request = client
     .from("recipes")
     .select(
-      "id,slug,version,title,summary,description,category,category_id,cuisine_type,difficulty,servings_base,total_time_minutes,thumbnail_url,ingredients,steps,tools,safety_notes,source_id,review_status,reviewed_for_beginner,beginner_reviewed_at,actual_cooking_tested,actual_cooking_tested_at,food_safety_reviewed,food_safety_reviewed_at,image_rights_status,image_rights_reviewed_at,source_reviewed_at,reviewer,published_at,prep_time_minutes,cook_time_minutes,storage_guide,reheating_guide,schema_version",
+      "id,slug,version,title,summary,description,category,category_id,cuisine_type,difficulty,servings_base,total_time_minutes,thumbnail_url,ingredients,steps,tools,safety_notes,serving_variants,source_id,review_status,reviewed_for_beginner,beginner_reviewed_at,actual_cooking_tested,actual_cooking_tested_at,food_safety_reviewed,food_safety_reviewed_at,image_rights_status,image_rights_reviewed_at,source_reviewed_at,reviewer,published_at,prep_time_minutes,cook_time_minutes,storage_guide,reheating_guide,schema_version",
     )
     .eq("schema_version", 2)
     .eq("review_status", "approved")
@@ -427,6 +428,16 @@ export type RecipeV1IngredientRow = {
   sort_order: number;
 };
 
+export type RecipeV1ServingOption = {
+  servings: number;
+  toolGuidance: string;
+  timeGuidance: string;
+  ingredientQuantities: Array<{
+    recipeIngredientId: string;
+    quantity: { value: number | null; text: string; unit: string | null };
+  }>;
+};
+
 export type RecipeV1SubstitutionRow = {
   recipe_ingredient_id: string;
   substitute_ingredient_id: string | null;
@@ -489,6 +500,7 @@ export type RecipeV1Detail = {
   totalTimeMinutes: number;
   thumbnailUrl: string | null;
   tools: string[];
+  servingOptions: RecipeV1ServingOption[];
   ingredients: Array<{
     id: string;
     ingredientId: string;
@@ -561,6 +573,115 @@ function finiteNullableNumber(value: number | string | null): number | null | un
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function exactRecord(value: unknown, keys: readonly string[]): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  const actualKeys = Object.keys(record);
+  return actualKeys.length === keys.length && actualKeys.every((key) => keys.includes(key))
+    ? record
+    : null;
+}
+
+function boundedStoredText(value: unknown, maximum: number): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  return normalized.length > 0 && normalized.length <= maximum ? normalized : null;
+}
+
+function parseServingOptions(
+  value: unknown,
+  baseServings: number,
+  ingredientRows: RecipeV1IngredientRow[],
+): RecipeV1ServingOption[] | null {
+  if (!Array.isArray(value) || value.length < 2 || value.length > 20) return null;
+  const ingredientById = new Map(ingredientRows.map((ingredient) => [ingredient.id, ingredient]));
+  if (ingredientById.size !== ingredientRows.length) return null;
+
+  const options: RecipeV1ServingOption[] = [];
+  for (const rawOption of value) {
+    const option = exactRecord(rawOption, [
+      "servings",
+      "tool_guidance",
+      "time_guidance",
+      "ingredient_quantities",
+    ]);
+    const servings = option?.servings;
+    const toolGuidance = boundedStoredText(option?.tool_guidance, 500);
+    const timeGuidance = boundedStoredText(option?.time_guidance, 500);
+    const rawQuantities = option?.ingredient_quantities;
+    if (
+      !Number.isSafeInteger(servings) ||
+      Number(servings) < 1 ||
+      Number(servings) > 20 ||
+      !toolGuidance ||
+      !timeGuidance ||
+      !Array.isArray(rawQuantities) ||
+      rawQuantities.length !== ingredientRows.length
+    ) {
+      return null;
+    }
+
+    const seenIngredientIds = new Set<string>();
+    const ingredientQuantities: RecipeV1ServingOption["ingredientQuantities"] = [];
+    for (const rawQuantity of rawQuantities) {
+      const quantity = exactRecord(rawQuantity, ["recipe_ingredient_id", "value", "text", "unit"]);
+      const recipeIngredientId = boundedStoredText(quantity?.recipe_ingredient_id, 200);
+      const valueNumber = quantity?.value;
+      const quantityValue = valueNumber === null
+        ? null
+        : typeof valueNumber === "number" && Number.isFinite(valueNumber) && valueNumber >= 0 && valueNumber <= 1_000_000
+          ? valueNumber
+          : undefined;
+      const text = boundedStoredText(quantity?.text, 100);
+      const unit = quantity?.unit === null ? null : boundedStoredText(quantity?.unit, 40);
+      if (
+        !recipeIngredientId ||
+        !ingredientById.has(recipeIngredientId) ||
+        seenIngredientIds.has(recipeIngredientId) ||
+        quantityValue === undefined ||
+        !text ||
+        (quantity?.unit !== null && !unit)
+      ) {
+        return null;
+      }
+      seenIngredientIds.add(recipeIngredientId);
+      ingredientQuantities.push({
+        recipeIngredientId,
+        quantity: { value: quantityValue, text, unit },
+      });
+    }
+
+    options.push({
+      servings: Number(servings),
+      toolGuidance,
+      timeGuidance,
+      ingredientQuantities,
+    });
+  }
+
+  if (new Set(options.map((option) => option.servings)).size !== options.length) return null;
+  const baseOption = options.find((option) => option.servings === baseServings);
+  if (!baseOption) return null;
+  const baseQuantities = new Map(
+    baseOption.ingredientQuantities.map((quantity) => [quantity.recipeIngredientId, quantity.quantity]),
+  );
+  for (const ingredient of ingredientRows) {
+    const quantity = baseQuantities.get(ingredient.id);
+    const baseValue = finiteNullableNumber(ingredient.quantity_value);
+    if (
+      !quantity ||
+      baseValue === undefined ||
+      quantity.value !== baseValue ||
+      quantity.text !== ingredient.quantity_text?.trim() ||
+      quantity.unit !== (ingredient.unit?.trim() || null)
+    ) {
+      return null;
+    }
+  }
+
+  return options.sort((left, right) => left.servings - right.servings);
+}
+
 export function buildPublicRecipeDetail(
   row: PublicRecipeRow,
   ingredientRows: RecipeV1IngredientRow[],
@@ -610,12 +731,18 @@ export function buildPublicRecipeDetail(
         !ingredient.ingredient_id ||
         !ingredient.display_name.trim() ||
         quantityValue === undefined ||
-        (!ingredient.quantity_text && quantityValue === null)
+        !ingredient.quantity_text?.trim()
       );
     })
   ) {
     return null;
   }
+  const servingOptions = parseServingOptions(
+    row.serving_variants,
+    row.servings_base as number,
+    ingredientRows,
+  );
+  if (!servingOptions) return null;
 
   const ingredients = ingredientRows
     .slice()
@@ -627,8 +754,8 @@ export function buildPublicRecipeDetail(
       displayName: ingredient.display_name.trim(),
       quantity: {
         value: finiteNullableNumber(ingredient.quantity_value) as number | null,
-        text: ingredient.quantity_text,
-        unit: ingredient.unit,
+        text: ingredient.quantity_text?.trim() ?? null,
+        unit: ingredient.unit?.trim() || null,
       },
       preparation: ingredient.preparation,
       optional: ingredient.optional,
@@ -704,6 +831,7 @@ export function buildPublicRecipeDetail(
     totalTimeMinutes: row.total_time_minutes as number,
     thumbnailUrl: normalizeHttpUrl(row.thumbnail_url),
     tools,
+    servingOptions,
     ingredients,
     steps,
     safetyNotes,
@@ -786,7 +914,7 @@ export async function getPublicRecipeDetailV1(recipeId: string): Promise<RecipeV
   const { data, error } = await client
     .from("recipes")
     .select(
-      "id,slug,version,title,summary,description,category,category_id,cuisine_type,difficulty,servings_base,prep_time_minutes,cook_time_minutes,total_time_minutes,thumbnail_url,tools,ingredients,steps,safety_notes,storage_guide,reheating_guide,source_id,review_status,reviewed_for_beginner,beginner_reviewed_at,actual_cooking_tested,actual_cooking_tested_at,food_safety_reviewed,food_safety_reviewed_at,image_rights_status,image_rights_reviewed_at,source_reviewed_at,reviewer,published_at,schema_version",
+      "id,slug,version,title,summary,description,category,category_id,cuisine_type,difficulty,servings_base,prep_time_minutes,cook_time_minutes,total_time_minutes,thumbnail_url,tools,ingredients,steps,safety_notes,serving_variants,storage_guide,reheating_guide,source_id,review_status,reviewed_for_beginner,beginner_reviewed_at,actual_cooking_tested,actual_cooking_tested_at,food_safety_reviewed,food_safety_reviewed_at,image_rights_status,image_rights_reviewed_at,source_reviewed_at,reviewer,published_at,schema_version",
     )
     .eq("id", recipeId)
     .eq("schema_version", 2)

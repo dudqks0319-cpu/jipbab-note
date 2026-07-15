@@ -42,6 +42,8 @@ type PublishedRecipeDetailRecord = RecipeDetailRecord & {
   totalMinutes: number;
   servings: number;
   ingredientDetails: NonNullable<RecipeDetailRecord["ingredientDetails"]>;
+  servingOptions: NonNullable<RecipeDetailRecord["servingOptions"]>;
+  requiredTools: NonNullable<RecipeDetailRecord["requiredTools"]>;
   safetyNotes: string[];
   sourceProvider: string;
   sourceTitle: string;
@@ -112,6 +114,58 @@ function hasValidSteps(value: unknown): boolean {
       );
     })
   );
+}
+
+function hasValidServingOptions(recipe: RecipeDetailRecord): boolean {
+  if (
+    !Array.isArray(recipe.ingredientDetails) ||
+    recipe.ingredientDetails.length < 3 ||
+    !Array.isArray(recipe.servingOptions) ||
+    recipe.servingOptions.length < 2 ||
+    recipe.servingOptions.length > 20 ||
+    !isFiniteNumber(recipe.servings, 1)
+  ) {
+    return false;
+  }
+  const ingredientsById = new Map(
+    recipe.ingredientDetails.map((ingredient) => [ingredient.id?.trim() ?? "", ingredient]),
+  );
+  if (ingredientsById.has("") || ingredientsById.size !== recipe.ingredientDetails.length) return false;
+
+  const seenServings = new Set<number>();
+  for (const option of recipe.servingOptions) {
+    if (
+      !Number.isSafeInteger(option.servings) ||
+      option.servings < 1 ||
+      option.servings > 20 ||
+      seenServings.has(option.servings) ||
+      !hasText(option.toolGuidance) ||
+      !hasText(option.timeGuidance) ||
+      option.ingredientQuantities.length !== recipe.ingredientDetails.length
+    ) {
+      return false;
+    }
+    seenServings.add(option.servings);
+    const quantitiesById = new Map(
+      option.ingredientQuantities.map((quantity) => [quantity.recipeIngredientId, quantity]),
+    );
+    if (quantitiesById.size !== recipe.ingredientDetails.length) return false;
+    for (const [ingredientId, ingredient] of ingredientsById) {
+      const quantity = quantitiesById.get(ingredientId);
+      if (!quantity || !hasText(quantity.display)) return false;
+      if (
+        option.servings === recipe.servings &&
+        (
+          quantity.display !== ingredient.display ||
+          quantity.amount !== (ingredient.amount ?? null) ||
+          quantity.unit !== (ingredient.unit ?? null)
+        )
+      ) {
+        return false;
+      }
+    }
+  }
+  return seenServings.has(recipe.servings);
 }
 
 export function isDatabaseRecipePublicationApproved(row: DatabaseRecipePublicationRow): boolean {
@@ -213,6 +267,7 @@ export function isRecipeDetailPublicationApproved(
     Array.isArray(recipe.ingredientDetails) &&
     recipe.ingredientDetails.length >= 3 &&
     recipe.ingredientDetails.every((ingredient) => hasText(ingredient.name) && hasText(ingredient.display)) &&
+    hasValidServingOptions(recipe) &&
     Array.isArray(recipe.steps) &&
     recipe.steps.length >= 3 &&
     recipe.steps.every(

@@ -23,6 +23,8 @@ type RecipeCookModeProps = {
   recipeId: string
   recipeVersion: number
   recipeName: string
+  servings: number
+  baseServings: number
   category: string
   thumbnailUrl: string | null
   publicationEvidence: RecipePublicationEvidence
@@ -81,6 +83,8 @@ export default function RecipeCookMode({
   recipeId,
   recipeVersion,
   recipeName,
+  servings,
+  baseServings,
   category,
   thumbnailUrl,
   publicationEvidence,
@@ -104,7 +108,8 @@ export default function RecipeCookMode({
   const [timerAnnouncement, setTimerAnnouncement] = useState('')
   const signaledTimerRef = useRef<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
-  const storageKey = recipeCookProgressKey(recipeId)
+  const storageKey = recipeCookProgressKey(recipeId, servings)
+  const legacyStorageKey = recipeCookProgressKey(recipeId)
   const stepIndexes = useMemo(() => steps.map((step) => step.index), [steps])
   const remainingSeconds = remainingTimerSeconds(activeTimer, now)
   const timerRunning = Boolean(activeTimer && remainingSeconds > 0)
@@ -114,6 +119,7 @@ export default function RecipeCookMode({
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(storageKey)
+        ?? (servings === baseServings ? window.localStorage.getItem(legacyStorageKey) : null)
       const saved = raw ? normalizeRecipeCookProgress(JSON.parse(raw), stepIndexes) : null
       if (saved) {
         setCheckedSteps(new Set(saved.checkedStepIndexes))
@@ -131,7 +137,7 @@ export default function RecipeCookMode({
     } finally {
       setHydrated(true)
     }
-  }, [stepIndexes, storageKey])
+  }, [baseServings, legacyStorageKey, servings, stepIndexes, storageKey])
 
   useEffect(() => {
     if (!hydrated) return
@@ -262,7 +268,7 @@ export default function RecipeCookMode({
             <ChefHat size={18} className="shrink-0 text-[#ea5a1f]" />
             <div className="min-w-0">
               <h2 className="truncate text-[17px] font-black text-[#2f2117]">조리 모드</h2>
-              <p className="mt-1 truncate text-[12px] font-semibold text-[#8f7f70]">{recipeName}</p>
+              <p className="mt-1 truncate text-[12px] font-semibold text-[#8f7f70]">{recipeName} · {servings}인분</p>
             </div>
           </div>
           <span className="rounded-full bg-[#fff0e4] px-3 py-1 text-[11px] font-black text-[#d94d19]">{progress}%</span>

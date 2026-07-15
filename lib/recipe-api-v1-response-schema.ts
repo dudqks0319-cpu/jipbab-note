@@ -301,6 +301,79 @@ function detailIngredient(value: unknown): boolean {
   );
 }
 
+const SERVING_OPTION_KEYS = [
+  "servings",
+  "toolGuidance",
+  "timeGuidance",
+  "ingredientQuantities",
+] as const;
+const SERVING_QUANTITY_KEYS = ["recipeIngredientId", "quantity"] as const;
+
+function servingOptions(
+  value: unknown,
+  baseServings: number,
+  ingredients: Array<{ id: string; quantity: unknown }>,
+): boolean {
+  if (!Array.isArray(value) || value.length < 2 || value.length > 20) return false;
+  const ingredientById = new Map(ingredients.map((ingredient) => [ingredient.id, ingredient]));
+  const seenServings = new Set<number>();
+  let previousServings = 0;
+  let baseOptionFound = false;
+
+  for (const rawOption of value) {
+    const option = exactObject(rawOption, SERVING_OPTION_KEYS);
+    if (
+      !option ||
+      !boundedInteger(option.servings, 1, 20) ||
+      seenServings.has(option.servings) ||
+      option.servings <= previousServings ||
+      !boundedText(option.toolGuidance, 1, 500) ||
+      !boundedText(option.timeGuidance, 1, 500) ||
+      !Array.isArray(option.ingredientQuantities) ||
+      option.ingredientQuantities.length !== ingredients.length
+    ) {
+      return false;
+    }
+    seenServings.add(option.servings);
+    previousServings = option.servings;
+
+    const seenIngredientIds = new Set<string>();
+    for (const rawQuantity of option.ingredientQuantities) {
+      const servingQuantity = exactObject(rawQuantity, SERVING_QUANTITY_KEYS);
+      const quantity = exactObject(servingQuantity?.quantity, QUANTITY_KEYS);
+      if (
+        !servingQuantity ||
+        !boundedText(servingQuantity.recipeIngredientId, 1, 200) ||
+        !ingredientById.has(servingQuantity.recipeIngredientId) ||
+        seenIngredientIds.has(servingQuantity.recipeIngredientId) ||
+        !quantity ||
+        !(quantity.value === null || boundedNumber(quantity.value, 0, 1_000_000)) ||
+        !boundedText(quantity.text, 1, 100) ||
+        !nullableText(quantity.unit, 40)
+      ) {
+        return false;
+      }
+      seenIngredientIds.add(servingQuantity.recipeIngredientId);
+
+      if (option.servings === baseServings) {
+        const baseIngredient = ingredientById.get(servingQuantity.recipeIngredientId);
+        const baseQuantity = exactObject(baseIngredient?.quantity, QUANTITY_KEYS);
+        if (
+          !baseQuantity ||
+          quantity.value !== baseQuantity.value ||
+          quantity.text !== baseQuantity.text ||
+          quantity.unit !== baseQuantity.unit
+        ) {
+          return false;
+        }
+      }
+    }
+    if (option.servings === baseServings) baseOptionFound = true;
+  }
+
+  return baseOptionFound;
+}
+
 const DURATION_KEYS = ["min", "max", "timerPreset"] as const;
 const CUE_KEYS = ["visual", "sound", "smell"] as const;
 const USAGE_KEYS = ["recipeIngredientId", "usageText"] as const;
@@ -402,6 +475,7 @@ const DETAIL_KEYS = [
   "totalTimeMinutes",
   "thumbnailUrl",
   "tools",
+  "servingOptions",
   "ingredients",
   "steps",
   "safetyNotes",
@@ -446,6 +520,11 @@ export function isRecipeApiV1Detail(value: unknown): value is RecipeApiV1Detail 
   );
   if (
     ingredientIds.size !== detail.ingredients.length ||
+    !servingOptions(
+      detail.servingOptions,
+      detail.servings as number,
+      detail.ingredients as Array<{ id: string; quantity: unknown }>,
+    ) ||
     !Array.isArray(detail.steps) ||
     detail.steps.length < 3 ||
     detail.steps.length > 200 ||

@@ -495,6 +495,7 @@ export interface RecipeDetailStep {
 }
 
 export interface RecipeIngredientDetail {
+  id?: string;
   name: string;
   display: string;
   amount?: string | null;
@@ -503,6 +504,20 @@ export interface RecipeIngredientDetail {
   substitute?: string | null;
   beginnerNote?: string | null;
   prepNote?: string | null;
+}
+
+export interface RecipeServingQuantity {
+  recipeIngredientId: string;
+  display: string;
+  amount: string | null;
+  unit: string | null;
+}
+
+export interface RecipeServingOption {
+  servings: number;
+  toolGuidance: string;
+  timeGuidance: string;
+  ingredientQuantities: RecipeServingQuantity[];
 }
 
 export interface RecipeDetailRecord extends RecipeRecord {
@@ -518,6 +533,7 @@ export interface RecipeDetailRecord extends RecipeRecord {
   totalMinutes?: number | null;
   activeMinutes?: number | null;
   servings?: number | null;
+  servingOptions?: RecipeServingOption[];
   requiredTools?: string[];
   beforeStart?: string[];
   beginnerSummary?: string | null;

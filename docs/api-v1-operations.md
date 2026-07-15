@@ -2,7 +2,7 @@
 
 ## 범위
 
-`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. `POST /api/v1/recipe-feedback`는 검증된 서명 세션의 최소 조리 결과만 비공개로 저장한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구 또는 복구 안내가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
+`/api/v1/recipes`, `/api/v1/recipes/:id`, `/api/v1/recommendations`는 검수 완료된 `schema_version = 2` 레시피만 반환한다. `POST /api/v1/recipe-feedback`는 검증된 서명 세션의 최소 조리 결과만 비공개로 저장한다. 서비스 역할 클라이언트를 사용하더라도 애플리케이션 쿼리와 응답 조립 단계에서 발행 조건을 다시 검사한다. 정규화된 재료, 단계, 재료 사용 관계, 출처, 안전 문구, 복구 안내 또는 기준 인분을 포함한 2개 이상의 정확한 `serving_variants`가 불완전하면 목록과 상세 응답 모두 공개되지 않는다.
 
 목록의 `sort`는 `recommended`(기본값), `most-owned`, `least-missing`, `fastest`, `recent`만 허용한다. `recent`는 발행 시각·ID keyset cursor를 사용하고, 나머지 정렬은 현재 출시 최대치인 200개 후보 안에서 정렬 고정 offset cursor를 사용한다. cursor는 정렬 종류와 일치하지 않으면 거부된다.
 
@@ -43,10 +43,11 @@ openssl rand -base64 48
 3. staging에 `20260710160000_add_distributed_api_rate_limits.sql`을 적용한다.
 4. staging 서버에 `API_RATE_LIMIT_HMAC_SECRET`을 설정한다.
 5. staging에 `20260714100000_add_recipe_feedback.sql`, `20260714110000_extend_recipe_feedback_completion_details.sql`을 순서대로 적용하고 app role 직접 접근 거부와 service role 삽입을 확인한다.
-6. 완료·실패 상태별 허용/거부 조합과 비파괴 rollback을 실제 PostgreSQL에서 검증한다.
-7. 목록·상세·추천의 정상 경로와 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
-8. matching app build와 DB migration을 조정된 변경 창에 운영 반영한다.
-9. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
+6. staging에 `20260715100000_add_recipe_serving_variants.sql`을 적용하고 각 공개 후보에 기준 인분을 포함한 2개 이상의 편집자 검수 수량·도구·시간 값을 입력한다.
+7. 완료·실패 상태별 허용/거부 조합과 비파괴 rollback을 실제 PostgreSQL에서 검증한다.
+8. 목록·상세·추천의 정상 경로, 불완전한 serving variant의 목록·상세 동시 차단, 피드백의 `201`, 멱등 `200`, 인증 `401`, 잘못된 본문 `400`, 과대 본문 `413`, `429`, 의존성 장애 `503`을 HTTP로 검증한다.
+9. matching app build, DB migration, 검수된 serving variant 데이터를 조정된 변경 창에 운영 반영한다.
+10. 운영 스모크와 모니터링을 확인한 뒤에만 API 사용 클라이언트를 전환한다.
 
 운영 migration history가 현재 로컬과 불일치하므로 이 문서 작성 시점에는 `supabase db push`를 실행하지 않는다.
 

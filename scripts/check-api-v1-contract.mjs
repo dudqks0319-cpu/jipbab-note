@@ -16,6 +16,8 @@ const files = {
   feedbackRollback: "supabase/rollbacks/20260714100000_add_recipe_feedback.sql",
   feedbackDetailsMigration: "supabase/migrations/20260714110000_extend_recipe_feedback_completion_details.sql",
   feedbackDetailsRollback: "supabase/rollbacks/20260714110000_extend_recipe_feedback_completion_details.sql",
+  servingMigration: "supabase/migrations/20260715100000_add_recipe_serving_variants.sql",
+  servingRollback: "supabase/rollbacks/20260715100000_add_recipe_serving_variants.sql",
   schema: "supabase/schema.sql",
   envExample: ".env.example",
 };
@@ -251,10 +253,24 @@ check(
 );
 
 check(
+  "reviewed serving variants",
+  source.servingMigration.includes("add column if not exists serving_variants jsonb") &&
+    source.servingMigration.includes("recipe_serving_variants_shape") &&
+    source.servingMigration.includes("from public, anon, authenticated") &&
+    source.servingMigration.includes("to service_role") &&
+    source.servingRollback.includes("from public, anon, authenticated, service_role") &&
+    !/drop\s+(?:table|column)|truncate|delete\s+from/i.test(source.servingRollback),
+  "serving variants are bounded, server-only, and retained by rollback",
+  "serving variant storage or fail-closed rollback is incomplete",
+);
+
+check(
   "schema synchronization",
   source.schema.includes("PHASE2_API_FOUNDATION_SCHEMA_START") &&
     source.schema.includes("public.api_rate_limit_buckets") &&
-    source.schema.includes("public.consume_api_rate_limit"),
+    source.schema.includes("public.consume_api_rate_limit") &&
+    source.schema.includes("recipe_serving_variants_shape") &&
+    source.schema.includes("serving_variants jsonb"),
   "Phase 2 database foundation is mirrored into the canonical schema",
   "canonical schema is missing the Phase 2 marker or rate-limit contract",
 );
@@ -285,6 +301,7 @@ const requiredTests = [
   "tests/recipe-feedback.test.ts",
   "tests/recipe-feedback-contract.test.ts",
   "tests/recipe-cook-completion.test.ts",
+  "tests/recipe-serving-variants.test.ts",
 ];
 check(
   "API v1 regression coverage",

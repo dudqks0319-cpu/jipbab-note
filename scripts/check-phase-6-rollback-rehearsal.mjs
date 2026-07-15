@@ -15,6 +15,7 @@ const migrationNames = [
   "20260710151000_seed_phase1_ingredient_catalog.sql",
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260711113000_harden_security_definer_privileges.sql",
+  "20260715100000_add_recipe_serving_variants.sql",
 ];
 const requiredPlanCommands = [
   '["install", "--offline", "--frozen-lockfile"]',
@@ -128,7 +129,7 @@ check(
       existsSync(`supabase/rollbacks/${name}`) &&
       capture.includes(name),
   ),
-  "every Phase 0/1/2 and security hardening migration has a rehearsal-visible rollback pair",
+  "every Phase 0/1/2, security hardening, and serving-variant migration has a rehearsal-visible rollback pair",
 );
 check(
   "non-destructive database boundary",

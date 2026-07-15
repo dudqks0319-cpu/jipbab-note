@@ -50,6 +50,10 @@ test("saved cook progress restores only current recipe steps", () => {
   assert.equal(progress.feedback?.completionStatus, "failed");
   assert.equal(progress.feedback?.reasonCode, "timer_issue");
   assert.equal(recipeCookProgressKey("recipe-1"), "jipbab:recipe-cook-progress:v1:recipe-1");
+  assert.equal(
+    recipeCookProgressKey("recipe-1", 4),
+    "jipbab:recipe-cook-progress:v2:recipe-1:4",
+  );
 });
 
 test("saved completion details restore and older version two feedback defaults additions to null", () => {

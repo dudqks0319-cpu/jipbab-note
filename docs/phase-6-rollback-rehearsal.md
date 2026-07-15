@@ -62,6 +62,7 @@ pnpm capture:phase6-rollback \
 - `20260710151000_seed_phase1_ingredient_catalog.sql`
 - `20260710160000_add_distributed_api_rate_limits.sql`
 - `20260711113000_harden_security_definer_privileges.sql`
+- `20260715100000_add_recipe_serving_variants.sql`
 
 자동 검사는 rollback에서 `drop table`, `drop column`, `truncate`를 거부한다. 이 통과는 PostgreSQL 실행 증거가 아니다. 다음 조건이 준비된 뒤 실제 staging PostgreSQL에서 forward migration, 음성 권한 검사, rollback, 데이터 보존, 재적용을 수행해야 한다.
 
@@ -69,6 +70,7 @@ pnpm capture:phase6-rollback \
 - restorable backup과 복원 확인
 - production과 같은 schema의 isolated staging
 - 검수된 recipe v2 fixture
+- 각 공개 레시피의 기준 인분을 포함한 2개 이상의 검수 완료 `serving_variants`
 - server-only rate-limit secret
 
 ## Vercel 판정

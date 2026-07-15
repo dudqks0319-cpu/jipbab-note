@@ -44,8 +44,10 @@ const MAX_FEEDBACK_DURATION_SECONDS = 12 * 60 * 60;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export function recipeCookProgressKey(recipeId: string): string {
-  return `jipbab:recipe-cook-progress:v1:${recipeId}`;
+export function recipeCookProgressKey(recipeId: string, servings?: number): string {
+  return servings === undefined
+    ? `jipbab:recipe-cook-progress:v1:${recipeId}`
+    : `jipbab:recipe-cook-progress:v2:${recipeId}:${servings}`;
 }
 
 export function remainingTimerSeconds(timer: RecipeCookTimer | null, now = Date.now()): number {

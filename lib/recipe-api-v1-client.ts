@@ -98,6 +98,15 @@ export interface RecipeApiV1Detail {
   totalTimeMinutes: number;
   thumbnailUrl: string | null;
   tools: string[];
+  servingOptions: Array<{
+    servings: number;
+    toolGuidance: string;
+    timeGuidance: string;
+    ingredientQuantities: Array<{
+      recipeIngredientId: string;
+      quantity: { value: number | null; text: string; unit: string | null };
+    }>;
+  }>;
   ingredients: Array<{
     id: string;
     ingredientId: string;
@@ -358,15 +367,26 @@ function substitutionDisplay(
 
 export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDetailRecord {
   const ingredientDetails = detail.ingredients.map((ingredient) => ({
+    id: ingredient.id,
     name: ingredient.displayName,
     display: quantityDisplay(ingredient.quantity),
-    amount:
-      ingredient.quantity.text?.trim()
-      || (ingredient.quantity.value === null ? null : String(ingredient.quantity.value)),
+    amount: ingredient.quantity.value === null ? null : String(ingredient.quantity.value),
     unit: ingredient.quantity.unit,
     required: !ingredient.optional,
     substitute: substitutionDisplay(ingredient.substitutions[0]),
     prepNote: ingredient.preparation,
+  }));
+  const servingOptions = detail.servingOptions.map((option) => ({
+    servings: option.servings,
+    toolGuidance: option.toolGuidance,
+    timeGuidance: option.timeGuidance,
+    ingredientQuantities: option.ingredientQuantities.map((ingredient) => ({
+      recipeIngredientId: ingredient.recipeIngredientId,
+      display: ingredient.quantity.text,
+      amount:
+        ingredient.quantity.value === null ? null : String(ingredient.quantity.value),
+      unit: ingredient.quantity.unit,
+    })),
   }));
   const steps = detail.steps.map((step) => ({
     index: step.order,
@@ -411,6 +431,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     totalMinutes: detail.totalTimeMinutes,
     activeMinutes: detail.prepTimeMinutes + detail.cookTimeMinutes,
     servings: detail.servings,
+    servingOptions,
     requiredTools: detail.tools,
     beginnerSummary: detail.summary,
     safetyNotes: detail.safetyNotes,

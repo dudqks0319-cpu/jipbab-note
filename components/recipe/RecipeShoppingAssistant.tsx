@@ -11,7 +11,7 @@ import { useShopping } from "@/hooks/useShopping";
 import CoupangAffiliateCard from "@/components/affiliate/CoupangAffiliateCard";
 import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
-import { calculateRecipeIngredientMatch } from "@/lib/matching";
+import { calculateRecipeIngredientMatch, normalizeKoreanIngredient } from "@/lib/matching";
 import { getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
 
@@ -28,7 +28,7 @@ function inferCategory(
   ingredientName: string,
   categories: Map<string, IngredientCategory | null>,
 ): IngredientCategory | null {
-  return categories.get(ingredientName.trim().toLowerCase())
+  return categories.get(normalizeKoreanIngredient(ingredientName))
     ?? suggestIngredientCategory(ingredientName, "채소");
 }
 
@@ -69,16 +69,16 @@ export default function RecipeShoppingAssistant({
     [ingredients],
   );
   const detailByName = useMemo(
-    () => new Map(ingredientDetails.map((item) => [item.name.trim().toLowerCase(), item])),
+    () => new Map(ingredientDetails.map((item) => [normalizeKoreanIngredient(item.name), item])),
     [ingredientDetails],
   );
 
   const ownedCategories = useMemo(
-    () => new Map(activeIngredients.map((item) => [item.name.trim().toLowerCase(), item.category])),
+    () => new Map(activeIngredients.map((item) => [normalizeKoreanIngredient(item.name), item.category])),
     [activeIngredients],
   );
   const shoppingNames = useMemo(
-    () => new Set(items.map((item) => item.name.trim().toLowerCase())),
+    () => new Set(items.map((item) => normalizeKoreanIngredient(item.name))),
     [items],
   );
   const requiredIngredientNames = useMemo(() => {
@@ -101,11 +101,11 @@ export default function RecipeShoppingAssistant({
   const missingDrafts = useMemo(
     () =>
       match.missingIngredients
-        .filter((ingredient) => !shoppingNames.has(ingredient.trim().toLowerCase()))
+        .filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient)))
         .filter((ingredient) => selectedMissingNames.has(ingredient))
         .map((ingredient) => ({
           name: ingredient,
-          quantity: detailByName.get(ingredient.trim().toLowerCase())?.display ?? null,
+          quantity: detailByName.get(normalizeKoreanIngredient(ingredient))?.display ?? null,
           category: inferCategory(ingredient, ownedCategories),
           familyGroupId,
           sourceRecipeId: recipeId,
@@ -115,7 +115,7 @@ export default function RecipeShoppingAssistant({
   );
 
   const selectableMissingIngredients = useMemo(
-    () => match.missingIngredients.filter((ingredient) => !shoppingNames.has(ingredient.trim().toLowerCase())),
+    () => match.missingIngredients.filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient))),
     [match.missingIngredients, shoppingNames],
   );
   const selectableMissingIngredientKey = useMemo(
@@ -126,7 +126,7 @@ export default function RecipeShoppingAssistant({
     () =>
       match.missingIngredients
         .map((ingredient) => {
-          const detail = detailByName.get(ingredient.trim().toLowerCase());
+          const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
           const category = inferCategory(ingredient, ownedCategories);
           const purchaseLink = getCoupangPurchaseLink({ name: ingredient, category }, partnerLinks);
           if (!purchaseLink.isPartnerLink) {
@@ -298,8 +298,8 @@ export default function RecipeShoppingAssistant({
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {match.missingIngredients.map((ingredient) => {
-                const alreadyInShopping = shoppingNames.has(ingredient.trim().toLowerCase());
-                const detail = detailByName.get(ingredient.trim().toLowerCase());
+                const alreadyInShopping = shoppingNames.has(normalizeKoreanIngredient(ingredient));
+                const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
                 const checked = selectedMissingNames.has(ingredient) && !alreadyInShopping;
                 return (
                   <button
@@ -384,7 +384,7 @@ export default function RecipeShoppingAssistant({
             ) : (
               <ul className="mt-2 space-y-2">
                 {match.missingIngredients.map((ingredient) => {
-                  const detail = detailByName.get(ingredient.trim().toLowerCase());
+                  const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
                   return (
                     <li key={ingredient} className="text-sm font-semibold text-[#4b3929]">
                       <span>{ingredient}</span>

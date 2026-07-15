@@ -194,7 +194,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
             <p className="text-sm font-black text-[#4b3929]">로그인하면 댓글을 남길 수 있어요.</p>
             <Link
               href="/login"
-              className="mt-3 inline-flex rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
             >
               로그인하기
             </Link>

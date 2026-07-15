@@ -75,8 +75,34 @@ function recipeRow(overrides: Partial<PublicRecipeRow> = {}): PublicRecipeRow {
     storage_guide: "식혀 냉장 보관한다.",
     reheating_guide: "충분히 끓여 재가열한다.",
     schema_version: 2,
+    serving_variants: servingVariants(),
     ...overrides,
   };
+}
+
+function servingVariants() {
+  return [
+    {
+      servings: 2,
+      tool_guidance: "20cm 냄비 1개를 사용한다.",
+      time_guidance: "기준 조리시간과 완료 신호를 따른다.",
+      ingredient_quantities: [
+        { recipe_ingredient_id: "ingredient-1", value: 2, text: "2개", unit: "piece" },
+        { recipe_ingredient_id: "ingredient-2", value: 0.25, text: "1/4개", unit: "piece" },
+        { recipe_ingredient_id: "ingredient-3", value: 1, text: "1작은술", unit: "tsp" },
+      ],
+    },
+    {
+      servings: 4,
+      tool_guidance: "24cm 냄비 1개를 사용한다.",
+      time_guidance: "끓기 시작한 뒤 완료 신호를 보고 1~2분 더 확인한다.",
+      ingredient_quantities: [
+        { recipe_ingredient_id: "ingredient-1", value: 4, text: "4개", unit: "piece" },
+        { recipe_ingredient_id: "ingredient-2", value: 0.5, text: "1/2개", unit: "piece" },
+        { recipe_ingredient_id: "ingredient-3", value: 1.5, text: "1과 1/2작은술", unit: "tsp" },
+      ],
+    },
+  ];
 }
 
 function query(overrides: Partial<PublicRecipeListQuery> = {}): PublicRecipeListQuery {
@@ -440,6 +466,9 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
   assert.deepEqual(detail.safetyNotes, ["달걀은 충분히 익힌다."]);
   assert.equal(detail.storageGuide, "식혀 냉장 보관한다.");
   assert.equal(detail.source.license, "app-owned");
+  assert.deepEqual(detail.servingOptions.map((option) => option.servings), [2, 4]);
+  assert.equal(detail.servingOptions[1]?.ingredientQuantities[2]?.quantity.text, "1과 1/2작은술");
+  assert.equal(detail.servingOptions[1]?.toolGuidance, "24cm 냄비 1개를 사용한다.");
 
   const displayRecord = recipeApiV1DetailToRecord(detail);
   assert.equal(displayRecord.ingredientDetails?.[1]?.display, "1/4개");
@@ -453,6 +482,7 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
   assert.deepEqual(displayRecord.safetyNotes, ["달걀은 충분히 익힌다."]);
   assert.equal(displayRecord.sourceTitle, "집밥노트 자체 작성");
   assert.equal(displayRecord.sourceAttribution, "집밥노트");
+  assert.equal(displayRecord.servingOptions?.[1]?.ingredientQuantities[2]?.display, "1과 1/2작은술");
   assert.equal(isRecipeDetailPublicationApproved(displayRecord), true);
 
   for (const invalidRecord of [
@@ -471,6 +501,53 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
     assert.equal(isRecipeDetailPublicationApproved(invalidRecord), false);
   }
 
+  for (const invalidVariants of [
+    [],
+    [servingVariants()[0], { ...servingVariants()[1], servings: 2 }],
+    [servingVariants()[1]],
+    [
+      servingVariants()[0],
+      {
+        ...servingVariants()[1],
+        ingredient_quantities: servingVariants()[1].ingredient_quantities.slice(0, 2),
+      },
+    ],
+    [
+      {
+        ...servingVariants()[0],
+        ingredient_quantities: servingVariants()[0].ingredient_quantities.map((quantity, index) =>
+          index === 0 ? { ...quantity, text: "3개" } : quantity,
+        ),
+      },
+      servingVariants()[1],
+    ],
+  ]) {
+    assert.equal(
+      buildPublicRecipeDetail(
+        { ...row, serving_variants: invalidVariants },
+        detailIngredients,
+        [],
+        detailSteps,
+        detailUsages,
+        detailSource,
+      ),
+      null,
+    );
+  }
+
+  assert.throws(
+    () => parseRecipeApiV1Detail({
+      ...detail,
+      servingOptions: detail.servingOptions.map((option, index) =>
+        index === 1
+          ? { ...option, ingredientQuantities: option.ingredientQuantities.slice(0, 2) }
+          : option,
+      ),
+    }),
+    (error: unknown) =>
+      error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
+  );
+
   const listIngredients = detailIngredients.map((ingredient) => ({ ...ingredient, recipe_id: row.id }));
   const listSteps = detailSteps.map((step) => ({ ...step, recipe_id: row.id }));
   const listUsages = detailUsages.map((usage) => ({ ...usage, recipe_id: row.id }));
@@ -483,6 +560,16 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
       [{ id: "source-1", ...detailSource }],
     ).map((recipe) => recipe.id),
     [row.id],
+  );
+  assert.deepEqual(
+    filterNormalizedPublicRecipeRows(
+      [{ ...row, serving_variants: [] }],
+      listIngredients,
+      listSteps,
+      listUsages,
+      [{ id: "source-1", ...detailSource }],
+    ),
+    [],
   );
   assert.deepEqual(
     filterNormalizedPublicRecipeRows(

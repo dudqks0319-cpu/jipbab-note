@@ -10,6 +10,7 @@ const schemaBlocks = [
     migrationPaths: [
       "supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql",
       "supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql",
+      "supabase/migrations/20260715100000_add_recipe_serving_variants.sql",
     ],
   },
   {

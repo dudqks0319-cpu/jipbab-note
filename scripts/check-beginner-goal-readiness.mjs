@@ -381,6 +381,7 @@ const sourceChecks = [
     path: [
       "app/recipe/[id]/page.tsx",
       "lib/recipe-api-v1-client.ts",
+      "components/recipe/RecipeServingWorkspace.tsx",
       "components/recipe/RecipeInstructionView.tsx",
     ],
     terms: [

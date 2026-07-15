@@ -22,6 +22,7 @@ const rollbackMigrations = [
   "20260710151000_seed_phase1_ingredient_catalog.sql",
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260711113000_harden_security_definer_privileges.sql",
+  "20260715100000_add_recipe_serving_variants.sql",
 ];
 const requiredCommands = [
   { label: "install", command: "pnpm", args: ["install", "--offline", "--frozen-lockfile"] },
