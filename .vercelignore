@@ -10,6 +10,8 @@ build
 next-env.d.ts
 
 # native build outputs are release artifacts, not Vercel web deploy input
+android
+ios
 android/.gradle
 android/build
 android/app/build

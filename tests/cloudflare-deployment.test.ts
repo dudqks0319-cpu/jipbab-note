@@ -112,6 +112,8 @@ test("Cloudflare build artifacts are ignored by lint and git", () => {
 test("Vercel deploy input excludes local code intelligence artifacts", () => {
   const vercelIgnore = readFileSync(".vercelignore", "utf8");
 
+  assert.match(vercelIgnore, /^android$/m);
+  assert.match(vercelIgnore, /^ios$/m);
   assert.match(vercelIgnore, /^\.codegraph$/m);
   assert.match(vercelIgnore, /^\.vercel$/m);
   assert.match(vercelIgnore, /^output$/m);
