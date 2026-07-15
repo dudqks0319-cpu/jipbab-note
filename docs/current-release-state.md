@@ -2,6 +2,23 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-018 반응형 이미지 최적화
+
+- 로컬 레시피 이미지는 `next/image`의 반응형 `sizes`, WebP, lazy loading, blur placeholder를 사용한다. 첫 화면 핵심 이미지만 preload하고 로컬 SVG는 원본으로 유지한다. 임의 외부 사용자 URL은 원격 도메인을 전역 허용하지 않으며 실패 시 검증된 로컬 대체 이미지로 전환하고, 대체 이미지도 실패하면 기존 박스 크기를 유지한 한국어 상태를 표시한다.
+- 냉장고·장보기·웰컴·즐겨찾기의 핵심 로컬 raster도 고정된 표시 크기의 `next/image`로 전환했다. 이미지 성능 계약은 17/17이며 원본 로컬 raster 우회, 최적화 요청, 최대 단일 이미지 250KB, 실패 fallback 크기와 복구를 자동 검사한다.
+- production-like 로컬 lab을 390x844, CPU 4x, 1.6Mbps/150ms RTT, 6개 화면 각 3회로 실행했다. LCP p75는 홈 792ms, 웰컴 472ms, 냉장고 432ms, 이미지 실패 복구 444ms, 레시피 목록 432ms, 장보기 504ms다. 전 화면 CLS p75 0, 상호작용 p75 24ms, 검색 입력 반영 p75 16.5ms, 원본 로컬 raster 0건, 가장 큰 최적화 이미지 15,018B, console error와 unexpected network error 0건이다.
+- 전체 단위 테스트 474/474, TypeScript, production build 40/40 경로, integration, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. CI-safe 정적 게이트는 앱·저장소 검사 18개가 통과했고 폐기된 npm audit endpoint HTTP 410만 실패했다. 최신 pnpm bulk 감사에서는 production dependency 108개 중 moderate/high/critical 0건, 기존 low 1건이며 새 의존성이나 lockfile 변경은 없다.
+- 구현 커밋 `388b89c2b20abae176b0fc9eef0ddef27b83350b`을 `origin/agent/phase6-observability-analytics`에 push했다. Vercel Git Preview `dpl_2U42rkg2y1FdbfUo9j9QeDa61fF3` (`https://jipbab-note-fb1934q2j-youngbeens-projects.vercel.app`)은 정확히 이 branch와 커밋을 clone하고 compile, TypeScript, 40/40 경로를 통과해 `READY`가 됐다. target은 Preview이며 Production 승격은 하지 않았다.
+- Vercel의 만료형 임시 접근 경로로 보호된 Preview의 실제 `/fridge?demo=appstore`를 인앱 브라우저에서 열었다. 제목 `집밥노트`, 냉장고 heading, 이미지 10개 중 최적화 요청 9개, 원본 로컬 raster 0개, 앱 본문 폭/스크롤 폭 428/428, 해당 Preview console error·warning 0건을 확인했다. 임시 접근 토큰은 문서나 Git에 기록하지 않았다.
+- 실제 사용자 field p75, iOS·Android 실기기 이미지 메모리·네트워크 검증은 Owner `ReleaseOperator`, due `before_store_candidate_signoff`로 남긴다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`, 운영 DB, 사람·실제 조리·스토어 증거는 변경하지 않았다.
+
+## 2026-07-15 CON-001/002 레시피 문체·100점 검수 기준
+
+- 기존 초보자 운영 기준의 금지 표현 목록에 `피해야 할 문장 → 집밥노트 문장 → 교정 이유` 예시 6개를 추가했다. 모호한 시간·불 세기·완료 신호, 위험 재료 안전 확인, 정확한 계량, 비난 없는 실패 복구, 인물·브랜드·공식성 오인을 각각 실제 문장으로 교정한다.
+- 자동 계약은 문체 가이드가 모호 표현·안전·복구·출처 오인 교정 예시를 계속 포함하는지 검사한다. beginner readiness 23/23과 집중 테스트 6/6이 통과했다.
+- `docs/beginner-recipe-review-rubric.md`의 기존 CON-002 100점 검수표도 재확인했다. 기본 구조 15, 재료·계량 20, 단계 실행 25, 초보자 언어·복구 15, 안전·보관 15, 출처·이미지 권리 10이며, 실제 조리·초보자·안전·출처·이미지 권리 사람 증거는 점수로 대체할 수 없는 하드 게이트다.
+- CON-001 구현 커밋은 `4461ec9`다. CON-003의 운영 자체 레시피 6종은 현재 inventory에서 사람 실제 조리·초보자·안전·출처·이미지 권리 증거가 없어 승인으로 승격하지 않았다.
+
 ## 2026-07-15 FE-017 핵심 접근성
 
 - 전역 고대비 `focus-visible` 표시, 폼의 명시적 이름과 `label` 연결, 오류 메시지의 `aria-invalid`·`aria-describedby`, 선택·토글의 `aria-pressed`, 색상 외 상태 문구를 핵심 홈·냉장고·레시피·장보기 흐름에 적용했다. 냉장고 추가 모달은 열 때 첫 조작부로 초점을 이동하고 Tab·Shift+Tab 순환, Escape 닫기, 연 버튼으로 초점 복귀, 열린 동안 본문 스크롤 잠금을 제공한다.
