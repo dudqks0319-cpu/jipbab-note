@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-016 열어본 레시피 오프라인 조리
+
+- 프로덕션 앱이 공개 UUID 레시피 상세를 정상적으로 연 뒤 해당 문서와 문서에 포함된 같은 출처의 Next.js 정적 파일·레시피 이미지를 서비스 워커에 저장한다. 공개 레시피 문서는 최근 20개, 정적 파일은 100개로 제한하고 오프라인 안내 문서는 별도 shell cache에 보존해 레시피 순환 삭제의 영향을 받지 않는다.
+- 캐시용 레시피 요청은 자격증명을 보내지 않는 `credentials: omit` 경로만 사용한다. 인증 헤더가 있는 요청, 다른 출처, 냉장고·장보기·마이·가족 화면, 피드백 API는 캐시하지 않는다. 로그인 여부가 반영될 수 있는 실제 탐색 응답도 저장하지 않고, 자격증명 없는 공개 문서만 명시적으로 저장한다.
+- 서비스 워커는 프로덕션에서만 등록하고 `/sw.js`는 `no-cache, no-store, must-revalidate`와 루트 scope를 사용한다. 네트워크가 끊기면 열어본 레시피를 우선 복원하고 캐시가 없는 레시피에는 한국어 오프라인 안내를 표시한다. 조리 단계·체크·절대 종료 시각 타이머는 기존 레시피·인분별 localStorage 계약, 냉장고·장보기·동기화 큐는 기존 IndexedDB local-first 계약을 그대로 사용한다.
+- 인앱 브라우저의 실제 집밥노트 프로덕션 조리 화면에서 검수 계약을 만족하는 로컬 QA 레시피를 열고 2분 타이머를 시작했다. 그 뒤 Next 서버와 로컬 DB fixture를 모두 종료한 상태에서 같은 레시피를 다시 열어 전체 레시피와 `1:32` 남은 타이머를 복원했다. 오프라인 상태에서 2단계로 이동해 진행률 33%가 됐고 다시 새로 열었을 때 2단계·33%와 `1:15` 타이머가 함께 복원됐다. QA fixture는 임시 로컬 프로세스에만 있었고 앱·DB·Git·운영 증거로 승격하지 않았다.
+- 전체 단위 테스트 472/472, TypeScript, production build 40/40 경로, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. 저장소의 pnpm audit transport는 폐기된 npm quick endpoint HTTP 410으로 종료돼 CI-safe gate는 다른 18개 항목을 통과했다. 최신 `pnpm@11.13.0 audit --prod --audit-level moderate` bulk transport 재검사는 production dependency 108개에서 moderate/high/critical 0건, 기존 low 1건을 보고했다. 새 의존성이나 lockfile 변경은 없다. low advisory는 Owner `FullStackDev`, due `before_dependency_maintenance_release`로 유지한다.
+- 구현 커밋 `9a00eb7e7f2e6dddfe2d8c5d321566a7f462b017`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_CL3rEaDmisS2zTJ9xL3i3wSXcKay` (`https://jipbab-note-h4ot0kbl8-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 루트·레시피 상세·`/sw.js`·`/offline.html`은 HTTP 200이다. 서비스 워커 헤더와 캐시 구현을 원격에서 확인했고 런타임 허용목록 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다.
+- Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·운영 DB·실제 iOS/Android 오프라인·실제 조리·사람 검수·스토어·외부 모니터링 증거는 변경하지 않았다. 실기기 오프라인 재검증은 Owner `ReleaseOperator`, due `before_store_candidate_signoff`로 남긴다.
+
 ## 2026-07-15 FE-013 화면 꺼짐 방지 사용자 동의·fallback
 
 - 조리 타이머 시작과 함께 자동으로 Screen Wake Lock을 요청하던 동작을 제거했다. 기본 상태는 꺼짐이며, 사용자가 `화면 꺼짐 방지 켜기`를 누른 경우에만 명시적 동의 상태를 만들고 브라우저 API를 요청한다. 요청 중·켜짐·복귀 대기·기기 해제·미지원·실패를 서로 다른 상태와 `aria-live` 문장으로 표시한다.
