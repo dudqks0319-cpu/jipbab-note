@@ -478,6 +478,9 @@ test("recipe page uses the normalized API v1 category rail", () => {
   assert.match(detailSource, /getPublicRecipeDetailV1/);
   assert.match(detailSource, /recipeApiV1DetailToRecord/);
   assert.match(detailSource, /isRecipeDetailPublicationApproved/);
+  assert.doesNotMatch(detailSource, /<Star(?:\s|>)/);
+  assert.match(detailSource, /<ChefHat size=\{16\}/);
+  assert.match(detailSource, /label=\{`난이도 \$\{difficultyLabel\}`\}/);
   assert.match(detailSource, /recipe\.safetyNotes/);
   assert.match(detailSource, /recipe\.storageTip/);
   assert.match(apiSource, /categoryCounts/);

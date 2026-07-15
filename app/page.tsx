@@ -7,13 +7,13 @@ import { useMemo } from 'react'
 import {
   AlertTriangle,
   Bell,
+  ChefHat,
   Clock3,
   Plus,
   Refrigerator,
   RefreshCw,
   Search,
   ShoppingBasket,
-  Star,
   Utensils,
 } from 'lucide-react'
 
@@ -548,8 +548,8 @@ function RecipeHomeCard({
             {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '시간 미표시'}
           </span>
           <span className="inline-flex items-center gap-1 text-[#a66a17]">
-            <Star size={10} className="shrink-0 fill-[#f0a51c] text-[#f0a51c]" />
-            {typeof recipe.difficultyLevel === 'number' ? `난이도 ${recipe.difficultyLevel}` : '난이도 미표시'}
+            <ChefHat size={11} className="shrink-0" />
+            {formatHomeDifficulty(recipe.difficultyLevel)}
           </span>
         </div>
         {previewMode ? (
@@ -584,6 +584,19 @@ function RecipeHomeCard({
       </div>
     </article>
   )
+}
+
+function formatHomeDifficulty(difficultyLevel?: number | null): string {
+  if (typeof difficultyLevel !== 'number') {
+    return '난이도 미표시'
+  }
+  if (difficultyLevel <= 1) {
+    return '난이도 쉬움'
+  }
+  if (difficultyLevel === 2) {
+    return '난이도 보통'
+  }
+  return '난이도 어려움'
 }
 
 function getBeginnerRecipeBadge(recipe: {
