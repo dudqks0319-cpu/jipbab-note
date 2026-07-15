@@ -8,6 +8,14 @@ const seed = readFileSync(
   "supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql",
   "utf8",
 );
+const productionSeedBackup = readFileSync(
+  "supabase/migrations/20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715.sql",
+  "utf8",
+);
+const reconciledProductionSeed = readFileSync(
+  "supabase/migrations/20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715.sql",
+  "utf8",
+);
 const rollback = readFileSync(
   "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql",
   "utf8",
@@ -92,6 +100,29 @@ check(
   "canonical and alias seed",
   (seed.match(/'(?:canonical|synonym)', 'ko-KR'\)/g) ?? []).length === 258,
   "258 globally unique exact alias rows",
+);
+check(
+  "canonical egg and tofu categories",
+  seed.includes("('dairy-egg', '계란', '육류', '냉장', 'piece', null)") &&
+    seed.includes("('dairy-tofu', '두부', '통조림/가공식품', '냉장', 'block', null)") &&
+    catalogCsv.includes("dairy-egg,계란,육류,냉장,piece,달걀") &&
+    catalogCsv.includes("dairy-tofu,두부,통조림/가공식품,냉장,block,") &&
+    !seed.includes("('dairy-egg', '계란', '유제품'") &&
+    !seed.includes("('dairy-tofu', '두부', '유제품'"),
+  "generated SQL and CSV preserve the app-owned canonical categories",
+);
+check(
+  "production catalog seed backup",
+  productionSeedBackup.includes("ops_backup.ingredients_catalog_pre_phase1_seed_20260715") &&
+    productionSeedBackup.includes("ops_backup.ingredient_aliases_pre_phase1_seed_20260715") &&
+    productionSeedBackup.includes("revoke all on table") &&
+    !/\bdelete\b|\btruncate\b|\bdrop table\b/i.test(productionSeedBackup),
+  "production seed has a private, non-destructive recovery snapshot",
+);
+check(
+  "reconciled production seed",
+  reconciledProductionSeed === seed,
+  "the remote reconciliation migration exactly matches the canonical generated seed",
 );
 check(
   "schema snapshot synchronized",

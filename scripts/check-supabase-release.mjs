@@ -127,6 +127,8 @@ const requiredMigrationFiles = [
   "20260710151000_seed_phase1_ingredient_catalog.sql",
   "20260710160000_add_distributed_api_rate_limits.sql",
   "20260711113000_harden_security_definer_privileges.sql",
+  "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715.sql",
+  "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715.sql",
 ];
 
 function readSqlBundle() {

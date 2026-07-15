@@ -77,13 +77,19 @@ signed_guest_auth:
 phase1_recipe_data:
   schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
   catalog_seed_migration: "20260710151000_seed_phase1_ingredient_catalog.sql"
+  production_catalog_backup_migration: "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715"
+  production_catalog_seed_migration: "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715"
   rollback: "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql"
-  local_contract_status: "verified_25_of_25"
-  production_migration_status: "schema_migration_recorded_and_live_schema_verified_catalog_seed_not_recorded"
-  staging_execution_status: "publication_and_schema_verified_catalog_seed_and_historical_drift_pending"
+  local_contract_status: "verified_28_of_28"
+  production_migration_status: "schema_and_reconciled_catalog_seed_recorded_live_verified"
+  staging_execution_status: "production_catalog_seed_verified_historical_version_repair_pending"
   canonical_category_count: 15
   ingredient_catalog_count: 173
   exact_alias_count: 258
+  duplicate_alias_count: 0
+  canonical_egg_category: "육류"
+  canonical_tofu_category: "통조림/가공식품"
+  catalog_app_role_select_privileges: 0
   live_dry_run_recipe_count: 1152
   live_v2_candidate_count: 0
   live_legacy_string_ingredient_count: 1148
@@ -355,7 +361,7 @@ phase0_to_phase4_vercel_deployment:
   server_hmac_secret_registered: false
 
 migration_history:
-  remote_latest_recorded: "20260715121937"
+  remote_latest_recorded: "20260715135424"
   local_unrecorded_before_publication:
     - "20260521160347"
     - "20260523090000"
@@ -367,13 +373,15 @@ migration_history:
   signed_guest_auth_migration_recorded_remote: true
   phase1_schema_migration_recorded_remote: true
   phase1_catalog_seed_recorded_remote: false
+  phase1_catalog_reconciled_seed_recorded_remote: true
   phase2_rate_limit_migration_recorded_remote: true
   phase6_security_definer_migration_recorded_remote: true
   app_helper_search_path_migration_recorded_remote: true
   ingredient_category_migrations_recorded_remote: true
   publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
   phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
-  db_push_status: "blocked_for_full_push_until_older_local_missing_history_and_catalog_seed_reconciled"
+  db_push_status: "blocked_for_full_push_until_six_older_local_versions_are_repaired"
+  reconciliation_evidence: "docs/migration-history-reconciliation-2026-07-15.md"
 
 local_checks:
   - name: "Phase 6 performance static contract"
@@ -613,9 +621,9 @@ blockers:
   - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
     severity: "P0"
     status: "open"
-    title: "Remote migration history stops at 20260508143719 while six earlier local migrations and the Phase 0/1 migrations remain unrecorded."
+    title: "Production schema and catalog seed are live, but six older local migration versions still need official history repair after semantic equivalence verification."
     owner: "FullStackDev+DBA"
-    evidence: "docs/official-production-sources.md"
+    evidence: "docs/migration-history-reconciliation-2026-07-15.md"
     due: "before_any_supabase_db_push"
   - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
     severity: "P0"
@@ -626,8 +634,8 @@ blockers:
     due: "before_next_non_hotfix_production_deploy"
   - id: "P0-JIPBAB-RECIPE-PUBLISH-GATE"
     severity: "P0"
-    status: "production_app_gate_verified_database_publication_migration_pending"
-    title: "Production UI exposes only 0 approved recipes and 8 clearly labeled previews with cooking and shopping locked, while the legacy database rows still require the Phase 0 publication migration before DB-backed publication."
+    status: "production_publication_gate_verified_approved_zero_preview_twenty"
+    title: "Production publication gate is live; the UI exposes 0 approved recipes and 20 clearly labeled previews with cooking and shopping locked until human evidence exists."
     owner: "FullStackDev"
     evidence: "docs/phase-0-baseline-2026-07-10.md"
     due: "before_any_db_backed_recipe_publication"
@@ -820,6 +828,10 @@ sync_preview_backup_20260715:
   production_recipe_preview_20_horizontal_overflow_px: 0
   production_recipe_preview_20_browser_console_log_count: 0
   production_recipe_preview_20_screenshot: "/tmp/jipbab-recipe-preview-20.png"
+  production_recipe_preview_20_latest_screenshot: "/tmp/jipbab-production-recipes-visible.png"
+  production_catalog_seed_sync_screenshot: "/tmp/jipbab-production-sync-complete.png"
+  production_catalog_seed_sync_copy: "클라우드 동기화 완료"
+  production_catalog_seed_recipe_link_count: 20
   production_recipe_preview_initial_visible_after_ms: 100
   production_recipe_preview_initial_visible_link_count: 20
   production_recipe_search_result_visible_after_ms: 100
