@@ -207,7 +207,7 @@ ops005_cook_mode_rollout:
 
 fe001_frontend_api_client:
   implementation_git_sha: "1444d79d3570655017a39fd586d900e35d3ace9c"
-  evidence_checkpoint_git_sha: "pending_after_fe001_frontend_evidence_commit"
+  evidence_checkpoint_git_sha: "975c3399cebf478f1b4e776571b4d4d4a310da84"
   branch: "agent/phase6-observability-analytics"
   scope: "all_frontend_jipbab_api_calls_recipe_v1_comments_family_barcode_account_deletion_admin_and_anonymous_merge"
   overall_fe001_status: "frontend_complete_authenticated_external_evidence_pending"
