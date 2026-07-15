@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { MessageCircle, Trash2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { ApiClientError, requestApi } from "@/lib/api-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { RecipeCommentRecord } from "@/types";
 
@@ -24,6 +25,37 @@ function getSafeCommentErrorMessage(status: number): string {
     return "요청이 많습니다. 잠시 후 다시 시도해주세요.";
   }
   return "댓글을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
+}
+
+function invalidCommentResponse(message: string, requestId: string | null): never {
+  throw new ApiClientError({
+    code: "INVALID_RESPONSE",
+    message,
+    status: 502,
+    requestId,
+    retryable: false,
+  });
+}
+
+function parseCommentList(value: unknown, requestId: string | null): RecipeCommentRecord[] {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  if (!Array.isArray(payload?.comments)) {
+    return invalidCommentResponse("댓글 목록 응답 형식을 확인하지 못했습니다.", requestId);
+  }
+  return payload.comments as RecipeCommentRecord[];
+}
+
+function parseCreatedComment(value: unknown, requestId: string | null): RecipeCommentRecord {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  const comment = payload?.comment;
+  if (!comment || typeof comment !== "object" || Array.isArray(comment)) {
+    return invalidCommentResponse("댓글 저장 응답 형식을 확인하지 못했습니다.", requestId);
+  }
+  return comment as RecipeCommentRecord;
 }
 
 function formatCommentDate(value: string): string {
@@ -54,27 +86,27 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const encodedRecipeId = useMemo(() => encodeURIComponent(recipeId), [recipeId]);
 
-  const fetchComments = useCallback(async () => {
+  const fetchComments = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch(`/api/recipes/${encodedRecipeId}/comments`, {
-        cache: "no-store",
+      const nextComments = await requestApi(`/api/recipes/${encodedRecipeId}/comments`, {
+        signal,
+        parseResponse: parseCommentList,
       });
-      if (!response.ok) {
-        throw new Error(String(response.status));
-      }
-      const payload = (await response.json()) as { comments?: RecipeCommentRecord[] };
-      setComments(Array.isArray(payload.comments) ? payload.comments : []);
+      setComments(nextComments);
     } catch {
+      if (signal?.aborted) return;
       setErrorMessage("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [encodedRecipeId]);
 
   useEffect(() => {
-    void fetchComments();
+    const controller = new AbortController();
+    void fetchComments(controller.signal);
+    return () => controller.abort();
   }, [fetchComments]);
 
   const submitComment = async () => {
@@ -93,26 +125,20 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
 
     setSubmitting(true);
     try {
-      const response = await fetch(`/api/recipes/${encodedRecipeId}/comments`, {
+      const comment = await requestApi(`/api/recipes/${encodedRecipeId}/comments`, {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ content: trimmed }),
+        bearerToken: accessToken,
+        json: { content: trimmed },
+        parseResponse: parseCreatedComment,
       });
-      if (!response.ok) {
-        setErrorMessage(getSafeCommentErrorMessage(response.status));
-        return;
-      }
-
-      const payload = (await response.json()) as { comment?: RecipeCommentRecord };
-      if (payload.comment) {
-        setComments((prev) => [payload.comment as RecipeCommentRecord, ...prev]);
-      }
+      setComments((prev) => [comment, ...prev]);
       setContent("");
-    } catch {
-      setErrorMessage("댓글을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof ApiClientError
+          ? getSafeCommentErrorMessage(error.status)
+          : "댓글을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -131,19 +157,26 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
     }
 
     try {
-      const response = await fetch(`/api/recipes/${encodedRecipeId}/comments/${commentId}`, {
+      await requestApi(
+        `/api/recipes/${encodedRecipeId}/comments/${encodeURIComponent(commentId)}`,
+        {
         method: "DELETE",
-        headers: {
-          authorization: `Bearer ${accessToken}`,
+          bearerToken: accessToken,
+          parseResponse(value, requestId, status) {
+            if (status !== 204 || value !== null) {
+              return invalidCommentResponse("댓글 삭제 응답 형식을 확인하지 못했습니다.", requestId);
+            }
+            return undefined;
+          },
         },
-      });
-      if (!response.ok) {
-        setErrorMessage(getSafeCommentErrorMessage(response.status));
-        return;
-      }
+      );
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
-    } catch {
-      setErrorMessage("댓글을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof ApiClientError
+          ? getSafeCommentErrorMessage(error.status)
+          : "댓글을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
     }
   };
 

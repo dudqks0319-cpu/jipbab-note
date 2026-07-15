@@ -341,7 +341,9 @@ test("auth UI maps provider and Supabase errors to release-safe user messages", 
   assert.match(source, /shouldClearStoredSession/);
   assert.match(accountDeleteSource, /계정을 삭제하지 못했습니다\. 잠시 후 다시 시도하거나 고객센터로 문의해주세요/);
   assert.match(accountDeleteSource, /\/api\/account\/delete/);
-  assert.match(accountDeleteSource, /Authorization: `Bearer \$\{accessToken\}`/);
+  assert.match(accountDeleteSource, /bearerToken: accessToken/);
+  assert.match(accountDeleteSource, /parseResponse: parseDirectDeletionResponse/);
+  assert.doesNotMatch(accountDeleteSource, /\bfetch\s*\(/);
   assert.match(accountDeleteSource, /confirmation: DIRECT_DELETE_CONFIRMATION/);
   assert.match(accountDeleteSource, /client\.auth\.signOut\(\{ scope: "local" \}\)/);
   assert.match(accountDeleteSource, /clearSupabaseAuthStorage\(\)/);

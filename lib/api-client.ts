@@ -43,8 +43,13 @@ export class ApiClientError extends Error {
 }
 
 type ApiDataParser<T> = (value: unknown, requestId: string | null) => T;
+type ApiResponseParser<T> = (
+  value: unknown,
+  requestId: string | null,
+  status: number,
+) => T;
 
-export interface ApiDataRequestOptions<T> {
+interface ApiRequestBaseOptions {
   method?: "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE";
   headers?: HeadersInit;
   json?: unknown;
@@ -55,6 +60,13 @@ export interface ApiDataRequestOptions<T> {
   retry?: boolean | Partial<ApiRetryPolicy>;
   cache?: RequestCache;
   invalidResponseMessage?: string;
+}
+
+export interface ApiRequestOptions<T> extends ApiRequestBaseOptions {
+  parseResponse: ApiResponseParser<T>;
+}
+
+export interface ApiDataRequestOptions<T> extends ApiRequestBaseOptions {
   parseData: ApiDataParser<T>;
 }
 
@@ -91,7 +103,7 @@ function resolveTimeoutMs(value: number | undefined): number {
 
 function resolveRetryPolicy(
   method: string,
-  retry: ApiDataRequestOptions<unknown>["retry"],
+  retry: ApiRequestBaseOptions["retry"],
 ): ApiRetryPolicy {
   const defaultsToRetry = method === "GET" || method === "HEAD";
   if (retry === false || (retry === undefined && !defaultsToRetry)) {
@@ -139,7 +151,7 @@ function resolveClientRequestId(value: string | undefined): string {
 }
 
 function resolveHeaders(
-  options: ApiDataRequestOptions<unknown>,
+  options: ApiRequestBaseOptions,
   clientRequestId: string,
 ): Headers {
   const headers = new Headers(options.headers);
@@ -183,7 +195,8 @@ function responseRequestId(
   const error = asObject(payload?.error);
   return safeRequestId(response.headers.get("x-request-id"))
     ?? safeRequestId(meta?.requestId)
-    ?? safeRequestId(error?.requestId);
+    ?? safeRequestId(error?.requestId)
+    ?? safeRequestId(payload?.requestId);
 }
 
 function responseError(
@@ -192,8 +205,11 @@ function responseError(
 ): ApiClientError {
   const error = asObject(payload?.error);
   return new ApiClientError({
-    code: safeErrorCode(error?.code),
-    message: safeErrorMessage(error?.message, "요청을 처리하지 못했습니다."),
+    code: safeErrorCode(error?.code ?? payload?.code),
+    message: safeErrorMessage(
+      error?.message ?? payload?.message,
+      "요청을 처리하지 못했습니다.",
+    ),
     status: response.status,
     requestId: responseRequestId(response, payload),
     retryAfter: parseRetryAfter(response),
@@ -254,9 +270,9 @@ async function waitForRetry(delayMs: number, signal: AbortSignal | undefined): P
   });
 }
 
-export async function requestApiData<T>(
+export async function requestApi<T>(
   url: string,
-  options: ApiDataRequestOptions<T>,
+  options: ApiRequestOptions<T>,
 ): Promise<T> {
   options.signal?.throwIfAborted();
   const method = options.method ?? "GET";
@@ -315,15 +331,29 @@ export async function requestApiData<T>(
     }
 
     const requestId = responseRequestId(response, payload);
-    if (!("data" in (payload ?? {}))) {
-      throw new ApiClientError({
-        code: "INVALID_RESPONSE",
-        message: options.invalidResponseMessage ?? "응답 형식을 확인하지 못했습니다.",
-        status: 502,
-        requestId,
-        retryable: false,
-      });
-    }
-    return options.parseData(payload?.data, requestId);
+    return options.parseResponse(rawPayload, requestId, response.status);
   }
+}
+
+export async function requestApiData<T>(
+  url: string,
+  options: ApiDataRequestOptions<T>,
+): Promise<T> {
+  const { parseData, ...requestOptions } = options;
+  return requestApi(url, {
+    ...requestOptions,
+    parseResponse(rawPayload, requestId) {
+      const payload = asObject(rawPayload);
+      if (!("data" in (payload ?? {}))) {
+        throw new ApiClientError({
+          code: "INVALID_RESPONSE",
+          message: options.invalidResponseMessage ?? "응답 형식을 확인하지 못했습니다.",
+          status: 502,
+          requestId,
+          retryable: false,
+        });
+      }
+      return parseData(payload?.data, requestId);
+    },
+  });
 }

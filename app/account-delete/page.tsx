@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { ApiClientError, requestApi } from "@/lib/api-client";
 import { getDeviceId } from "@/lib/device-id";
 import { getSupportEmail, getSupportMailtoUrl } from "@/lib/external-links";
 import { clearSupabaseAuthStorage, getSupabaseClient } from "@/lib/supabase";
@@ -24,6 +25,22 @@ const statusLabels: Record<string, string> = {
 };
 const DELETE_CONFIRMATION_TEXT = "삭제";
 const DIRECT_DELETE_CONFIRMATION = "DELETE_MY_ACCOUNT";
+
+function parseDirectDeletionResponse(value: unknown, requestId: string | null): true {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  if (payload?.deleted !== true) {
+    throw new ApiClientError({
+      code: "INVALID_RESPONSE",
+      message: "계정 삭제 응답 형식을 확인하지 못했습니다.",
+      status: 502,
+      requestId,
+      retryable: false,
+    });
+  }
+  return true;
+}
 
 export default function AccountDeletePage() {
   const supportEmail = getSupportEmail();
@@ -89,20 +106,14 @@ export default function AccountDeletePage() {
         throw new Error("Auth session was not available for account deletion.");
       }
 
-      const response = await fetch("/api/account/delete", {
+      await requestApi("/api/account/delete", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+        bearerToken: accessToken,
+        json: {
           confirmation: DIRECT_DELETE_CONFIRMATION,
-        }),
+        },
+        parseResponse: parseDirectDeletionResponse,
       });
-
-      if (!response.ok) {
-        throw new Error("Account deletion API did not accept the request.");
-      }
 
       await client.auth.signOut({ scope: "local" }).catch(() => undefined);
       clearSupabaseAuthStorage();

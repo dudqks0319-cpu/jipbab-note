@@ -4,6 +4,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
+import { ApiClientError, requestApi } from "@/lib/api-client";
 import { getDeviceId } from "@/lib/device-id";
 import { getSupabaseClient } from "@/lib/supabase";
 import { isPermanentSupabaseUser } from "@/lib/supabase-session";
@@ -66,17 +67,41 @@ function safeWriteFamilyGroup(group: FamilyGroupRecord | null): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(group));
 }
 
-async function buildFamilyRequestHeaders(): Promise<Record<string, string>> {
+function parseFamilyGroupResponse(
+  value: unknown,
+  requestId: string | null,
+): FamilyGroupRecord {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  const group = payload?.group;
+  if (
+    !group
+    || typeof group !== "object"
+    || Array.isArray(group)
+    || typeof (group as Partial<FamilyGroupRecord>).id !== "string"
+    || typeof (group as Partial<FamilyGroupRecord>).name !== "string"
+    || typeof (group as Partial<FamilyGroupRecord>).inviteCode !== "string"
+    || !Array.isArray((group as Partial<FamilyGroupRecord>).members)
+  ) {
+    throw new ApiClientError({
+      code: "INVALID_RESPONSE",
+      message: "가족 냉장고 응답 형식을 확인하지 못했습니다.",
+      status: 502,
+      requestId,
+      retryable: false,
+    });
+  }
+  return group as FamilyGroupRecord;
+}
+
+async function getFamilyAccessToken(): Promise<string> {
   const { data, error } = await getSupabaseClient().auth.getSession();
   const accessToken = data.session?.access_token?.trim();
   if (error || !accessToken || !isPermanentSupabaseUser(data.session?.user)) {
     throw new Error("permanent_session_required");
   }
-
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${accessToken}`,
-  };
+  return accessToken;
 }
 
 export function useFamilyShare() {
@@ -108,24 +133,19 @@ export function useFamilyShare() {
     setError("");
 
     try {
-      const response = await fetch("/api/family-groups", {
+      const cloudGroup = await requestApi("/api/family-groups", {
         method: "POST",
-        headers: await buildFamilyRequestHeaders(),
-        body: JSON.stringify({
+        bearerToken: await getFamilyAccessToken(),
+        json: {
           action: "create",
           groupId: nextGroup.id,
           groupName: nextGroup.name,
           inviteCode: nextGroup.inviteCode,
           displayName: owner,
-        }),
+        },
+        parseResponse: parseFamilyGroupResponse,
       });
-
-      if (!response.ok) throw new Error("family_create_failed");
-
-      const payload = await response.json() as { group?: FamilyGroupRecord };
-      if (payload.group) {
-        saveGroup(payload.group);
-      }
+      saveGroup(cloudGroup);
     } catch {
       setStatusMessage("로컬 가족 냉장고로 먼저 저장했어요. 로그인/DB 적용 후 클라우드 공유됩니다.");
     }
@@ -145,22 +165,17 @@ export function useFamilyShare() {
     setError("");
 
     try {
-      const response = await fetch("/api/family-groups", {
+      const cloudGroup = await requestApi("/api/family-groups", {
         method: "POST",
-        headers: await buildFamilyRequestHeaders(),
-        body: JSON.stringify({
+        bearerToken: await getFamilyAccessToken(),
+        json: {
           action: "join",
           inviteCode: normalizedCode,
           displayName: name,
-        }),
+        },
+        parseResponse: parseFamilyGroupResponse,
       });
-
-      if (!response.ok) throw new Error("family_join_failed");
-
-      const payload = await response.json() as { group?: FamilyGroupRecord };
-      if (!payload.group) throw new Error("family_join_empty_response");
-
-      saveGroup(payload.group);
+      saveGroup(cloudGroup);
       setStatusMessage("초대코드로 가족 냉장고에 참여했어요.");
       setError("");
     } catch {

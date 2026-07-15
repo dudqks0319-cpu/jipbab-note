@@ -26,7 +26,7 @@ test("family invite codes use stronger random generation and longer codes", () =
 });
 
 test("family group creation uses a server route instead of unchecked client writes", () => {
-  assert.match(hookSource, /fetch\("\/api\/family-groups"/);
+  assert.match(hookSource, /requestApi\("\/api\/family-groups"/);
   assert.match(hookSource, /action: "create"/);
   assert.match(apiSource, /getServerSupabaseAdminClient/);
   assert.match(apiSource, /await client\.from\("family_groups"\)\.delete\(\)\.eq\("id", groupId\)/);
@@ -41,7 +41,7 @@ test("family API returns a generic service-unavailable response for missing serv
 });
 
 test("family invite join does not create a fake local group before cloud lookup", () => {
-  assert.match(hookSource, /fetch\("\/api\/family-groups"/);
+  assert.match(hookSource, /requestApi\("\/api\/family-groups"/);
   assert.match(hookSource, /action: "join"/);
   assert.match(apiSource, /\.eq\("invite_code", inviteCode\)/);
   assert.match(apiSource, /members\.length > MAX_MEMBERS/);
@@ -52,8 +52,8 @@ test("family invite join does not create a fake local group before cloud lookup"
 test("family API binds authenticated requests to Supabase user identity", () => {
   assert.match(hookSource, /getSupabaseClient/);
   assert.match(hookSource, /auth\.getSession\(\)/);
-  assert.match(hookSource, /Authorization: `Bearer \$\{accessToken\}`/);
-  assert.match(hookSource, /headers: await buildFamilyRequestHeaders\(\)/);
+  assert.match(hookSource, /bearerToken: await getFamilyAccessToken\(\)/);
+  assert.doesNotMatch(hookSource, /\bfetch\s*\(/);
   assert.match(apiSource, /getAuthenticatedServerUser/);
   assert.match(apiSource, /isAnonymousSupabaseUser/);
   assert.match(apiSource, /owner_user_id: userId/);

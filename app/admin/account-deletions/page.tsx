@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { ApiClientError, requestApi } from "@/lib/api-client";
 import { getSupabaseClient } from "@/lib/supabase";
 
 type DeletionRequestRecord = {
@@ -21,6 +22,48 @@ const STATUS_OPTIONS = [
   { key: "completed", label: "처리 완료" },
   { key: "rejected", label: "반려" },
 ] as const;
+
+function invalidDeletionResponse(message: string, requestId: string | null): never {
+  throw new ApiClientError({
+    code: "INVALID_RESPONSE",
+    message,
+    status: 502,
+    requestId,
+    retryable: false,
+  });
+}
+
+function parseDeletionRequestList(
+  value: unknown,
+  requestId: string | null,
+): DeletionRequestRecord[] {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  if (!Array.isArray(payload?.requests)) {
+    return invalidDeletionResponse("계정 삭제 요청 목록 응답 형식을 확인하지 못했습니다.", requestId);
+  }
+  return payload.requests as DeletionRequestRecord[];
+}
+
+function parseUpdatedDeletionRequest(
+  value: unknown,
+  requestId: string | null,
+): DeletionRequestRecord {
+  const payload = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+  const request = payload?.request;
+  if (
+    !request
+    || typeof request !== "object"
+    || Array.isArray(request)
+    || typeof (request as Partial<DeletionRequestRecord>).id !== "string"
+  ) {
+    return invalidDeletionResponse("계정 삭제 요청 응답 형식을 확인하지 못했습니다.", requestId);
+  }
+  return request as DeletionRequestRecord;
+}
 
 export default function AdminAccountDeletionsPage() {
   const { isAuthenticated, loading } = useAuth();
@@ -54,21 +97,11 @@ export default function AdminAccountDeletionsPage() {
           return;
         }
 
-        const response = await fetch("/api/account-deletion-requests", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+        const requests = await requestApi("/api/account-deletion-requests", {
+          bearerToken: accessToken,
+          parseResponse: parseDeletionRequestList,
         });
-        const payload = (await response.json()) as {
-          message?: string;
-          requests?: DeletionRequestRecord[];
-        };
-
-        if (!response.ok) {
-          throw new Error(payload.message ?? "요청 목록을 불러오지 못했습니다.");
-        }
-
-        setRecords(payload.requests ?? []);
+        setRecords(requests);
         setError(null);
       } catch {
         setError("계정 삭제 요청 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
@@ -112,29 +145,18 @@ export default function AdminAccountDeletionsPage() {
         throw new Error("운영자 세션 토큰을 찾지 못했습니다.");
       }
 
-      const response = await fetch(`/api/account-deletion-requests/${id}`, {
+      const updatedRequest = await requestApi(`/api/account-deletion-requests/${encodeURIComponent(id)}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(
+        bearerToken: accessToken,
+        json:
           options?.destructive
             ? { action: "delete-account", confirmUserId: record.user_id, status }
             : { status },
-        ),
+        parseResponse: parseUpdatedDeletionRequest,
       });
-      const payload = (await response.json()) as {
-        message?: string;
-        request?: DeletionRequestRecord;
-      };
-
-      if (!response.ok || !payload.request) {
-        throw new Error(payload.message ?? "상태를 저장하지 못했습니다.");
-      }
 
       setRecords((prev) =>
-        prev.map((item) => (item.id === payload.request?.id ? payload.request : item)),
+        prev.map((item) => (item.id === updatedRequest.id ? updatedRequest : item)),
       );
       setMessage(options?.destructive ? "계정 삭제를 완료했습니다." : "상태를 업데이트했습니다.");
     } catch {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ApiClientError, requestApiData } from "../lib/api-client.ts";
+import { ApiClientError, requestApi, requestApiData } from "../lib/api-client.ts";
 
 function parseObject(
   value: unknown,
@@ -223,4 +223,106 @@ test("common API client never copies request secrets into network errors", async
       return true;
     },
   );
+});
+
+test("common API client parses a legacy top-level JSON response with status context", async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () => new Response(
+    JSON.stringify({ comment: { id: "comment-1" } }),
+    {
+      status: 201,
+      headers: { "content-type": "application/json", "x-request-id": "legacy-1" },
+    },
+  );
+
+  const result = await requestApi("/api/comments", {
+    method: "POST",
+    json: { content: "맛있어요" },
+    parseResponse(value, requestId, status) {
+      assert.ok(value && typeof value === "object");
+      return { value, requestId, status };
+    },
+  });
+
+  assert.deepEqual(result, {
+    value: { comment: { id: "comment-1" } },
+    requestId: "legacy-1",
+    status: 201,
+  });
+});
+
+test("common API client accepts a successful 204 response without a JSON body", async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () => new Response(null, { status: 204 });
+
+  const result = await requestApi("/api/comments/comment-1", {
+    method: "DELETE",
+    parseResponse(value, requestId, status) {
+      assert.equal(value, null);
+      assert.equal(requestId, null);
+      assert.equal(status, 204);
+      return "deleted" as const;
+    },
+  });
+
+  assert.equal(result, "deleted");
+});
+
+test("common API client preserves a safe legacy top-level error message", async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () => new Response(
+    JSON.stringify({ message: "초대코드를 확인해 주세요." }),
+    { status: 400, headers: { "content-type": "application/json" } },
+  );
+
+  await assert.rejects(
+    requestApi("/api/family-groups", {
+      method: "POST",
+      json: { action: "join" },
+      parseResponse: (value) => value,
+    }),
+    (error: unknown) =>
+      error instanceof ApiClientError
+      && error.status === 400
+      && error.message === "초대코드를 확인해 주세요."
+      && !error.retryable,
+  );
+});
+
+test("common API client does not retry mutations unless explicitly requested", async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return new Response(
+      JSON.stringify({ message: "잠시 후 다시 시도해 주세요." }),
+      { status: 503, headers: { "content-type": "application/json" } },
+    );
+  };
+
+  await assert.rejects(
+    requestApi("/api/account/delete", {
+      method: "POST",
+      json: { confirmation: "DELETE_MY_ACCOUNT" },
+      parseResponse: (value) => value,
+    }),
+    (error: unknown) => error instanceof ApiClientError && error.status === 503,
+  );
+  assert.equal(calls, 1);
 });

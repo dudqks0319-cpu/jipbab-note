@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Camera, CameraOff, Loader2, Search } from 'lucide-react'
 import {
   createWebBarcodeDetector,
@@ -10,7 +10,7 @@ import {
   pickFirstValidBarcode,
   type BarcodeDetectorLike,
 } from '@/lib/barcode'
-import { getDeviceId } from '@/lib/device-id'
+import { ApiClientError, requestApi } from '@/lib/api-client'
 
 const SCAN_INTERVAL_MS = 700
 
@@ -33,8 +33,29 @@ type ProductLookupResponse = {
   message: string
 }
 
-type ErrorResponse = {
-  message?: string
+const parseProductLookupResponse = (
+  value: unknown,
+  requestId: string | null,
+): ProductLookupResponse => {
+  const payload = value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+  const product = payload?.product
+  if (
+    typeof payload?.barcode !== 'string'
+    || typeof payload.message !== 'string'
+    || (payload.source !== 'openfoodfacts' && payload.source !== 'stub')
+    || (product !== null && (typeof product !== 'object' || Array.isArray(product)))
+  ) {
+    throw new ApiClientError({
+      code: 'INVALID_RESPONSE',
+      message: '상품 조회 응답 형식을 확인하지 못했습니다.',
+      status: 502,
+      requestId,
+      retryable: false,
+    })
+  }
+  return payload as ProductLookupResponse
 }
 
 export default function BarcodePage() {
@@ -54,8 +75,17 @@ export default function BarcodePage() {
   const [lookupError, setLookupError] = useState<string | null>(null)
   const [lookupResult, setLookupResult] = useState<ProductLookupResult | null>(null)
 
-  const detectorSupported = useMemo(() => isWebBarcodeDetectorSupported(), [])
+  const [detectorSupported, setDetectorSupported] = useState(false)
   const showCameraControls = detectorSupported && cameraStatus !== 'unsupported'
+
+  useEffect(() => {
+    const supported = isWebBarcodeDetectorSupported()
+    setDetectorSupported(supported)
+    if (!supported) {
+      setCameraStatus('unsupported')
+      setStatusMessage('이 브라우저는 실시간 바코드 감지를 지원하지 않습니다. 바코드 번호를 직접 입력해 주세요.')
+    }
+  }, [])
 
   const stopCamera = useCallback(() => {
     if (scanIntervalRef.current !== null) {
@@ -86,28 +116,20 @@ export default function BarcodePage() {
     setLookupResult(null)
 
     try {
-      const response = await fetch(
+      const payload = await requestApi(
         `/api/products?barcode=${encodeURIComponent(barcode)}`,
         {
-          cache: 'no-store',
-          headers: {
-            'x-device-id': getDeviceId(),
-          },
+          parseResponse: parseProductLookupResponse,
         },
       )
-      const payload = (await response.json()) as ProductLookupResponse | ErrorResponse
-
-      if (!response.ok) {
-        setLookupError(payload.message ?? '상품 정보 조회에 실패했습니다.')
-        return
-      }
-
-      const typed = payload as ProductLookupResponse
-      setLookupResult(typed.product)
-      setStatusMessage(typed.message)
+      setLookupResult(payload.product)
+      setStatusMessage(payload.message)
     } catch (error) {
-      console.error('상품 조회 요청 실패', error)
-      setLookupError('네트워크 오류로 조회에 실패했습니다.')
+      setLookupError(
+        error instanceof ApiClientError
+          ? error.message
+          : '네트워크 오류로 조회에 실패했습니다.',
+      )
     } finally {
       setIsLookupLoading(false)
     }
@@ -218,13 +240,6 @@ export default function BarcodePage() {
       stopCamera()
     }
   }, [stopCamera])
-
-  useEffect(() => {
-    if (!detectorSupported) {
-      setCameraStatus('unsupported')
-      setStatusMessage('이 브라우저는 실시간 바코드 감지를 지원하지 않습니다. 바코드 번호를 직접 입력해 주세요.')
-    }
-  }, [detectorSupported])
 
   return (
     <div className="flex flex-col">
