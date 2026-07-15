@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-001 핵심 공통 API 클라이언트
+
+- 공통 `lib/api-client.ts`가 JSON 기본 헤더, bearer token, bounded client/server request ID, 8초 timeout, 호출자 취소, bounded 오류 parsing을 한 경계에서 처리한다. GET/HEAD는 retryable 상태와 네트워크·timeout에서 기본 한 번만 재시도하고, POST는 기본 재시도하지 않는다. 읽기 전용 추천과 `clientSubmissionId`로 멱등인 피드백만 호출부에서 명시적으로 한 번 재시도한다.
+- `401`은 재시도하지 않는 typed 인증 오류로 전달한다. `429`의 `Retry-After`가 허용된 지연 예산을 넘으면 한 번의 요청 뒤 즉시 중단하며, transport 원문·bearer token·요청 본문을 오류나 로그에 복사하지 않는다. 레시피 목록·추천·상세·피드백 네 경로는 중복 fetch/envelope 코드를 제거하고 이 공통 경계를 사용한다.
+- 신규 계약 7개와 기존 레시피 클라이언트 계약을 포함해 전체 단위 테스트 489/489, TypeScript, production build 40/40 경로, integration, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다.
+- 은퇴한 npm audit endpoint HTTP 410일 때만 정확히 고정한 `pnpm@11.0.0` bulk advisory 경로로 재검사하도록 release security gate를 복구했다. CI-safe 정적 게이트 19/19와 release security 4/4가 통과했고 moderate/high/critical 취약점은 0건, 기존 low 1건이다. 의존성·lockfile 변경은 없다.
+- 390x844 로컬 임시 QA 화면을 인앱 브라우저에서 직접 사용했다. 첫 `503` 뒤 같은 correlation ID로 두 번째 요청이 성공했고, `Retry-After: 60`인 `429`는 요청 1회에서 중단했으며, 진행 중 사용자 취소는 추가 재시도 없이 끝났다. console error는 0건이고 임시 QA route는 검수 직후 제거했다.
+- 구현 커밋 `21b89a79a066cec448718a799a215a9fe51d4785`을 `origin/agent/phase6-observability-analytics`에 push했다. Vercel Git Preview `dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5` (`https://jipbab-note-5hamo78k2-youngbeens-projects.vercel.app`)은 같은 branch와 SHA를 clone하고 compile, TypeScript, 40/40 경로를 통과해 `READY`가 됐다. target은 Preview이며 Production 승격·alias 변경은 하지 않았다.
+- 보호된 Preview의 `/`와 `/recipe`는 인증된 Vercel fetch에서 HTTP 200을 반환했다. 목록 API는 운영 DB migration·검수 데이터 미적용 경계 때문에 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환했다. 만료형 접근 값을 문서나 Git에 남기지 않고 인앱 브라우저 390x844에서 실제 홈과 레시피 화면을 열었다. 제목 `집밥노트`, 홈 heading, 하단 5개 탭, 레시피 검색·필터와 안전한 점검 안내를 확인했고 본문/문서 폭은 388/390, 44px 미만 보이는 조작부 0개, console error·warning 0건이다.
+- 이 상태는 FE-001 전체가 아니라 레시피 API v1 핵심 경로 완료다. 댓글·가족 공유·계정 삭제·바코드·익명 병합의 직접 `fetch`는 인증과 오류 UX를 테스트로 고정한 뒤 순차 마이그레이션한다. 세부 계약은 `docs/api-client.md`에 기록했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`, 운영 DB, 사람·실제 조리·스토어 증거는 변경하지 않았다.
+
 ## 2026-07-15 OPS-005 조리 모드 점진 활성화
 
 - 서버 전용 `COOK_MODE_ROLLOUT_PERCENT`로 조리 모드를 레시피 단위 0~100% 범위에서 안정적으로 활성화한다. 값이 없으면 기존 동작을 보존하도록 100%, 공백·소수·범위 밖 값 등 명시된 잘못된 값은 0%로 fail-closed한다. 버킷은 레시피 ID만 사용하는 결정적 FNV-1a 해시이며 사용자·기기·세션·IP 추적은 추가하지 않았다.

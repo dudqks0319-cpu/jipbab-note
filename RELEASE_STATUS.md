@@ -2,7 +2,15 @@
 
 ## 한 줄 상태
 
-OPS-005 조리 모드 점진 활성화 코드는 `3f930a0f74bdf632db959f0d891ba92ced72f6f5`로 GitHub에 푸시했습니다. Vercel Git Preview `dpl_4Wu2YccTGDGcjurbbryRrc5r2rgF`는 정확한 SHA를 clone해 `READY`이고 `/`·`/fridge?demo=appstore` HTTP 200입니다. Production은 승격하지 않았고 DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+FE-001 레시피 API v1 핵심 공통 클라이언트는 `21b89a79a066cec448718a799a215a9fe51d4785`로 GitHub에 푸시했습니다. Vercel Git Preview `dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5`는 같은 SHA를 clone해 compile·TypeScript·40/40 route를 통과하고 `READY`이며 `/`·`/recipe` HTTP 200입니다. Production은 승격하지 않았고 FE-001 레거시 화면 마이그레이션, DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+
+## 2026-07-15 FE-001 핵심 API 클라이언트
+
+- Preview: `https://jipbab-note-5hamo78k2-youngbeens-projects.vercel.app`
+- 브라우저 390x844 QA: 첫 503 뒤 같은 request ID로 2회째 성공, Retry-After 60초 429는 1회만 호출, 사용자 취소는 재시도 없이 종료, console error 0
+- 원격 확인: GitHub exact SHA, Vercel READY, compile·TypeScript·40/40 routes, `/`·`/recipe` 200, 예상된 목록 API 503/no-store/Retry-After 60, 실제 레시피 화면 388/390·작은 조작부 0·console error/warning 0
+- 검증: unit 489/489, TypeScript pass, lint 오류 0, production build 40/40 routes, CI-safe 19/19, release security 4/4
+- 범위 경계: 레시피 목록·추천·상세·피드백만 공통화 완료. 댓글·가족·계정 삭제·바코드·익명 병합은 다음 로컬 마이그레이션이며 운영 DB·Production은 변경하지 않음
 
 ## 2026-07-15 OPS-005 웹 Preview
 
@@ -27,10 +35,10 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 - Version: `1.0`
 - Build: `2026062602`
-- Git SHA: `3f930a0f74bdf632db959f0d891ba92ced72f6f5`
+- Git SHA: `21b89a79a066cec448718a799a215a9fe51d4785`
 - Preview evidence checkpoint: `36c8819ed2f0dc5babacc9c0d289c9f6a3e73c99`
 - Branch: `agent/phase6-observability-analytics`
-- Phase: `phase7_recipe_completion_and_ops005_rollout_preview_ready_external_and_human_gates_blocked`
+- Phase: `phase7_recipe_completion_fe001_core_preview_ready_external_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
 
 ## 통과 또는 기록된 증거
@@ -43,6 +51,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - App Store 국가 가용성 생성(KOR/USA only), `appAvailabilityV2` 200 확인, KR/US 공개 App Store 직접 URL HTTP 200 확인, iTunes Lookup API 지연 기록: `output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`
 - App Store 출시 앱 원격 WebView production UX 갱신: `output/ui-evidence/shopping-production-vercel-cdp-390.png`
 - OPS-005 레시피 단위 점진 활성화·즉시 비활성 fallback·Vercel Preview·390px 증거: `docs/current-release-state.md`
+- FE-001 레시피 API v1 공통 클라이언트·retry/timeout/cancel/401/429·브라우저 QA: `docs/api-client.md`
 - App Store Review 제출 완료 UI 증거: `output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md`
 - App Store 최신 스크린샷 5장 교체 완료 증거: `output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`
 - 케이블 연결 iPhone 12 Pro build `2026062601` install/launch/process/display 증거: `output/release-evidence/2026-06-26T11-10-cable-ios-qa/summary.md`
@@ -71,4 +80,4 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 ## 다음 행동
 
-`docs/external-release-unblock-runbook.md` 0단계에 따라 migration history와 백업을 먼저 확인하고 격리 staging에서 Phase 0/1/2/7 bundle, rollback, 권한 음수 경로, 피드백 `201/200/400/401/413/429/503` 행렬을 검증합니다. 이 증거 전에는 `supabase db push`, Production 승격, 실제 사용자 데이터 수집을 진행하지 않습니다.
+외부 승인 없이 가능한 다음 로컬 작업은 댓글·가족 공유·계정 삭제·바코드·익명 병합의 직접 `fetch`를 인증·오류 UX 테스트와 함께 공통 클라이언트로 순차 이동하는 것입니다. DB 범위는 `docs/external-release-unblock-runbook.md` 0단계에 따라 migration history와 백업을 먼저 확인하고 격리 staging에서만 검증합니다. 이 증거 전에는 `supabase db push`, Production 승격, 실제 사용자 데이터 수집을 진행하지 않습니다.
