@@ -89,6 +89,7 @@ export default function RecipePage() {
   const {
     recipes,
     loading,
+    catalogResolved,
     error,
     page,
     totalCount,
@@ -116,7 +117,7 @@ export default function RecipePage() {
     [isAppStoreDemo, recipes],
   )
   const visibleTotalCount = isAppStoreDemo ? baseRecipes.length : Math.max(totalCount, baseRecipes.length)
-  const previewMode = !isAppStoreDemo && visibleTotalCount === 0
+  const previewMode = !isAppStoreDemo && catalogResolved && visibleTotalCount === 0
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
   useEffect(() => {
@@ -455,7 +456,7 @@ export default function RecipePage() {
       ) : null}
 
       <section className="px-5 pt-4">
-        {!isAppStoreDemo && loading ? (
+        {!isAppStoreDemo && loading && !previewMode ? (
           <div className="flex flex-col items-center py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#ea5a1f] border-t-transparent" />
             <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>

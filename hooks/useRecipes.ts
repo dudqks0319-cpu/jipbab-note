@@ -43,6 +43,7 @@ function recipeLoadErrorMessage(error: unknown): string {
 export interface UseRecipeCatalogResult {
   recipes: RecipeRecord[];
   loading: boolean;
+  catalogResolved: boolean;
   error: string | null;
   page: number;
   totalCount: number;
@@ -97,6 +98,7 @@ export function useRecipeCatalog(
   const sort = options.sort ?? "recommended";
   const [recipes, setRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [catalogResolved, setCatalogResolved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -154,7 +156,10 @@ export function useRecipeCatalog(
       setTotalCount(0);
       setError(recipeLoadErrorMessage(fetchError));
     } finally {
-      if (requestId === requestIdRef.current) setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+        setCatalogResolved(true);
+      }
     }
   }, [
     debouncedQuery,
@@ -221,6 +226,7 @@ export function useRecipeCatalog(
   return {
     recipes,
     loading,
+    catalogResolved,
     error,
     page,
     totalCount,
