@@ -9,6 +9,7 @@ Updated: 2026-07-15 KST
 - 배포 전 같은 Chrome 세션에서 계란·두부 2개가 `동기화 대기`로 남는 현상을 재현했다. 배포 후 새로고침만으로 `클라우드 동기화 완료` 1개, `동기화 대기` 0개가 됐고 다시 새로고침해도 두 재료가 유지됐다. 증거 화면은 `/tmp/jipbab-production-sync-before.png`, `/tmp/jipbab-production-sync-fixed.png`다.
 - 운영 장보기 화면도 `클라우드 동기화 완료` 1개, `동기화 대기` 0개이며 Chrome console warning/error는 0건이다.
 - 운영 홈은 재료가 없어도 레시피 미리보기를 먼저 노출하고, 재료가 있으면 조건에 맞는 미리보기 CTA를 보여준다. `/recipe`는 `공개 승인 0개 · 미리보기 8개`와 8개 카드, 검색·빠른 필터를 표시하며 달걀죽 상세의 도구·재료·조리순서와 `아직 조리 승인 전이에요` 잠금 상태를 확인했다. 증거 화면은 `/tmp/jipbab-production-recipes-visible.png`, `/tmp/jipbab-production-recipe-list-ready.png`다.
+- 운영 `/api/v1/recipes?limit=1`은 HTTP 200, `Cache-Control: no-store`, `X-Request-Id`와 함께 빈 승인 목록을 반환한다. 운영 DB의 미검수 legacy rows가 공개 API로 새지 않으면서 자체 작성 미리보기만 별도 UI 경로에 표시된다.
 - 코드 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
 - 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, Phase 0 publication migration 및 과거 migration history 정리, Phase 5 사람 증거 20/20이다.
 

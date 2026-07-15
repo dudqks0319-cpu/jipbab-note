@@ -759,6 +759,9 @@ sync_preview_backup_20260715:
   production_recipe_list_verified: true
   production_recipe_detail_verified: true
   production_recipe_evidence: "/tmp/jipbab-production-recipe-list-ready.png"
+  production_api_v1_status: "verified_200_empty_publication_approved_list"
+  production_api_v1_cache_control: "no-store"
+  production_api_v1_request_id_verified: true
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
   production_alias_runtime_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
