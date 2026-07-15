@@ -2,6 +2,16 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-017 핵심 접근성
+
+- 전역 고대비 `focus-visible` 표시, 폼의 명시적 이름과 `label` 연결, 오류 메시지의 `aria-invalid`·`aria-describedby`, 선택·토글의 `aria-pressed`, 색상 외 상태 문구를 핵심 홈·냉장고·레시피·장보기 흐름에 적용했다. 냉장고 추가 모달은 열 때 첫 조작부로 초점을 이동하고 Tab·Shift+Tab 순환, Escape 닫기, 연 버튼으로 초점 복귀, 열린 동안 본문 스크롤 잠금을 제공한다.
+- 360·390·430px에서 홈, 냉장고, 냉장고 추가 모달, 레시피, 장보기의 15개 route-width 조합을 실제 렌더링했다. 44px 미만 조작부, 이름 없는 조작부, 연결되지 않은 폼 필드, 명도 대비 실패, 가로 넘침, 프레임워크 오류 오버레이가 모두 0건이었고 키보드 초점 표시가 실제 Tab 입력에서 보였다. 계획서의 핵심 색상 대비는 본문 14.45:1, 보조 5.75~6.14:1, 강조 5.78:1, 주 버튼 5.18:1, 초점선 5.27:1이다.
+- 인앱 브라우저의 실제 집밥노트 냉장고 추가 모달에서 열기 직후 닫기 버튼 초점, Shift+Tab으로 마지막 저장 버튼 이동, Tab으로 첫 버튼 복귀, Escape 닫기와 연 버튼 초점 복귀를 확인했다. 열린 동안 `main-content` 세로 스크롤은 잠겼고 새 탭 console error·warning은 0건이었다. 실제 조리 화면에서는 21px 단계 본문, `role=timer`, 화면에 보이는 완료 상태와 소리 이외 완료 안내를 재확인했다.
+- 전체 단위 테스트 474/474, TypeScript, production build 40/40 경로, integration, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 생성물 경고 33건만 남았다. production dependency 108개를 최신 bulk advisory 경로로 검사해 moderate/high/critical 0건, 기존 low 1건을 확인했고 새 의존성이나 lockfile 변경은 없다.
+- 구현 커밋 `267ba36df3e9a8e5cca155a252b6c91e02a88f34`을 `origin/agent/phase6-observability-analytics`에 push했다. Vercel Git 연동 Preview `dpl_5iMf4xUiriTjELibgQPosN8N2yG7` (`https://jipbab-note-3fn1c5hha-youngbeens-projects.vercel.app`)은 정확히 해당 branch와 커밋을 clone했고 원격 compile, TypeScript, 40/40 경로를 통과해 `READY`가 됐다. target은 `preview`이며 Production 승격은 하지 않았다.
+- Preview에는 Vercel SSO 보호가 적용되어 비로그인 HTTP와 인앱 브라우저가 302 로그인 화면으로 이동했다. 따라서 이 배포의 루트·API 런타임 응답과 허용목록 운영 로그는 독립적으로 재검증하지 않았으며, 이전 Preview의 예상된 `503 DEPENDENCY_NOT_READY` 증거를 이번 배포 증거로 승격하지 않는다.
+- 실제 VoiceOver·TalkBack 읽기 순서, OS 확대·동적 글자, iOS·Android 실기기 검증은 Owner `ReleaseOperator`, due `before_store_candidate_signoff`로 남긴다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`, 운영 DB, 사람·실제 조리·스토어 증거는 변경하지 않았다.
+
 ## 2026-07-15 FE-016 열어본 레시피 오프라인 조리
 
 - 프로덕션 앱이 공개 UUID 레시피 상세를 정상적으로 연 뒤 해당 문서와 문서에 포함된 같은 출처의 Next.js 정적 파일·레시피 이미지를 서비스 워커에 저장한다. 공개 레시피 문서는 최근 20개, 정적 파일은 100개로 제한하고 오프라인 안내 문서는 별도 shell cache에 보존해 레시피 순환 삭제의 영향을 받지 않는다.
