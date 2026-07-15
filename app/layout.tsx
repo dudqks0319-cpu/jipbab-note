@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
+import RecipeOfflineSupport from '@/components/app/RecipeOfflineSupport'
 import AppShell from '@/components/layout/AppShell'
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#f4eee5] antialiased">
+        <RecipeOfflineSupport />
         <AppShell>{children}</AppShell>
       </body>
     </html>
