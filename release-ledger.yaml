@@ -612,21 +612,21 @@ blockers:
     title: "Public source repository, GitHub default branch, Vercel linked repository, and deployed feature SHA are not aligned."
     owner: "project_owner"
     evidence: "docs/official-production-sources.md"
-    due: "before_next_production_deploy"
+    due: "before_next_non_hotfix_production_deploy"
   - id: "P0-JIPBAB-RECIPE-PUBLISH-GATE"
     severity: "P0"
-    status: "local_fix_verified_production_not_applied"
-    title: "Local RLS/API/UI gates block all unreviewed recipes, but production still exposes 1,152 rows until backup and migration rollout."
+    status: "production_app_gate_verified_database_publication_migration_pending"
+    title: "Production UI exposes only 0 approved recipes and 8 clearly labeled previews with cooking and shopping locked, while the legacy database rows still require the Phase 0 publication migration before DB-backed publication."
     owner: "FullStackDev"
     evidence: "docs/phase-0-baseline-2026-07-10.md"
-    due: "before_next_production_deploy"
+    due: "before_any_db_backed_recipe_publication"
   - id: "P0-JIPBAB-GUEST-AUTHORIZATION"
     severity: "P0"
-    status: "production_db_hardened_preview_code_verified_production_alias_not_promoted"
-    title: "Production DB now authorizes signed auth UID only and the official Preview synced 8 signed rows; the old Production web alias has not been promoted to the matching client build."
+    status: "resolved_production_db_and_client_verified"
+    title: "Production DB authorizes signed auth UID only, and the matching Production client automatically migrated pending local rows to cloud-synced rows with reload persistence."
     owner: "FullStackDev+Security"
     evidence: "docs/phase-0-baseline-2026-07-10.md"
-    due: "before_next_production_deploy"
+    due: "resolved_2026_07_15"
   - id: "P0-JIPBAB-PHASE1-STAGING-SQL"
     severity: "P0"
     status: "local_static_contract_verified_staging_execution_pending"
@@ -698,18 +698,27 @@ sync_preview_backup_20260715:
   sync_ui_git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
   shopping_sync_ui_git_sha: "729a1df"
   recipe_discovery_ui_git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
-  preview_deployment_id: "dpl_D6NUcCjGCVuUJNRvh4Jkft3fmBRm"
-  preview_url: "https://jipbab-note-ltixq8wbj-youngbeens-projects.vercel.app"
+  home_recipe_visibility_git_sha: "556c37452e87dde56abe966d02ec9b7462d0d265"
+  difficulty_label_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  preview_deployment_id: "dpl_FNSVuHw3aW5iNj6jzv8gRb9KegeG"
+  preview_url: "https://jipbab-note-95m5agmad-youngbeens-projects.vercel.app"
   preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
   preview_status: "READY"
   production_promoted: false
+  production_web_hotfix_deployed: true
+  production_full_release_promoted: false
+  production_deployment_id: "dpl_Ff1Rqm7ovh1mSAuTKWwjvZAwbrkw"
+  production_deployment_url: "https://jipbab-note-3wxx4j5h1-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  production_status: "READY"
+  production_anonymous_auth_feature_flag_enabled: true
   recipe_preview_count: 8
   recipe_preview_runtime_verified: true
   recipe_preview_search_runtime_verified: true
   recipe_preview_quick_filter_runtime_verified: true
   recipe_preview_detail_runtime_verified: true
   recipe_preview_console_log_count: 0
-  recipe_preview_unit_status: "verified_394_of_394"
+  recipe_preview_unit_status: "verified_396_of_396"
   recipe_preview_build_status: "verified_38_of_38_routes"
   dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
   dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
@@ -740,10 +749,20 @@ sync_preview_backup_20260715:
   shopping_browser_pending_sync_count: 0
   shopping_browser_console_warning_error_count: 0
   shopping_browser_evidence: "/tmp/jipbab-shopping-sync-verified.png"
+  production_browser_sync_verified: true
+  production_browser_reload_persistence_verified: true
+  production_browser_pending_sync_count: 0
+  production_browser_console_warning_error_count: 0
+  production_browser_sync_before_evidence: "/tmp/jipbab-production-sync-before.png"
+  production_browser_sync_after_evidence: "/tmp/jipbab-production-sync-fixed.png"
+  production_recipe_preview_count: 8
+  production_recipe_list_verified: true
+  production_recipe_detail_verified: true
+  production_recipe_evidence: "/tmp/jipbab-production-recipe-list-ready.png"
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
-  production_alias_runtime_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
-  production_alias_runtime_alignment: "blocked_separate_project_and_old_commit"
+  production_alias_runtime_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  production_alias_runtime_alignment: "runtime_hotfix_verified_git_integration_source_mismatch_open"
 
 next_action:
   owner: "ContentQA+BeginnerTesters"

@@ -2,10 +2,20 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 운영 동기화·레시피 웹 hotfix
+
+- 운영 별칭 `https://jipbab-note-app.vercel.app`은 Vercel Production deployment `dpl_Ff1Rqm7ovh1mSAuTKWwjvZAwbrkw` (`https://jipbab-note-3wxx4j5h1-youngbeens-projects.vercel.app`)을 가리키며 상태는 `READY`다. 배포 산출물은 GitHub `agent/sync-ux-release`의 `c7fbbbfd2698dec5741ad04e9432ddeee75b58b4`에서 분리한 깨끗한 detached worktree를 운영 환경으로 사전 빌드해 배포했다.
+- 운영 Vercel 프로젝트 `jipbab-note-app`에 `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED=true`를 추가했다. Supabase URL·anon key·server-only rate-limit HMAC은 기존 Production 설정을 유지했고 값은 문서나 로그에 노출하지 않았다.
+- 배포 전 같은 Chrome 세션에서 계란·두부 2개가 `동기화 대기`로 남는 현상을 재현했다. 배포 후 새로고침만으로 `클라우드 동기화 완료` 1개, `동기화 대기` 0개가 됐고 다시 새로고침해도 두 재료가 유지됐다. 증거 화면은 `/tmp/jipbab-production-sync-before.png`, `/tmp/jipbab-production-sync-fixed.png`다.
+- 운영 장보기 화면도 `클라우드 동기화 완료` 1개, `동기화 대기` 0개이며 Chrome console warning/error는 0건이다.
+- 운영 홈은 재료가 없어도 레시피 미리보기를 먼저 노출하고, 재료가 있으면 조건에 맞는 미리보기 CTA를 보여준다. `/recipe`는 `공개 승인 0개 · 미리보기 8개`와 8개 카드, 검색·빠른 필터를 표시하며 달걀죽 상세의 도구·재료·조리순서와 `아직 조리 승인 전이에요` 잠금 상태를 확인했다. 증거 화면은 `/tmp/jipbab-production-recipes-visible.png`, `/tmp/jipbab-production-recipe-list-ready.png`다.
+- 코드 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes, release security 4/4를 통과했다. 전체 `release:check`는 사람 실제 조리·초보자·식품안전·법무·이미지 권리 검수 0/20과 현재 모바일 제출 산출물 부재 때문에 계속 실패한다. 이번 배포는 미검수 레시피를 승인하지 않고 조리·장보기 연결을 잠근 제한된 웹 hotfix이며 전체 출시 승격이 아니다.
+- 남은 P0는 canonical GitHub와 Vercel Git 연결 통합, Phase 0 publication migration 및 과거 migration history 정리, Phase 5 사람 증거 20/20이다.
+
 ## 2026-07-15 레시피 미리보기·동기화 상태·운영 백업
 
 - `agent/sync-ux-release`의 `fcf34220448840c3f53d628755aefe717b6b6330`에서 공개 승인 레시피가 0개여도 자체 작성 레시피 8개를 `검수 중 미리보기`로 홈과 레시피 목록에 표시한다. 홈의 API 503 오류가 미리보기를 가리던 조건을 수정했고 하단 메뉴 수도 `0개`가 아닌 `8개`로 표시한다.
-- Vercel Git Preview `dpl_DnWA4rbBr4NpmSHda78yH3Sn2dty`는 `READY`다. Chrome에서 홈의 양파계란덮밥·김치볶음밥 카드, `메뉴 8개`, 미리보기 상세 진입을 확인했다. Production alias는 승격하지 않았다.
+- Vercel Git Preview `dpl_DnWA4rbBr4NpmSHda78yH3Sn2dty`는 `READY`다. Chrome에서 홈의 양파계란덮밥·김치볶음밥 카드, `메뉴 8개`, 미리보기 상세 진입을 확인했다. 이 시점에는 Production alias를 승격하지 않았으며, 이후 운영 웹 hotfix 상태는 위 최신 절을 따른다.
 - 로컬 전용 저장을 실제 Supabase 동기화 오류로 표시하던 문제를 수정했다. 냉장고·장보기는 `checking`, `local-only`, `synced`, `error`를 구분하고, 비로그인 상태에서는 `지금 이 기기에 저장했어요`, 원격 반영 완료 후에는 `클라우드 동기화 완료`를 표시한다.
 - Supabase Free 플랜에는 예약 백업이 없다. 운영 DB에는 마이그레이션 범위만 보호하는 비공개 `ops_backup` 스냅샷을 `20260715095212_backup_sync_domain_pre_signed_session_20260715`로 생성했다. 앱 역할의 schema/table privilege는 모두 0건이다.
 - 백업은 냉장고 51건, 장보기 18건, 가족 그룹 1건, 가족 구성원 2건, 계정 삭제 요청 21건, 요청 이벤트 18건과 관련 정책 36건, 함수 정의 8건, 기존 migration history 21건을 보존한다. 이 스냅샷은 마이그레이션 롤백용이며 전체 프로젝트 재해복구 백업은 아니다.
@@ -17,10 +27,10 @@ Updated: 2026-07-15 KST
 - 레시피 탐색 우선순위 개선은 `661c97489748e52c6fb4108d88d82c913dd31869`다. 미리보기 모드에서 실제로 적용되지 않던 상세 필터와 의미 없는 1/1 페이지네이션을 숨기고, `주간 식단`·`레시피 가져오기`를 8개 카드 아래 `더 활용하기`로 이동했다. 카드의 검수 배지·요약·시간·인분 글자 크기도 높였다.
 - Git Preview `dpl_D6NUcCjGCVuUJNRvh4Jkft3fmBRm` (`https://jipbab-note-ltixq8wbj-youngbeens-projects.vercel.app`)은 `READY`다. Chrome에서 전체 미리보기 8개, `두부` 검색 결과, `10분 이내` 3개, 버터간장계란밥 상세의 도구·재료·4단계 조리 설명을 확인했고 console log는 0건이다.
 - 최신 보안 게이트 복구는 `b81fbee8b0c9d80697089ce9b45eb67ed9307baf`다. pnpm 10이 폐기된 quick audit endpoint에서 HTTP 410을 받던 경로를 npm 공식 bulk advisory endpoint와 설치된 production dependency tree 기반 fail-closed 검사로 교체했다. 운영 의존성 107개를 실제 조회해 moderate 이상 advisory 0건, secret ignore, tracked secret 부재, SECURITY DEFINER 계약까지 4/4 통과했다.
-- 최신 검증은 unit 394/394, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. bulk response가 비정상 JSON·알 수 없는 severity·HTTP 오류를 반환하면 통과시키지 않으며 `--ignore-registry-errors`를 사용하지 않는다.
-- 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 현재도 Production alias는 승격하지 않았다.
+- 최신 검증은 unit 396/396, TypeScript, 변경 파일 ESLint, production build 38/38 routes가 통과했다. bulk response가 비정상 JSON·알 수 없는 severity·HTTP 오류를 반환하면 통과시키지 않으며 `--ignore-registry-errors`를 사용하지 않는다.
+- 동기화 체크포인트 당시 unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, 당시 release security, production build 38/38 routes를 통과했다. 이후 제한된 운영 웹 hotfix가 배포됐지만 전체 출시 승격은 계속 차단한다.
 - 잔여 보안 항목: Supabase advisor의 `app.current_device_id`, `app.is_permanent_user` search-path 경고 재검토, 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화가 남아 있다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
-- 실제 운영 별칭 `https://jipbab-note-app.vercel.app`은 별도 Vercel 프로젝트 `jipbab-note-app`의 과거 커밋 `a1b7e0f79d0e5004caac7b305e40feb3496c347d`를 계속 가리킨다. 현재 수정은 공식 `jipbab-note` Preview에서 검증됐으며, 두 프로젝트의 원본 통합과 Production 승격 승인 전에는 운영 앱에 반영됐다고 주장하지 않는다.
+- 실제 운영 별칭은 이제 별도 Vercel 프로젝트 `jipbab-note-app`의 hotfix deployment `dpl_Ff1Rqm7ovh1mSAuTKWwjvZAwbrkw`를 가리킨다. 런타임 코드는 `c7fbbbf`와 일치하도록 배포했지만 Vercel Git 연결 자체는 canonical 저장소와 아직 통합되지 않았으므로 재현성 P0는 계속 열린다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
