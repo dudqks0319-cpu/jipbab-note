@@ -1,6 +1,15 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-15 KST
+Updated: 2026-07-16 KST
+
+## 2026-07-16 API-005 레시피 장보기 병합 서버 경계
+
+- `POST /api/v1/shopping/items/from-recipe`를 추가했다. 서명된 Supabase 세션의 `recipeId`, `servings`, `selectedIngredientIds` 세 필드만 최대 8KB로 받고, 공개 승인된 v2 레시피와 편집자 검수 `servingVariants`에서 이름·수량·카테고리·출처를 서버가 만든다. 호출자가 이름·수량·사용자·기기·가족 범위를 지정할 수 없다.
+- 기존 장보기 조회와 쓰기는 검증된 `user.id`와 `family_group_id is null`의 개인 범위로 제한한다. 등록된 별칭은 같은 재료로 병합하고 호환 수량을 합치며, 구매 완료 항목은 미구매로 복원하고 출처를 중복 없이 보존한다. 새 항목은 사용자와 재료 identity의 안정적 UUID를 사용해 재시도가 중복 행을 만들지 않는다. 기존 `shopping_items` 스키마를 재사용해 migration은 추가하지 않았다.
+- 집중 장보기 계약 7개와 전체 단위 테스트 513/513, TypeScript, production build 42/42 경로, API v1 25/25, Phase 6 observability 16/16, CI-safe 19/19, release security 4/4가 통과했다. lint는 오류 0건이며 기존 생성 iOS 산출물·업로드 스크립트 경고 33건만 남았다. production dependency의 알려진 moderate 이상 취약점은 0건이고 새 의존성은 없다.
+- 실제 로컬 HTTP에서 무서명 POST는 `401 UNAUTHORIZED`, 9,000바이트 POST는 `413 INVALID_BODY`, PUT은 `405`를 반환했다. 401·413 응답의 `Cache-Control: no-store`, `X-Request-Id`, 본문 request ID 일치도 확인했다. 인증 성공 `200/201`, 별칭·수량 실제 병합, 교차 사용자 격리는 운영 DB를 건드리지 않고 migration history·백업 확인 후 격리 staging에서 검증한다.
+- 구현 커밋 `0ccbd2decd09de3ef2d474fd2acd1c8e94f2d1e3`을 `origin/agent/phase6-observability-analytics`에 push했다. exact SHA의 깨끗한 detached worktree에서 새 Vercel Preview를 요청했지만 계정의 무료 배포 일일 한도 100회를 초과해 Vercel이 배포 생성 자체를 거부했다. 같은 SHA의 자동 Preview도 생성되지 않았음을 확인했으며 Production·alias·DB는 변경하지 않았다.
+- 프런트는 기존 local-first 선택·병합 경로를 그대로 유지한다. 잔여 작업은 Owner `FullStackDev+DBA+QA`, due `before_API005_client_cutover` — Vercel 일일 한도 해제 후 exact SHA Preview를 만들고, 격리 staging의 서명 익명·영구 사용자 `200/201`, 무서명 `401`, 잘못된 선택 `400`, 교차 사용자 차단과 수량 병합을 확인한 뒤에만 API 호출로 전환한다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`는 수정·stage하지 않았다.
 
 ## 2026-07-15 FE-014 로그인 조리 진행 서버 저장 기반
 

@@ -2,7 +2,16 @@
 
 ## 한 줄 상태
 
-FE-014 조리 진행 서버 저장 기반은 `61b90176fa2fd6e3f45c0d31984ad948419e60ad`로 GitHub에 푸시했습니다. Vercel Preview `dpl_9bFAAwYHVVCGdoeRrMu1UWCNjyjP`는 exact SHA의 깨끗한 detached worktree를 compile·TypeScript·41/41 route로 빌드해 `READY`이고 루트는 HTTP 200입니다. 진행 API는 운영 DB 미적용 경계에서 예상된 503·no-store·Retry-After·request ID를 반환합니다. Production은 승격하지 않았고 staging 인증 응답·프런트 병합, DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+API-005 레시피 장보기 병합 서버 경계는 `0ccbd2decd09de3ef2d474fd2acd1c8e94f2d1e3`로 GitHub에 푸시했습니다. 공개 승인 레시피의 선택 재료와 검수 인분값만 개인 장보기에 추가·병합하며 unit 513/513, build 42/42, API v1 25/25, CI-safe 19/19, 보안 4/4를 통과했습니다. 새 Vercel Preview는 무료 배포 일일 한도 100회 초과로 생성되지 않았고 Production은 변경하지 않았습니다. 격리 staging 정상 저장·교차 사용자 격리, DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+
+## 2026-07-16 API-005 레시피 장보기 병합 서버 경계
+
+- GitHub: `0ccbd2decd09de3ef2d474fd2acd1c8e94f2d1e3` pushed to `agent/phase6-observability-analytics`
+- 구현: 서명 세션, exact 3-field·8KB 입력, 공개 승인 레시피·검수 인분 수량의 서버 파생, 개인 사용자 범위, 별칭·수량·출처 병합, 안정적 UUID, 새 migration 없음
+- 검증: 장보기 집중 계약 7/7, unit 513/513, TypeScript pass, lint 오류 0, production build 42/42 routes, API v1 25/25, observability 16/16, CI-safe 19/19, release security 4/4
+- 로컬 HTTP: 무인증 POST 401, 9,000바이트 POST 413, PUT 405, 401·413 no-store·request ID 확인
+- Vercel: clean exact SHA 업로드가 계정 무료 배포 100/day 한도에서 거부됨. 새 deployment 없음, 자동 Preview 없음, Production·alias 변경 없음
+- 범위 경계: 기존 local-first UI 유지. quota 해제 후 Preview와 staging 서명 사용자 200/201·교차 사용자 차단·실제 병합을 검증하기 전에는 서버 API로 전환하지 않음
 
 ## 2026-07-15 FE-014 조리 진행 서버 저장 기반
 
