@@ -2,6 +2,16 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-008 검수된 인분 변경
+
+- 인분 선택은 재료 이름이나 일괄 배수 계산으로 만들지 않는다. DB/API가 편집 검수한 인분별 정확한 재료 값·표시 문자열·단위, 도구 안내, 시간 안내를 제공하며 기본 인분을 포함한 2~20 범위의 완전하고 고유한 선택지만 허용한다. 누락·중복·부분 데이터, 기본 재료와 다른 기본 인분 값은 목록과 상세에서 모두 fail-closed한다.
+- 상세 화면의 단일 인분 상태가 재료, 장보기 도우미, 도구·시간 안내, 조리 모드를 함께 바꾼다. 조리 진행은 레시피와 인분 조합별로 분리하고 기존 진행상태는 기본 인분에서만 안전하게 복원한다. `달걀`·`계란`처럼 허용된 별칭은 장보기에서 같은 재료로 정규화하되 API의 검수된 수량은 그대로 표시한다.
+- 인앱 브라우저의 실제 `/recipe/[id]`를 390x844에서 확인했다. 4인분에서 24cm 팬·큰 볼, 완료 신호를 기준으로 2~3분 추가, 달걀 4개·양파 1/2개·소금 1/2작은술과 장보기 수량이 함께 바뀌었다. 4인분 진행 33%는 2인분에서 0%였고 다시 4인분으로 돌아오면 33%가 복원됐다. 검수 데이터가 잘못된 상세는 제목·출처·선택기를 노출하지 않고 일반화된 이용 불가 화면만 표시했다. 두 경로 모두 가로 넘침 0, 보이는 44px 미만 컨트롤 0개, console error/warning 0건이다.
+- 전체 단위 테스트 453/453, TypeScript, production build 40/40 경로, 접근성 계약 229개 상호작용 요소·8개 계약·실패 0건, API v1 계약 20/20, Supabase 계약 147/147, 롤백 계약 15/15, 통합·콘텐츠 검사가 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore와 추적된 secret 부재, `SECURITY DEFINER` 검사를 통과했다. 기존 release script의 오래된 audit endpoint는 HTTP 410으로 종료되어 최신 `pnpm@11.13.0 audit --prod --audit-level moderate`로 재검사했고 moderate/high/critical 0건, 기존 optional `@babel/core` 경로의 low 1건을 확인했다. 새 의존성이나 lockfile 변경은 없다.
+- 구현 커밋 `2ddc073b1cb332f0ae8a250db648d75be93ddcb4`와 Vercel 입력 축소 커밋 `6460397862503b0b785cf5e2aa26b066c3397d3c`를 `origin/agent/phase6-observability-analytics`에 push했다. 깨끗한 detached worktree의 `6460397`을 Vercel Preview `dpl_GR9ZKPoBFZCmx4Tx2gGiDTWcApxZ` (`https://jipbab-note-eh4xp5003-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 메타데이터의 `sourceCommit`·`sourceBranch`·`feature=FE-008`이 일치하고 `gitDirty=0`이며 `/`, `/recipe`, `/recipe/[id]`는 HTTP 200이다. 보존 중인 사용자 로컬 파일 때문에 `gitDirty=1`이었던 첫 Preview `dpl_BUYQiiXwfYpyrGLbVCfDYJw5nD6u`는 출시 기준에서 제외한다.
+- Preview의 목록 API는 운영 DB migration과 검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. migration·검수 데이터·앱은 함께 전환해야 하며 Production 승격은 수행하지 않았다. 잔여 리스크는 Owner `FullStackDev+DBA`, due `before_serving_variant_production_cutover` — staging에서 migration·검수 데이터·앱 동시 전환과 rollback 확인. Owner `FullStackDev`, due `before_dependency_maintenance_release` — low Babel advisory 재검토. 실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다.
+
 ## 2026-07-15 FE-007 레시피 상세 실제 데이터 계약
 
 - 상세 화면은 API v1 응답을 런타임 스키마로 먼저 검증하고, 도구·계량 재료·단계별 불 세기·안전·복구·보관·재가열·출처 제목·귀속·라이선스가 모두 있는 발행 가능 레시피만 표시한다. 필수 필드가 하나라도 비면 일반화된 이용 불가 화면으로 fail-closed한다.
