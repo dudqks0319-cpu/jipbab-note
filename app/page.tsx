@@ -212,11 +212,12 @@ export default function HomePage() {
   const isLoading = ingredientsLoading || recipesLoading
   const isEmptyFridge = activeDisplayIngredients.length === 0
   const hasPublishedRecipes = beginnerHomeRecipeCatalog.length > 0
+  const hasRecipePreview = previewRecipes.length > 0
   const homeRecoveryKind: 'ingredients' | 'recipes' | null =
     !isAppStoreDemo && !isLoading
       ? ingredientsError && isEmptyFridge
         ? 'ingredients'
-        : recipesError && !hasPublishedRecipes
+        : recipesError && !hasPublishedRecipes && !hasRecipePreview
           ? 'recipes'
           : null
       : null
