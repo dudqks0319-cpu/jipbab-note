@@ -61,7 +61,7 @@ test("shopping page exposes direct add, quick chips, duplicate merge, and fridge
   assert.match(pageSource, /INGREDIENT_STORAGE_TYPES/);
   assert.match(pageSource, /EXPIRY_PRESETS/);
   assert.match(hookSource, /mergeDuplicates/);
-  assert.match(hookSource, /mergeQuantityDisplay/);
+  assert.match(hookSource, /buildMergedShoppingItemFields/);
 });
 
 test("shopping page exposes category catalog adds and purchase links", () => {
@@ -87,14 +87,18 @@ test("recipe shopping assistant supports scoped and selective missing ingredient
   const shoppingPageSource = readFileSync(new URL("../app/shopping/page.tsx", import.meta.url), "utf8");
 
   assert.match(assistantSource, /useFamilyShare/);
-  assert.match(assistantSource, /selectedMissingNames/);
+  assert.match(assistantSource, /selectedMissingKeys/);
   assert.match(assistantSource, /requiredIngredientDetails/);
   assert.match(assistantSource, /matchRecipeIngredientsToInventory/);
+  assert.match(assistantSource, /getShoppingIngredientIdentity/);
   assert.match(assistantSource, /required !== false/);
+  assert.match(assistantSource, /aria-pressed/);
+  assert.match(assistantSource, /mergeDuplicates: true/);
   assert.match(assistantSource, /scope: activeScope/);
   assert.match(assistantSource, /familyGroupId/);
   assert.match(assistantSource, /가족 장보기/);
-  assert.match(assistantSource, /이미 담긴 항목/);
+  assert.match(assistantSource, /수량 합치기/);
+  assert.match(assistantSource, /장보기 목록 확인/);
   assert.match(assistantSource, /필수 부족 재료/);
   assert.match(assistantSource, /검수된 대체 재료/);
   assert.match(assistantSource, /판정 보류/);

@@ -1,8 +1,9 @@
 // 이 파일은 레시피 재료와 내 냉장고/장보기 상태를 연결하는 보조 UI입니다.
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, RefreshCw, ShoppingCart } from "lucide-react";
+import { AlertCircle, CheckCircle2, Circle, RefreshCw, ShoppingCart } from "lucide-react";
 
 import { useFamilyShare } from "@/hooks/useFamilyShare";
 import { useIngredients } from "@/hooks/useIngredients";
@@ -13,6 +14,7 @@ import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
 import { normalizeKoreanIngredient } from "@/lib/matching";
 import { matchRecipeIngredientsToInventory } from "@/lib/recipe-ingredient-match-status";
+import { getShoppingIngredientIdentity } from "@/lib/shopping-item-utils";
 import { getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
 
@@ -61,9 +63,10 @@ export default function RecipeShoppingAssistant({
     error: shoppingError,
     listItems,
   } = useShopping({ scope: activeScope, familyGroupId });
-  const [selectedMissingNames, setSelectedMissingNames] = useState<Set<string>>(new Set());
+  const [selectedMissingKeys, setSelectedMissingKeys] = useState<Set<string>>(new Set());
   const [statusMessage, setStatusMessage] = useState("");
   const [actionError, setActionError] = useState("");
+  const [showShoppingLink, setShowShoppingLink] = useState(false);
   const partnerLinks = usePartnerLinks();
   const activeIngredients = useMemo(
     () => ingredients.filter((item) => !item.consumedAt && !item.discardedAt),
@@ -78,10 +81,16 @@ export default function RecipeShoppingAssistant({
     () => new Map(activeIngredients.map((item) => [normalizeKoreanIngredient(item.name), item.category])),
     [activeIngredients],
   );
-  const shoppingNames = useMemo(
-    () => new Set(items.map((item) => normalizeKoreanIngredient(item.name))),
-    [items],
-  );
+  const shoppingByIdentity = useMemo(() => {
+    const next = new Map<string, (typeof items)[number]>();
+    for (const item of items) {
+      const identity = getShoppingIngredientIdentity(item.name);
+      if (!next.has(identity)) {
+        next.set(identity, item);
+      }
+    }
+    return next;
+  }, [items]);
   const requiredIngredientDetails = useMemo(() => {
     const requiredDetails = ingredientDetails.filter(
       (item) => item.required !== false && item.name.trim(),
@@ -103,33 +112,62 @@ export default function RecipeShoppingAssistant({
   );
   const directMatches = matches.filter((item) => item.status === "exact" || item.status === "alias");
   const substituteMatches = matches.filter((item) => item.status === "substitute");
-  const missingMatches = matches.filter((item) => item.status === "missing");
+  const missingMatches = useMemo(
+    () => matches.filter((item) => item.status === "missing"),
+    [matches],
+  );
   const unknownMatches = matches.filter((item) => item.status === "unknown");
-  const missingIngredientNames = missingMatches.map((item) => item.recipeIngredient.name);
+  const missingIngredientNames = useMemo(
+    () => missingMatches.map((item) => item.recipeIngredient.name),
+    [missingMatches],
+  );
+
+  const missingChoices = useMemo(
+    () =>
+      missingMatches.map((match, index) => {
+        const ingredient = match.recipeIngredient.name;
+        const identity = getShoppingIngredientIdentity(ingredient);
+        const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
+        return {
+          key: match.recipeIngredient.id ?? `${identity}-${index}`,
+          name: ingredient,
+          quantity: detail?.display || null,
+          category: inferCategory(ingredient, ownedCategories),
+          substitute: detail?.substitute ?? null,
+          existingItem: shoppingByIdentity.get(identity) ?? null,
+        };
+      }),
+    [detailByName, missingMatches, ownedCategories, shoppingByIdentity],
+  );
 
   const missingDrafts = useMemo(
     () =>
-      missingIngredientNames
-        .filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient)))
-        .filter((ingredient) => selectedMissingNames.has(ingredient))
-        .map((ingredient) => ({
-          name: ingredient,
-          quantity: detailByName.get(normalizeKoreanIngredient(ingredient))?.display ?? null,
-          category: inferCategory(ingredient, ownedCategories),
-          familyGroupId,
+      missingChoices
+        .filter((choice) => selectedMissingKeys.has(choice.key))
+        .map((choice) => ({
+          name: choice.existingItem?.name ?? choice.name,
+          quantity: choice.quantity,
+          category: choice.category,
           sourceRecipeId: recipeId,
           sourceRecipeName: recipeName,
         })),
-    [detailByName, familyGroupId, missingIngredientNames, ownedCategories, recipeId, recipeName, selectedMissingNames, shoppingNames],
+    [missingChoices, recipeId, recipeName, selectedMissingKeys],
   );
 
-  const selectableMissingIngredients = useMemo(
-    () => missingIngredientNames.filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient))),
-    [missingIngredientNames, shoppingNames],
+  const defaultMissingSelectionKey = useMemo(
+    () => missingChoices
+      .filter((choice) => !choice.existingItem)
+      .map((choice) => choice.key)
+      .join("\u001f"),
+    [missingChoices],
   );
-  const selectableMissingIngredientKey = useMemo(
-    () => selectableMissingIngredients.join("\u001f"),
-    [selectableMissingIngredients],
+  const selectedNewCount = useMemo(
+    () => missingChoices.filter((choice) => selectedMissingKeys.has(choice.key) && !choice.existingItem).length,
+    [missingChoices, selectedMissingKeys],
+  );
+  const selectedMergeCount = useMemo(
+    () => missingChoices.filter((choice) => selectedMissingKeys.has(choice.key) && choice.existingItem).length,
+    [missingChoices, selectedMissingKeys],
   );
   const affiliateSuggestions = useMemo(
     () =>
@@ -157,56 +195,88 @@ export default function RecipeShoppingAssistant({
   );
 
   useEffect(() => {
-    const nextNames = selectableMissingIngredientKey
-      ? selectableMissingIngredientKey.split("\u001f")
+    const nextKeys = defaultMissingSelectionKey
+      ? defaultMissingSelectionKey.split("\u001f")
       : [];
-    setSelectedMissingNames((prev) => {
+    setSelectedMissingKeys((prev) => {
       if (
-        prev.size === nextNames.length
-        && nextNames.every((ingredient) => prev.has(ingredient))
+        prev.size === nextKeys.length
+        && nextKeys.every((key) => prev.has(key))
       ) {
         return prev;
       }
-      return new Set(nextNames);
+      return new Set(nextKeys);
     });
+  }, [activeScope, defaultMissingSelectionKey]);
+
+  useEffect(() => {
     setStatusMessage("");
     setActionError("");
-  }, [activeScope, selectableMissingIngredientKey]);
+    setShowShoppingLink(false);
+  }, [activeScope, recipeId]);
 
-  const toggleMissingIngredient = (ingredient: string) => {
-    setSelectedMissingNames((prev) => {
+  const toggleMissingIngredient = (key: string) => {
+    setStatusMessage("");
+    setActionError("");
+    setShowShoppingLink(false);
+    setSelectedMissingKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(ingredient)) {
-        next.delete(ingredient);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(ingredient);
+        next.add(key);
       }
       return next;
     });
   };
 
+  const selectOnlyNewIngredients = () => {
+    setStatusMessage("");
+    setActionError("");
+    setShowShoppingLink(false);
+    setSelectedMissingKeys(new Set(
+      missingChoices.filter((choice) => !choice.existingItem).map((choice) => choice.key),
+    ));
+  };
+
+  const clearMissingSelection = () => {
+    setStatusMessage("");
+    setActionError("");
+    setShowShoppingLink(false);
+    setSelectedMissingKeys(new Set());
+  };
+
   const addSelectedMissingIngredients = async () => {
     setStatusMessage("");
     setActionError("");
+    setShowShoppingLink(false);
     if (activeScope === "family" && !group) {
       setActionError("가족 냉장고에 참여한 뒤 가족 장보기에 추가할 수 있어요.");
       return;
     }
     if (missingDrafts.length === 0) {
-      setStatusMessage("추가할 새 부족 재료가 없습니다.");
+      setStatusMessage("추가하거나 수량을 합칠 재료를 선택해 주세요.");
       return;
     }
 
     try {
-      const result = await addItems(missingDrafts);
+      const result = await addItems(missingDrafts, { mergeDuplicates: true });
       const targetLabel = activeScope === "family" ? "가족 장보기" : "내 장보기";
-      if (result.addedCount > 0) {
+      if (result.addedCount > 0 && result.mergedCount > 0) {
+        setStatusMessage(
+          `${targetLabel}에 ${result.addedCount}개를 추가하고 ${result.mergedCount}개의 수량을 합쳤어요.`,
+        );
+      } else if (result.addedCount > 0) {
         setStatusMessage(`${targetLabel}에 ${result.addedCount}개를 추가했어요.`);
+      } else if (result.mergedCount > 0) {
+        setStatusMessage(`${targetLabel} ${result.mergedCount}개의 수량을 합쳤어요.`);
       } else if (result.skippedDuplicates.length > 0) {
-        setStatusMessage("이미 장보기에 있는 재료는 다시 추가하지 않았어요.");
+        setStatusMessage("중복된 재료는 건너뛰었어요. 목록을 새로 확인해 주세요.");
       } else {
-        setStatusMessage("추가할 새 부족 재료가 없습니다.");
+        setStatusMessage("변경할 장보기 항목이 없습니다.");
       }
+      setShowShoppingLink(result.addedCount + result.mergedCount > 0);
+      setSelectedMissingKeys(new Set());
     } catch {
       setActionError("장보기에 추가하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
@@ -216,6 +286,15 @@ export default function RecipeShoppingAssistant({
     void listIngredients();
     void listItems();
   };
+
+  const selectedActionCount = selectedNewCount + selectedMergeCount;
+  const actionButtonLabel = selectedActionCount === 0
+    ? "추가할 재료를 선택하세요"
+    : [
+        selectedNewCount > 0 ? `${selectedNewCount}개 추가` : null,
+        selectedMergeCount > 0 ? `${selectedMergeCount}개 수량 합치기` : null,
+      ].filter(Boolean).join(" · ");
+  const shoppingHref = activeScope === "family" ? "/shopping?scope=family" : "/shopping";
 
   if (ingredientList.length === 0 && ingredientDetails.length === 0) {
     return null;
@@ -271,7 +350,10 @@ export default function RecipeShoppingAssistant({
         ) : null}
 
         {ingredientError || shoppingError || actionError ? (
-          <div className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3">
+          <div
+            role="alert"
+            className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3"
+          >
             <div className="flex items-start gap-2">
               <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#d94d19]" />
               <p className="text-[12px] font-bold leading-5 text-[#7d3f18]">
@@ -292,9 +374,20 @@ export default function RecipeShoppingAssistant({
         ) : null}
 
         {statusMessage ? (
-          <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
-            {statusMessage}
-          </p>
+          <div
+            role="status"
+            className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[12px] font-bold text-[#3d7b38]"
+          >
+            <p>{statusMessage}</p>
+            {showShoppingLink ? (
+              <Link
+                href={shoppingHref}
+                className="mt-2 inline-flex min-h-11 items-center rounded-full bg-[#3d7b38] px-4 text-[11px] font-black text-white"
+              >
+                장보기 목록 확인
+              </Link>
+            ) : null}
+          </div>
         ) : null}
 
         <div className="mt-4 grid grid-cols-2 gap-2" aria-live="polite">
@@ -392,38 +485,75 @@ export default function RecipeShoppingAssistant({
         {missingMatches.length > 0 ? (
           <div className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3">
             <p className="text-sm font-black text-[#2f2117]">
-              필수 부족 재료 {missingMatches.length}개를 {activeScope === "family" ? "가족 장보기" : "내 장보기"}에 추가할 수 있어요.
+              필수 부족 재료 {missingMatches.length}개를 {activeScope === "family" ? "가족 장보기" : "내 장보기"}에 반영할 수 있어요.
             </p>
             <p className="mt-1 text-xs text-[#8f7f70]">
-              선택 재료는 제외하고, 이미 담긴 항목은 다시 추가하지 않습니다.
+              새 재료는 추가하고, 이미 담긴 같은 재료는 선택할 때만 기존 수량에 합칩니다.
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {missingIngredientNames.map((ingredient) => {
-                const alreadyInShopping = shoppingNames.has(normalizeKoreanIngredient(ingredient));
-                const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
-                const checked = selectedMissingNames.has(ingredient) && !alreadyInShopping;
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={selectOnlyNewIngredients}
+                className="min-h-11 rounded-[12px] border border-[#eadcc9] bg-white px-3 text-[11px] font-black text-[#6b5949]"
+              >
+                새 재료만 선택
+              </button>
+              <button
+                type="button"
+                onClick={clearMissingSelection}
+                className="min-h-11 rounded-[12px] border border-[#eadcc9] bg-white px-3 text-[11px] font-black text-[#6b5949]"
+              >
+                모두 해제
+              </button>
+            </div>
+            <div className="mt-3 space-y-2">
+              {missingChoices.map((choice) => {
+                const checked = selectedMissingKeys.has(choice.key);
+                const actionLabel = choice.existingItem ? "수량 합치기" : "새 항목";
                 return (
                   <button
-                    key={ingredient}
+                    key={choice.key}
                     type="button"
-                    onClick={() => toggleMissingIngredient(ingredient)}
-                    disabled={alreadyInShopping}
-                    className={`min-h-11 max-w-full rounded-[14px] border px-3 py-2 text-left text-[12px] font-black ${
+                    aria-pressed={checked}
+                    onClick={() => toggleMissingIngredient(choice.key)}
+                    className={`min-h-[72px] w-full rounded-[14px] border px-3 py-3 text-left ${
                       checked
-                        ? "border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]"
-                        : "border-[#eadcc9] bg-white text-[#7d6d5f] disabled:bg-[#f4ece3] disabled:text-[#b5a493]"
+                        ? "border-[#ea5a1f] bg-[#fff0e4] shadow-[0_3px_10px_rgba(234,90,31,0.08)]"
+                        : "border-[#eadcc9] bg-white"
                     }`}
                   >
-                    <span className="block break-keep leading-4">
-                      {ingredient}
-                      {detail?.display ? ` ${detail.display}` : ""}
-                      {alreadyInShopping ? " · 담김" : ""}
-                    </span>
-                    {detail?.substitute ? (
-                      <span className="mt-0.5 block break-keep text-[10px] font-bold opacity-80">
-                        검수 정보: {detail.substitute}
+                    <span className="flex items-start gap-3">
+                      {checked ? (
+                        <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#d94d19]" aria-hidden="true" />
+                      ) : (
+                        <Circle size={20} className="mt-0.5 shrink-0 text-[#9d8b79]" aria-hidden="true" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="break-keep text-[13px] font-black text-[#2f2117]">
+                            {choice.name}{choice.quantity ? ` ${choice.quantity}` : ""}
+                          </span>
+                          <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
+                            choice.existingItem
+                              ? "bg-[#f2f0ff] text-[#62539b]"
+                              : "bg-[#eef6e4] text-[#3d7b38]"
+                          }`}>
+                            {actionLabel}
+                          </span>
+                        </span>
+                        <span className={`mt-1 block text-[11px] font-bold ${checked ? "text-[#d94d19]" : "text-[#7d6d5f]"}`}>
+                          {checked ? "선택됨" : "선택 안 됨"}
+                          {choice.existingItem
+                            ? ` · 현재 ${choice.existingItem.name}${choice.existingItem.quantity ? ` ${choice.existingItem.quantity}` : ""}`
+                            : " · 장보기에 새로 추가"}
+                        </span>
+                        {choice.substitute ? (
+                          <span className="mt-1 block break-keep text-[10px] font-bold text-[#8f7f70]">
+                            검수 정보: {choice.substitute}
+                          </span>
+                        ) : null}
                       </span>
-                    ) : null}
+                    </span>
                   </button>
                 );
               })}
@@ -433,11 +563,11 @@ export default function RecipeShoppingAssistant({
               onClick={() => {
                 void addSelectedMissingIngredients();
               }}
-              disabled={missingDrafts.length === 0 || shoppingLoading}
+              disabled={selectedActionCount === 0 || shoppingLoading}
               className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 py-3 text-sm font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)] disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
             >
               <ShoppingCart size={16} />
-              {missingDrafts.length === 0 ? "선택할 새 재료 없음" : `${missingDrafts.length}개 장보기에 추가`}
+              {shoppingLoading ? "장보기에 반영 중..." : actionButtonLabel}
             </button>
             {affiliateSuggestions.length > 0 ? (
               <div className="mt-4 space-y-3">

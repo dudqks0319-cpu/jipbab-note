@@ -20,6 +20,10 @@ import {
   type LocalShoppingItem,
   type PendingSyncAction,
 } from "@/lib/local-db/schema";
+import {
+  buildMergedShoppingItemFields,
+  getShoppingIngredientIdentity,
+} from "@/lib/shopping-item-utils";
 import { syncShoppingWithSupabase } from "@/lib/sync/shopping-sync-service";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
 import type { ShoppingItem, ShoppingItemDraft } from "@/types";
@@ -116,48 +120,12 @@ function makeError(message: string, source: ShoppingQuerySource): ShoppingQueryE
   return { message, source };
 }
 
-function normalizeShoppingName(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, "");
-}
-
-function formatMergedNumber(value: number): string {
-  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));
-}
-
-function mergeQuantityDisplay(currentQuantity: string | null, nextQuantity: string | null): string | null {
-  if (!nextQuantity) {
-    return currentQuantity;
-  }
-  if (!currentQuantity) {
-    return nextQuantity;
-  }
-
-  const current = currentQuantity.trim().match(/^(\d+(?:\.\d+)?)\s*(\S+)$/);
-  const next = nextQuantity.trim().match(/^(\d+(?:\.\d+)?)\s*(\S+)$/);
-  if (current && next && current[2] === next[2]) {
-    return `${formatMergedNumber(Number(current[1]) + Number(next[1]))}${current[2]}`;
-  }
-
-  if (currentQuantity.includes(nextQuantity)) {
-    return currentQuantity;
-  }
-  return `${currentQuantity} + ${nextQuantity}`;
-}
-
-function mergeSourceDisplay(currentValue: string | null, nextValue: string | null): string | null {
-  const parts = [currentValue, nextValue].filter((item): item is string => Boolean(item?.trim()));
-  return Array.from(new Set(parts)).join(" · ") || null;
-}
-
 function mergeItemWithDraft(item: LocalShoppingItem, draft: ShoppingItemDraft): LocalShoppingItem {
   const normalized = normalizeDraft(draft);
   const syncAction: PendingSyncAction = item.syncStatus === "pending_create" ? "create" : "update";
   return {
     ...item,
-    quantity: mergeQuantityDisplay(item.quantity, normalized.quantity ?? null),
-    category: item.category ?? normalized.category ?? null,
-    sourceRecipeId: mergeSourceDisplay(item.sourceRecipeId, normalized.sourceRecipeId ?? null),
-    sourceRecipeName: mergeSourceDisplay(item.sourceRecipeName, normalized.sourceRecipeName ?? null),
+    ...buildMergedShoppingItemFields(item, normalized),
     deletedAt: null,
     syncStatus: nextShoppingSyncStatus(item.syncStatus, syncAction),
     updatedAt: new Date().toISOString(),
@@ -258,7 +226,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
 
       for (const draft of cleanedDrafts) {
         const existingIndex = nextItems.findIndex(
-          (item) => normalizeShoppingName(item.name) === normalizeShoppingName(draft.name),
+          (item) => getShoppingIngredientIdentity(item.name) === getShoppingIngredientIdentity(draft.name),
         );
 
         if (existingIndex >= 0) {
