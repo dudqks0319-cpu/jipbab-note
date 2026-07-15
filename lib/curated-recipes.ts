@@ -512,7 +512,7 @@ function releaseRecipe(draft: ReleaseRecipeDraft): CuratedRecipe {
     hashTag: "#초보가능 #집밥노트 #실패복구",
     ingredientList: draft.ingredients.map(([name]) => name),
     ingredientDetails: draft.ingredients.map(([name, display, beginnerNote, prepNote, required]) =>
-      ingredient(name, display, beginnerNote, prepNote, required),
+      ingredient(name, display, beginnerNote, prepNote, required ?? true),
     ),
     trustLabel: draft.trustLabel,
     featuredReason: draft.featuredReason,
@@ -1387,7 +1387,8 @@ function beginnerRecipeToCurated(recipe: BeginnerRecipe): CuratedRecipe {
         ingredientItem.name,
         ingredientItem.amount,
         ingredientItem.beginnerNote,
-        ingredientItem.required ? "필수 재료입니다." : "있으면 더 좋아요.",
+        undefined,
+        ingredientItem.required,
       ),
     ).map((ingredientItem, index) => ({
       ...ingredientItem,
@@ -4241,6 +4242,10 @@ function normalizeCuratedRecipeForApp(recipe: CuratedRecipe): CuratedRecipe {
   const safety = recipe.safety ?? JIPBAB_ORIGINAL_SAFETY;
   return {
     ...recipe,
+    ingredientDetails: recipe.ingredientDetails?.map((ingredientItem) => ({
+      ...ingredientItem,
+      required: ingredientItem.required ?? true,
+    })),
     source,
     safety: {
       ...safety,

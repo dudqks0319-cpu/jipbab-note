@@ -186,11 +186,22 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           {ingredientDetails.map((ingredient) => (
             <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-4">
               <div className="min-w-0">
-                <p className="break-keep text-[18px] font-bold leading-7 text-[#303030]">
-                  {ingredient.name}
-                  {ingredient.required === false ? <span className="ml-2 text-xs text-[#8d8177]">선택</span> : null}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-keep text-[18px] font-bold leading-7 text-[#303030]">{ingredient.name}</p>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[11px] font-black ${
+                      ingredient.required === false
+                        ? "bg-[#f1eee9] text-[#74695f]"
+                        : "bg-[#eef6df] text-[#4f8740]"
+                    }`}
+                  >
+                    {ingredient.required === false ? "선택 재료" : "필수 재료"}
+                  </span>
+                </div>
                 {ingredient.prepNote ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p> : null}
+                {ingredient.beginnerNote && ingredient.beginnerNote !== ingredient.prepNote ? (
+                  <p className="mt-1 break-keep text-[13px] font-semibold leading-5 text-[#6a625a]">준비 팁: {ingredient.beginnerNote}</p>
+                ) : null}
                 {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
               </div>
               <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">{ingredient.display}</span>

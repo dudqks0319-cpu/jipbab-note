@@ -19,6 +19,20 @@ test("preview catalog exposes only original structured recipes with local images
   }
 });
 
+test("preview ingredient metadata keeps required state separate from preparation guidance", () => {
+  for (const recipe of RECIPE_PREVIEW_CATALOG) {
+    for (const ingredient of recipe.ingredientDetails ?? []) {
+      assert.equal(typeof ingredient.required, "boolean", `${recipe.name}: ${ingredient.name}`);
+      assert.ok(ingredient.beginnerNote, `${recipe.name}: ${ingredient.name}`);
+      assert.doesNotMatch(
+        ingredient.prepNote ?? "",
+        /필수 재료입니다|있으면 더 좋아요/,
+        `${recipe.name}: ${ingredient.name}`,
+      );
+    }
+  }
+});
+
 test("preview surface is explicit and cannot start cooking or shopping", () => {
   const home = readFileSync("app/page.tsx", "utf8");
   const list = readFileSync("app/recipe/page.tsx", "utf8");
@@ -29,6 +43,10 @@ test("preview surface is explicit and cannot start cooking or shopping", () => {
   assert.match(list, /\/recipe\/preview\//);
   assert.match(detail, /검수 중 미리보기/);
   assert.match(detail, /아직 조리 승인 전이에요/);
+  assert.match(detail, /필수 재료/);
+  assert.match(detail, /선택 재료/);
+  assert.match(detail, /준비 팁:/);
+  assert.match(detail, /대체:/);
   assert.doesNotMatch(detail, /RecipeCookMode|RecipeShoppingAssistant|RecipeFavoriteButton/);
 });
 

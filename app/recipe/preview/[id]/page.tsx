@@ -102,14 +102,31 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
         <h2 className="border-b-2 border-[#2d2d2d] pb-3 text-[25px] font-black">재료</h2>
         <ul className="divide-y divide-[#ededed]">
           {ingredients.map((ingredient) => (
-            <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-4">
-              <div>
-                <p className="text-[17px] font-bold">{ingredient.name}</p>
+            <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-4">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[17px] font-bold">{ingredient.name}</p>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[11px] font-black ${
+                      ingredient.required === false
+                        ? "bg-[#f1eee9] text-[#74695f]"
+                        : "bg-[#eef6df] text-[#4f8740]"
+                    }`}
+                  >
+                    {ingredient.required === false ? "선택 재료" : "필수 재료"}
+                  </span>
+                </div>
                 {ingredient.prepNote ? (
                   <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p>
                 ) : null}
+                {ingredient.beginnerNote && ingredient.beginnerNote !== ingredient.prepNote ? (
+                  <p className="mt-1 break-keep text-[13px] font-semibold leading-5 text-[#6a625a]">준비 팁: {ingredient.beginnerNote}</p>
+                ) : null}
+                {ingredient.substitute ? (
+                  <p className="mt-1 break-keep text-[13px] font-semibold leading-5 text-[#4f8740]">대체: {ingredient.substitute}</p>
+                ) : null}
               </div>
-              <span className="text-right text-[16px] font-bold">{ingredient.display}</span>
+              <span className="break-keep text-right text-[16px] font-bold">{ingredient.display}</span>
             </li>
           ))}
         </ul>

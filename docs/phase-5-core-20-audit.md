@@ -20,22 +20,22 @@
 
 | 순서 | 계획 메뉴 | 선택 메뉴 | 로컬 ID | 대체 사유 | 자동 점수 | 이미지 | 하드 게이트 |
 |---:|---|---|---|---|---:|---|---|
-| 1 | 간장계란밥 | 간장계란밥 | beginner-recipe-001 | - | 92 | local_bitmap_present | blocked |
+| 1 | 간장계란밥 | 간장계란밥 | beginner-recipe-001 | - | 95 | local_bitmap_present | blocked |
 | 2 | 계란볶음밥 | 햄야채볶음밥 | beginner-recipe-016 | 정확한 제목 후보가 없어 계란을 포함한 초보자용 볶음밥으로 대체 | 94 | local_bitmap_present | blocked |
 | 3 | 참치김치볶음밥 | 참치김치볶음밥 | beginner-recipe-014 | - | 95 | local_bitmap_present | blocked |
-| 4 | 김치볶음밥 | 김치볶음밥 | beginner-recipe-013 | - | 91 | local_bitmap_present | blocked |
+| 4 | 김치볶음밥 | 김치볶음밥 | beginner-recipe-013 | - | 94 | local_bitmap_present | blocked |
 | 5 | 계란말이 | 프라이팬 계란말이 | beginner-recipe-003 | - | 95 | local_bitmap_present | blocked |
-| 6 | 계란찜 | 전자레인지 계란찜 | beginner-recipe-002 | - | 92 | local_bitmap_present | blocked |
-| 7 | 두부조림 | 두부조림 | beginner-recipe-028 | - | 95 | local_bitmap_present | blocked |
-| 8 | 감자조림 | 감자조림 | curated-gamja-jorim | - | 92 | local_bitmap_present | blocked |
-| 9 | 어묵볶음 | 어묵볶음 | beginner-recipe-051 | - | 91 | local_bitmap_present | blocked |
+| 6 | 계란찜 | 전자레인지 계란찜 | beginner-recipe-002 | - | 95 | local_bitmap_present | blocked |
+| 7 | 두부조림 | 두부조림 | beginner-recipe-028 | - | 98 | local_bitmap_present | blocked |
+| 8 | 감자조림 | 감자조림 | curated-gamja-jorim | - | 95 | local_bitmap_present | blocked |
+| 9 | 어묵볶음 | 어묵볶음 | beginner-recipe-051 | - | 94 | local_bitmap_present | blocked |
 | 10 | 콩나물무침 | 콩나물무침 | beginner-recipe-032 | - | 91 | local_bitmap_present | blocked |
 | 11 | 된장찌개 | 된장찌개 | beginner-recipe-067 | - | 98 | local_bitmap_present | blocked |
-| 12 | 돼지고기 김치찌개 | 돼지고기 김치찌개 | curated-pork-kimchi-jjigae | - | 92 | local_bitmap_present | blocked |
+| 12 | 돼지고기 김치찌개 | 돼지고기 김치찌개 | curated-pork-kimchi-jjigae | - | 95 | local_bitmap_present | blocked |
 | 13 | 미역국 | 미역국 | beginner-recipe-064 | - | 94 | local_bitmap_present | blocked |
 | 14 | 북엇국 | 북엇국 | beginner-recipe-065 | - | 94 | local_bitmap_present | blocked |
 | 15 | 제육볶음 | 제육볶음 | curated-jeyuk-bokkeum | - | 92 | local_bitmap_present | blocked |
-| 16 | 간장불고기 | 간장마늘 닭조림 | curated-soy-garlic-chicken | 정확한 제목 후보가 없어 간장 양념 단백질 메인 요리로 대체 | 92 | local_bitmap_present | blocked |
+| 16 | 간장불고기 | 간장마늘 닭조림 | curated-soy-garlic-chicken | 정확한 제목 후보가 없어 간장 양념 단백질 메인 요리로 대체 | 95 | local_bitmap_present | blocked |
 | 17 | 잔치국수 | 잔치국수 | beginner-recipe-081 | - | 94 | local_bitmap_present | blocked |
 | 18 | 떡볶이 | 떡국떡달걀국 | beginner-recipe-070 | 정확한 제목 후보가 없어 같은 떡국떡을 쓰는 초보자용 메뉴로 대체 | 94 | local_bitmap_present | blocked |
 | 19 | 토마토달걀볶음 | 토마토달걀볶음 | beginner-recipe-006 | - | 91 | local_bitmap_present | blocked |
