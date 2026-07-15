@@ -696,7 +696,8 @@ sync_preview_backup_20260715:
   recipe_preview_git_sha: "fcf34220448840c3f53d628755aefe717b6b6330"
   sync_rekey_git_sha: "46e1ed0918141c788c079ca5646c79830d17e3c6"
   sync_ui_git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
-  preview_deployment_id: "dpl_8ZF5FmQgeEx88JjaA4dNon8exner"
+  shopping_sync_ui_git_sha: "729a1df"
+  preview_deployment_id: "dpl_DeJ2qD1KD7hKVzLt1fGz66s8uGZw"
   preview_url: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
   preview_status: "READY"
   production_promoted: false
@@ -725,7 +726,14 @@ sync_preview_backup_20260715:
   browser_pending_sync_count: 0
   browser_console_warning_error_count: 0
   browser_evidence: "/tmp/jipbab-sync-verified.png"
+  shopping_browser_sync_verified: true
+  shopping_browser_pending_sync_count: 0
+  shopping_browser_console_warning_error_count: 0
+  shopping_browser_evidence: "/tmp/jipbab-shopping-sync-verified.png"
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
+  production_alias_runtime_project: "jipbab-note-app"
+  production_alias_runtime_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
+  production_alias_runtime_alignment: "blocked_separate_project_and_old_commit"
 
 next_action:
   owner: "ContentQA+BeginnerTesters"

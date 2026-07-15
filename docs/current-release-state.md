@@ -11,10 +11,12 @@ Updated: 2026-07-15 KST
 - 백업은 냉장고 51건, 장보기 18건, 가족 그룹 1건, 가족 구성원 2건, 계정 삭제 요청 21건, 요청 이벤트 18건과 관련 정책 36건, 함수 정의 8건, 기존 migration history 21건을 보존한다. 이 스냅샷은 마이그레이션 롤백용이며 전체 프로젝트 재해복구 백업은 아니다.
 - 기존 로컬 UUID와 운영 DB UUID가 충돌해 동기화가 막히는 경로를 `46e1ed0918141c788c079ca5646c79830d17e3c6`에서 수정했다. 로그인 전 로컬 냉장고·장보기 행을 새 UUID로 원자적으로 재키하고 이벤트·동기화 큐 참조도 함께 바꾸며, 재실행해도 중복되지 않게 했다.
 - 운영 DB에는 `20260715101534_add_recipe_comments_sync_prerequisite_20260715`, `20260715101553_replace_device_guest_auth_with_signed_sessions_20260715`, `20260715101658_cascade_user_deletion_sync_prerequisite_20260715`, `20260715101716_harden_security_definer_privileges_20260715`를 순서대로 적용했다. 요청 헤더 기반 RLS 정책은 28개에서 0개가 됐고 익명/공개 역할의 SECURITY DEFINER 실행 권한도 0개다. 기존 `user_id is null` 냉장고 51건과 장보기 18건은 삭제·탈취하지 않고 그대로 보존했다.
-- Vercel 공식 Preview에 Supabase 공개 URL, publishable key, 익명 동기화 feature flag를 등록하고 Supabase 익명 로그인을 활성화했다. 최신 동기화 UI 커밋은 `ac6229a8b4e3cd86935315f29e1955135da2499f`, Git Preview는 `dpl_8ZF5FmQgeEx88JjaA4dNon8exner`이며 `READY`다.
+- Vercel 공식 Preview에 Supabase 공개 URL, publishable key, 익명 동기화 feature flag를 등록하고 Supabase 익명 로그인을 활성화했다. 냉장고 성공 표시는 `ac6229a8b4e3cd86935315f29e1955135da2499f`, 장보기 성공 표시까지 맞춘 최신 UI는 `729a1df`이며 Git Preview `dpl_DeJ2qD1KD7hKVzLt1fGz66s8uGZw`가 `READY`다.
 - Chrome에서 냉장고 8개가 원격 반영된 뒤 새로고침해도 유지되고 `클라우드 동기화 완료`가 정확히 1개, `동기화 대기`가 0개인 것을 확인했다. 운영 DB에는 서명된 재료 8건·서명 사용자 1명이 있고 브라우저 console warning/error는 0건이다. 증거 화면은 `/tmp/jipbab-sync-verified.png`다.
+- Chrome 장보기 화면도 냉장고와 동일한 원격 완료 조건에서 `클라우드 동기화 완료`가 1개, 대기 표시는 0개, console warning/error는 0건으로 확인했다. 증거 화면은 `/tmp/jipbab-shopping-sync-verified.png`다.
 - 검증: unit 391/391, TypeScript, 변경 파일 ESLint, SECURITY DEFINER 14/14, release security, production build 38/38 routes, Chrome runtime 확인. Production alias는 승격하지 않았다.
 - 잔여 보안 항목: Supabase advisor의 `app.current_device_id`, `app.is_permanent_user` search-path 경고 재검토, 익명 로그인 CAPTCHA 적용 검토, 유출 비밀번호 보호 활성화가 남아 있다. Phase 5 사람 검수 0/20과 과거 migration history drift도 계속 출시 차단 조건이다.
+- 실제 운영 별칭 `https://jipbab-note-app.vercel.app`은 별도 Vercel 프로젝트 `jipbab-note-app`의 과거 커밋 `a1b7e0f79d0e5004caac7b305e40feb3496c347d`를 계속 가리킨다. 현재 수정은 공식 `jipbab-note` Preview에서 검증됐으며, 두 프로젝트의 원본 통합과 Production 승격 승인 전에는 운영 앱에 반영됐다고 주장하지 않는다.
 
 ## 2026-07-13 Phase 6 성능 예산·최신 Preview
 
