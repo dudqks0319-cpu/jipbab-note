@@ -356,6 +356,10 @@ test("recipe preview categories map legacy editorial labels to user-facing group
   assert.equal(categoryByTitle.get("버터간장계란밥"), "밥·한 그릇");
   assert.equal(categoryByTitle.get("두부부침"), "두부");
   assert.equal(categoryByTitle.get("된장찌개"), "찌개·전골");
+  assert.equal(categoryByTitle.get("미역국"), "국");
+  assert.equal(categoryByTitle.get("잔치국수"), "면");
+  assert.equal(categoryByTitle.get("콩나물무침"), "반찬");
+  assert.equal(categoryByTitle.get("제육볶음"), "고기");
   assert.equal([...categoryByTitle.values()].includes("기타"), false);
 });
 

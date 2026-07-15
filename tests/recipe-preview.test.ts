@@ -5,7 +5,8 @@ import test from "node:test";
 import { RECIPE_PREVIEW_CATALOG, findRecipePreview } from "../lib/recipe-preview.ts";
 
 test("preview catalog exposes only original structured recipes with local images", () => {
-  assert.equal(RECIPE_PREVIEW_CATALOG.length, 8);
+  assert.equal(RECIPE_PREVIEW_CATALOG.length, 20);
+  assert.equal(new Set(RECIPE_PREVIEW_CATALOG.map((recipe) => recipe.id)).size, 20);
 
   for (const recipe of RECIPE_PREVIEW_CATALOG) {
     assert.equal(recipe.source?.sourceName, "집밥노트 자체 작성");
@@ -59,4 +60,6 @@ test("preview list prioritizes recipe discovery over inactive or secondary contr
     list.indexOf('placeholder="레시피 검색"') < list.indexOf('id="recipe-more-tools"'),
     "secondary recipe tools must stay below the primary discovery controls",
   );
+  assert.match(list, /\{!previewMode \? \(\s*<button[\s\S]*?<Heart size=\{14\}/);
+  assert.match(list, /RECIPE_PREVIEW_CATALOG\.length\}개 레시피를 다시 볼 수 있어요/);
 });

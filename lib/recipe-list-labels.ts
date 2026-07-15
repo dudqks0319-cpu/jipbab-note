@@ -27,13 +27,31 @@ export function getPreviewDisplayCategory(
   recipe: Pick<CuratedRecipe, "category" | "name">,
 ): DisplayRecipeCategory {
   const { category, name } = recipe;
-  if (category === "밥" || category === "일품" || category.includes("밥") || name.includes("덮밥")) {
+  if (
+    category === "밥" ||
+    category.includes("밥") ||
+    name.includes("밥") ||
+    name.includes("덮밥") ||
+    name.includes("죽")
+  ) {
     return "밥·한 그릇";
   }
-  if (category === "국·찌개" || category === "국&찌개" || category.includes("국/찌개")) {
+  if (/국수|우동|라면|파스타|면$/u.test(name) || category.includes("면")) return "면";
+  if (/찌개|전골/u.test(name)) {
     return "찌개·전골";
   }
-  if (category.includes("두부")) return "두부";
+  if (
+    /국|탕/u.test(name) ||
+    category === "국·찌개" ||
+    category === "국&찌개" ||
+    category.includes("국/찌개")
+  ) {
+    return "국";
+  }
+  if (/제육|돼지고기|소고기|닭|불고기/u.test(name) || category.includes("고기")) return "고기";
+  if (/두부/u.test(name)) return "두부";
+  if (/달걀|계란/u.test(name) || category.includes("달걀") || category.includes("계란")) return "달걀";
+  if (/볶음|무침|조림|부침|구이|전$/u.test(name) || category === "반찬") return "반찬";
   if (DISPLAY_RECIPE_CATEGORIES.includes(category as DisplayRecipeCategory)) {
     return category as DisplayRecipeCategory;
   }

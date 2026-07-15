@@ -120,6 +120,10 @@ export default function RecipePage() {
   const favoriteRecipeIds = useMemo(() => new Set(favorites.map((favorite) => favorite.id)), [favorites])
 
   useEffect(() => {
+    if (previewMode && favoritesOnly) setFavoritesOnly(false)
+  }, [favoritesOnly, previewMode])
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const linkedQuery = params.get('q') ?? params.get('ingredient')
     if (linkedQuery?.trim()) {
@@ -197,7 +201,7 @@ export default function RecipePage() {
   }, [baseRecipes, difficultyFilter, favoriteRecipeIds, favoritesOnly, fridgeFilter, isFavorite, quickFilter, sortMode, timeFilter, toolFilter])
 
   const filteredPreviewRecipes = useMemo(() => {
-    if (!previewMode || favoritesOnly) return []
+    if (!previewMode) return []
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase('ko-KR')
     return RECIPE_PREVIEW_CATALOG.filter((recipe) => {
       const matchesQuery = !normalizedQuery || [
@@ -210,7 +214,7 @@ export default function RecipePage() {
         getPreviewDisplayCategory(recipe) === selectedCategory
       return matchesQuery && matchesCategory && matchesPreviewQuickFilter(recipe, quickFilter)
     })
-  }, [favoritesOnly, previewMode, quickFilter, searchQuery, selectedCategory])
+  }, [previewMode, quickFilter, searchQuery, selectedCategory])
 
   const effectiveCategoryCounts = useMemo(() => {
     if (!previewMode) return categoryCounts
@@ -276,18 +280,20 @@ export default function RecipePage() {
                   : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setFavoritesOnly((prev) => !prev)}
-            className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
-              favoritesOnly
-                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
-            }`}
-          >
-            <Heart size={14} className={favoritesOnly ? 'fill-[#ea5a1f]' : ''} />
-            {favorites.length}
-          </button>
+          {!previewMode ? (
+            <button
+              type="button"
+              onClick={() => setFavoritesOnly((prev) => !prev)}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
+                favoritesOnly
+                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+              }`}
+            >
+              <Heart size={14} className={favoritesOnly ? 'fill-[#ea5a1f]' : ''} />
+              {favorites.length}
+            </button>
+          ) : null}
         </div>
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
           <Search size={16} className="text-[#b5a493]" />
@@ -472,7 +478,9 @@ export default function RecipePage() {
             {filteredPreviewRecipes.length === 0 ? (
               <div className="mt-3 rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
                 <p className="text-sm font-black text-[#4b3929]">조건에 맞는 미리보기 레시피가 없어요.</p>
-                <p className="mt-1 text-xs text-[#8f7f70]">검색어나 필터를 지우면 8개 레시피를 다시 볼 수 있어요.</p>
+                <p className="mt-1 text-xs text-[#8f7f70]">
+                  검색어나 필터를 지우면 {RECIPE_PREVIEW_CATALOG.length}개 레시피를 다시 볼 수 있어요.
+                </p>
                 <button
                   type="button"
                   onClick={() => {

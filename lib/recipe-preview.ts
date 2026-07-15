@@ -12,6 +12,18 @@ const RECIPE_PREVIEW_TITLES = [
   "두부부침",
   "두부조림",
   "된장찌개",
+  "햄야채볶음밥",
+  "감자조림",
+  "어묵볶음",
+  "콩나물무침",
+  "돼지고기 김치찌개",
+  "미역국",
+  "북엇국",
+  "제육볶음",
+  "간장마늘 닭조림",
+  "잔치국수",
+  "떡국떡달걀국",
+  "순두부계란탕",
 ] as const;
 
 function isPreviewReady(recipe: CuratedRecipe | undefined): recipe is CuratedRecipe {
