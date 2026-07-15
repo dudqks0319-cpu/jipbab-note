@@ -15,9 +15,9 @@ candidate:
   phase: "production_recipe_preview_signed_sync_and_publication_gate_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
   branch: "agent/sync-ux-release"
-  dirty_state: "release_ledger_matches_security_gate_checkpoint"
+  dirty_state: "release_ledger_matches_ingredient_category_hotfix"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -70,6 +70,9 @@ signed_guest_auth:
   app_helper_search_path_status: "production_applied_current_device_pg_catalog_permanent_user_pg_catalog_auth"
   mutable_search_path_advisor_count: 0
   post_search_path_migration_regression: "production_api_200_preview_recipes_8_cloud_sync_complete_2_ingredients"
+  ingredient_category_migrations:
+    - "20260715121727_fix_legacy_ingredient_categories_20260715"
+    - "20260715121937_enforce_canonical_egg_tofu_categories_20260715"
 
 phase1_recipe_data:
   schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
@@ -352,7 +355,7 @@ phase0_to_phase4_vercel_deployment:
   server_hmac_secret_registered: false
 
 migration_history:
-  remote_latest_recorded: "20260715120555"
+  remote_latest_recorded: "20260715121937"
   local_unrecorded_before_publication:
     - "20260521160347"
     - "20260523090000"
@@ -367,6 +370,7 @@ migration_history:
   phase2_rate_limit_migration_recorded_remote: true
   phase6_security_definer_migration_recorded_remote: true
   app_helper_search_path_migration_recorded_remote: true
+  ingredient_category_migrations_recorded_remote: true
   publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
   phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
   db_push_status: "blocked_for_full_push_until_older_local_missing_history_and_catalog_seed_reconciled"
@@ -707,6 +711,7 @@ sync_preview_backup_20260715:
   recipe_discovery_ui_git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
   home_recipe_visibility_git_sha: "556c37452e87dde56abe966d02ec9b7462d0d265"
   difficulty_label_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  ingredient_category_fix_git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
   preview_deployment_id: "dpl_FNSVuHw3aW5iNj6jzv8gRb9KegeG"
   preview_url: "https://jipbab-note-95m5agmad-youngbeens-projects.vercel.app"
   preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
@@ -714,8 +719,8 @@ sync_preview_backup_20260715:
   production_promoted: false
   production_web_hotfix_deployed: true
   production_full_release_promoted: false
-  production_deployment_id: "dpl_Ff1Rqm7ovh1mSAuTKWwjvZAwbrkw"
-  production_deployment_url: "https://jipbab-note-3wxx4j5h1-youngbeens-projects.vercel.app"
+  production_deployment_id: "dpl_DmAQEEMaZx1VmPLQUcGY2VSHcLf2"
+  production_deployment_url: "https://jipbab-note-5zx4n5wgk-youngbeens-projects.vercel.app"
   production_alias: "https://jipbab-note-app.vercel.app"
   production_status: "READY"
   production_anonymous_auth_feature_flag_enabled: true
@@ -726,6 +731,7 @@ sync_preview_backup_20260715:
   recipe_preview_detail_runtime_verified: true
   recipe_preview_console_log_count: 0
   recipe_preview_unit_status: "verified_396_of_396"
+  latest_unit_status: "verified_404_of_404"
   recipe_preview_build_status: "verified_38_of_38_routes"
   dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
   dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
@@ -769,9 +775,24 @@ sync_preview_backup_20260715:
   production_api_v1_status: "verified_200_empty_publication_approved_list"
   production_api_v1_cache_control: "no-store"
   production_api_v1_request_id_verified: true
+  ingredient_category_backup_migrations:
+    - migration: "20260715121727_fix_legacy_ingredient_categories_20260715"
+      backup_table: "ops_backup.ingredients_pre_category_fix_20260715"
+      backup_rows: 20
+    - migration: "20260715121937_enforce_canonical_egg_tofu_categories_20260715"
+      backup_table: "ops_backup.ingredients_pre_canonical_category_fix_20260715"
+      backup_rows: 1
+  ingredient_category_backup_app_role_privileges: 0
+  canonical_egg_rows: 12
+  canonical_egg_category: "육류"
+  canonical_tofu_rows: 9
+  canonical_tofu_category: "통조림/가공식품"
+  production_fridge_category_browser_verified: true
+  production_fridge_tofu_recipe_link_verified: true
+  production_fridge_category_browser_console_warning_error_count: 0
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
-  production_alias_runtime_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  production_alias_runtime_git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
   production_alias_runtime_alignment: "runtime_hotfix_verified_git_integration_source_mismatch_open"
 
 next_action:
