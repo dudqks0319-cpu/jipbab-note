@@ -1,9 +1,10 @@
 // 이 파일은 장보기 리스트 화면을 담당하며 참고 이미지의 체크리스트 UI를 구현합니다.
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { CalendarDays, Check, ExternalLink, Plus, Refrigerator, Share2, Trash2 } from 'lucide-react'
+import { CalendarDays, Check, ExternalLink, Plus, RefreshCw, Refrigerator, Share2, Trash2 } from 'lucide-react'
 
 import { APPSTORE_DEMO_SHOPPING_ITEMS } from '@/lib/demo-state'
 import { useDemoMode } from '@/hooks/useDemoMode'
@@ -326,11 +327,27 @@ export default function ShoppingPage() {
   const [selectedScope, setSelectedScope] = useState<'personal' | 'family'>('personal')
   const activeScope = selectedScope === 'family' && group ? 'family' : 'personal'
   const familyGroupId = activeScope === 'family' ? group?.id ?? null : null
-  const { items, addItem, toggleItem, removeItem, clearCheckedItems, source: shoppingSource } = useShopping({
+  const {
+    items,
+    loading: shoppingLoading,
+    cloudSyncState: shoppingCloudSyncState,
+    addItem,
+    toggleItem,
+    removeItem,
+    clearCheckedItems,
+    listItems,
+  } = useShopping({
     scope: activeScope,
     familyGroupId,
   })
-  const { ingredients, addIngredient, updateIngredient, source: ingredientSource } = useIngredients({
+  const {
+    ingredients,
+    loading: ingredientLoading,
+    cloudSyncState: ingredientCloudSyncState,
+    addIngredient,
+    updateIngredient,
+    listIngredients,
+  } = useIngredients({
     scope: activeScope,
     familyGroupId,
   })
@@ -357,7 +374,15 @@ export default function ShoppingPage() {
     () => displayItems.filter((item) => item.syncStatus && item.syncStatus !== 'synced').length,
     [displayItems],
   )
-  const isLocalMode = !isAppStoreDemo && (shoppingSource === 'local' || ingredientSource === 'local')
+  const cloudSyncState =
+    shoppingCloudSyncState === 'error' || ingredientCloudSyncState === 'error'
+      ? 'error'
+      : shoppingCloudSyncState === 'checking' || ingredientCloudSyncState === 'checking'
+        ? 'checking'
+        : shoppingCloudSyncState === 'synced' && ingredientCloudSyncState === 'synced'
+          ? 'synced'
+          : 'local-only'
+  const syncRetrying = shoppingLoading || ingredientLoading
   const groupedUncheckedItems = useMemo(() => {
     const groups = new Map<string, typeof uncheckedItems>()
     for (const item of uncheckedItems) {
@@ -716,12 +741,43 @@ export default function ShoppingPage() {
             {statusMessage}
           </p>
         ) : null}
-        {isLocalMode || pendingSyncCount > 0 ? (
-          <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
-            {pendingSyncCount > 0
-              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 로그인되어 있고 인터넷이 연결되면 자동으로 다시 동기화해요.`
-              : '지금 이 기기에 저장했어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.'}
-          </p>
+        {!isAppStoreDemo && cloudSyncState === 'local-only' ? (
+          <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]">
+            <p className="text-[12px] font-black">지금 이 기기에 저장했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              데이터는 이 기기에 안전하게 저장되어 있어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.
+            </p>
+            <Link
+              href="/mypage"
+              className="mt-2 inline-flex min-h-11 items-center rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
+            >
+              로그인하고 동기화
+            </Link>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'error' ? (
+          <div
+            role="alert"
+            className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3 text-[#7d3f18]"
+          >
+            <p className="text-[12px] font-black">클라우드 동기화를 마치지 못했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              이 기기에 안전하게 저장되어 있어요{pendingSyncCount > 0 ? ` · ${pendingSyncCount}개 대기 중` : ''}.
+              로그인되어 있고 인터넷이 연결되면 자동으로 다시 동기화해요.
+            </p>
+            <button
+              type="button"
+              disabled={syncRetrying}
+              onClick={() => {
+                void listItems()
+                void listIngredients()
+              }}
+              className="mt-2 inline-flex min-h-11 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white disabled:cursor-wait disabled:opacity-60"
+            >
+              <RefreshCw size={13} aria-hidden="true" className={syncRetrying ? 'animate-spin' : undefined} />
+              {syncRetrying ? '다시 시도 중' : '다시 시도'}
+            </button>
+          </div>
         ) : null}
       </section>
 

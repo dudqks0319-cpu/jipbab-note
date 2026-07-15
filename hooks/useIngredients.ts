@@ -22,6 +22,7 @@ import {
 } from "@/lib/local-db/schema";
 import { syncIngredientsWithSupabase } from "@/lib/sync/ingredient-sync-service";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
+import type { CloudSyncState } from "@/lib/sync/cloud-sync-state";
 import { toDateOnlyString } from "@/lib/utils";
 import type {
   IngredientFormPayload,
@@ -49,6 +50,7 @@ export interface UseIngredientsResult {
   loading: boolean;
   error: IngredientQueryError | null;
   source: IngredientDataSource;
+  cloudSyncState: CloudSyncState;
   listIngredients: () => Promise<IngredientRecord[]>;
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
@@ -180,6 +182,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<IngredientQueryError | null>(null);
   const [source, setSource] = useState<IngredientDataSource>("local");
+  const [cloudSyncState, setCloudSyncState] = useState<CloudSyncState>("checking");
 
   const loadLocalIngredients = useCallback(async (): Promise<LocalIngredientRecord[]> => {
     if (!enabled) {
@@ -197,11 +200,12 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
   }, [deviceId, enabled, scopeContext]);
 
   const syncInBackground = useCallback(async (): Promise<LocalIngredientRecord[]> => {
-    const synced = await syncIngredientsWithSupabase(deviceId, scopeContext);
-    setIngredients(synced);
-    setSource("supabase");
+    const result = await syncIngredientsWithSupabase(deviceId, scopeContext);
+    setIngredients(result.records);
+    setSource(result.source);
+    setCloudSyncState(result.source === "supabase" ? "synced" : "local-only");
     setError(null);
-    return synced;
+    return result.records;
   }, [deviceId, scopeContext]);
 
   const queueAndSync = useCallback(
@@ -213,8 +217,10 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
         payload: record,
       });
 
+      setCloudSyncState("checking");
       void syncInBackground().catch(() => {
         setSource("local");
+        setCloudSyncState("error");
       });
     },
     [syncInBackground],
@@ -230,6 +236,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     }
 
     setError(null);
+    setCloudSyncState("checking");
     const localItems = await loadLocalIngredients();
     setLoading(localItems.length === 0);
 
@@ -238,6 +245,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
       return visibleIngredients(synced);
     } catch {
       setSource("local");
+      setCloudSyncState("error");
       if (localItems.length === 0) {
         setError(makeError(INGREDIENT_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
       }
@@ -261,6 +269,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
         const synced = await syncInBackground();
         return synced.find((item) => item.id === ingredientId && !item.deletedAt) ?? null;
       } catch {
+        setCloudSyncState("error");
         setError(makeError(INGREDIENT_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
         return null;
       } finally {
@@ -370,6 +379,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     loading,
     error,
     source,
+    cloudSyncState,
     listIngredients,
     fetchIngredient,
     addIngredient,

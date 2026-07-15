@@ -19,6 +19,7 @@ import {
   listPendingSyncEntries,
   markPendingSyncFailed,
 } from "./sync-engine.ts";
+import type { CloudSyncResult } from "./cloud-sync-state.ts";
 import type {
   IngredientCategory,
 } from "../../types/index.ts";
@@ -285,17 +286,24 @@ async function fetchRemoteShoppingItems(
 export async function syncShoppingWithSupabase(
   deviceId: string,
   scopeContext: LocalDataScopeContext,
-): Promise<LocalShoppingItem[]> {
-  const client = getSupabaseClient();
+): Promise<CloudSyncResult<LocalShoppingItem>> {
+  let client: ReturnType<typeof getSupabaseClient>;
   let signedUser;
   try {
+    client = getSupabaseClient();
     signedUser = await ensureSignedSupabaseUser(client);
   } catch {
-    return await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true });
+    return {
+      records: await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true }),
+      source: "local",
+    };
   }
 
   if (!signedUser || (scopeContext.scope === "family" && isAnonymousSupabaseUser(signedUser))) {
-    return await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true });
+    return {
+      records: await listLocalShoppingItems(deviceId, scopeContext, { includeDeleted: true }),
+      source: "local",
+    };
   }
 
   await syncShoppingQueue(client, signedUser.id, !isAnonymousSupabaseUser(signedUser));
@@ -304,5 +312,8 @@ export async function syncShoppingWithSupabase(
     fetchRemoteShoppingItems(client, scopeContext),
   ]);
   const merged = mergeShoppingItems(localItems, remoteItems) as LocalShoppingItem[];
-  return await replaceScopedLocalShoppingItems(deviceId, scopeContext, merged);
+  return {
+    records: await replaceScopedLocalShoppingItems(deviceId, scopeContext, merged),
+    source: "supabase",
+  };
 }

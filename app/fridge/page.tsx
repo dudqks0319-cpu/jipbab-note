@@ -229,7 +229,16 @@ function buildFutureDate(days: number): string {
 }
 
 export default function FridgePage() {
-  const { ingredients, loading, error, source, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
+  const {
+    ingredients,
+    loading,
+    error,
+    cloudSyncState,
+    addIngredient,
+    updateIngredient,
+    deleteIngredient,
+    listIngredients,
+  } = useIngredients()
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
@@ -756,12 +765,39 @@ export default function FridgePage() {
             {saveMessage}
           </p>
         ) : null}
-        {!isAppStoreDemo && (source === 'local' || pendingSyncCount > 0) ? (
-          <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
-            {pendingSyncCount > 0
-              ? `동기화 대기 ${pendingSyncCount}개가 있어요. 네트워크가 복구되면 자동으로 다시 업로드합니다.`
-              : '현재 냉장고 데이터가 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
-          </p>
+        {!isAppStoreDemo && cloudSyncState === 'local-only' ? (
+          <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]">
+            <p className="text-[12px] font-black">지금 이 기기에 저장했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              데이터는 이 기기에 안전하게 저장되어 있어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.
+            </p>
+            <Link
+              href="/mypage"
+              className="mt-2 inline-flex min-h-11 items-center rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
+            >
+              로그인하고 동기화
+            </Link>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'error' ? (
+          <div
+            role="alert"
+            className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3 text-[#7d3f18]"
+          >
+            <p className="text-[12px] font-black">클라우드 동기화를 마치지 못했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              이 기기에 안전하게 저장되어 있어요{pendingSyncCount > 0 ? ` · ${pendingSyncCount}개 대기 중` : ''}.
+            </p>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => void listIngredients()}
+              className="mt-2 inline-flex min-h-11 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white disabled:cursor-wait disabled:opacity-60"
+            >
+              <RefreshCw size={13} aria-hidden="true" className={loading ? 'animate-spin' : undefined} />
+              {loading ? '다시 시도 중' : '다시 시도'}
+            </button>
+          </div>
         ) : null}
 
         {viewMode === 'inventory' ? (
@@ -991,7 +1027,7 @@ export default function FridgePage() {
                               <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
                                 동기화 확인 필요
                               </span>
-                            ) : item.syncStatus && item.syncStatus !== 'synced' ? (
+                            ) : cloudSyncState !== 'local-only' && item.syncStatus && item.syncStatus !== 'synced' ? (
                               <span className="rounded-full bg-[#fff7ed] px-2 py-0.5 text-[10px] font-black text-[#9a4f14]">
                                 동기화 대기
                               </span>

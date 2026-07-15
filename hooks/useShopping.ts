@@ -22,6 +22,7 @@ import {
 } from "@/lib/local-db/schema";
 import { syncShoppingWithSupabase } from "@/lib/sync/shopping-sync-service";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
+import type { CloudSyncState } from "@/lib/sync/cloud-sync-state";
 import type { ShoppingItem, ShoppingItemDraft } from "@/types";
 
 const SHOPPING_SYNC_UNAVAILABLE_MESSAGE = "장보기 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
@@ -59,6 +60,7 @@ export interface UseShoppingResult {
   loading: boolean;
   error: ShoppingQueryError | null;
   source: ShoppingQuerySource;
+  cloudSyncState: CloudSyncState;
   addItem: (draft: ShoppingItemDraft, options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
   addItems: (drafts: ShoppingItemDraft[], options?: ShoppingAddOptions) => Promise<ShoppingAddResult>;
   toggleItem: (itemId: string) => Promise<void>;
@@ -184,6 +186,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ShoppingQueryError | null>(null);
   const [source, setSource] = useState<ShoppingQuerySource>("local");
+  const [cloudSyncState, setCloudSyncState] = useState<CloudSyncState>("checking");
 
   const loadLocalItems = useCallback(async (): Promise<LocalShoppingItem[]> => {
     const localItems = await listLocalShoppingItems(deviceId, scopeContext);
@@ -193,11 +196,12 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
   }, [deviceId, scopeContext]);
 
   const syncInBackground = useCallback(async (): Promise<LocalShoppingItem[]> => {
-    const synced = await syncShoppingWithSupabase(deviceId, scopeContext);
-    setItems(synced);
-    setSource("supabase");
+    const result = await syncShoppingWithSupabase(deviceId, scopeContext);
+    setItems(result.records);
+    setSource(result.source);
+    setCloudSyncState(result.source === "supabase" ? "synced" : "local-only");
     setError(null);
-    return synced;
+    return result.records;
   }, [deviceId, scopeContext]);
 
   const queueRecordsAndSync = useCallback(
@@ -211,8 +215,10 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
         });
       }
 
+      setCloudSyncState("checking");
       void syncInBackground().catch(() => {
         setSource("local");
+        setCloudSyncState("error");
       });
     },
     [syncInBackground],
@@ -221,6 +227,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
   const listItems = useCallback(async (): Promise<ShoppingItem[]> => {
     setLoading(true);
     setError(null);
+    setCloudSyncState("checking");
 
     const localItems = await loadLocalItems();
     setLoading(localItems.length === 0);
@@ -229,6 +236,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
       return await syncInBackground();
     } catch {
       setSource("local");
+      setCloudSyncState("error");
       if (localItems.length === 0) {
         setError(makeError(SHOPPING_SYNC_UNAVAILABLE_MESSAGE, "supabase"));
       }
@@ -413,6 +421,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
     loading,
     error,
     source,
+    cloudSyncState,
     addItem,
     addItems,
     toggleItem,

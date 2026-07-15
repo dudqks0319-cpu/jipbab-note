@@ -18,6 +18,7 @@ import {
   listPendingSyncEntries,
   markPendingSyncFailed,
 } from "./sync-engine.ts";
+import type { CloudSyncResult } from "./cloud-sync-state.ts";
 import type {
   IngredientInsertPayload,
   IngredientRecord,
@@ -302,17 +303,24 @@ async function fetchRemoteIngredients(
 export async function syncIngredientsWithSupabase(
   deviceId: string,
   scopeContext: LocalDataScopeContext,
-): Promise<LocalIngredientRecord[]> {
-  const client = getSupabaseClient();
+): Promise<CloudSyncResult<LocalIngredientRecord>> {
+  let client: ReturnType<typeof getSupabaseClient>;
   let signedUser;
   try {
+    client = getSupabaseClient();
     signedUser = await ensureSignedSupabaseUser(client);
   } catch {
-    return await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true });
+    return {
+      records: await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true }),
+      source: "local",
+    };
   }
 
   if (!signedUser || (scopeContext.scope === "family" && isAnonymousSupabaseUser(signedUser))) {
-    return await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true });
+    return {
+      records: await listLocalIngredients(deviceId, scopeContext, { includeDeleted: true }),
+      source: "local",
+    };
   }
 
   await syncIngredientQueue(client, signedUser.id, !isAnonymousSupabaseUser(signedUser));
@@ -321,5 +329,8 @@ export async function syncIngredientsWithSupabase(
     fetchRemoteIngredients(client, scopeContext),
   ]);
   const merged = mergeIngredientRecords(localRecords, remoteRecords) as LocalIngredientRecord[];
-  return await replaceScopedLocalIngredients(deviceId, scopeContext, merged);
+  return {
+    records: await replaceScopedLocalIngredients(deviceId, scopeContext, merged),
+    source: "supabase",
+  };
 }
