@@ -524,7 +524,7 @@ function RecipeHomeCard({
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-[#ecd5bd]">
-          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+          <span className="grid h-full place-items-center gap-1 text-[12px] font-black text-[#9b8979]">
             <Utensils size={18} />
             이미지 없음
           </span>
@@ -538,28 +538,28 @@ function RecipeHomeCard({
           ) : null}
         </div>
       </Link>
-      <div className="px-2.5 py-2">
+      <div className="px-3 py-3">
         <Link href={recipeHref} className="block min-w-0">
-          <h3 className="line-clamp-2 min-h-8 text-[12px] font-black leading-4 text-[#2f2117]">{recipe.name}</h3>
+          <h3 className="line-clamp-2 min-h-10 text-[14px] font-black leading-5 text-[#2f2117]">{recipe.name}</h3>
         </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-[#7d6d5f]">
           <span className="inline-flex items-center gap-1">
-            <Clock3 size={10} />
+            <Clock3 size={12} />
             {typeof recipe.totalMinutes === 'number' ? `${recipe.totalMinutes}분` : '시간 미표시'}
           </span>
           <span className="inline-flex items-center gap-1 text-[#a66a17]">
-            <ChefHat size={11} className="shrink-0" />
+            <ChefHat size={13} className="shrink-0" />
             {formatHomeDifficulty(recipe.difficultyLevel)}
           </span>
         </div>
         {previewMode ? (
-          <p className="mt-1 truncate text-[10px] font-black text-[#d94d19]">검수 중 미리보기</p>
+          <p className="mt-1.5 truncate text-[12px] font-black text-[#d94d19]">검수 중 미리보기</p>
         ) : (
           <>
-            <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
+            <p className="mt-1.5 truncate text-[12px] font-black text-[#3d7b38]">
               {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
             </p>
-            <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
+            <p className="mt-1 truncate text-[12px] font-black text-[#a66a17]">
               {getBeginnerRecipeBadge(recipe)}
             </p>
           </>
@@ -568,15 +568,15 @@ function RecipeHomeCard({
           <div className="mt-2 grid grid-cols-[1fr_1fr] gap-1.5">
             <Link
               href={recipeHref}
-              className="flex min-h-11 items-center justify-center rounded-[11px] bg-[#2f2117] px-2 text-[11px] font-black text-white"
+              className="flex min-h-11 items-center justify-center rounded-[11px] bg-[#2f2117] px-2 text-[13px] font-black text-white"
             >
               지금 만들기
             </Link>
             <Link
               href={shoppingHref}
-              className="flex min-h-11 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[11px] font-black text-[#d94d19]"
+              className="flex min-h-11 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[13px] font-black text-[#d94d19]"
             >
-              <ShoppingBasket size={11} />
+              <ShoppingBasket size={13} />
               장보기
             </Link>
           </div>

@@ -51,11 +51,17 @@ test("home exposes recipe previews before the user has saved fridge ingredients"
 
 test("home recipe cards use plain-language difficulty instead of a rating star", () => {
   assert.doesNotMatch(homePage, /<Star(?:\s|>)/);
-  assert.match(homePage, /<ChefHat size=\{11\}/);
+  assert.match(homePage, /<ChefHat size=\{13\}/);
   assert.match(homePage, /formatHomeDifficulty\(recipe\.difficultyLevel\)/);
   assert.match(homePage, /return '난이도 쉬움'/);
   assert.match(homePage, /return '난이도 보통'/);
   assert.match(homePage, /return '난이도 어려움'/);
+});
+
+test("home recipe cards keep core preview information readable", () => {
+  assert.match(homePage, /min-h-10 text-\[14px\] font-black leading-5/);
+  assert.match(homePage, /text-\[12px\] font-bold text-\[#7d6d5f\]/);
+  assert.match(homePage, /text-\[12px\] font-black text-\[#d94d19\]">검수 중 미리보기/);
 });
 
 test("home recovery prevents parallel retries and keeps one clear action label", () => {

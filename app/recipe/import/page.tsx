@@ -158,7 +158,7 @@ export default function RecipeImportPage() {
                 <LinkIcon size={16} className="shrink-0 text-[#8a5a2a]" />
                 <a href={item.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1">
                   <p className="truncate text-sm font-black text-[#2f2117]">{item.title}</p>
-                  <p className="truncate text-[11px] font-semibold text-[#8f7f70]">Safari에서 열기 · {item.url}</p>
+                  <p className="truncate text-[12px] font-semibold text-[#8f7f70]">새 화면에서 열기 · {item.url}</p>
                 </a>
                 <button type="button" onClick={() => removeRecipe(item.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]" aria-label={`${item.title} 삭제`}>
                   <Trash2 size={14} />
