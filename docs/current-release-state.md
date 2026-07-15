@@ -1,6 +1,16 @@
 # 집밥노트 현재 출시 상태
 
-Updated: 2026-07-14 KST
+Updated: 2026-07-15 KST
+
+## 2026-07-15 FE-007 레시피 상세 실제 데이터 계약
+
+- 상세 화면은 API v1 응답을 런타임 스키마로 먼저 검증하고, 도구·계량 재료·단계별 불 세기·안전·복구·보관·재가열·출처 제목·귀속·라이선스가 모두 있는 발행 가능 레시피만 표시한다. 필수 필드가 하나라도 비면 일반화된 이용 불가 화면으로 fail-closed한다.
+- 단계 설명 문자열에서 도구나 불 세기를 추론하던 경로를 제거했다. 화면과 조리 모드는 API 원본 `heat`, `safetyNote`, `rescueTip`만 사용하며 `초보 팁`, `안전`, `막혔을 때`를 서로 다른 정보로 표시한다. 출처의 임의 대체 문구도 제거했다.
+- 회귀 테스트를 먼저 실패시킨 뒤 정상 상세 매핑, 빈 안전 안내·누락 출처·누락 복구의 발행 거부, 응답 스키마의 빈 안전 배열 거부, UI의 비추론 계약을 고정했다. 전체 단위 테스트 449/449, TypeScript, production build 40/40 경로가 통과했고 lint는 오류 0건과 기존 iOS 생성물 경고 33건만 남았다.
+- 인앱 브라우저의 실제 `/recipe/[id]`를 390x844에서 확인했다. 정상 상세는 실제 도구·계량·출처·안전·보관·복구를 표시했고, 안전 안내가 누락된 상세는 제목·출처를 노출하지 않고 일반화된 이용 불가 화면을 표시했다. 두 경로 모두 가로 넘침 0, 보이는 44px 미만 컨트롤 0개, console error/warning 0건이다. 검증용 응답은 로컬 메모리 fixture에만 두었고 앱·DB·Git에 저장하지 않았으며 운영·사람 증거로 승격하지 않는다.
+- 보안 게이트의 secret ignore, tracked secret 부재, `SECURITY DEFINER` 검사는 통과했다. 기존 release script의 오래된 npm audit transport는 원격 endpoint HTTP 410으로 종료되어, 최신 `pnpm@11.13.0 audit --prod --audit-level moderate`를 별도로 실행했고 moderate/high/critical 0건, low 1건을 확인했다. 새 의존성이나 lockfile 변경은 없다.
+- 구현 커밋 `852eaaa5e6a6ad03ee4faa1439482d3bffdf1881`를 GitHub에 push하고 같은 깨끗한 archive를 Vercel Preview `dpl_Aa6aerRTo7HN6tZUPsYkkyHJMFm9` (`https://jipbab-note-811d9qs6f-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 메타데이터의 `sourceCommit`·`sourceBranch`·`feature=FE-007`은 배포 원본과 일치하고 `/`, `/recipe`, `/recipe/[id]`는 HTTP 200이다. Production 승격은 수행하지 않았다.
+- Preview의 상세 API는 운영 DB migration과 검수된 v2 데이터가 없어 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. 정상 데이터 경로를 완료로 주장하지 않으며 Supabase migration, 실제 조리·사람 검수·실사용자·실기기·스토어·외부 모니터링 증거는 변경하지 않았다.
 
 ## 2026-07-14 FE-002 API 응답 런타임 스키마 검증
 
