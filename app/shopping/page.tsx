@@ -526,15 +526,15 @@ export default function ShoppingPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-black text-[#2f2117]">장보기 리스트</h1>
-            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+            <p className="mt-1 text-[12px] font-semibold text-[#6b5f55]">
               {activeScope === 'family' ? '가족 장보기' : '내 장보기'} 재료를 구매 상태별로 확인하고 외부 쇼핑 링크는 Safari에서 여세요.
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <button type="button" onClick={shareList} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] text-[#7d6d5f]" aria-label="장보기 공유">
+            <button type="button" onClick={shareList} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] text-[#5f5145]" aria-label="장보기 공유">
               <Share2 size={15} />
             </button>
-            <button type="button" onClick={() => setShowAddForm((prev) => !prev)} className="min-h-11 rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#d94d19]">
+            <button type="button" aria-expanded={showAddForm} onClick={() => setShowAddForm((prev) => !prev)} className="min-h-11 rounded-full border border-[#ea5a1f] px-3 py-1.5 text-[12px] font-black text-[#a63b13]">
               + 직접 추가
             </button>
           </div>
@@ -550,7 +550,7 @@ export default function ShoppingPage() {
             type="button"
             onClick={() => setSelectedScope('personal')}
             className={`min-h-11 rounded-[11px] text-xs font-black ${
-              activeScope === 'personal' ? 'bg-[#2f2117] text-white' : 'text-[#7d6d5f]'
+              activeScope === 'personal' ? 'bg-[#2f2117] text-white' : 'text-[#5f5145]'
             }`}
           >
             내 장보기
@@ -562,14 +562,14 @@ export default function ShoppingPage() {
             className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === 'family'
                 ? 'bg-[#2f2117] text-white'
-                : 'text-[#7d6d5f] disabled:text-[#c5b4a1]'
+                : 'text-[#5f5145] disabled:text-[#c5b4a1]'
             }`}
           >
             가족 장보기
           </button>
         </div>
         {!group ? (
-          <p className="mt-2 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#8f7f70]">
+          <p className="mt-2 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#6b5f55]">
             가족 장보기는 가족 냉장고를 만들거나 초대코드로 참여한 뒤 사용할 수 있어요.
           </p>
         ) : null}
@@ -585,7 +585,7 @@ export default function ShoppingPage() {
               : '장보기 데이터는 이 기기에서 먼저 표시됩니다. 로그인/네트워크 복구 후 클라우드 동기화 상태를 확인하세요.'}
           </p>
         ) : null}
-        <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#7d6d5f]">
+        <p className="mt-3 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#5f5145]">
           {PARTNERS_DISCLOSURE}
         </p>
       </section>
@@ -601,6 +601,7 @@ export default function ShoppingPage() {
           >
             <input
               type="text"
+              aria-label="장보기 빠른 재료 입력"
               value={quickInput}
               onChange={(event) => setQuickInput(event.target.value)}
               placeholder="두부 1모처럼 바로 추가"
@@ -609,7 +610,7 @@ export default function ShoppingPage() {
             <button
               type="submit"
               disabled={!normalizeIngredientInput(quickInput)}
-              className="inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
+              className="inline-flex min-h-11 items-center justify-center gap-1 rounded-[12px] bg-[#c2410c] px-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
             >
               <Plus size={14} />
               추가
@@ -634,10 +635,10 @@ export default function ShoppingPage() {
         <div className="jipbab-panel mt-3 rounded-[18px] p-4">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-black text-[#d94d19]">로켓프레시식 카테고리</p>
+              <p className="text-[11px] font-black text-[#a63b13]">로켓프레시식 카테고리</p>
               <h2 className="mt-1 text-[18px] font-black leading-tight text-[#2f2117]">카테고리 장보기</h2>
             </div>
-            <p className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#d94d19]">
+            <p className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1.5 text-[11px] font-black text-[#a63b13]">
               {selectedCatalogItems.length}개
             </p>
           </div>
@@ -649,16 +650,17 @@ export default function ShoppingPage() {
                 <button
                   key={groupItem.id}
                   type="button"
+                  aria-pressed={selected}
                   onClick={() => {
                     setSelectedCatalogGroupId(groupItem.id)
                     setSelectedCatalogSubcategoryId('all')
                   }}
                   className={`relative min-h-11 shrink-0 px-0 pb-3 text-[14px] font-black ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                    selected ? 'text-[#a63b13]' : 'text-[#5f5145]'
                   }`}
                 >
                   {groupItem.label}
-                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#ea5a1f]" /> : null}
+                  {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#c2410c]" /> : null}
                 </button>
               )
             })}
@@ -674,6 +676,7 @@ export default function ShoppingPage() {
                 <button
                   key={subcategory.id}
                   type="button"
+                  aria-pressed={selected}
                   onClick={() => setSelectedCatalogSubcategoryId(subcategory.id)}
                   className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
                 >
@@ -685,12 +688,12 @@ export default function ShoppingPage() {
                     <img src={photoUrl} alt={subcategory.label} className="h-full w-full object-cover mix-blend-multiply" loading="lazy" />
                   </span>
                   <span className={`h-8 overflow-hidden text-[11px] font-black leading-4 ${
-                    selected ? 'text-[#d94d19]' : 'text-[#7d6d5f]'
+                    selected ? 'text-[#a63b13]' : 'text-[#5f5145]'
                   }`}
                   >
                     {subcategory.label}
                   </span>
-                  <span className="text-[10px] font-bold text-[#b5a493]">{count}</span>
+                  <span className="text-[10px] font-bold text-[#75675b]">{count}</span>
                 </button>
               )
             })}
@@ -700,7 +703,7 @@ export default function ShoppingPage() {
             <p className="truncate text-[12px] font-black text-[#4b3929]">
               {selectedCatalogGroup?.label ?? '전체'} · {selectedCatalogSubcategory?.label ?? '전체'}
             </p>
-            <p className="shrink-0 text-[11px] font-black text-[#d94d19]">{selectedCatalogItems.length}개 재료</p>
+            <p className="shrink-0 text-[11px] font-black text-[#a63b13]">{selectedCatalogItems.length}개 재료</p>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -722,6 +725,7 @@ export default function ShoppingPage() {
             <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_92px]">
               <input
                 type="text"
+                aria-label="장보기 재료명"
                 value={name}
                 onChange={(event) => handleNameChange(event.target.value)}
                 onBlur={(event) => handleNameChange(normalizeIngredientInput(event.target.value))}
@@ -730,6 +734,7 @@ export default function ShoppingPage() {
               />
               <input
                 type="text"
+                aria-label="장보기 재료 수량"
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
                 placeholder="수량"
@@ -738,6 +743,7 @@ export default function ShoppingPage() {
             </div>
             <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_96px]">
               <select
+                aria-label="추가할 재료 카테고리"
                 value={category}
                 onChange={(event) => {
                   setCategory(event.target.value as IngredientCategory)
@@ -755,7 +761,7 @@ export default function ShoppingPage() {
                 type="button"
                 onClick={handleAdd}
                 disabled={!normalizeIngredientInput(name)}
-                className="inline-flex min-w-0 items-center justify-center gap-1 rounded-[12px] bg-[#ea5a1f] px-3 py-3 text-sm font-black text-white disabled:bg-[#e6b49a]"
+                className="inline-flex min-w-0 items-center justify-center gap-1 rounded-[12px] bg-[#c2410c] px-3 py-3 text-sm font-black text-white disabled:bg-[#e6b49a]"
               >
                 <Plus size={15} />
                 추가
@@ -772,7 +778,7 @@ export default function ShoppingPage() {
         {displayItems.length === 0 ? (
           <div className="jipbab-panel rounded-[18px] px-4 py-12 text-center">
             <p className="text-sm font-black text-[#4b3929]">장보기 목록이 비어 있어요.</p>
-            <p className="mt-1 text-xs text-[#8f7f70]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
+            <p className="mt-1 text-xs text-[#6b5f55]">레시피 부족 재료를 담거나 직접 추가하세요.</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {STARTER_INGREDIENT_TEMPLATES.slice(0, 4).map((item) => {
                 const purchaseLink = getCoupangPurchaseLink({
@@ -786,7 +792,7 @@ export default function ShoppingPage() {
                     href={purchaseLink.href}
                     target="_blank"
                     rel={externalLinkRel(purchaseLink.isPartnerLink)}
-                    className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#d94d19]"
+                    className="rounded-full bg-[#fff0e4] px-3 py-2 text-[12px] font-black text-[#a63b13]"
                   >
                     {item.name} 바로 사기
                   </a>
@@ -825,11 +831,12 @@ export default function ShoppingPage() {
                       <button
                         key={storageType}
                         type="button"
+                        aria-pressed={fridgeStorageType === storageType}
                         onClick={() => setFridgeStorageType(storageType)}
                         className={`min-h-11 rounded-[11px] border px-2 text-[11px] font-black ${
                           fridgeStorageType === storageType
                             ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
-                            : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                            : 'border-[#dce8c8] bg-[#f8fbf2] text-[#566347]'
                         }`}
                       >
                         {storageType}
@@ -846,11 +853,12 @@ export default function ShoppingPage() {
                         <button
                           key={preset.days}
                           type="button"
+                          aria-pressed={fridgeExpiryDays === preset.days}
                           onClick={() => setFridgeExpiryDays(preset.days)}
                           className={`min-h-11 rounded-[11px] border px-1 text-[11px] font-black ${
                             fridgeExpiryDays === preset.days
                               ? 'border-[#3d7b38] bg-white text-[#2d6b32]'
-                              : 'border-[#dce8c8] bg-[#f8fbf2] text-[#6c7a5b]'
+                              : 'border-[#dce8c8] bg-[#f8fbf2] text-[#566347]'
                           }`}
                         >
                           {preset.label}
@@ -861,6 +869,7 @@ export default function ShoppingPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="text"
+                      aria-label="구매처"
                       value={purchasePlace}
                       onChange={(event) => setPurchasePlace(event.target.value)}
                       placeholder="구매처 선택"
@@ -868,6 +877,7 @@ export default function ShoppingPage() {
                     />
                     <input
                       type="number"
+                      aria-label="개당 가격"
                       inputMode="numeric"
                       min="0"
                       value={unitPrice}
@@ -908,7 +918,7 @@ export default function ShoppingPage() {
               <button
                 type="button"
                 onClick={clearCheckedItems}
-                className="w-full rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] py-3 text-sm font-black text-[#d94d19]"
+                className="w-full rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] py-3 text-sm font-black text-[#a63b13]"
               >
                 완료 항목 정리
               </button>
@@ -952,10 +962,10 @@ function ShoppingCatalogCard({
         />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13px] font-black text-[#2f2117]">{item.name}</span>
-          <span className="mt-0.5 block truncate text-[11px] font-bold text-[#8f7f70]">{quantity}</span>
+          <span className="mt-0.5 block truncate text-[11px] font-bold text-[#6b5f55]">{quantity}</span>
         </span>
         <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
-          isInShoppingList ? 'bg-[#f2f7e7] text-[#3d7b38]' : 'bg-[#fff0e4] text-[#d94d19]'
+          isInShoppingList ? 'bg-[#f2f7e7] text-[#3d7b38]' : 'bg-[#fff0e4] text-[#a63b13]'
         }`}
         >
           {isInShoppingList ? '담김' : '담기'}
@@ -965,7 +975,7 @@ function ShoppingCatalogCard({
         href={purchaseLink.href}
         target="_blank"
         rel={externalLinkRel(purchaseLink.isPartnerLink)}
-        className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-[10px] bg-white px-2 text-[11px] font-black text-[#d94d19]"
+        className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-[10px] bg-white px-2 text-[11px] font-black text-[#a63b13]"
         aria-label={`${item.name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
       >
         <ExternalLink size={12} />
@@ -976,12 +986,12 @@ function ShoppingCatalogCard({
 }
 
 function ShoppingStat({ label, value, good = false, warning = false }: { label: string; value: string; good?: boolean; warning?: boolean }) {
-  const color = warning ? 'text-[#d94d19]' : good ? 'text-[#3d7b38]' : 'text-[#2f2117]'
+  const color = warning ? 'text-[#a63b13]' : good ? 'text-[#3d7b38]' : 'text-[#2f2117]'
 
   return (
     <div className="border-r border-[#eadcc9] px-3 py-3 last:border-r-0">
       <p className={`text-[14px] font-black ${color}`}>{value}</p>
-      <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">{label}</p>
+      <p className="mt-1 text-[11px] font-bold text-[#6b5f55]">{label}</p>
     </div>
   )
 }
@@ -1023,6 +1033,7 @@ function ShoppingRow({
       <button
         type="button"
         onClick={onToggle}
+        aria-pressed={checked}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border ${
           checked ? 'border-[#5e9560] bg-[#5e9560] text-white' : 'border-[#c9b7a4] bg-[#fffaf3]'
         }`}
@@ -1031,8 +1042,8 @@ function ShoppingRow({
         {checked ? <Check size={13} /> : null}
       </button>
       <div className="min-w-0 flex-1">
-        <p className={`truncate text-[14px] font-bold ${checked ? 'text-[#9f9388] line-through' : 'text-[#2f2117]'}`}>{name}</p>
-        <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{quantity}</p>
+        <p className={`truncate text-[14px] font-bold ${checked ? 'text-[#6b5f55] line-through' : 'text-[#2f2117]'}`}>{name}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-[#6b5f55]">{quantity}</p>
         {!checked && purchaseLink.isPartnerLink ? (
           <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#b45309]">
             제휴 링크이며 구매 시 수수료를 받을 수 있어요.
@@ -1045,7 +1056,7 @@ function ShoppingRow({
             href={purchaseLink.href}
             target="_blank"
             rel={externalLinkRel(purchaseLink.isPartnerLink)}
-            className="inline-flex h-11 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#d94d19]"
+            className="inline-flex h-11 items-center gap-1 rounded-full bg-[#fff0e4] px-2.5 text-[11px] font-black text-[#a63b13]"
             aria-label={`${name} ${purchaseLink.isPartnerLink ? '파트너스 링크' : '쿠팡 검색'} 열기`}
           >
             <ExternalLink size={12} />
@@ -1061,7 +1072,7 @@ function ShoppingRow({
           {addToFridgeLabel}
         </button>
       )}
-      <button type="button" onClick={onRemove} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]" aria-label={`${name} 삭제`}>
+      <button type="button" onClick={onRemove} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#75675b] hover:bg-[#fff0e4] hover:text-[#a63b13]" aria-label={`${name} 삭제`}>
         <Trash2 size={14} />
       </button>
     </div>

@@ -32,8 +32,8 @@ export default function BottomTab() {
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                   isActive
-                    ? 'bg-[#ea5a1f] text-white shadow-[0_5px_12px_rgba(234,90,31,0.22)]'
-                    : 'text-[#9f9388] group-hover:bg-[#fff0e4] group-hover:text-[#4b3929]'
+                    ? 'bg-[#c2410c] text-white shadow-[0_5px_12px_rgba(234,90,31,0.22)]'
+                    : 'text-[#6b5f55] group-hover:bg-[#fff0e4] group-hover:text-[#4b3929]'
                 }`}
               >
                 <tab.icon
@@ -43,7 +43,7 @@ export default function BottomTab() {
               </div>
               <span
                 className={`text-[11px] font-semibold ${
-                  isActive ? 'text-[#ea5a1f]' : 'text-[#9f9388]'
+                  isActive ? 'text-[#a63b13]' : 'text-[#6b5f55]'
                 }`}
               >
                 {tab.label}

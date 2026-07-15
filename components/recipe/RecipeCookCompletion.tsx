@@ -306,7 +306,7 @@ export default function RecipeCookCompletion({
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#d7e7cf] bg-white px-4 text-[13px] font-black text-[#315f2d]"
           aria-pressed={favorite}
         >
-          <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
+          <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#a63b13]' : ''} />
           {favorite ? '즐겨찾기에 저장됨' : '이 레시피 즐겨찾기'}
         </button>
         <p className="min-h-5 text-center text-[12px] font-semibold text-[#557b4f]" aria-live="polite">

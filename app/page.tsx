@@ -239,7 +239,7 @@ export default function HomePage() {
       <section className="mobile-safe-top px-5">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1 pr-3">
-            <p className="text-[11px] font-semibold text-[#9b8979]">냉장고 열고 고민 끝</p>
+            <p className="text-[11px] font-semibold text-[#6b5f55]">냉장고 열고 고민 끝</p>
             <h1 className="mt-1 break-keep text-[21px] font-black leading-tight text-[#2f2117]">있는 재료로 오늘 메뉴 정해요</h1>
           </div>
           <Link
@@ -274,10 +274,10 @@ export default function HomePage() {
         )}
         {syncErrorMessage ? (
           <div className="mt-3 flex items-start gap-3 rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3" role="status">
-            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-[#d94d19]" />
+            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-[#a63b13]" />
             <div className="min-w-0 flex-1">
               <p className="text-[12px] font-black text-[#4b3929]">동기화가 지연되고 있어요</p>
-              <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+              <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#6b5f55]">
                 {syncErrorMessage}
               </p>
             </div>
@@ -299,13 +299,13 @@ export default function HomePage() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[12px] font-black text-[#2f2117]">냉장고에 있는 재료</p>
-              <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
+              <p className="mt-1 text-[11px] font-semibold text-[#6b5f55]">
                 {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개 · 소진임박 ${expiringIngredients.length}개`}
               </p>
             </div>
             <Link
               href={buildHomeHref('/fridge?add=1', { demoMode: isAppStoreDemo })}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-full bg-[#ea5a1f] px-3 text-[12px] font-black text-white"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-full bg-[#c2410c] px-3 text-[12px] font-black text-white"
             >
               <Plus size={14} />
               재료 추가
@@ -327,7 +327,7 @@ export default function HomePage() {
             </Link>
             <Link
               href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#fff0e4] text-[13px] font-black text-[#d94d19]"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#fff0e4] text-[13px] font-black text-[#a63b13]"
             >
               <Search size={16} />
               메뉴 더 찾기
@@ -343,7 +343,7 @@ export default function HomePage() {
           <div>
             <div className="flex items-center justify-between">
               <h2 className="text-[17px] font-black text-[#2f2117]">오늘 만들 메뉴</h2>
-              <span className="text-[11px] font-black text-[#9b8979]">불러오는 중</span>
+              <span className="text-[11px] font-black text-[#6b5f55]">불러오는 중</span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-3">
               <RecipeCardSkeleton />
@@ -358,9 +358,9 @@ export default function HomePage() {
               <div className="flex items-end justify-between gap-3">
                 <div className="min-w-0">
                   <h2 className="text-[16px] font-black text-[#2f2117]">{section.title}</h2>
-                  <p className="mt-1 text-[11px] font-semibold leading-4 text-[#8f7f70]">{section.subtitle}</p>
+                  <p className="mt-1 text-[11px] font-semibold leading-4 text-[#6b5f55]">{section.subtitle}</p>
                 </div>
-                <Link href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
+                <Link href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#8a4f0f]">
                   전체
                 </Link>
               </div>
@@ -377,7 +377,7 @@ export default function HomePage() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[12px] font-black text-[#2f2117]">다른 메뉴도 보고 싶다면</p>
-              <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#8f7f70]">
+              <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#6b5f55]">
                 시간, 도구, 부족 재료로 지금 할 수 있는 메뉴만 좁혀보세요.
               </p>
             </div>
@@ -400,11 +400,11 @@ export default function HomePage() {
               <h2 className="text-[16px] font-black text-[#2f2117]">
                 {familyRecipeSection?.title ?? '가족 냉장고 없음'}
               </h2>
-              <p className="mt-1 text-[11px] font-semibold leading-4 text-[#8f7f70]">
+              <p className="mt-1 text-[11px] font-semibold leading-4 text-[#6b5f55]">
                 {familyRecipeSection?.subtitle ?? '가족 냉장고를 만들면 가족 재료 기준으로 쉬운 메뉴를 추천해요.'}
               </p>
             </div>
-            <Link href={buildHomeHref('/family', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#a66a17]">
+            <Link href={buildHomeHref('/family', { demoMode: isAppStoreDemo })} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-[11px] font-black text-[#8a4f0f]">
               가족
             </Link>
           </div>
@@ -434,7 +434,7 @@ export default function HomePage() {
               <RecipeCardSkeleton />
             </div>
           ) : group ? (
-            <p className="mt-3 rounded-[14px] bg-[#fff7ed] px-3 py-3 text-[12px] font-bold leading-5 text-[#8f7f70]">
+            <p className="mt-3 rounded-[14px] bg-[#fff7ed] px-3 py-3 text-[12px] font-bold leading-5 text-[#6b5f55]">
               가족 냉장고 재료가 비어 있어요. 가족 재료를 추가하면 부족 재료가 적은 메뉴부터 보여드릴게요.
             </p>
           ) : (
@@ -463,7 +463,7 @@ export default function HomePage() {
 function FridgeCount({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-[14px] bg-[#fff7ed] px-2 py-2 text-center">
-      <p className="text-[10px] font-black text-[#9b8979]">{label}</p>
+      <p className="text-[10px] font-black text-[#6b5f55]">{label}</p>
       <p className="mt-0.5 text-[15px] font-black text-[#2f2117]">{value}개</p>
     </div>
   )
@@ -503,14 +503,14 @@ function HomeFridgePreview({
         className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
         style={{ left: 16, top: 16 }}
       >
-        냉장 재료 <span className="text-[#8f7f70]">{storageCounts.cold}개</span>
+        냉장 재료 <span className="text-[#6b5f55]">{storageCounts.cold}개</span>
       </div>
       {storageCounts.frozen > 0 ? (
         <div
           className="absolute rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#2f2117] shadow-[0_8px_16px_rgba(76,51,28,0.10)]"
           style={{ left: 16, top: '68%' }}
         >
-          냉동 <span className="text-[#8f7f70]">{storageCounts.frozen}개</span>
+          냉동 <span className="text-[#6b5f55]">{storageCounts.frozen}개</span>
         </div>
       ) : null}
       {coldIngredients.length > 0 || coldOverflowCount > 0 ? (
@@ -638,7 +638,7 @@ function RecipeHomeCard({
     <article className="h-full overflow-hidden rounded-[16px] bg-[#fffaf3] shadow-[0_8px_22px_rgba(76,51,28,0.08)]">
       <Link href={recipeHref} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-[#ecd5bd]">
-          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#6b5f55]">
             <Utensils size={18} />
             이미지 없음
           </span>
@@ -657,7 +657,7 @@ function RecipeHomeCard({
           <h3 className="line-clamp-2 min-h-8 text-[12px] font-black leading-4 text-[#2f2117]">{recipe.name}</h3>
         </Link>
         {typeof recipe.totalMinutes === 'number' || difficultyLabel ? (
-          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#7d6d5f]">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#5f5145]">
             {typeof recipe.totalMinutes === 'number' ? (
               <span className="inline-flex items-center gap-1">
                 <Clock3 size={10} />
@@ -665,7 +665,7 @@ function RecipeHomeCard({
               </span>
             ) : null}
             {difficultyLabel ? (
-              <span className="inline-flex items-center gap-1 text-[#a66a17]">
+              <span className="inline-flex items-center gap-1 text-[#8a4f0f]">
                 <Gauge size={10} className="shrink-0" />
                 난이도 {difficultyLabel}
               </span>
@@ -675,7 +675,7 @@ function RecipeHomeCard({
         <p className="mt-1 truncate text-[10px] font-black text-[#3d7b38]">
           {missingCount === 0 ? '지금 만들 수 있음' : missingCount <= 2 ? `조금만 사면 가능 · ${missingCount}개` : `부족 ${missingCount}개`}
         </p>
-        <p className="mt-1 truncate text-[10px] font-black text-[#a66a17]">
+        <p className="mt-1 truncate text-[10px] font-black text-[#8a4f0f]">
           {getBeginnerRecipeBadge(recipe)}
         </p>
         {!compact ? (
@@ -688,7 +688,7 @@ function RecipeHomeCard({
             </Link>
             <Link
               href={shoppingHref}
-              className="flex min-h-11 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[11px] font-black text-[#d94d19]"
+              className="flex min-h-11 items-center justify-center gap-1 rounded-[11px] bg-[#fff0e4] px-2 text-[11px] font-black text-[#a63b13]"
             >
               <ShoppingBasket size={11} />
               장보기
@@ -739,14 +739,14 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
       <p className="text-[13px] font-black text-[#2f2117]">
         {hasIngredients ? '현재 공개 가능한 레시피를 준비 중이에요.' : '재료만 골라도 추천이 열려요.'}
       </p>
-      <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#8f7f70]">
+      <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#6b5f55]">
         {hasIngredients
           ? '검수와 출처 확인을 마친 레시피만 보여드려요. 준비가 끝나면 바로 추천할게요.'
           : '냉장고에 있는 것부터 눌러보세요. 수량은 나중에 정리해도 괜찮아요.'}
       </p>
       <Link
         href={buildHomeHref(hasIngredients ? '/recipe' : '/fridge?add=1', { demoMode })}
-        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-[#ea5a1f] px-4 text-[12px] font-black text-white"
+        className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-[#c2410c] px-4 text-[12px] font-black text-white"
       >
         {hasIngredients ? '레시피 화면 확인' : '재료 고르기'}
       </Link>
@@ -757,11 +757,11 @@ function EmptyRecommendation({ demoMode = false, hasIngredients }: { demoMode?: 
 function RecipePublicationEmptyCard({ onRetry }: { onRetry: () => void }) {
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
-      <p className="text-[12px] font-bold text-[#d94d19]">레시피 검수 중</p>
+      <p className="text-[12px] font-bold text-[#a63b13]">레시피 검수 중</p>
       <h2 className="mt-2 break-keep text-[22px] font-black leading-[1.2] text-[#2f2117]">
         현재 공개 가능한 레시피를 준비 중이에요.
       </h2>
-      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
+      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#5f5145]">
         출처, 계량, 안전 안내와 실제 조리 확인을 마친 레시피만 추천합니다.
       </p>
       <button
@@ -789,8 +789,8 @@ function QuickLink({
 }) {
   return (
     <Link href={href} className="flex min-h-[88px] flex-col items-center justify-center rounded-[14px] border border-[#eadcc9] bg-white px-2 py-3 text-center transition-colors hover:bg-[#fffaf3]">
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fff0e4] text-[#d94d19]">{icon}</span>
-      <span className="mt-2 text-[11px] font-bold text-[#7d6d5f]">{label}</span>
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fff0e4] text-[#a63b13]">{icon}</span>
+      <span className="mt-2 text-[11px] font-bold text-[#5f5145]">{label}</span>
       <span className="mt-0.5 text-[13px] font-black text-[#2f2117]">{value}</span>
     </Link>
   )

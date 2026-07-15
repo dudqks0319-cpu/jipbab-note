@@ -38,8 +38,9 @@ export default function RecipeFavoriteButton({
       }
       className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
       aria-label={favorite ? `${name} 찜 해제` : `${name} 찜하기`}
+      aria-pressed={favorite}
     >
-      <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
+      <Heart size={17} className={favorite ? 'fill-[#ea5a1f] text-[#a63b13]' : ''} />
     </button>
   )
 }

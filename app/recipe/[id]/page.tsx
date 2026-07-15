@@ -146,7 +146,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
       <section className="px-5 pb-2">
         <div className="grid grid-cols-3 gap-2">
-          <a href="#ingredients" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#fff5e9] px-2 text-sm font-black text-[#d94d19]">
+          <a href="#ingredients" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#fff5e9] px-2 text-sm font-black text-[#a63b13]">
             <ShoppingBasket size={18} /> 재료 확인
           </a>
           <a href="#cook-mode" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]">
@@ -220,7 +220,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
               href={recipe.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex min-h-11 items-center text-[13px] font-black text-[#d94d19] underline underline-offset-2"
+              className="mt-2 inline-flex min-h-11 items-center text-[13px] font-black text-[#a63b13] underline underline-offset-2"
             >
               원천 페이지 확인
             </Link>

@@ -153,10 +153,10 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-[17px] font-black text-[#2f2117]">
-              <MessageCircle size={17} className="text-[#d94d19]" />
+              <MessageCircle size={17} className="text-[#a63b13]" />
               이 레시피 어땠나요?
             </h2>
-            <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+            <p className="mt-1 text-[12px] font-semibold leading-5 text-[#6b5f55]">
               {recipeName}을 만들어 본 느낌이나 다음에 볼 메모를 남겨보세요.
             </p>
           </div>
@@ -166,24 +166,28 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
         </div>
 
         {authLoading ? (
-          <p className="mt-4 rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#7d6d5f]">
+          <p className="mt-4 rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#5f5145]">
             로그인 상태를 확인하는 중입니다.
           </p>
         ) : isAuthenticated ? (
           <div className="mt-4 space-y-2">
             <textarea
+              id="recipe-comment"
+              aria-label="레시피 댓글"
+              aria-invalid={Boolean(errorMessage)}
+              aria-describedby={`recipe-comment-count${errorMessage ? ' recipe-comment-error' : ''}`}
               value={content}
               onChange={(event) => setContent(event.target.value.slice(0, MAX_COMMENT_LENGTH))}
               placeholder="예: 간을 조금 줄이니 아이도 잘 먹었어요."
               className="min-h-24 w-full resize-none rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold leading-6 text-[#4b3929] outline-none focus:border-[#ea5a1f]"
             />
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold text-[#8f7f70]">{content.length}/{MAX_COMMENT_LENGTH}</span>
+              <span id="recipe-comment-count" className="text-[11px] font-bold text-[#6b5f55]">{content.length}/{MAX_COMMENT_LENGTH}</span>
               <button
                 type="button"
                 onClick={submitComment}
                 disabled={submitting || content.trim().length === 0}
-                className="rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
+                className="rounded-full bg-[#c2410c] px-4 py-2 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
               >
                 {submitting ? "등록 중..." : "댓글 등록"}
               </button>
@@ -194,7 +198,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
             <p className="text-sm font-black text-[#4b3929]">로그인하면 댓글을 남길 수 있어요.</p>
             <Link
               href="/login"
-              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#c2410c] px-4 py-2 text-[12px] font-black text-white"
             >
               로그인하기
             </Link>
@@ -202,18 +206,18 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
         )}
 
         {errorMessage ? (
-          <p className="mt-3 rounded-[12px] bg-[#fff0e4] px-4 py-3 text-sm font-bold text-[#d94d19]" role="alert">
+          <p id="recipe-comment-error" className="mt-3 rounded-[12px] bg-[#fff0e4] px-4 py-3 text-sm font-bold text-[#a63b13]" role="alert">
             {errorMessage}
           </p>
         ) : null}
 
         <div className="mt-4 space-y-2">
           {loading ? (
-            <p className="rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#7d6d5f]">
+            <p className="rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#5f5145]">
               댓글을 불러오는 중입니다.
             </p>
           ) : comments.length === 0 ? (
-            <p className="rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#7d6d5f]">
+            <p className="rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#5f5145]">
               아직 댓글이 없습니다. 첫 후기를 남겨보세요.
             </p>
           ) : (
@@ -224,7 +228,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-[12px] font-black text-[#4b3929]">{comment.authorName || "집밥러"}</p>
-                      <p className="mt-0.5 text-[10px] font-bold text-[#a69585]">{formatCommentDate(comment.createdAt)}</p>
+                      <p className="mt-0.5 text-[10px] font-bold text-[#6b5f55]">{formatCommentDate(comment.createdAt)}</p>
                     </div>
                     {mine ? (
                       <button
@@ -232,7 +236,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
                         onClick={() => {
                           void deleteComment(comment.id);
                         }}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493] hover:bg-[#fff0e4] hover:text-[#d94d19]"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#75675b] hover:bg-[#fff0e4] hover:text-[#a63b13]"
                         aria-label="내 댓글 삭제"
                       >
                         <Trash2 size={13} />

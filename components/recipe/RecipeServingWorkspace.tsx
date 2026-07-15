@@ -76,7 +76,7 @@ export default function RecipeServingWorkspace({
               <Users size={18} />
               <h2 className="text-[18px] font-black">인분 선택</h2>
             </div>
-            <span className="rounded-full bg-white px-3 py-1 text-[12px] font-black text-[#d94d19]">
+            <span className="rounded-full bg-white px-3 py-1 text-[12px] font-black text-[#a63b13]">
               {selectedServings}인분
             </span>
           </div>

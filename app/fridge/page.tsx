@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
 import { useAppSettings } from '@/hooks/useAppSettings'
@@ -246,6 +246,9 @@ export default function FridgePage() {
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
   const [categoryTouched, setCategoryTouched] = useState(false)
   const [bulkInput, setBulkInput] = useState('')
+  const addDialogRef = useRef<HTMLDivElement>(null)
+  const addDialogCloseButtonRef = useRef<HTMLButtonElement>(null)
+  const addDialogReturnFocusRef = useRef<HTMLElement | null>(null)
 
   const unitOptions = useMemo(
     () => getUnitOptionsForSystem(settings.unitSystem),
@@ -298,9 +301,66 @@ export default function FridgePage() {
   }, [])
 
   const openAddModal = useCallback(() => {
+    addDialogReturnFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
     resetForm()
     setShowAddModal(true)
   }, [resetForm])
+
+  const closeAddModal = useCallback(() => {
+    setShowAddModal(false)
+    resetForm()
+  }, [resetForm])
+
+  useEffect(() => {
+    if (!showAddModal) return undefined
+
+    const returnFocusTarget = addDialogReturnFocusRef.current
+    const mainScrollContainer = document.getElementById('main-content')
+    const previousMainOverflowY = mainScrollContainer?.style.overflowY ?? ''
+    if (mainScrollContainer) mainScrollContainer.style.overflowY = 'hidden'
+    const focusFrame = window.requestAnimationFrame(() => addDialogCloseButtonRef.current?.focus())
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeAddModal()
+        return
+      }
+      if (event.key !== 'Tab') return
+
+      const dialog = addDialogRef.current
+      if (!dialog) return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0)
+      const first = focusable[0]
+      const last = focusable.at(-1)
+      if (!first || !last) return
+
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault()
+        first.focus()
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleDialogKeyDown)
+    return () => {
+      window.cancelAnimationFrame(focusFrame)
+      document.removeEventListener('keydown', handleDialogKeyDown)
+      if (mainScrollContainer) mainScrollContainer.style.overflowY = previousMainOverflowY
+      if (returnFocusTarget?.isConnected) returnFocusTarget.focus()
+      if (addDialogReturnFocusRef.current === returnFocusTarget) addDialogReturnFocusRef.current = null
+    }
+  }, [closeAddModal, showAddModal])
 
   const suggestionTotal = useMemo(
     () =>
@@ -611,6 +671,9 @@ export default function FridgePage() {
   }
 
   const handleEdit = (ingredient: IngredientRecord) => {
+    addDialogReturnFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
     const parsedQuantity = parseQuantityDisplay(ingredient.quantity)
 
     setForm({
@@ -660,7 +723,7 @@ export default function FridgePage() {
                 <AlertCircle size={16} />
               </button>
             </div>
-            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+            <p className="mt-1 text-[12px] font-semibold text-[#6b5f55]">
               {normalizedSearchQuery
                 ? `보관 중 ${activeIngredients.length}개 중 ${sortedIngredients.length}개`
                 : `보관 중 ${activeIngredients.length}개 · 소진 ${consumedIngredients.length}개`}
@@ -669,7 +732,7 @@ export default function FridgePage() {
           <button
             onClick={openAddModal}
             aria-label="재료 추가"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.25)]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#c2410c] text-white shadow-[0_8px_18px_rgba(234,90,31,0.25)]"
           >
             <Plus size={22} />
           </button>
@@ -682,7 +745,7 @@ export default function FridgePage() {
               <FridgeStat label="일반" value={`${activeIngredients.filter((item) => getDday(item.expiryDate) > 3).length}개`} />
               <FridgeStat label="소진임박" value={`${activeIngredients.filter((item) => getDday(item.expiryDate) <= 3).length}개`} warning />
             </div>
-            <div className="flex items-center justify-center bg-[#ece8da] text-[#8f7f70]">
+            <div className="flex items-center justify-center bg-[#ece8da] text-[#6b5f55]">
               <Refrigerator size={46} strokeWidth={1.35} />
             </div>
           </div>
@@ -692,10 +755,11 @@ export default function FridgePage() {
           <button
             type="button"
             onClick={() => setViewMode('inventory')}
+            aria-pressed={viewMode === 'inventory'}
             className={`min-h-11 rounded-[11px] text-[12px] font-black ${
               viewMode === 'inventory'
                 ? 'bg-[#2f2117] text-white'
-                : 'text-[#7d6d5f]'
+                : 'text-[#5f5145]'
             }`}
           >
             내 재료
@@ -703,10 +767,11 @@ export default function FridgePage() {
           <button
             type="button"
             onClick={() => setViewMode('browse')}
+            aria-pressed={viewMode === 'browse'}
             className={`min-h-11 rounded-[11px] text-[12px] font-black ${
               viewMode === 'browse'
                 ? 'bg-[#2f2117] text-white'
-                : 'text-[#7d6d5f]'
+                : 'text-[#5f5145]'
             }`}
           >
             카테고리로 담기
@@ -716,20 +781,21 @@ export default function FridgePage() {
         {viewMode === 'inventory' ? (
           <>
             <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
-              <Search size={16} className="text-[#b5a493]" />
+              <Search size={16} className="text-[#75675b]" />
               <input
                 type="search"
+                aria-label="냉장고 재료 검색"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="재료, 카테고리, 메모 검색"
-                className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[#4b3929] outline-none placeholder:text-[#a69585]"
+                className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[#4b3929] outline-none placeholder:text-[#6b5f55]"
               />
               {searchQuery ? (
                 <button
                   type="button"
                   aria-label="재료 검색어 지우기"
                   onClick={() => setSearchQuery('')}
-                  className="text-[#b5a493]"
+                  className="text-[#75675b]"
                 >
                   <X size={15} />
                 </button>
@@ -739,14 +805,14 @@ export default function FridgePage() {
             <button
               type="button"
               onClick={openAddModal}
-              className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] text-[13px] font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+              className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#c2410c] text-[13px] font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
             >
               <Plus size={16} />
               재료 바로 추가
             </button>
           </>
         ) : (
-          <p className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5 text-[12px] font-bold leading-5 text-[#7d6d5f]">
+          <p className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5 text-[12px] font-bold leading-5 text-[#5f5145]">
             큰 장보기 분류로 보고, 사진을 확인한 뒤 바로 냉장고에 담으세요.
           </p>
         )}
@@ -769,11 +835,13 @@ export default function FridgePage() {
             {storageTabs.map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
+                aria-pressed={activeTab === tab}
                 className={`min-h-11 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
                   activeTab === tab
-                    ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                    : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                    ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#a63b13]'
+                    : 'border-[#eadcc9] bg-[#fffaf3] text-[#5f5145]'
                 }`}
               >
                 {tab}
@@ -792,10 +860,11 @@ export default function FridgePage() {
                   key={group.id}
                   type="button"
                   onClick={() => setBrowseGroupId(group.id)}
+                  aria-pressed={browseGroupId === group.id}
                   className={`min-h-[48px] rounded-[14px] border px-2.5 py-2 text-left transition-all ${
                     browseGroupId === group.id
-                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                      : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#a63b13]'
+                      : 'border-[#eadcc9] bg-[#fffaf3] text-[#5f5145]'
                   }`}
                 >
                   <span className="block truncate text-[11px] font-black leading-4">
@@ -812,7 +881,7 @@ export default function FridgePage() {
               <p className="text-[12px] font-black text-[#2f2117]">
                 {activeBrowseGroup.emoji} {activeBrowseGroup.label}
               </p>
-              <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#8f7f70]">
+              <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#6b5f55]">
                 {activeBrowseGroup.description}
               </p>
             </div>
@@ -837,7 +906,7 @@ export default function FridgePage() {
                       </div>
                       <div className="min-w-0 flex-1 pt-1">
                         <p className="line-clamp-2 break-keep text-[13px] font-black leading-4 text-[#2f2117]">{item.name}</p>
-                        <p className="mt-1 text-[10px] font-bold text-[#8f7f70]">{storageType} 보관</p>
+                        <p className="mt-1 text-[10px] font-bold text-[#6b5f55]">{storageType} 보관</p>
                       </div>
                     </div>
                     <button
@@ -849,7 +918,7 @@ export default function FridgePage() {
                       className={`mt-2 flex min-h-11 w-full items-center justify-center rounded-[12px] text-[12px] font-black ${
                         alreadyAdded
                           ? 'cursor-default bg-[#f2eee7] text-[#a99a8a]'
-                          : 'bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.16)]'
+                          : 'bg-[#c2410c] text-white shadow-[0_8px_18px_rgba(234,90,31,0.16)]'
                       }`}
                     >
                       {alreadyAdded ? '추가됨' : '담기'}
@@ -862,7 +931,7 @@ export default function FridgePage() {
         ) : (
           <>
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[12px] font-bold text-[#8f7f70]">
+          <p className="text-[12px] font-bold text-[#6b5f55]">
             {activeTab === '전체' ? '보관 중 재료' : `${activeTab} 재료`} {sortedIngredients.length}개
           </p>
           <button
@@ -870,7 +939,7 @@ export default function FridgePage() {
               void listIngredients()
             }}
             aria-label="재료 목록 새로고침"
-            className="flex items-center gap-1 text-[12px] font-bold text-[#8f7f70]"
+            className="flex items-center gap-1 text-[12px] font-bold text-[#6b5f55]"
           >
             <RefreshCw size={14} />
             새로고침
@@ -880,7 +949,7 @@ export default function FridgePage() {
         {!isAppStoreDemo && loading ? (
           <div className="flex flex-col items-center py-16">
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-mint-300 border-t-transparent" />
-            <p className="mt-3 text-sm text-gray-400">불러오는 중...</p>
+            <p className="mt-3 text-sm text-gray-600">불러오는 중...</p>
           </div>
         ) : error && !isAppStoreDemo ? (
           <div className="rounded-3xl bg-rose-50 p-4 text-center text-sm text-rose-500">{error.message}</div>
@@ -890,7 +959,7 @@ export default function FridgePage() {
               <>
                 <span className="text-7xl">🧊</span>
                 <p className="mt-4 text-lg font-bold text-gray-600">냉장고가 비어있어요</p>
-                <p className="mt-1 text-center text-sm text-gray-400">
+                <p className="mt-1 text-center text-sm text-gray-600">
                   국민 재료를 먼저 담으면 바로 추천 레시피가 살아납니다.
                 </p>
                 <div className="mt-4 flex max-w-[320px] flex-wrap justify-center gap-2">
@@ -906,13 +975,13 @@ export default function FridgePage() {
                     onClick={() => {
                       void handleAddStarterIngredients()
                     }}
-                    className="rounded-full bg-[#ea5a1f] px-8 py-3 font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+                    className="rounded-full bg-[#c2410c] px-8 py-3 font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
                   >
                     국민 재료 5개 바로 담기
                   </button>
                   <button
                     onClick={openAddModal}
-                    className="rounded-full bg-mint-300 px-8 py-3 font-bold text-white shadow-soft"
+                    className="rounded-full bg-[#0f766e] px-8 py-3 font-bold text-white shadow-soft"
                   >
                     + 직접 재료 추가하기
                   </button>
@@ -922,7 +991,7 @@ export default function FridgePage() {
               <>
                 <span className="text-6xl">🔎</span>
                 <p className="mt-4 text-lg font-bold text-gray-600">조건에 맞는 재료가 없어요</p>
-                <p className="mt-1 text-center text-sm text-gray-400">
+                <p className="mt-1 text-center text-sm text-gray-600">
                   검색어를 줄이거나 보관 탭을 전체로 바꿔보세요.
                 </p>
                 <div className="mt-5 flex w-full max-w-[320px] gap-2">
@@ -936,7 +1005,7 @@ export default function FridgePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('전체')}
-                    className="flex-1 rounded-full bg-[#ea5a1f] px-4 py-3 text-[13px] font-black text-white"
+                    className="flex-1 rounded-full bg-[#c2410c] px-4 py-3 text-[13px] font-black text-white"
                   >
                     전체 보기
                   </button>
@@ -951,9 +1020,9 @@ export default function FridgePage() {
                 <div className="mb-2 flex items-center justify-between">
                   <div>
                     <h2 className="text-[13px] font-black text-[#4b3929]">{group.title}</h2>
-                    <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">{group.description}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[#6b5f55]">{group.description}</p>
                   </div>
-                  <span className="rounded-full bg-[#fff7ed] px-2.5 py-1 text-[11px] font-black text-[#a66a17]">
+                  <span className="rounded-full bg-[#fff7ed] px-2.5 py-1 text-[11px] font-black text-[#8a4f0f]">
                     {group.items.length}개
                   </span>
                 </div>
@@ -961,7 +1030,7 @@ export default function FridgePage() {
                   {group.items.map((item) => {
                     const dday = getDday(item.expiryDate)
                     const statusLabel = item.expiryDate ? getStatusLabel(dday) : '나중에 확인'
-                    const statusBg = item.expiryDate ? getStatusBg(dday) : 'bg-[#f1e4d7] text-[#7d6d5f]'
+                    const statusBg = item.expiryDate ? getStatusBg(dday) : 'bg-[#f1e4d7] text-[#5f5145]'
 
                     return (
                       <div
@@ -988,7 +1057,7 @@ export default function FridgePage() {
                               {statusLabel}
                             </span>
                             {item.syncStatus === 'conflict' ? (
-                              <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
+                              <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#a63b13]">
                                 동기화 확인 필요
                               </span>
                             ) : item.syncStatus && item.syncStatus !== 'synced' ? (
@@ -997,13 +1066,13 @@ export default function FridgePage() {
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-1 text-[12px] font-semibold text-[#7d6d5f]">
+                          <p className="mt-1 text-[12px] font-semibold text-[#5f5145]">
                             {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
                           </p>
-                          <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
+                          <p className="mt-0.5 text-[11px] text-[#6b5f55]">보관위치 | {item.storageType}</p>
                           <Link
                             href={`/recipe?q=${encodeURIComponent(item.name)}`}
-                            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19]"
+                            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#a63b13]"
                           >
                             이 재료로 요리
                           </Link>
@@ -1016,7 +1085,7 @@ export default function FridgePage() {
                           <button
                             onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
                             aria-label={`${item.name} 메뉴 열기`}
-                            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f7eee3] text-[#5f5145]"
                           >
                             <MoreVertical size={15} />
                           </button>
@@ -1042,7 +1111,7 @@ export default function FridgePage() {
                               onClick={() => {
                                 void handleDelete(item.id)
                               }}
-                              className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-[#d94d19] hover:bg-[#fff0e4]"
+                              className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-[#a63b13] hover:bg-[#fff0e4]"
                             >
                               삭제
                             </button>
@@ -1071,7 +1140,7 @@ export default function FridgePage() {
               <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-black text-[#4b3929]">{item.name}</p>
-                  <p className="mt-0.5 text-[11px] font-semibold text-[#8f7f70]">
+                  <p className="mt-0.5 text-[11px] font-semibold text-[#6b5f55]">
                     {item.consumedAt ? new Date(item.consumedAt).toLocaleDateString('ko-KR') : '소진 처리됨'}
                   </p>
                 </div>
@@ -1095,12 +1164,11 @@ export default function FridgePage() {
         <div className="fixed inset-0 z-[70] flex items-end justify-center">
           <div
             className="animate-fade-in absolute inset-0 bg-black/40"
-            onClick={() => {
-              setShowAddModal(false)
-              resetForm()
-            }}
+            aria-hidden="true"
+            onClick={closeAddModal}
           />
           <div
+            ref={addDialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={editingId ? '재료 수정 모달' : '재료 추가 모달'}
@@ -1111,10 +1179,9 @@ export default function FridgePage() {
             <div className="mb-5 flex items-center justify-between">
               <h3 className="text-xl font-bold text-gray-800">{editingId ? '✏️ 재료 수정' : '➕ 재료 추가'}</h3>
               <button
-                onClick={() => {
-                  setShowAddModal(false)
-                  resetForm()
-                }}
+                ref={addDialogCloseButtonRef}
+                type="button"
+                onClick={closeAddModal}
                 aria-label="모달 닫기"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100"
               >
@@ -1125,13 +1192,14 @@ export default function FridgePage() {
             {!editingId ? (
               <div className="mb-5 rounded-[18px] border border-[#eadcc9] bg-[#fffaf3] p-3">
                 <div className="flex items-center gap-2">
-                  <ClipboardPaste size={17} className="text-[#ea5a1f]" />
+                  <ClipboardPaste size={17} className="text-[#a63b13]" />
                   <p className="text-sm font-black text-[#2f2117]">한 번에 붙여넣기</p>
                 </div>
-                <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
+                <p className="mt-1 text-[12px] font-semibold leading-5 text-[#6b5f55]">
                   계란 10개, 두부 1모, 양파 2개처럼 줄바꿈이나 쉼표로 여러 재료를 넣을 수 있어요.
                 </p>
                 <textarea
+                  aria-label="여러 재료 한 번에 입력"
                   value={bulkInput}
                   onChange={(event) => setBulkInput(event.target.value)}
                   placeholder={'계란 10개\n두부 1모\n양파 2개\n김치 반통\n돼지고기 300g'}
@@ -1152,8 +1220,9 @@ export default function FridgePage() {
 
             {/* 재료명 */}
             <div className="mb-4">
-              <label className="mb-2 block text-sm font-bold text-gray-700">재료명 *</label>
+              <label htmlFor="fridge-ingredient-name" className="mb-2 block text-sm font-bold text-gray-700">재료명 *</label>
               <input
+                id="fridge-ingredient-name"
                 type="text"
                 placeholder="예: 돼지고기 목살"
                 value={form.name}
@@ -1177,17 +1246,19 @@ export default function FridgePage() {
 
             {/* 카테고리 */}
             <div className="mb-4">
-              <label className="mb-2 block text-sm font-bold text-gray-700">카테고리</label>
-              <div className="grid grid-cols-2 gap-2 min-[380px]:grid-cols-3">
+              <p id="fridge-ingredient-category-label" className="mb-2 block text-sm font-bold text-gray-700">카테고리</p>
+              <div role="group" aria-labelledby="fridge-ingredient-category-label" className="grid grid-cols-2 gap-2 min-[380px]:grid-cols-3">
                 {INGREDIENT_CATEGORIES.map((cat) => (
                   <button
                     key={cat}
+                    type="button"
+                    aria-pressed={form.category === cat}
                     onClick={() => {
                       setForm({ ...form, category: cat })
                       setCategoryTouched(true)
                     }}
                     className={`min-h-11 rounded-2xl px-2.5 py-2 text-[13px] font-bold transition-all ${
-                      form.category === cat ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
+                      form.category === cat ? 'bg-mint-200 text-[#115e59] shadow-sm' : 'bg-gray-100 text-gray-700'
                     }`}
                   >
                     {getCategoryEmoji(cat)} {cat}
@@ -1202,17 +1273,18 @@ export default function FridgePage() {
             {/* 카테고리별 추천 재료 */}
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <label className="block text-sm font-bold text-gray-700">{form.category} 추천 재료</label>
-                <span className="text-[11px] font-medium text-gray-400">칩 선택 시 재료명 자동입력</span>
+                <p className="block text-sm font-bold text-gray-700">{form.category} 추천 재료</p>
+                <span className="text-[11px] font-medium text-gray-600">칩 선택 시 재료명 자동입력</span>
               </div>
 
               <div className="relative mb-2">
                 <Search
                   size={15}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"
                 />
                 <input
                   type="text"
+                  aria-label={`${form.category} 추천 재료 검색`}
                   value={suggestionKeyword}
                   onChange={(event) => setSuggestionKeyword(event.target.value)}
                   placeholder={`${form.category} 재료 검색 (예: 양파)`}
@@ -1223,7 +1295,7 @@ export default function FridgePage() {
                     type="button"
                     aria-label="추천 검색어 지우기"
                     onClick={() => setSuggestionKeyword('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600"
                   >
                     <X size={14} />
                   </button>
@@ -1234,7 +1306,7 @@ export default function FridgePage() {
                 {suggestedIngredients.length === 0 ? (
                   <div className="rounded-xl bg-white px-3 py-4 text-center">
                     <p className="text-xs font-semibold text-gray-500">검색 결과가 없습니다.</p>
-                    <p className="mt-1 text-xs text-gray-400">아래 재료명 입력칸에 직접 적어도 저장할 수 있어요.</p>
+                    <p className="mt-1 text-xs text-gray-600">아래 재료명 입력칸에 직접 적어도 저장할 수 있어요.</p>
                   </div>
                 ) : (
                   <>
@@ -1255,8 +1327,8 @@ export default function FridgePage() {
                             aria-pressed={form.name === item.name}
                             className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
                               form.name === item.name
-                                ? 'bg-mint-300 text-white shadow-soft'
-                                : 'bg-white text-mint-500 hover:bg-mint-100'
+                                ? 'bg-[#0f766e] text-white shadow-soft'
+                                : 'bg-white text-[#115e59] hover:bg-mint-100'
                             }`}
                           >
                             {item.name}
@@ -1265,10 +1337,10 @@ export default function FridgePage() {
                       </div>
                     </div>
                     <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-600">
                         총 {suggestionTotal}개 중 {suggestedIngredients.length}개 표시
                       </p>
-                      <span className="text-[11px] font-semibold text-mint-500">목록에 없으면 직접 입력</span>
+                      <span className="text-[11px] font-semibold text-[#115e59]">목록에 없으면 직접 입력</span>
                     </div>
                   </>
                 )}
@@ -1277,14 +1349,16 @@ export default function FridgePage() {
 
             {/* 보관 방식 */}
             <div className="mb-4">
-              <label className="mb-2 block text-sm font-bold text-gray-700">보관 방식</label>
-              <div className="grid grid-cols-3 gap-2">
+              <p id="fridge-storage-type-label" className="mb-2 block text-sm font-bold text-gray-700">보관 방식</p>
+              <div role="group" aria-labelledby="fridge-storage-type-label" className="grid grid-cols-3 gap-2">
                 {(['냉장', '냉동', '실온'] as const).map((type) => (
                   <button
                     key={type}
+                    type="button"
+                    aria-pressed={form.storage_type === type}
                     onClick={() => handleStorageChange(type)}
                     className={`rounded-2xl py-3 text-sm font-bold transition-all ${
-                      form.storage_type === type ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
+                      form.storage_type === type ? 'bg-mint-200 text-[#115e59] shadow-sm' : 'bg-gray-100 text-gray-700'
                     }`}
                   >
                     {type === '냉장' ? '❄️' : type === '냉동' ? '🧊' : '🌡️'} {type}
@@ -1296,8 +1370,9 @@ export default function FridgePage() {
             {/* 수량 + 유통기한 */}
             <div className="mb-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">수량 숫자</label>
+                <label htmlFor="fridge-ingredient-amount" className="mb-2 block text-sm font-bold text-gray-700">수량 숫자</label>
                 <input
+                  id="fridge-ingredient-amount"
                   type="number"
                   min="0"
                   step="0.5"
@@ -1308,8 +1383,9 @@ export default function FridgePage() {
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">유통기한</label>
+                <label htmlFor="fridge-ingredient-expiry" className="mb-2 block text-sm font-bold text-gray-700">유통기한</label>
                 <input
+                  id="fridge-ingredient-expiry"
                   type="date"
                   value={form.expiry_date}
                   onChange={(e) => setForm({ ...form, expiry_date: e.target.value })}
@@ -1323,10 +1399,11 @@ export default function FridgePage() {
                       <button
                         key={option.label}
                         type="button"
+                        aria-pressed={isActive}
                         onClick={() => setForm({ ...form, expiry_date: quickDate })}
                         className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
                           isActive
-                            ? 'bg-mint-300 text-white shadow-soft'
+                            ? 'bg-[#0f766e] text-white shadow-soft'
                             : 'bg-white text-gray-500 ring-1 ring-gray-200 hover:bg-gray-50'
                         }`}
                       >
@@ -1336,10 +1413,11 @@ export default function FridgePage() {
                   })}
                   <button
                     type="button"
+                    aria-pressed={!form.expiry_date}
                     onClick={() => setForm({ ...form, expiry_date: '', memo: mergeMemoDisplay(form.memo || null, '유통기한 나중에 확인') ?? '' })}
                     className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
                       !form.expiry_date
-                        ? 'bg-[#f1e4d7] text-[#7d6d5f]'
+                        ? 'bg-[#f1e4d7] text-[#5f5145]'
                         : 'bg-white text-gray-500 ring-1 ring-gray-200 hover:bg-gray-50'
                     }`}
                   >
@@ -1351,36 +1429,38 @@ export default function FridgePage() {
 
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <label className="block text-sm font-bold text-gray-700">단위 선택</label>
-                <span className="text-xs text-gray-400">
+                <p id="fridge-ingredient-unit-label" className="block text-sm font-bold text-gray-700">단위 선택</p>
+                <span className="text-xs text-gray-600">
                   현재 기준: {settings.unitSystem === 'metric' ? 'ml / g' : settings.unitSystem === 'spoon' ? '큰술 / 작은술' : '개 / 봉 / 팩'}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div role="group" aria-labelledby="fridge-ingredient-unit-label" className="flex flex-wrap gap-2">
                 {unitOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
+                    aria-pressed={form.amount_unit === option.value}
                     onClick={() => setForm({ ...form, amount_unit: option.value })}
                     className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
                       form.amount_unit === option.value
-                        ? 'bg-mint-300 text-white shadow-soft'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-[#0f766e] text-white shadow-soft'
+                        : 'bg-gray-100 text-gray-700'
                     }`}
                   >
                     {option.label}
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-gray-600">
                 저장 시 {form.amount_value.trim() ? buildQuantityDisplay(Number(form.amount_value), form.amount_unit, settings.unitSystem) ?? '수량 미정' : '수량 미정'} 형태로 보입니다.
               </p>
             </div>
 
             {/* 메모 */}
             <div className="mb-6">
-              <label className="mb-2 block text-sm font-bold text-gray-700">메모</label>
+              <label htmlFor="fridge-ingredient-memo" className="mb-2 block text-sm font-bold text-gray-700">메모</label>
               <input
+                id="fridge-ingredient-memo"
                 type="text"
                 placeholder="예: 이마트에서 구매"
                 value={form.memo}
@@ -1395,12 +1475,12 @@ export default function FridgePage() {
                 onClick={() => {
                   void handleSave()
                 }}
-                className="h-14 w-full rounded-2xl bg-mint-300 text-base font-bold text-white shadow-soft transition-colors hover:bg-mint-400"
+                className="h-14 w-full rounded-2xl bg-[#0f766e] text-base font-bold text-white shadow-soft transition-colors hover:bg-[#115e59]"
               >
                 {editingId ? '수정 완료 ✨' : '저장하고 계속 추가 ✨'}
               </button>
               {saveMessage ? (
-                <p className="mt-2 text-center text-xs font-semibold text-mint-500">{saveMessage}</p>
+                <p className="mt-2 text-center text-xs font-semibold text-[#115e59]">{saveMessage}</p>
               ) : null}
             </div>
           </div>
@@ -1421,8 +1501,8 @@ function FridgeStat({
 }) {
   return (
     <div className="px-3 py-3">
-      <p className={`text-[11px] font-bold ${warning ? 'text-[#d94d19]' : 'text-[#7d6d5f]'}`}>{label}</p>
-      <p className={`mt-1 text-[14px] font-black ${warning ? 'text-[#d94d19]' : 'text-[#2f2117]'}`}>{value}</p>
+      <p className={`text-[11px] font-bold ${warning ? 'text-[#a63b13]' : 'text-[#5f5145]'}`}>{label}</p>
+      <p className={`mt-1 text-[14px] font-black ${warning ? 'text-[#a63b13]' : 'text-[#2f2117]'}`}>{value}</p>
     </div>
   )
 }

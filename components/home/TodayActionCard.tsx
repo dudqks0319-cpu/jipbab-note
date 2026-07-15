@@ -37,7 +37,7 @@ export default function TodayActionCard({
         <div className="h-4 w-28 animate-pulse rounded-full bg-[#eadcc9]" />
         <div className="mt-3 h-7 w-48 animate-pulse rounded-full bg-[#f2dfc8]" />
         <div className="mt-4 h-36 animate-pulse rounded-[18px] bg-[#ecd5bd]" />
-        <div className="mt-4 h-12 animate-pulse rounded-[15px] bg-[#ea5a1f]/30" />
+        <div className="mt-4 h-12 animate-pulse rounded-[15px] bg-[#c2410c]/30" />
       </section>
     )
   }
@@ -90,7 +90,7 @@ export default function TodayActionCard({
           aria-label={`${recipe.name} 레시피 보기`}
           className="relative block h-28 overflow-hidden rounded-[18px] bg-[#fff7ed]"
         >
-          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#9b8979]">
+          <span className="grid h-full place-items-center gap-1 text-[10px] font-black text-[#6b5f55]">
             <Utensils size={18} />
             이미지 없음
           </span>
@@ -151,7 +151,7 @@ export default function TodayActionCard({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={primaryCta.href}
-            className="flex min-h-12 min-w-0 items-center justify-center rounded-[15px] bg-[#ea5a1f] px-2 text-center text-[14px] font-black leading-4 text-white shadow-[0_10px_20px_rgba(234,90,31,0.22)]"
+            className="flex min-h-12 min-w-0 items-center justify-center rounded-[15px] bg-[#c2410c] px-2 text-center text-[14px] font-black leading-4 text-white shadow-[0_10px_20px_rgba(234,90,31,0.22)]"
           >
             {primaryCta.label}
           </Link>

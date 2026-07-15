@@ -1,8 +1,32 @@
 # Phase 6 모바일 접근성·LCP 검증 보고서
 
-Updated: 2026-07-11 KST
+Updated: 2026-07-15 KST
 
-## KOREAN MOBILE UX RESULT
+## 2026-07-15 FE-017 핵심 접근성 보강
+
+- 대상: 홈, 냉장고, 냉장고 재료 추가 모달, 레시피 목록, 장보기, 레시피 상세 조리 모드
+- 결과: 코드로 검증 가능한 핵심 접근성 오류 0건. 실기기 VoiceOver/TalkBack과 OS 확대 동작은 별도 사람 증거로 남긴다.
+- 폼 이름·오류: 검색, 일괄 입력, 재료명·수량·카테고리, 구매처·가격, 외부 레시피 가져오기, 댓글 입력에 명시적인 접근 가능한 이름을 부여했다. 보이는 냉장고 폼 라벨은 `htmlFor`와 `id`로 연결했고 레시피 가져오기·댓글 오류는 `aria-invalid`와 `aria-describedby`로 입력에 연결했다.
+- 키보드: 링크·버튼·입력·select·textarea·tabindex 대상에 3px 고대비 `focus-visible` 표시를 추가했다. 냉장고 재료 추가 모달은 열릴 때 닫기 버튼으로 초점을 옮기고, Tab/Shift+Tab을 모달 안에서 순환시키며, Escape로 닫은 뒤 원래 버튼으로 초점을 돌려준다. 모달 중에는 main 스크롤을 잠근다.
+- 상태·타이머: 냉장고 보기·보관 필터·카테고리·단위, 레시피 즐겨찾기·카테고리·빠른 필터, 장보기 카테고리·구매 상태에 `aria-pressed`를 추가해 색상만으로 상태를 전달하지 않는다. 조리 타이머는 기존의 보이는 `완료`, `role=timer`, assertive 안내, 소리·진동 미지원 시 화면 폴백, 21px 조리 본문 계약을 유지한다.
+- 대비: 핵심 화면의 흐린 회갈색·주황·초록·파랑 텍스트와 주황 CTA 배경을 AA 대비 토큰으로 보정했다. 정적 기준값은 기본 본문 14.45:1, muted 5.75:1, secondary 6.12:1, 초록 secondary 6.14:1, accent 5.78:1, 주 CTA 5.18:1, 포커스 표시 5.27:1이다.
+
+### 자동·브라우저 검증
+
+- `pnpm check:phase6-accessibility`: 인터랙션 태그 236개, 정적 계약 17개, 실패 0개
+- 전체 unit 474/474, TypeScript, lint 오류 0건, Next production build 40/40 경로, 통합 검사, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11 통과
+- CDP runtime: 홈·냉장고·재료 추가 모달·레시피·장보기 5개 상태를 360/390/430px로 검사한 15개 조합 모두에서 44px 미달 0, 명시적 라벨 누락 0, 이름 없는 컨트롤 0, 계산 가능한 텍스트 대비 실패 0, 가로 overflow 0, 키보드 포커스 표시 확인
+- 인앱 브라우저: 실제 냉장고 화면에서 검색 필드의 이름, 선택 버튼의 pressed 상태, 모달의 모든 폼 이름·그룹 이름을 접근성 트리로 확인했다. 모달 시작 초점, Shift+Tab/Tab 순환, Escape 종료·원래 버튼 복귀, main 스크롤 잠금이 동작했고 console error/warning은 0건이었다.
+- 조리 모드 접근성 트리에서 21px 단계 본문, 진행률, 화면 유지 상태, `타이머 완료 · 2단계`, `2단계 타이머 완료`, 소리·진동 외 보이는 완료 문구를 확인했다.
+- 로컬 캡처는 `output/ui-evidence/phase6-accessibility-{home,fridge,fridge-dialog,recipe,shopping}-{360,390,430}-cdp.png`에 있으며 생성 증거라 Git에는 추적하지 않는다.
+
+### 보안·외부 경계
+
+- 인증, 권한, API, DB, 의존성, lockfile은 변경하지 않았다. secret ignore, 추적된 secret 부재, `SECURITY DEFINER` 계약은 통과했다.
+- 저장소 기본 pnpm audit는 폐기된 npm quick endpoint HTTP 410으로만 실패했다. 최신 pnpm bulk audit는 production dependency 108개에서 moderate/high/critical 0, 기존 low 1건이다.
+- VoiceOver/TalkBack 실기기 탐색, 200% 이상 OS 확대·동적 글자 크기, 실제 iOS/Android 터치, staging/production DB, Production 승격, 스토어 제출은 이 증거로 완료 처리하지 않는다. Owner `ReleaseOperator`, due `before_store_candidate_signoff`.
+
+## 2026-07-11 초기 KOREAN MOBILE UX RESULT
 
 - Target: 홈과 공통 모바일 인터랙션 컨트롤
 - Main Issue: 일부 36~40px 터치 타깃, 확대 차단, 건너뛰기 링크와 reduced-motion 대응 부재, 홈 핵심 이미지 LCP 우선순위 경고

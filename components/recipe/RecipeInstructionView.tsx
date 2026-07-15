@@ -111,8 +111,8 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                 <div className={noteClassName}>
                   {step.visualCue ? <p>눈으로 확인: {step.visualCue}</p> : null}
                   {step.beginnerTip ? <p>초보 팁: {step.beginnerTip}</p> : null}
-                  {step.safetyNote ? <p className="text-[#a66a17]">안전: {step.safetyNote}</p> : null}
-                  {step.rescueTip ? <p className="text-[#2f6fec]">막혔을 때: {step.rescueTip}</p> : null}
+                  {step.safetyNote ? <p className="text-[#8a4f0f]">안전: {step.safetyNote}</p> : null}
+                  {step.rescueTip ? <p className="text-[#1f55c7]">막혔을 때: {step.rescueTip}</p> : null}
                 </div>
               ) : null}
             </li>

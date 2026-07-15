@@ -397,16 +397,16 @@ export default function RecipeCookMode({
       <div className="jipbab-panel rounded-[16px] px-4 py-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
-            <ChefHat size={18} className="shrink-0 text-[#ea5a1f]" />
+            <ChefHat size={18} className="shrink-0 text-[#a63b13]" />
             <div className="min-w-0">
               <h2 className="truncate text-[17px] font-black text-[#2f2117]">조리 모드</h2>
-              <p className="mt-1 truncate text-[12px] font-semibold text-[#8f7f70]">{recipeName} · {servings}인분</p>
+              <p className="mt-1 truncate text-[12px] font-semibold text-[#6b5f55]">{recipeName} · {servings}인분</p>
             </div>
           </div>
-          <span className="rounded-full bg-[#fff0e4] px-3 py-1 text-[11px] font-black text-[#d94d19]">{progress}%</span>
+          <span className="rounded-full bg-[#fff0e4] px-3 py-1 text-[11px] font-black text-[#a63b13]">{progress}%</span>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f1e4d7]" role="progressbar" aria-label="조리 진행률" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full rounded-full bg-[#ea5a1f]" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-[#c2410c]" style={{ width: `${progress}%` }} />
         </div>
 
         <section className="mt-4 rounded-[16px] border border-[#e6d7c8] bg-[#fffdf9] px-4 py-4" aria-labelledby="screen-wake-lock-title">
@@ -431,7 +431,7 @@ export default function RecipeCookMode({
                         : '꺼짐'}
             </span>
           </div>
-          <p className="mt-2 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+          <p className="mt-2 break-keep text-[11px] font-semibold leading-5 text-[#6b5f55]">
             켜기를 누르면 조리 중 화면 유지에 동의합니다. 페이지를 나가거나 조리를 완료하면 자동으로 종료합니다.
           </p>
           <button
@@ -441,7 +441,7 @@ export default function RecipeCookMode({
             aria-pressed={wakeLockSelected}
             aria-describedby="screen-wake-lock-status"
             style={{ minHeight: 52 }}
-            className="mt-3 inline-flex min-h-[52px] w-full items-center justify-center rounded-[13px] border border-[#dec9b7] bg-white px-4 text-[13px] font-black text-[#6f4b2e] disabled:cursor-not-allowed disabled:bg-[#eee9e3] disabled:text-[#8f7f70]"
+            className="mt-3 inline-flex min-h-[52px] w-full items-center justify-center rounded-[13px] border border-[#dec9b7] bg-white px-4 text-[13px] font-black text-[#6f4b2e] disabled:cursor-not-allowed disabled:bg-[#eee9e3] disabled:text-[#6b5f55]"
           >
             {wakeLockStatus === 'active' || wakeLockStatus === 'waiting'
               ? '화면 꺼짐 방지 끄기'
@@ -476,16 +476,16 @@ export default function RecipeCookMode({
             <p
               role="timer"
               aria-label={`${activeTimer.stepIndex}단계 타이머 ${remainingSeconds === 0 ? '완료' : `${formatRemainingTime(remainingSeconds)} 남음`}`}
-              className={`mt-3 font-mono text-[40px] font-black tabular-nums leading-none ${timerRunning ? 'text-[#d94d19]' : 'text-[#315f2d]'}`}
+              className={`mt-3 font-mono text-[40px] font-black tabular-nums leading-none ${timerRunning ? 'text-[#a63b13]' : 'text-[#315f2d]'}`}
             >
               {remainingSeconds === 0 ? '완료' : formatRemainingTime(remainingSeconds)}
             </p>
-            <p className="mt-3 break-keep text-[12px] font-semibold leading-5 text-[#7d6d5f]">
+            <p className="mt-3 break-keep text-[12px] font-semibold leading-5 text-[#5f5145]">
               {timerRunning
                 ? '다른 단계로 이동해도 계속 계산해요. 앱을 나갔다 돌아오면 저장된 종료 시각으로 남은 시간을 복원합니다.'
                 : '소리·진동과 함께 완료 상태를 표시했어요. 알림 권한이 없어도 이 화면에서 확인할 수 있습니다.'}
             </p>
-            <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+            <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#6b5f55]">
               한 번에 하나만 실행됩니다. 다른 단계 타이머는 현재 타이머를 취소한 뒤 시작하세요.
             </p>
             <div className={`mt-3 grid gap-2 ${activeTimerStepPosition !== activeStepIndex ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -522,11 +522,11 @@ export default function RecipeCookMode({
           <div className="flex items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#2f2117] px-3 py-1 text-[11px] font-black text-white">{activeStep.index}/{steps.length}단계</span>
-              <span className={`rounded-full px-3 py-1 text-[11px] font-black ${activeStepComplete ? 'bg-[#e7f4df] text-[#315f2d]' : 'bg-white text-[#7d6d5f]'}`}>
+              <span className={`rounded-full px-3 py-1 text-[11px] font-black ${activeStepComplete ? 'bg-[#e7f4df] text-[#315f2d]' : 'bg-white text-[#5f5145]'}`}>
                 {activeStepComplete ? '완료한 단계' : '진행 중'}
               </span>
             </div>
-            <button type="button" aria-expanded={showAllSteps} aria-controls="cook-step-list" onClick={() => setShowAllSteps((current) => !current)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[#eadcc9] px-3 text-[11px] font-black text-[#7d6d5f]">
+            <button type="button" aria-expanded={showAllSteps} aria-controls="cook-step-list" onClick={() => setShowAllSteps((current) => !current)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[#eadcc9] px-3 text-[11px] font-black text-[#5f5145]">
               <List size={13} /> {showAllSteps ? '한 단계씩' : '전체보기'}
             </button>
           </div>
@@ -550,7 +550,7 @@ export default function RecipeCookMode({
                   <li key={ingredient.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2 first:pt-0 last:pb-0">
                     <span className="min-w-0 text-[14px] font-bold leading-6 text-[#4b3929]">
                       {ingredient.name}
-                      {ingredient.usageText ? <small className="block text-[11px] font-semibold leading-4 text-[#8f7f70]">{ingredient.usageText}</small> : null}
+                      {ingredient.usageText ? <small className="block text-[11px] font-semibold leading-4 text-[#6b5f55]">{ingredient.usageText}</small> : null}
                     </span>
                     <strong className="text-right text-[14px] leading-6 text-[#2f2117]">{ingredient.display}</strong>
                   </li>
@@ -568,28 +568,28 @@ export default function RecipeCookMode({
 
           {activeStep.heat || activeDurationLabel ? (
             <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] font-black">
-              {activeStep.heat ? <span className="rounded-[12px] bg-[#fff0e4] px-3 py-2 text-[#d94d19]">불: {activeStep.heat}</span> : <span />}
+              {activeStep.heat ? <span className="rounded-[12px] bg-[#fff0e4] px-3 py-2 text-[#a63b13]">불: {activeStep.heat}</span> : <span />}
               {activeDurationLabel ? <span className="rounded-[12px] bg-[#eef6df] px-3 py-2 text-[#3d7b38]">시간: {activeDurationLabel}</span> : null}
             </div>
           ) : null}
           <div className="mt-3 space-y-2 text-[13px] font-semibold leading-6">
             {activeStep.visualCue ? <p className="rounded-[12px] bg-white px-3 py-2 text-[#6e431d]">눈으로 확인: {activeStep.visualCue}</p> : null}
-            {activeStep.beginnerTip ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">초보 팁: {activeStep.beginnerTip}</p> : null}
-            {activeStep.safetyNote ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">안전: {activeStep.safetyNote}</p> : null}
+            {activeStep.beginnerTip ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#8a4f0f]">초보 팁: {activeStep.beginnerTip}</p> : null}
+            {activeStep.safetyNote ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#8a4f0f]">안전: {activeStep.safetyNote}</p> : null}
             {activeStep.commonMistake ? <p className="rounded-[12px] bg-[#fff4f0] px-3 py-2 text-[#9d4b34]">주의: {activeStep.commonMistake}</p> : null}
-            {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">막혔을 때: {activeStep.rescueTip}</p> : null}
+            {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#1f55c7]">막혔을 때: {activeStep.rescueTip}</p> : null}
           </div>
           {activeTimerSeconds ? (
             activeTimer?.stepIndex === activeStep.index && timerRunning ? (
-              <p className="mt-4 rounded-[13px] bg-[#fff0e4] px-3 py-3 text-center text-[13px] font-black text-[#d94d19]">
+              <p className="mt-4 rounded-[13px] bg-[#fff0e4] px-3 py-3 text-center text-[13px] font-black text-[#a63b13]">
                 이 단계 타이머가 위에서 실행 중이에요.
               </p>
             ) : activeTimer && timerRunning ? (
-              <button type="button" disabled style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#eee9e3] px-3 text-[13px] font-black text-[#8f7f70]">
+              <button type="button" disabled style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#eee9e3] px-3 text-[13px] font-black text-[#6b5f55]">
                 <Timer size={14} /> {activeTimer.stepIndex}단계 타이머 실행 중 · 취소 후 시작
               </button>
             ) : (
-              <button type="button" onClick={() => startTimer(activeStep)} style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#fff0e4] px-3 text-[14px] font-black text-[#d94d19]">
+              <button type="button" onClick={() => startTimer(activeStep)} style={{ minHeight: 52 }} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[13px] bg-[#fff0e4] px-3 text-[14px] font-black text-[#a63b13]">
                 <Timer size={14} />
                 {activeTimer?.stepIndex === activeStep.index ? `${formatDurationLabel(activeTimerSeconds)} 타이머 다시 시작` : `${formatDurationLabel(activeTimerSeconds)} 타이머 시작`}
               </button>
@@ -599,16 +599,16 @@ export default function RecipeCookMode({
             type="button"
             onClick={completeAndContinue}
             style={{ minHeight: 56 }}
-            className="mt-3 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 text-[15px] font-black text-white shadow-[0_8px_20px_rgba(234,90,31,0.2)]"
+            className="mt-3 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[14px] bg-[#c2410c] px-4 text-[15px] font-black text-white shadow-[0_8px_20px_rgba(234,90,31,0.2)]"
           >
             <Check size={17} />
             {isLastStep ? '요리 완성하기' : activeStepComplete ? '다음 단계로' : '이 단계 완료하고 다음으로'}
             {!isLastStep ? <ChevronRight size={17} /> : null}
           </button>
           <div className={`mt-2 grid gap-2 ${activeStepComplete ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            <button type="button" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] bg-white text-[13px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전 단계</button>
+            <button type="button" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] bg-white text-[13px] font-black text-[#5f5145] disabled:opacity-40"><ChevronLeft size={15} /> 이전 단계</button>
             {activeStepComplete ? (
-              <button type="button" onClick={() => undoStepComplete(activeStep.index)} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center rounded-[14px] border border-[#eadcc9] bg-white px-3 text-[13px] font-black text-[#7d6d5f]">완료 취소</button>
+              <button type="button" onClick={() => undoStepComplete(activeStep.index)} style={{ minHeight: 52 }} className="flex min-h-[52px] items-center justify-center rounded-[14px] border border-[#eadcc9] bg-white px-3 text-[13px] font-black text-[#5f5145]">완료 취소</button>
             ) : null}
           </div>
           {!allComplete ? (
@@ -630,7 +630,7 @@ export default function RecipeCookMode({
           <div id="cook-step-list" className="mt-3 space-y-2">
             {steps.map((step) => (
               <button key={step.index} type="button" aria-current={activeStep.index === step.index ? 'step' : undefined} onClick={() => { setActiveStepIndex(steps.findIndex((candidate) => candidate.index === step.index)); setShowAllSteps(false) }} style={{ minHeight: 52 }} className="flex min-h-[52px] w-full items-start gap-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-left">
-                <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${checkedSteps.has(step.index) ? 'border-[#3d7b38] bg-[#3d7b38] text-white' : 'border-[#c9b7a4] text-[#8f7f70]'}`}>{checkedSteps.has(step.index) ? <Check size={13} /> : step.index}</span>
+                <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${checkedSteps.has(step.index) ? 'border-[#3d7b38] bg-[#3d7b38] text-white' : 'border-[#c9b7a4] text-[#6b5f55]'}`}>{checkedSteps.has(step.index) ? <Check size={13} /> : step.index}</span>
                 <span className="text-sm font-semibold leading-6 text-[#4b3929]">{step.description}</span>
               </button>
             ))}
@@ -668,7 +668,7 @@ export default function RecipeCookMode({
           />
         ) : null}
 
-        <button type="button" onClick={resetProgress} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-[12px] font-black text-[#8f7f70]"><RotateCcw size={14} /> 진행 초기화</button>
+        <button type="button" onClick={resetProgress} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-[12px] font-black text-[#6b5f55]"><RotateCcw size={14} /> 진행 초기화</button>
       </div>
     </section>
   )

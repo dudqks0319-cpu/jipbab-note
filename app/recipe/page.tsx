@@ -322,7 +322,7 @@ export default function RecipePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[24px] font-black text-[#2f2117]">레시피</h1>
-            <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">
+            <p className="mt-1 text-[12px] font-semibold text-[#6b5f55]">
               {isAppStoreDemo
                 ? `총 ${baseRecipes.length}개 레시피`
                 : `소진임박 재료부터 추천 · 총 ${visibleTotalCount.toLocaleString()}개${ingredientsLoading ? ' · 재료 동기화 중' : ''}`}
@@ -331,10 +331,12 @@ export default function RecipePage() {
           <button
             type="button"
             onClick={() => setFavoritesOnly((prev) => !prev)}
+            aria-pressed={favoritesOnly}
+            aria-label={`즐겨찾기 레시피 ${favoritesOnly ? '필터 해제' : '필터 적용'} · ${favorites.length}개`}
             className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-[12px] font-black ${
               favoritesOnly
-                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#a63b13]'
+                : 'border-[#eadcc9] bg-[#fffaf3] text-[#5f5145]'
             }`}
           >
             <Heart size={14} className={favoritesOnly ? 'fill-[#ea5a1f]' : ''} />
@@ -342,23 +344,25 @@ export default function RecipePage() {
           </button>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Link href="/meal-plan" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
+          <Link href="/meal-plan" className="flex min-h-11 items-center justify-center rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
             주간 식단
           </Link>
-          <Link href="/recipe/import" className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
+          <Link href="/recipe/import" className="flex min-h-11 items-center justify-center rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2 text-center text-[12px] font-black text-[#4b3929]">
             레시피 가져오기
           </Link>
         </div>
 
         <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
-          <Search size={16} className="text-[#b5a493]" />
+          <Search size={16} className="text-[#75675b]" />
           <input
+            type="search"
+            aria-label="레시피 검색"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="레시피 검색"
-            className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
+            className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#6b5f55]"
           />
-          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-11 w-11 shrink-0 items-center justify-center text-[#9f8d7a]">
+          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-11 w-11 shrink-0 items-center justify-center text-[#6b5f55]">
             <RefreshCw size={15} />
           </button>
         </div>
@@ -366,7 +370,7 @@ export default function RecipePage() {
 
       {error && !isAppStoreDemo ? (
         <section className="px-5 pt-3" role="alert">
-          <div className="rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-4 py-4 text-sm font-semibold text-[#d94d19]">
+          <div className="rounded-[16px] border border-[#ffd1bd] bg-[#fff0e4] px-4 py-4 text-sm font-semibold text-[#a63b13]">
             <p>{error}</p>
             <button
               type="button"
@@ -393,10 +397,11 @@ export default function RecipePage() {
               key={category}
               type="button"
               onClick={() => handleDisplayCategoryClick(category)}
+              aria-pressed={active}
               className={`flex min-h-[58px] flex-col items-center justify-center rounded-[18px] border px-2 py-2 text-center text-[12px] font-black leading-[1.15] transition-all ${
                 active
-                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#a63b13]'
+                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#5f5145]'
               }`}
             >
               <span className="flex min-h-7 flex-col items-center justify-center">
@@ -418,10 +423,11 @@ export default function RecipePage() {
             key={filter.id}
             type="button"
             onClick={() => setQuickFilter(filter.id)}
+            aria-pressed={quickFilter === filter.id}
             className={`min-h-11 rounded-full border px-2 py-1.5 text-[11px] font-black transition-all ${
               quickFilter === filter.id
-                ? 'border-[#2f6fec] bg-[#eef4ff] text-[#2f6fec]'
-                : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                ? 'border-[#2f6fec] bg-[#eef4ff] text-[#1f55c7]'
+                : 'border-[#eadcc9] bg-[#fffaf3] text-[#5f5145]'
             }`}
           >
             {filter.label}
@@ -438,10 +444,10 @@ export default function RecipePage() {
             className="flex min-h-11 w-full items-center justify-between gap-3 text-left text-[12px] font-black text-[#4b3929]"
           >
             <span className="inline-flex items-center gap-2">
-              <SlidersHorizontal size={14} className="text-[#d94d19]" />
+              <SlidersHorizontal size={14} className="text-[#a63b13]" />
               목록 필터
             </span>
-            <span className="rounded-full bg-[#fff0e4] px-2.5 py-1 text-[11px] text-[#d94d19]">
+            <span className="rounded-full bg-[#fff0e4] px-2.5 py-1 text-[11px] text-[#a63b13]">
               {showAdvancedFilters ? '접기' : '상세'}
             </span>
           </button>
@@ -471,7 +477,7 @@ export default function RecipePage() {
                 options={RECIPE_FRIDGE_FILTERS}
                 onChange={(value) => setFridgeFilter(value as RecipeFridgeListFilter)}
               />
-              <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+              <label className="col-span-2 grid gap-1 text-[11px] font-black text-[#5f5145]">
                 정렬
                 <select
                   value={sortMode}
@@ -491,7 +497,7 @@ export default function RecipePage() {
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#7d6d5f]"
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-black text-[#5f5145]"
             >
               <RefreshCw size={14} />
               필터 초기화
@@ -504,7 +510,7 @@ export default function RecipePage() {
         {!isAppStoreDemo && loading ? (
           <div className="flex flex-col items-center py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#ea5a1f] border-t-transparent" />
-            <p className="mt-3 text-sm text-[#8f7f70]">레시피를 불러오는 중...</p>
+            <p className="mt-3 text-sm text-[#6b5f55]">레시피를 불러오는 중...</p>
           </div>
         ) : error && !isAppStoreDemo ? (
           <div className="sr-only">{error}</div>
@@ -513,7 +519,7 @@ export default function RecipePage() {
             <p className="text-sm font-black text-[#4b3929]">
               {publicationEmpty ? '현재 공개 가능한 레시피를 준비 중이에요.' : '조건에 맞는 레시피가 없습니다.'}
             </p>
-            <p className="mt-1 text-xs text-[#8f7f70]">
+            <p className="mt-1 text-xs text-[#6b5f55]">
               {publicationEmpty
                 ? '검수, 출처 확인과 실제 조리를 마친 레시피만 보여드려요.'
                 : selectedCategory !== '전체'
@@ -535,7 +541,7 @@ export default function RecipePage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('전체')}
-                  className="rounded-full bg-[#ea5a1f] px-4 py-2 text-[12px] font-black text-white"
+                  className="rounded-full bg-[#c2410c] px-4 py-2 text-[12px] font-black text-white"
                 >
                   전체 레시피 보기
                 </button>
@@ -608,7 +614,7 @@ export default function RecipePage() {
                     <Link
                       href={`/recipe/${recipe.id}`}
                       onClick={persistRecipeListNavigation}
-                      className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#9b8979]"
+                      className="relative flex h-[86px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-[#f1e8dc] text-[#6b5f55]"
                     >
                       <span className="grid place-items-center gap-1 text-[10px] font-black">
                         <Utensils size={18} />
@@ -632,16 +638,17 @@ export default function RecipePage() {
                           className="min-w-0"
                         >
                           <h2 className="line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
-                          <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">
+                          <p className="mt-1 text-[11px] font-bold text-[#6b5f55]">
                             {recipe.category}{recipe.method ? ` · ${recipe.method}` : ''}
                           </p>
                           {recipe.summary ? (
-                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#7d6d5f]">
+                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#5f5145]">
                               {recipe.summary}
                             </p>
                           ) : null}
                         </Link>
                         <button
+                          type="button"
                           onClick={() =>
                             toggleFavorite({
                               id: recipe.id,
@@ -652,13 +659,14 @@ export default function RecipePage() {
                             })
                           }
                           aria-label={`${recipe.name} 즐겨찾기 토글`}
-                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7ed] text-[#7d6d5f]"
+                          aria-pressed={favorite}
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7ed] text-[#5f5145]"
                         >
-                          <Bookmark size={15} className={favorite ? 'fill-[#ea5a1f] text-[#ea5a1f]' : ''} />
+                          <Bookmark size={15} className={favorite ? 'fill-[#ea5a1f] text-[#a63b13]' : ''} />
                         </button>
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#7d6d5f]">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold text-[#5f5145]">
                         {typeof minutes === 'number' ? (
                           <span className="inline-flex items-center gap-1">
                             <Clock3 size={12} />
@@ -688,7 +696,7 @@ export default function RecipePage() {
                           {readyLabel.text}
                         </span>
                         {beginnerVerified ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-black text-[#2f6fec]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-black text-[#1f55c7]">
                             <BadgeCheck size={10} />
                             초보 검수
                           </span>
@@ -699,11 +707,11 @@ export default function RecipePage() {
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-2 text-[11px] font-semibold text-[#a69585]">
+                      <p className="mt-2 text-[11px] font-semibold text-[#6b5f55]">
                         {recommendationReason}
                       </p>
                       {metadataLabels.missingLabel ? (
-                        <p className="mt-1 text-[11px] font-semibold text-[#a69585]">
+                        <p className="mt-1 text-[11px] font-semibold text-[#6b5f55]">
                           {metadataLabels.missingLabel}
                           {beginnerVerified ? ' · 계량/상태 확인 포함' : ''}
                         </p>
@@ -721,18 +729,18 @@ export default function RecipePage() {
         <button
           onClick={prevPage}
           disabled={page <= 1 || loading}
-          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#5f5145] disabled:opacity-40"
         >
           이전
         </button>
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#8f7f70]">
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#6b5f55]">
           <SlidersHorizontal size={13} />
           {page} / {totalPages}
         </span>
         <button
           onClick={nextPage}
           disabled={page >= totalPages || loading}
-          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#7d6d5f] disabled:opacity-40"
+          className="min-h-11 rounded-full border border-[#eadcc9] bg-[#fffaf3] px-4 py-2 text-xs font-bold text-[#5f5145] disabled:opacity-40"
         >
           다음
         </button>
@@ -753,7 +761,7 @@ function FilterSelect({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+    <label className="grid gap-1 text-[11px] font-black text-[#5f5145]">
       {label}
       <select
         value={value}

@@ -117,6 +117,7 @@ export default function RecipeImportPage() {
       <section className="px-5 pt-4">
         <div className="jipbab-panel space-y-3 rounded-[16px] px-4 py-4">
           <input
+            aria-label="레시피 이름"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="레시피 이름"
@@ -126,8 +127,9 @@ export default function RecipeImportPage() {
               errors.title ? 'border-[#d94d19]' : 'border-[#eadcc9]'
             }`}
           />
-          {errors.title ? <p id="recipe-import-title-error" className="text-[12px] font-bold text-[#d94d19]">{errors.title}</p> : null}
+          {errors.title ? <p id="recipe-import-title-error" className="text-[12px] font-bold text-[#a63b13]">{errors.title}</p> : null}
           <input
+            aria-label="레시피 URL"
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder="https://..."
@@ -137,8 +139,8 @@ export default function RecipeImportPage() {
               errors.url ? 'border-[#d94d19]' : 'border-[#eadcc9]'
             }`}
           />
-          {errors.url ? <p id="recipe-import-url-error" className="text-[12px] font-bold text-[#d94d19]">{errors.url}</p> : null}
-          <button type="button" onClick={addRecipe} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-[#ea5a1f] text-sm font-black text-white">
+          {errors.url ? <p id="recipe-import-url-error" className="text-[12px] font-bold text-[#a63b13]">{errors.url}</p> : null}
+          <button type="button" onClick={addRecipe} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-[#c2410c] text-sm font-black text-white">
             <Plus size={16} />
             저장하기
           </button>
@@ -148,7 +150,7 @@ export default function RecipeImportPage() {
       <section className="px-5 pt-4">
         <h2 className="mb-2 text-[13px] font-black text-[#4b3929]">저장한 외부 레시피</h2>
         {items.length === 0 ? (
-          <div className="jipbab-panel rounded-[16px] px-4 py-8 text-center text-sm font-semibold text-[#8f7f70]">
+          <div className="jipbab-panel rounded-[16px] px-4 py-8 text-center text-sm font-semibold text-[#6b5f55]">
             아직 저장한 링크가 없습니다.
           </div>
         ) : (
@@ -158,9 +160,9 @@ export default function RecipeImportPage() {
                 <LinkIcon size={16} className="shrink-0 text-[#8a5a2a]" />
                 <a href={item.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1">
                   <p className="truncate text-sm font-black text-[#2f2117]">{item.title}</p>
-                  <p className="truncate text-[11px] font-semibold text-[#8f7f70]">Safari에서 열기 · {item.url}</p>
+                  <p className="truncate text-[11px] font-semibold text-[#6b5f55]">Safari에서 열기 · {item.url}</p>
                 </a>
-                <button type="button" onClick={() => removeRecipe(item.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]" aria-label={`${item.title} 삭제`}>
+                <button type="button" onClick={() => removeRecipe(item.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#75675b]" aria-label={`${item.title} 삭제`}>
                   <Trash2 size={14} />
                 </button>
               </div>

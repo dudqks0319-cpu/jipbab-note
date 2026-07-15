@@ -53,13 +53,13 @@ export default function StarterActionCard({
 
   return (
     <section className="rounded-[22px] border border-[#eadcc9] bg-[#fffaf3] px-5 py-6 shadow-[0_10px_24px_rgba(54,38,24,0.06)]">
-      <p className="text-[12px] font-bold text-[#d94d19]">
+      <p className="text-[12px] font-bold text-[#a63b13]">
         {hasIngredients ? '오늘 메뉴 다시 고르기' : '냉장고 열고 고민 끝'}
       </p>
       <h2 className="mt-2 break-keep text-[24px] font-black leading-[1.18] text-[#2f2117]">
         {hasIngredients ? '지금 만들 메뉴를 찾아볼게요' : '있는 재료만 골라주세요'}
       </h2>
-      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#7d6d5f]">
+      <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-[#5f5145]">
         {hasIngredients
           ? '시간, 도구, 부족 재료 기준으로 바로 할 수 있는 메뉴부터 볼게요.'
           : '계란, 두부, 김치만 있어도 괜찮아요. 먼저 오늘 만들 메뉴부터 찾아볼게요.'}
@@ -86,7 +86,7 @@ export default function StarterActionCard({
                   <p className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#2f2117] shadow-[0_6px_14px_rgba(76,51,28,0.10)]">
                     오늘 메뉴 찾기
                   </p>
-                  <p className="rounded-full bg-[#ea5a1f] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]">
+                  <p className="rounded-full bg-[#c2410c] px-2.5 py-1 text-[10px] font-black text-white shadow-[0_6px_14px_rgba(234,90,31,0.20)]">
                     {hasSelection ? `${selectedNames.length}개 선택` : '미리보기'}
                   </p>
                 </div>
@@ -97,7 +97,7 @@ export default function StarterActionCard({
                       className="min-w-0 rounded-[12px] border border-white/90 bg-white/92 px-2 py-1.5 text-center text-[11px] font-black text-[#4b3929] shadow-[0_7px_14px_rgba(47,33,23,0.12)] backdrop-blur-[2px]"
                     >
                       <span className="block truncate">{item.name}</span>
-                      <span className="mt-0.5 block text-[8px] font-black text-[#9b8979]">{item.storageType}</span>
+                      <span className="mt-0.5 block text-[8px] font-black text-[#6b5f55]">{item.storageType}</span>
                     </span>
                   ))}
                 </div>
@@ -116,7 +116,7 @@ export default function StarterActionCard({
                   aria-pressed={selected}
                   className={`min-h-11 cursor-pointer rounded-full border px-4 text-[14px] font-bold transition-colors ${
                     selected
-                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#a63b13]'
                       : 'border-[#eadcc9] bg-white text-[#4b3929]'
                   }`}
                 >
@@ -132,7 +132,7 @@ export default function StarterActionCard({
         {hasIngredients ? (
           <Link
             href={buildHomeHref('/recipe', { demoMode })}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#ea5a1f] px-4 text-[15px] font-black text-white shadow-[0_10px_20px_rgba(234,90,31,0.18)]"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-[#c2410c] px-4 text-[15px] font-black text-white shadow-[0_10px_20px_rgba(234,90,31,0.18)]"
           >
             <Search size={15} />
             메뉴 더 찾기
@@ -144,8 +144,8 @@ export default function StarterActionCard({
             disabled={!hasSelection}
             className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] px-4 text-[15px] font-black transition-colors ${
               hasSelection
-                ? 'cursor-pointer bg-[#ea5a1f] text-white shadow-[0_10px_20px_rgba(234,90,31,0.18)]'
-                : 'cursor-not-allowed bg-[#eadcc9] text-[#8f7f70]'
+                ? 'cursor-pointer bg-[#c2410c] text-white shadow-[0_10px_20px_rgba(234,90,31,0.18)]'
+                : 'cursor-not-allowed bg-[#eadcc9] text-[#6b5f55]'
             }`}
           >
             <Plus size={15} />
@@ -155,14 +155,14 @@ export default function StarterActionCard({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={buildHomeHref('/fridge?add=1', { demoMode })}
-            className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] px-2 text-center text-[13px] font-bold text-[#7d6d5f] transition-colors hover:bg-[#fff0e4]"
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] px-2 text-center text-[13px] font-bold text-[#5f5145] transition-colors hover:bg-[#fff0e4]"
           >
             <Plus size={14} />
             {hasIngredients ? '재료 더 추가' : '직접 추가하기'}
           </Link>
           <Link
             href={buildHomeHref('/fridge', { demoMode })}
-            className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] px-2 text-center text-[13px] font-bold text-[#7d6d5f] transition-colors hover:bg-[#fff0e4]"
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] px-2 text-center text-[13px] font-bold text-[#5f5145] transition-colors hover:bg-[#fff0e4]"
           >
             <Refrigerator size={14} />
             내 냉장고 가기
@@ -170,7 +170,7 @@ export default function StarterActionCard({
         </div>
       </div>
       {summaryText ? (
-        <p className="mt-2 text-center text-[11px] font-semibold text-[#9b8979]">{summaryText}</p>
+        <p className="mt-2 text-center text-[11px] font-semibold text-[#6b5f55]">{summaryText}</p>
       ) : null}
     </section>
   )

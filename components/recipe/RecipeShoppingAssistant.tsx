@@ -308,11 +308,11 @@ export default function RecipeShoppingAssistant({
             <h2 className="text-[17px] font-black text-[#2f2117]">
               {activeScope === "family" ? "가족 재료 체크" : "내 재료 체크"}
             </h2>
-            <p className="mt-1 text-sm text-[#7d6d5f]">
+            <p className="mt-1 text-sm text-[#5f5145]">
               같은 재료와 검수된 대체 재료를 구분해서 확인하세요.
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1 text-xs font-black text-[#d94d19]">
+          <span className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1 text-xs font-black text-[#a63b13]">
             {loading ? "확인 중..." : `같은 재료 ${directMatches.length}/${requiredIngredientDetails.length}`}
           </span>
         </div>
@@ -324,7 +324,7 @@ export default function RecipeShoppingAssistant({
             className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === "personal"
                 ? "bg-[#2f2117] text-white"
-                : "text-[#7d6d5f]"
+                : "text-[#5f5145]"
             }`}
           >
             내 냉장고
@@ -336,7 +336,7 @@ export default function RecipeShoppingAssistant({
             className={`min-h-11 rounded-[11px] text-xs font-black ${
               activeScope === "family"
                 ? "bg-[#2f2117] text-white"
-                : "text-[#7d6d5f] disabled:text-[#c5b4a1]"
+                : "text-[#5f5145] disabled:text-[#c5b4a1]"
             }`}
           >
             가족 냉장고
@@ -344,7 +344,7 @@ export default function RecipeShoppingAssistant({
         </div>
 
         {!group ? (
-          <p className="mt-2 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#8f7f70]">
+          <p className="mt-2 rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#6b5f55]">
             가족 장보기는 가족 냉장고를 만들거나 초대코드로 참여한 뒤 사용할 수 있어요.
           </p>
         ) : null}
@@ -355,7 +355,7 @@ export default function RecipeShoppingAssistant({
             className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3"
           >
             <div className="flex items-start gap-2">
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#d94d19]" />
+              <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#a63b13]" />
               <p className="text-[12px] font-bold leading-5 text-[#7d3f18]">
                 {actionError || ingredientError?.message || shoppingError?.message}
               </p>
@@ -401,7 +401,7 @@ export default function RecipeShoppingAssistant({
           </div>
           <div className="rounded-[12px] bg-[#fff0e4] px-3 py-3">
             <p className="text-[11px] font-bold text-[#a45f37]">부족</p>
-            <p className="mt-1 text-lg font-black text-[#d94d19]">{missingMatches.length}개</p>
+            <p className="mt-1 text-lg font-black text-[#a63b13]">{missingMatches.length}개</p>
           </div>
           <div className="rounded-[12px] bg-[#f3f1ee] px-3 py-3">
             <p className="text-[11px] font-bold text-[#81766c]">확인 필요</p>
@@ -412,7 +412,7 @@ export default function RecipeShoppingAssistant({
         <div className="mt-4 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
           <p className="text-xs font-black text-[#3d7b38]">같은 재료</p>
           {directMatches.length === 0 ? (
-            <p className="mt-2 text-sm text-[#7d6d5f]">정확히 확인된 보유 재료가 없습니다.</p>
+            <p className="mt-2 text-sm text-[#5f5145]">정확히 확인된 보유 재료가 없습니다.</p>
           ) : (
             <ul className="mt-2 space-y-2">
               {directMatches.map((item, index) => (
@@ -487,7 +487,7 @@ export default function RecipeShoppingAssistant({
             <p className="text-sm font-black text-[#2f2117]">
               필수 부족 재료 {missingMatches.length}개를 {activeScope === "family" ? "가족 장보기" : "내 장보기"}에 반영할 수 있어요.
             </p>
-            <p className="mt-1 text-xs text-[#8f7f70]">
+            <p className="mt-1 text-xs text-[#6b5f55]">
               새 재료는 추가하고, 이미 담긴 같은 재료는 선택할 때만 기존 수량에 합칩니다.
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -524,7 +524,7 @@ export default function RecipeShoppingAssistant({
                   >
                     <span className="flex items-start gap-3">
                       {checked ? (
-                        <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#d94d19]" aria-hidden="true" />
+                        <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-[#a63b13]" aria-hidden="true" />
                       ) : (
                         <Circle size={20} className="mt-0.5 shrink-0 text-[#9d8b79]" aria-hidden="true" />
                       )}
@@ -541,14 +541,14 @@ export default function RecipeShoppingAssistant({
                             {actionLabel}
                           </span>
                         </span>
-                        <span className={`mt-1 block text-[11px] font-bold ${checked ? "text-[#d94d19]" : "text-[#7d6d5f]"}`}>
+                        <span className={`mt-1 block text-[11px] font-bold ${checked ? "text-[#a63b13]" : "text-[#5f5145]"}`}>
                           {checked ? "선택됨" : "선택 안 됨"}
                           {choice.existingItem
                             ? ` · 현재 ${choice.existingItem.name}${choice.existingItem.quantity ? ` ${choice.existingItem.quantity}` : ""}`
                             : " · 장보기에 새로 추가"}
                         </span>
                         {choice.substitute ? (
-                          <span className="mt-1 block break-keep text-[10px] font-bold text-[#8f7f70]">
+                          <span className="mt-1 block break-keep text-[10px] font-bold text-[#6b5f55]">
                             검수 정보: {choice.substitute}
                           </span>
                         ) : null}
@@ -564,7 +564,7 @@ export default function RecipeShoppingAssistant({
                 void addSelectedMissingIngredients();
               }}
               disabled={selectedActionCount === 0 || shoppingLoading}
-              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-4 py-3 text-sm font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)] disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
+              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#c2410c] px-4 py-3 text-sm font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)] disabled:cursor-not-allowed disabled:bg-[#e6b49a]"
             >
               <ShoppingCart size={16} />
               {shoppingLoading ? "장보기에 반영 중..." : actionButtonLabel}
@@ -573,7 +573,7 @@ export default function RecipeShoppingAssistant({
               <div className="mt-4 space-y-3">
                 <div>
                   <p className="text-[13px] font-black text-[#2f2117]">쿠팡에서 부족 재료 보기</p>
-                  <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#8f7f70]">
+                  <p className="mt-1 break-keep text-[11px] font-semibold leading-5 text-[#6b5f55]">
                     검증된 쿠팡 파트너스 링크가 있는 재료만 보여줍니다.
                   </p>
                 </div>
