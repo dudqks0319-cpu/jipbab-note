@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-010 장보기 선택·중복 처리
+
+- 레시피 부족 재료를 새 항목과 기존 장보기 항목으로 구분한다. 새 항목만 기본 선택하고, 이미 담긴 재료는 비활성화하지 않고 사용자가 명시적으로 `수량 합치기`를 선택할 때만 병합한다. `새 재료만 선택`, `모두 해제`, 추가·병합 개수를 분리한 실행 버튼과 완료 후 `장보기 목록 확인` 이동을 제공한다.
+- 중복 판정은 부분 문자열이나 광범위한 한글 정규화가 아니라 재료 카탈로그의 정확한 정식명·별칭 ID를 사용한다. `달걀`과 `계란`, `파`와 `대파`는 같은 항목이지만 `국간장`과 `진간장`, `양파`와 `대파`, `김`과 `김치`는 합치지 않는다. 카탈로그 밖 이름은 공백·대소문자만 정리한 정확 일치로 제한한다.
+- 같은 단위의 정수·소수·분수 수량은 합산하고 다른 단위는 원문을 함께 보존한다. 기존 구매완료 항목에 새 레시피 필요량을 합치면 다시 미구매로 연다. 레시피 ID·이름 출처는 중복 없이 누적하고, 로컬 우선 저장과 기존 동기화 큐 경계는 유지한다.
+- 인앱 브라우저의 실제 413px 집밥노트 레시피 화면에서 기존 `계란 10개`와 부족한 `달걀 2개`, `양파 1/4개`, `소금 1/4작은술`을 사용했다. 기본값은 새 재료 2개만 선택됐고 달걀 병합을 명시적으로 선택한 뒤 실행했다. 성공 메시지는 `2개 추가·1개 수량 합치기`를 분리해 표시했고 장보기 목록은 중복 행 없이 총 3개, `계란 12개`, 양파·소금, 모두 미구매였다. 44px 미만 조작부 0개, 가로 넘침 0, console error 0건이며 검증 데이터는 로컬 브라우저 저장소에만 있다.
+- 전체 단위 테스트 464/464, TypeScript, production build 40/40 경로, 콘텐츠 176개·초보 안내 186개, beginner readiness 22/22가 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. 저장소의 `pnpm audit`는 폐기된 npm quick audit endpoint HTTP 410으로 종료되어, 설치된 production 트리 107개 패키지를 공식 npm bulk advisory endpoint로 별도 검사했다. moderate/high/critical 0건이고 optional `@babel/core@7.29.0` 경로에 기존 low 1건(`GHSA-4x5r-pxfx-6jf8`, patched `>=7.29.1`)만 남았다. Owner `FullStackDev`, due `before_dependency_maintenance_release`로 유지한다.
+- 구현 커밋 `c96d70d0988cdab3170e0fdc3a3efe60e1a19738`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_2o4DoUooRSn3chuhZnpcnPAam1sf` (`https://jipbab-note-2w7lty6f8-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 원격 build는 40/40 경로를 통과했고 `/`와 `/recipe/[id]`는 HTTP 200이다. 런타임 허용목록 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다.
+- Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다. 다음 계획 항목은 FE-011 조리 모드 한 단계 화면이다.
+
 ## 2026-07-15 FE-009 재료 매칭 UI
 
 - 레시피 상세 변환이 API v1의 `ingredientId`, pantry staple 여부와 모든 검수 대체관계의 재료 ID·이름·비율·주의를 보존한다. 장보기 도우미는 더 이상 레시피와 냉장고 이름을 합친 문자열 매처를 사용하지 않는다.
