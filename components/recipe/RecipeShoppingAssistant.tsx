@@ -11,7 +11,8 @@ import { useShopping } from "@/hooks/useShopping";
 import CoupangAffiliateCard from "@/components/affiliate/CoupangAffiliateCard";
 import { getCoupangPurchaseLink } from "@/lib/external-links";
 import { suggestIngredientCategory } from "@/lib/ingredient-category";
-import { calculateRecipeIngredientMatch, normalizeKoreanIngredient } from "@/lib/matching";
+import { normalizeKoreanIngredient } from "@/lib/matching";
+import { matchRecipeIngredientsToInventory } from "@/lib/recipe-ingredient-match-status";
 import { getIngredientPhotoUrl } from "@/lib/utils";
 import type { IngredientCategory, RecipeIngredientDetail } from "@/types";
 
@@ -81,26 +82,34 @@ export default function RecipeShoppingAssistant({
     () => new Set(items.map((item) => normalizeKoreanIngredient(item.name))),
     [items],
   );
-  const requiredIngredientNames = useMemo(() => {
-    const requiredNames = ingredientDetails
-      .filter((item) => item.required !== false)
-      .map((item) => item.name.trim())
-      .filter(Boolean);
-    return requiredNames.length > 0 ? requiredNames : ingredientList;
-  }, [ingredientDetails, ingredientList]);
+  const requiredIngredientDetails = useMemo(() => {
+    const requiredDetails = ingredientDetails.filter(
+      (item) => item.required !== false && item.name.trim(),
+    );
+    if (requiredDetails.length > 0) return requiredDetails;
 
-  const match = useMemo(
-    () =>
-      calculateRecipeIngredientMatch(
-        activeIngredients.map((item) => item.name),
-        requiredIngredientNames.join(", "),
-      ),
-    [activeIngredients, requiredIngredientNames],
+    return ingredientList.map((name, index) => ({
+      id: `unresolved-${index}`,
+      ingredientId: null,
+      name,
+      display: "",
+      required: true,
+      substitutions: [],
+    }));
+  }, [ingredientDetails, ingredientList]);
+  const matches = useMemo(
+    () => matchRecipeIngredientsToInventory(requiredIngredientDetails, activeIngredients),
+    [activeIngredients, requiredIngredientDetails],
   );
+  const directMatches = matches.filter((item) => item.status === "exact" || item.status === "alias");
+  const substituteMatches = matches.filter((item) => item.status === "substitute");
+  const missingMatches = matches.filter((item) => item.status === "missing");
+  const unknownMatches = matches.filter((item) => item.status === "unknown");
+  const missingIngredientNames = missingMatches.map((item) => item.recipeIngredient.name);
 
   const missingDrafts = useMemo(
     () =>
-      match.missingIngredients
+      missingIngredientNames
         .filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient)))
         .filter((ingredient) => selectedMissingNames.has(ingredient))
         .map((ingredient) => ({
@@ -111,12 +120,12 @@ export default function RecipeShoppingAssistant({
           sourceRecipeId: recipeId,
           sourceRecipeName: recipeName,
         })),
-    [detailByName, familyGroupId, match.missingIngredients, ownedCategories, recipeId, recipeName, selectedMissingNames, shoppingNames],
+    [detailByName, familyGroupId, missingIngredientNames, ownedCategories, recipeId, recipeName, selectedMissingNames, shoppingNames],
   );
 
   const selectableMissingIngredients = useMemo(
-    () => match.missingIngredients.filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient))),
-    [match.missingIngredients, shoppingNames],
+    () => missingIngredientNames.filter((ingredient) => !shoppingNames.has(normalizeKoreanIngredient(ingredient))),
+    [missingIngredientNames, shoppingNames],
   );
   const selectableMissingIngredientKey = useMemo(
     () => selectableMissingIngredients.join("\u001f"),
@@ -124,7 +133,7 @@ export default function RecipeShoppingAssistant({
   );
   const affiliateSuggestions = useMemo(
     () =>
-      match.missingIngredients
+      missingIngredientNames
         .map((ingredient) => {
           const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
           const category = inferCategory(ingredient, ownedCategories);
@@ -144,7 +153,7 @@ export default function RecipeShoppingAssistant({
         })
         .filter((item): item is { name: string; href: string; imageUrl: string; reason: string } => Boolean(item))
         .slice(0, 3),
-    [detailByName, match.missingIngredients, ownedCategories, partnerLinks, recipeName],
+    [detailByName, missingIngredientNames, ownedCategories, partnerLinks, recipeName],
   );
 
   useEffect(() => {
@@ -208,7 +217,7 @@ export default function RecipeShoppingAssistant({
     void listItems();
   };
 
-  if (ingredientList.length === 0) {
+  if (ingredientList.length === 0 && ingredientDetails.length === 0) {
     return null;
   }
 
@@ -221,11 +230,11 @@ export default function RecipeShoppingAssistant({
               {activeScope === "family" ? "가족 재료 체크" : "내 재료 체크"}
             </h2>
             <p className="mt-1 text-sm text-[#7d6d5f]">
-              냉장고에 있는 재료와 부족한 재료를 한 번에 확인하세요.
+              같은 재료와 검수된 대체 재료를 구분해서 확인하세요.
             </p>
           </div>
-          <span className="rounded-full bg-[#fff0e4] px-3 py-1 text-xs font-black text-[#d94d19]">
-            {loading ? "확인 중..." : `${match.matchRate}% 일치`}
+          <span className="shrink-0 rounded-full bg-[#fff0e4] px-3 py-1 text-xs font-black text-[#d94d19]">
+            {loading ? "확인 중..." : `같은 재료 ${directMatches.length}/${requiredIngredientDetails.length}`}
           </span>
         </div>
 
@@ -288,16 +297,108 @@ export default function RecipeShoppingAssistant({
           </p>
         ) : null}
 
-        {match.missingIngredients.length > 0 ? (
+        <div className="mt-4 grid grid-cols-2 gap-2" aria-live="polite">
+          <div className="rounded-[12px] bg-[#f2f7e7] px-3 py-3">
+            <p className="text-[11px] font-bold text-[#66805c]">같은 재료</p>
+            <p className="mt-1 text-lg font-black text-[#3d7b38]">{directMatches.length}개</p>
+          </div>
+          <div className="rounded-[12px] bg-[#f1efff] px-3 py-3">
+            <p className="text-[11px] font-bold text-[#7467a9]">검수된 대체</p>
+            <p className="mt-1 text-lg font-black text-[#62539b]">{substituteMatches.length}개</p>
+          </div>
+          <div className="rounded-[12px] bg-[#fff0e4] px-3 py-3">
+            <p className="text-[11px] font-bold text-[#a45f37]">부족</p>
+            <p className="mt-1 text-lg font-black text-[#d94d19]">{missingMatches.length}개</p>
+          </div>
+          <div className="rounded-[12px] bg-[#f3f1ee] px-3 py-3">
+            <p className="text-[11px] font-bold text-[#81766c]">확인 필요</p>
+            <p className="mt-1 text-lg font-black text-[#5f554c]">{unknownMatches.length}개</p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
+          <p className="text-xs font-black text-[#3d7b38]">같은 재료</p>
+          {directMatches.length === 0 ? (
+            <p className="mt-2 text-sm text-[#7d6d5f]">정확히 확인된 보유 재료가 없습니다.</p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {directMatches.map((item, index) => (
+                <li
+                  key={item.recipeIngredient.id ?? `${item.recipeIngredient.name}-${index}`}
+                  className="rounded-[12px] bg-white px-3 py-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[#3d7b38]" aria-hidden="true" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-[#4b3929]">{item.recipeIngredient.name}</p>
+                      <p className="mt-1 text-[11px] font-bold text-[#66805c]">
+                        {item.status === "exact" ? "정확히 일치" : "같은 재료 · 별칭"}
+                        {item.inventoryName ? ` · 냉장고: ${item.inventoryName}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {substituteMatches.length > 0 ? (
+          <div className="mt-3 rounded-[14px] border border-[#dcd6f4] bg-[#f6f4ff] px-4 py-3">
+            <p className="text-xs font-black text-[#62539b]">검수된 대체 재료</p>
+            <p className="mt-1 text-[11px] font-semibold leading-5 text-[#7467a9]">
+              편집자가 등록한 대체 관계만 보여줍니다.
+            </p>
+            <ul className="mt-2 space-y-2">
+              {substituteMatches.map((item, index) => (
+                <li
+                  key={item.recipeIngredient.id ?? `${item.recipeIngredient.name}-${index}`}
+                  className="rounded-[12px] bg-white px-3 py-3"
+                >
+                  <p className="text-sm font-black text-[#4b3929]">
+                    {item.recipeIngredient.name} 대신 {item.inventoryName}
+                  </p>
+                  {item.substitution?.ratio ? (
+                    <p className="mt-1 text-[11px] font-bold text-[#62539b]">사용량: {item.substitution.ratio}</p>
+                  ) : null}
+                  {item.substitution?.caution ? (
+                    <p className="mt-1 text-[11px] font-semibold leading-5 text-[#7467a9]">주의: {item.substitution.caution}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {unknownMatches.length > 0 ? (
+          <div className="mt-3 rounded-[14px] border border-[#ded8d0] bg-[#f7f5f2] px-4 py-3">
+            <p className="text-xs font-black text-[#5f554c]">판정 보류</p>
+            <p className="mt-1 text-[11px] font-semibold leading-5 text-[#81766c]">
+              재료 기준 정보가 없어 자동 판정과 장보기 추가에서 제외했습니다.
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {unknownMatches.map((item, index) => (
+                <li
+                  key={item.recipeIngredient.id ?? `${item.recipeIngredient.name}-${index}`}
+                  className="rounded-full bg-white px-3 py-2 text-[12px] font-bold text-[#5f554c]"
+                >
+                  {item.recipeIngredient.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {missingMatches.length > 0 ? (
           <div className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3">
             <p className="text-sm font-black text-[#2f2117]">
-              필수 부족 재료 {match.missingIngredients.length}개를 {activeScope === "family" ? "가족 장보기" : "내 장보기"}에 추가할 수 있어요.
+              필수 부족 재료 {missingMatches.length}개를 {activeScope === "family" ? "가족 장보기" : "내 장보기"}에 추가할 수 있어요.
             </p>
             <p className="mt-1 text-xs text-[#8f7f70]">
               선택 재료는 제외하고, 이미 담긴 항목은 다시 추가하지 않습니다.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {match.missingIngredients.map((ingredient) => {
+              {missingIngredientNames.map((ingredient) => {
                 const alreadyInShopping = shoppingNames.has(normalizeKoreanIngredient(ingredient));
                 const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
                 const checked = selectedMissingNames.has(ingredient) && !alreadyInShopping;
@@ -320,7 +421,7 @@ export default function RecipeShoppingAssistant({
                     </span>
                     {detail?.substitute ? (
                       <span className="mt-0.5 block break-keep text-[10px] font-bold opacity-80">
-                        대체: {detail.substitute}
+                        검수 정보: {detail.substitute}
                       </span>
                     ) : null}
                   </button>
@@ -359,47 +460,6 @@ export default function RecipeShoppingAssistant({
             ) : null}
           </div>
         ) : null}
-
-        <div className="mt-4 grid gap-3">
-          <div className="rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
-            <p className="text-xs font-black text-[#3d7b38]">보유 재료</p>
-            {match.matchedIngredients.length === 0 ? (
-              <p className="mt-2 text-sm text-[#7d6d5f]">현재 냉장고와 일치하는 재료가 없습니다.</p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {match.matchedIngredients.map((ingredient) => (
-                  <li key={ingredient} className="flex items-center gap-2 text-sm font-semibold text-[#4b3929]">
-                    <CheckCircle2 size={14} className="text-[#3d7b38]" />
-                    <span>{ingredient}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="rounded-[14px] border border-[#eadcc9] bg-[#fff7ed] px-4 py-3">
-            <p className="text-xs font-black text-[#d94d19]">필수 부족 재료</p>
-            {match.missingIngredients.length === 0 ? (
-              <p className="mt-2 text-sm text-[#7d6d5f]">지금 바로 요리할 수 있어요.</p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {match.missingIngredients.map((ingredient) => {
-                  const detail = detailByName.get(normalizeKoreanIngredient(ingredient));
-                  return (
-                    <li key={ingredient} className="text-sm font-semibold text-[#4b3929]">
-                      <span>{ingredient}</span>
-                      {detail?.substitute ? (
-                        <p className="mt-0.5 text-[11px] font-bold text-[#8f7f70]">
-                          대체 가능: {detail.substitute}
-                        </p>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
       </div>
     </section>
   );

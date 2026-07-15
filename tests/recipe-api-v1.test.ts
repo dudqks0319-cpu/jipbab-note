@@ -472,7 +472,16 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
 
   const displayRecord = recipeApiV1DetailToRecord(detail);
   assert.equal(displayRecord.ingredientDetails?.[1]?.display, "1/4개");
+  assert.equal(displayRecord.ingredientDetails?.[1]?.ingredientId, "veg-onion");
   assert.equal(displayRecord.ingredientDetails?.[1]?.substitute, "대파 · 같은 부피");
+  assert.deepEqual(displayRecord.ingredientDetails?.[1]?.substitutions, [
+    {
+      ingredientId: "veg-green-onion",
+      name: "대파",
+      ratio: "같은 부피",
+      caution: null,
+    },
+  ]);
   assert.equal(displayRecord.steps[0]?.heat, "low");
   assert.equal(displayRecord.steps[0]?.minutes, 1);
   assert.equal(displayRecord.steps[0]?.durationSecondsMin, 60);

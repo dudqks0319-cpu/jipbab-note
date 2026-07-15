@@ -14,6 +14,10 @@ const cookMode = readFileSync(
   new URL("../components/recipe/RecipeCookMode.tsx", import.meta.url),
   "utf8",
 );
+const shoppingAssistant = readFileSync(
+  new URL("../components/recipe/RecipeShoppingAssistant.tsx", import.meta.url),
+  "utf8",
+);
 
 test("FE-007 detail fails closed and renders only normalized API source fields", () => {
   assert.match(detailPage, /parseRecipeApiV1Detail\(detail\)/);
@@ -33,4 +37,13 @@ test("FE-007 instructions expose API safety and recovery without text-derived to
   assert.doesNotMatch(cookMode, /망했어요:/);
   assert.doesNotMatch(instructionView, /function getStepTools/);
   assert.doesNotMatch(instructionView, /description\.includes\(/);
+});
+
+test("FE-009 shopping UI separates exact, alias, reviewed substitute, and unresolved states", () => {
+  assert.match(shoppingAssistant, /matchRecipeIngredientsToInventory/);
+  assert.match(shoppingAssistant, /정확히 일치/);
+  assert.match(shoppingAssistant, /같은 재료 · 별칭/);
+  assert.match(shoppingAssistant, /검수된 대체 재료/);
+  assert.match(shoppingAssistant, /판정 보류/);
+  assert.doesNotMatch(shoppingAssistant, /calculateRecipeIngredientMatch/);
 });

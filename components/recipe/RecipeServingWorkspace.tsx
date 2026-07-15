@@ -146,7 +146,7 @@ export default function RecipeServingWorkspace({
                   {ingredient.required === false ? <span className="ml-2 text-xs text-[#8d8177]">선택</span> : null}
                 </p>
                 {ingredient.prepNote ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p> : null}
-                {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
+                {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">검수된 대체: {ingredient.substitute}</p> : null}
               </div>
               <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">{ingredient.display}</span>
             </li>

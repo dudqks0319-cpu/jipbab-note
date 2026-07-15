@@ -366,16 +366,34 @@ function substitutionDisplay(
 }
 
 export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDetailRecord {
-  const ingredientDetails = detail.ingredients.map((ingredient) => ({
-    id: ingredient.id,
-    name: ingredient.displayName,
-    display: quantityDisplay(ingredient.quantity),
-    amount: ingredient.quantity.value === null ? null : String(ingredient.quantity.value),
-    unit: ingredient.quantity.unit,
-    required: !ingredient.optional,
-    substitute: substitutionDisplay(ingredient.substitutions[0]),
-    prepNote: ingredient.preparation,
-  }));
+  const ingredientDetails = detail.ingredients.map((ingredient) => {
+    const substitutions = ingredient.substitutions.flatMap((substitution) => {
+      const ingredientId = substitution.ingredientId?.trim() || null;
+      const name = substitution.text?.trim()
+        || (ingredientId ? ingredientCatalogName(ingredientId) : "");
+      if (!name) return [];
+      return [{
+        ingredientId,
+        name,
+        ratio: substitution.ratio?.trim() || null,
+        caution: substitution.caution?.trim() || null,
+      }];
+    });
+
+    return {
+      id: ingredient.id,
+      ingredientId: ingredient.ingredientId,
+      name: ingredient.displayName,
+      display: quantityDisplay(ingredient.quantity),
+      amount: ingredient.quantity.value === null ? null : String(ingredient.quantity.value),
+      unit: ingredient.quantity.unit,
+      required: !ingredient.optional,
+      pantryStaple: ingredient.pantryStaple,
+      substitute: substitutionDisplay(ingredient.substitutions[0]),
+      substitutions,
+      prepNote: ingredient.preparation,
+    };
+  });
   const servingOptions = detail.servingOptions.map((option) => ({
     servings: option.servings,
     toolGuidance: option.toolGuidance,

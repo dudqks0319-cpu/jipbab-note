@@ -494,14 +494,24 @@ export interface RecipeDetailStep {
   imageCaption?: string | null;
 }
 
+export interface RecipeIngredientSubstitution {
+  ingredientId: string | null;
+  name: string;
+  ratio: string | null;
+  caution: string | null;
+}
+
 export interface RecipeIngredientDetail {
   id?: string;
+  ingredientId?: string | null;
   name: string;
   display: string;
   amount?: string | null;
   unit?: string | null;
   required?: boolean;
+  pantryStaple?: boolean;
   substitute?: string | null;
+  substitutions?: RecipeIngredientSubstitution[];
   beginnerNote?: string | null;
   prepNote?: string | null;
 }

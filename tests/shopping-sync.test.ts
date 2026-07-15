@@ -88,14 +88,16 @@ test("recipe shopping assistant supports scoped and selective missing ingredient
 
   assert.match(assistantSource, /useFamilyShare/);
   assert.match(assistantSource, /selectedMissingNames/);
-  assert.match(assistantSource, /requiredIngredientNames/);
+  assert.match(assistantSource, /requiredIngredientDetails/);
+  assert.match(assistantSource, /matchRecipeIngredientsToInventory/);
   assert.match(assistantSource, /required !== false/);
   assert.match(assistantSource, /scope: activeScope/);
   assert.match(assistantSource, /familyGroupId/);
   assert.match(assistantSource, /가족 장보기/);
   assert.match(assistantSource, /이미 담긴 항목/);
   assert.match(assistantSource, /필수 부족 재료/);
-  assert.match(assistantSource, /대체:/);
+  assert.match(assistantSource, /검수된 대체 재료/);
+  assert.match(assistantSource, /판정 보류/);
   assert.match(shoppingPageSource, /useFamilyShare/);
   assert.match(shoppingPageSource, /내 장보기/);
   assert.match(shoppingPageSource, /가족 장보기/);
