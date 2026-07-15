@@ -43,3 +43,13 @@ test("inventory screens distinguish local-only storage from a real sync error", 
   assert.doesNotMatch(fridgePage, /로그인\/네트워크 복구 후 클라우드 동기화 상태를 확인하세요/);
   assert.match(fridgePage, /cloudSyncState !== 'local-only' && item\.syncStatus/);
 });
+
+test("fridge shows an accessible success state only after cloud sync settles", () => {
+  assert.match(
+    fridgePage,
+    /cloudSyncState === 'synced' && pendingSyncCount === 0/,
+  );
+  assert.match(fridgePage, /role="status"/);
+  assert.match(fridgePage, /클라우드 동기화 완료/);
+  assert.match(fridgePage, /재료 변경사항을 안전하게 저장했어요/);
+});

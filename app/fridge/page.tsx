@@ -779,6 +779,20 @@ export default function FridgePage() {
             </Link>
           </div>
         ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'synced' && pendingSyncCount === 0 ? (
+          <div
+            role="status"
+            className="mt-3 flex items-start gap-2 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]"
+          >
+            <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[13px] font-black">클라우드 동기화 완료</p>
+              <p className="mt-1 text-[12px] font-bold leading-relaxed">
+                이 기기의 재료 변경사항을 안전하게 저장했어요.
+              </p>
+            </div>
+          </div>
+        ) : null}
         {!isAppStoreDemo && cloudSyncState === 'error' ? (
           <div
             role="alert"
