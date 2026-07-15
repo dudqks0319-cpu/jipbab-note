@@ -2,6 +2,18 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-013 화면 꺼짐 방지 사용자 동의·fallback
+
+- 조리 타이머 시작과 함께 자동으로 Screen Wake Lock을 요청하던 동작을 제거했다. 기본 상태는 꺼짐이며, 사용자가 `화면 꺼짐 방지 켜기`를 누른 경우에만 명시적 동의 상태를 만들고 브라우저 API를 요청한다. 요청 중·켜짐·복귀 대기·기기 해제·미지원·실패를 서로 다른 상태와 `aria-live` 문장으로 표시한다.
+- 화면 유지가 켜진 동안에는 52px 해제 버튼과 `aria-pressed=true`를 제공한다. 페이지 이탈·조리 완료·진행 초기화·컴포넌트 해제 시 동의와 Wake Lock을 함께 종료하고, 앱이 다시 보일 때는 사용자가 켜 둔 같은 페이지 세션에서만 살아 있는 lock을 복구하거나 새로 요청한다. 빠른 백그라운드 복귀에서 기존 sentinel이 아직 유효하면 대기 상태에 머물지 않고 활성 상태로 되돌린다.
+- API 미지원, 절전 모드·기기 설정에 의한 해제, 요청 거부는 조리를 막지 않는다. 사용자가 화면을 직접 켜 두도록 고정된 수동 fallback을 표시하며 raw browser error나 기기 정보는 화면·로그에 남기지 않는다. 화면 유지 동의는 페이지 이동이나 앱 재실행을 넘어 저장하지 않는다.
+- 인앱 브라우저의 실제 집밥노트 조리 화면에서 기본 `aria-pressed=false`를 확인하고 사용자가 켠 뒤 `켜짐`, `화면 유지 중`, `aria-pressed=true`가 되는 것을 확인했다. 버튼 높이 52px, 가로 넘침 0이다. 명시적으로 끄면 다시 false가 됐고, 켠 상태로 `/shopping`에 이동했다 돌아오면 기본 꺼짐·false로 복귀해 페이지 이탈 정리와 비영속 동의를 확인했다.
+- 전체 단위 테스트 469/469, TypeScript, production build 40/40 경로, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11이 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. 저장소의 pnpm audit transport는 폐기된 npm quick endpoint HTTP 410으로 종료됐고 CI-safe gate의 다른 18개 항목은 통과했다. 최신 `pnpm@11.13.0 audit --prod --audit-level moderate` bulk transport 재검사는 moderate/high/critical 0건, 기존 low 1건을 보고했다. 의존성·lockfile 변경은 없다.
+- 구현 커밋 `d51424e67b73984dd808f62952d95fc5cc2c5b86`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_5ftoaiwPPDfUfX1zn6tddaMb6xpK` (`https://jipbab-note-iroena0m2-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, `/`와 `/recipe/[id]`는 HTTP 200이며 런타임 allowlist 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다.
+- Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다.
+- FE-014 감사에서 레시피·인분별 단계·체크·절대 타이머·완료·피드백의 로컬 영속 저장과 앱 재실행 복원은 이미 구현·검증된 상태임을 재확인했다. 계획서가 요구하는 로그인 후 서버 병합과 충돌 정책은 `/api/v1/recipe-progress` 및 DB 계약이 없어 미완료다. 현재 Supabase migration history·백업·staging 적용이 차단돼 새 운영 DB 범위를 추가하지 않고 분리했으며, 외부 승인 없이 이어갈 다음 항목은 FE-016 열린 레시피 오프라인 캐시다.
+
 ## 2026-07-15 FE-012 타이머 상시 표시·백그라운드 복원
 
 - 조리 단계에서 시작한 타이머를 단계 카드 밖의 고정 영역으로 올렸다. 다른 단계로 이동해도 실행 단계·전체 설정 시간·남은 시간을 계속 표시하고, 원래 단계로 이동하거나 명시적으로 취소할 수 있다. 한 번에 한 타이머만 허용하며 다른 단계의 시작 버튼은 현재 타이머를 취소하기 전까지 비활성화한다.
