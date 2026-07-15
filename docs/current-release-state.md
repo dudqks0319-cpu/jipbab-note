@@ -2,6 +2,16 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-014 로그인 조리 진행 서버 저장 기반
+
+- 인증된 영구 사용자만 사용하는 `GET/POST /api/v1/recipe-progress`와 비공개 `recipe_progress` 저장 계약을 추가했다. 레시피 UUID·2~20인분·최대 100단계·24시간 이내 타이머만 허용하고, 자유 입력은 저장하지 않는다. 서버가 `updated_at`을 소유하며 클라이언트의 `baseServerUpdatedAt`이 현재 revision과 다르면 `409 CONFLICT`로 실패해 오래된 기기가 새 진행을 덮어쓰지 않는다.
+- 익명 세션은 거부하고 service role만 테이블을 읽고 쓸 수 있게 RLS·grant를 닫았다. 입력은 정확한 allowlist와 8KB 상한을 사용하며 모든 응답은 안전한 envelope, bounded request ID, `Cache-Control: no-store`를 유지한다. 분산 rate limit과 생성 race·stale write 충돌 처리를 포함하고, rollback은 runtime 권한만 회수해 기존 데이터를 삭제하지 않는다.
+- 신규 진행 계약 11개를 포함해 전체 단위 테스트 506/506, TypeScript, production build 41/41 경로, API v1 24/24, Phase 6 observability 16/16, Supabase release 150/150, rollback 15/15·critical pair 10/10, CI-safe 19/19, release security 4/4가 통과했다. lint는 오류 0건이며 기존 생성 iOS 산출물·업로드 스크립트 경고 33건만 남았다. production dependency의 알려진 moderate 이상 취약점은 0건이고 새 의존성은 없다.
+- 로컬 HTTP 음수 경로에서 인증 없는 GET·작은 POST는 401, 9,000바이트 POST는 413, PUT은 405를 반환했다. 응답의 no-store와 request ID도 확인했다. 인증 성공 200/201과 실제 409 충돌·교차 사용자 격리는 migration history·백업 확인 후 격리 staging에서 검증하기 전까지 완료로 승격하지 않는다.
+- 구현 커밋 `61b90176fa2fd6e3f45c0d31984ad948419e60ad`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬 변경 두 파일을 제외한 같은 exact SHA의 깨끗한 detached worktree를 Vercel Preview `dpl_9bFAAwYHVVCGdoeRrMu1UWCNjyjP` (`https://jipbab-note-mkf56pfrw-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 원격 compile·TypeScript·41/41 경로를 통과했으며 Vercel 메타데이터의 `gitCommitSha`가 구현 SHA와 일치한다.
+- 보호된 Preview 루트는 인증된 Vercel fetch에서 HTTP 200과 실제 집밥노트 홈을 반환했다. 진행 API는 운영 DB migration 미적용 경계에서 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, 일치하는 응답·헤더 request ID를 반환했다. 이 결과를 인증 성공이나 DB 적용 증거로 사용하지 않는다.
+- 운영·staging DB migration, 실제 계정 200/201/409, 프런트의 로그인 병합·충돌 안내 연결, Production 승격, 실제 사용자·실기기·사람 조리 증거는 변경하지 않았다. 잔여 작업은 Owner `FullStackDev+DBA+QA`, due `before_FE-014_UI_integration` — migration history·백업·격리 staging 적용과 인증 응답 행렬·교차 사용자 격리를 먼저 검증한다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`도 수정·stage하지 않았다.
+
 ## 2026-07-15 FE-001 전체 프런트 공통 API 경계
 
 - `lib/api-client.ts`의 공통 경계가 API v1 `{ data }` envelope뿐 아니라 기존 최상위 JSON과 `204 No Content`를 처리한다. GET/HEAD는 기본 1회 bounded retry, mutation은 명시하지 않으면 재시도하지 않으며, 8초 timeout·호출자 취소·bounded request ID·안전한 오류 형식을 유지한다.
@@ -81,7 +91,7 @@ Updated: 2026-07-15 KST
 - secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. 저장소의 pnpm audit transport는 폐기된 npm quick endpoint HTTP 410으로 종료됐고 CI-safe gate의 다른 18개 항목은 통과했다. 최신 `pnpm@11.13.0 audit --prod --audit-level moderate` bulk transport 재검사는 moderate/high/critical 0건, 기존 low 1건을 보고했다. 의존성·lockfile 변경은 없다.
 - 구현 커밋 `d51424e67b73984dd808f62952d95fc5cc2c5b86`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_5ftoaiwPPDfUfX1zn6tddaMb6xpK` (`https://jipbab-note-iroena0m2-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, `/`와 `/recipe/[id]`는 HTTP 200이며 런타임 allowlist 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다.
 - Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다.
-- FE-014 감사에서 레시피·인분별 단계·체크·절대 타이머·완료·피드백의 로컬 영속 저장과 앱 재실행 복원은 이미 구현·검증된 상태임을 재확인했다. 계획서가 요구하는 로그인 후 서버 병합과 충돌 정책은 `/api/v1/recipe-progress` 및 DB 계약이 없어 미완료다. 현재 Supabase migration history·백업·staging 적용이 차단돼 새 운영 DB 범위를 추가하지 않고 분리했으며, 외부 승인 없이 이어갈 다음 항목은 FE-016 열린 레시피 오프라인 캐시다.
+- 이 FE-013 시점의 FE-014 감사에서는 레시피·인분별 단계·체크·절대 타이머·완료·피드백의 로컬 영속 저장과 앱 재실행 복원만 구현돼 있었고 `/api/v1/recipe-progress`와 DB 계약은 없었다. 현재 서버 저장 기반은 문서 최상단 FE-014 기록에서 추가됐지만, migration history·백업·격리 staging과 실제 계정 응답 행렬, 프런트 병합 UI는 여전히 남아 있다.
 
 ## 2026-07-15 FE-012 타이머 상시 표시·백그라운드 복원
 
