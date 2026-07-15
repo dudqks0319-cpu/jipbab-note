@@ -779,6 +779,21 @@ export default function FridgePage() {
             </Link>
           </div>
         ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'checking' && pendingSyncCount > 0 ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mt-3 flex items-start gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[#6f5540]"
+          >
+            <RefreshCw size={18} aria-hidden="true" className="mt-0.5 shrink-0 animate-spin" />
+            <div>
+              <p className="text-[13px] font-black">클라우드에 저장 중</p>
+              <p className="mt-1 text-[12px] font-bold leading-relaxed">
+                이 기기에 먼저 저장했어요 · {pendingSyncCount}개 변경사항을 반영하고 있어요.
+              </p>
+            </div>
+          </div>
+        ) : null}
         {!isAppStoreDemo && cloudSyncState === 'synced' && pendingSyncCount === 0 ? (
           <div
             role="status"

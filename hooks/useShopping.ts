@@ -21,6 +21,7 @@ import {
   type PendingSyncAction,
 } from "@/lib/local-db/schema";
 import { syncShoppingWithSupabase } from "@/lib/sync/shopping-sync-service";
+import { createCoalescedSyncRunner } from "@/lib/sync/coalesced-sync";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
 import type { CloudSyncState } from "@/lib/sync/cloud-sync-state";
 import type { ShoppingItem, ShoppingItemDraft } from "@/types";
@@ -204,6 +205,11 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
     return result.records;
   }, [deviceId, scopeContext]);
 
+  const requestSync = useMemo(
+    () => createCoalescedSyncRunner(syncInBackground),
+    [syncInBackground],
+  );
+
   const queueRecordsAndSync = useCallback(
     async (records: Array<{ record: LocalShoppingItem; action: PendingSyncAction }>): Promise<void> => {
       for (const item of records) {
@@ -216,12 +222,12 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
       }
 
       setCloudSyncState("checking");
-      void syncInBackground().catch(() => {
+      void requestSync().catch(() => {
         setSource("local");
         setCloudSyncState("error");
       });
     },
-    [syncInBackground],
+    [requestSync],
   );
 
   const listItems = useCallback(async (): Promise<ShoppingItem[]> => {
@@ -233,7 +239,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
     setLoading(localItems.length === 0);
 
     try {
-      return await syncInBackground();
+      return await requestSync();
     } catch {
       setSource("local");
       setCloudSyncState("error");
@@ -244,7 +250,7 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
     } finally {
       setLoading(false);
     }
-  }, [loadLocalItems, syncInBackground]);
+  }, [loadLocalItems, requestSync]);
 
   const addItems = useCallback(
     async (drafts: ShoppingItemDraft[], options: ShoppingAddOptions = {}): Promise<ShoppingAddResult> => {

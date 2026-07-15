@@ -22,6 +22,7 @@ import {
   type PendingSyncAction,
 } from "@/lib/local-db/schema";
 import { syncIngredientsWithSupabase } from "@/lib/sync/ingredient-sync-service";
+import { createCoalescedSyncRunner } from "@/lib/sync/coalesced-sync";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
 import type { CloudSyncState } from "@/lib/sync/cloud-sync-state";
 import { toDateOnlyString } from "@/lib/utils";
@@ -210,6 +211,11 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     return result.records;
   }, [deviceId, scopeContext]);
 
+  const requestSync = useMemo(
+    () => createCoalescedSyncRunner(syncInBackground),
+    [syncInBackground],
+  );
+
   const queueAndSync = useCallback(
     async (record: LocalIngredientRecord, action: PendingSyncAction): Promise<void> => {
       await enqueuePendingSync({
@@ -220,12 +226,12 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
       });
 
       setCloudSyncState("checking");
-      void syncInBackground().catch(() => {
+      void requestSync().catch(() => {
         setSource("local");
         setCloudSyncState("error");
       });
     },
-    [syncInBackground],
+    [requestSync],
   );
 
   const listIngredients = useCallback(async (): Promise<IngredientRecord[]> => {
@@ -243,7 +249,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     setLoading(localItems.length === 0);
 
     try {
-      const synced = await syncInBackground();
+      const synced = await requestSync();
       return visibleIngredients(synced);
     } catch {
       setSource("local");
@@ -255,7 +261,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     } finally {
       setLoading(false);
     }
-  }, [enabled, loadLocalIngredients, syncInBackground]);
+  }, [enabled, loadLocalIngredients, requestSync]);
 
   const fetchIngredient = useCallback(
     async (ingredientId: string): Promise<IngredientRecord | null> => {
@@ -268,7 +274,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
           return local;
         }
 
-        const synced = await syncInBackground();
+        const synced = await requestSync();
         return synced.find((item) => item.id === ingredientId && !item.deletedAt) ?? null;
       } catch {
         setCloudSyncState("error");
@@ -278,7 +284,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
         setLoading(false);
       }
     },
-    [syncInBackground],
+    [requestSync],
   );
 
   const addIngredient = useCallback(

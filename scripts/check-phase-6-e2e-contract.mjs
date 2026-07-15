@@ -18,15 +18,19 @@ const contracts = [
     name: "guest first-use and persistence flow",
     pass:
       captureSource.includes("있는 재료만 골라주세요") &&
-      captureSource.includes("2개 담고 추천 보기") &&
+      captureSource.includes("선택한 재료 2개") &&
+      captureSource.includes("이 재료로 메뉴 찾기") &&
       captureSource.includes("보관 2개") &&
       captureSource.includes("Page.reload"),
   },
   {
     name: "publication fail-closed browser flow",
     pass:
-      captureSource.includes("현재 공개 가능한 레시피를 준비 중이에요.") &&
-      captureSource.includes("레시피 서비스를 점검하고 있습니다.") &&
+      captureSource.includes("먼저 보는 레시피") &&
+      captureSource.includes("지금 볼 수 있는 레시피 20개") &&
+      captureSource.includes("조리 검수 중") &&
+      captureSource.includes("safe_recipe_previews_visible") &&
+      captureSource.includes("safe_recipe_preview_list_visible") &&
       captureSource.includes("출처, 안전 안내와 실제 조리를 확인한 레시피만 공개합니다."),
   },
   {
@@ -59,7 +63,7 @@ const contracts = [
     name: "full E2E blocker is explicit",
     pass:
       captureSource.includes("fullHappyPathStatus") &&
-      captureSource.includes("blocked_no_publication_approved_staging_fixture"),
+      captureSource.includes("blocked_no_human_reviewed_publication_approved_staging_fixture"),
   },
 ];
 

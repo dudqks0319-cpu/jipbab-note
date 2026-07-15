@@ -57,3 +57,13 @@ test("inventory screens show an accessible success state only after cloud sync s
   assert.match(fridgePage, /재료 변경사항을 안전하게 저장했어요/);
   assert.match(shoppingPage, /장보기와 냉장고 변경사항을 안전하게 저장했어요/);
 });
+
+test("inventory screens explain pending cloud writes without calling them an error", () => {
+  for (const page of [fridgePage, shoppingPage]) {
+    assert.match(page, /cloudSyncState === 'checking' && pendingSyncCount > 0/);
+    assert.match(page, /aria-live="polite"/);
+    assert.match(page, /클라우드에 저장 중/);
+    assert.match(page, /이 기기에 먼저 저장했어요/);
+    assert.match(page, /개 변경사항을 반영하고 있어요/);
+  }
+});

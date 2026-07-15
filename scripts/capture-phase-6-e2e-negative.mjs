@@ -1,4 +1,4 @@
-// 이 파일은 승인 레시피가 0개인 현재 상태에서 게스트 첫 사용과 fail-closed 보안 경로를 실제 Chrome으로 검증합니다.
+// 이 파일은 승인 레시피가 0개인 상태에서 안전한 미리보기와 fail-closed 보안 경로를 실제 Chrome으로 검증합니다.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import {
@@ -20,7 +20,7 @@ const chromePath =
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const evidenceDir = path.resolve("output/ui-evidence");
 const screenshotPath = path.join(evidenceDir, "phase6-e2e-guest-negative-390.png");
-const fullHappyPathStatus = "blocked_no_publication_approved_staging_fixture";
+const fullHappyPathStatus = "blocked_no_human_reviewed_publication_approved_staging_fixture";
 
 if (!existsSync(chromePath)) {
   throw new Error(`Chrome not found: ${chromePath}`);
@@ -206,6 +206,11 @@ const clickButton = `(label) => {
 const apiResources = `() => performance.getEntriesByType('resource')
   .map((entry) => entry.name)
   .filter((name) => name.includes('/api/v1/'))`;
+const recipePreviewLinks = `() => [...new Set(
+  [...document.querySelectorAll('a[href^="/recipe/preview/"]')]
+    .map((link) => link.getAttribute('href'))
+    .filter(Boolean)
+)]`;
 
 const checks = [];
 let client = null;
@@ -238,16 +243,12 @@ try {
 
   assert.equal(await evaluate(client, clickButton, ["계란"]), true);
   assert.equal(await evaluate(client, clickButton, ["두부"]), true);
-  await waitForBrowserCondition(client, "two selected ingredients", bodyIncludes, ["2개 담고 추천 보기"]);
-  assert.equal(await evaluate(client, clickButton, ["2개 담고 추천 보기"]), true);
+  await waitForBrowserCondition(client, "two selected ingredients", bodyIncludes, ["선택한 재료 2개"]);
+  assert.equal(await evaluate(client, clickButton, ["이 재료로 메뉴 찾기"]), true);
   await waitForBrowserCondition(client, "two ingredients persisted", bodyIncludes, ["보관 2개"]);
-  await waitForBrowserCondition(
-    client,
-    "publication gate visible",
-    bodyIncludes,
-    ["현재 공개 가능한 레시피를 준비 중이에요."],
-  );
-  checks.push("guest_ingredients_saved", "recommendation_fail_closed");
+  await waitForBrowserCondition(client, "safe recipe previews visible", bodyIncludes, ["먼저 보는 레시피"]);
+  assert.ok((await evaluate(client, recipePreviewLinks)).length > 0);
+  checks.push("guest_ingredients_saved", "safe_recipe_previews_visible");
 
   const reloaded = client.waitFor("Page.loadEventFired");
   await client.send("Page.reload", { ignoreCache: true });
@@ -256,17 +257,14 @@ try {
   checks.push("guest_ingredients_restored_after_reload");
 
   await navigate(client, `${origin}/recipe?q=${encodeURIComponent("계란")}`);
-  await waitForBrowserCondition(
-    client,
-    "recipe service fail-closed",
-    bodyIncludes,
-    ["레시피 서비스를 점검하고 있습니다."],
-  );
+  await waitForBrowserCondition(client, "recipe preview count visible", bodyIncludes, ["지금 볼 수 있는 레시피 20개"]);
+  await waitForBrowserCondition(client, "recipe review lock visible", bodyIncludes, ["조리 검수 중"]);
   assert.equal(
     await evaluate(client, `() => document.querySelector('input[placeholder="레시피 검색"]')?.value`, []),
     "계란",
   );
-  checks.push("recipe_search_url_restored", "recipe_list_fail_closed");
+  assert.ok((await evaluate(client, recipePreviewLinks)).length > 0);
+  checks.push("recipe_search_url_restored", "safe_recipe_preview_list_visible");
 
   await navigate(client, `${origin}/recipe/not-a-uuid`);
   await waitForBrowserCondition(
@@ -351,4 +349,4 @@ for (const check of checks) console.log(`- ${check}`);
 console.log(`Screenshot: ${screenshotPath}`);
 console.log(`Full happy-path status: ${fullHappyPathStatus}`);
 console.log("\nPASS");
-console.log("- current guest and fail-closed paths passed without claiming the blocked published-recipe flow");
+console.log("- current guest, safe-preview, and fail-closed paths passed without claiming the blocked published-recipe flow");
