@@ -2,7 +2,15 @@
 
 ## 한 줄 상태
 
-FE-001 전체 프런트 공통 API 전환은 `1444d79d3570655017a39fd586d900e35d3ace9c`로 GitHub에 푸시했습니다. Vercel Preview `dpl_7ht4YLQeKLnLbprkNBA3ZaQqKtaY`는 exact SHA를 clone해 compile·TypeScript·40/40 route를 통과하고 `READY`이며 `/`·`/barcode`·`/account-delete`·상품 API가 HTTP 200입니다. Production은 승격하지 않았고 DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+FE-014 조리 진행 서버 저장 기반은 `61b90176fa2fd6e3f45c0d31984ad948419e60ad`로 GitHub에 푸시했습니다. Vercel Preview `dpl_9bFAAwYHVVCGdoeRrMu1UWCNjyjP`는 exact SHA의 깨끗한 detached worktree를 compile·TypeScript·41/41 route로 빌드해 `READY`이고 루트는 HTTP 200입니다. 진행 API는 운영 DB 미적용 경계에서 예상된 503·no-store·Retry-After·request ID를 반환합니다. Production은 승격하지 않았고 staging 인증 응답·프런트 병합, DB migration·실제 조리·실제 사용자·실기기·외부 모니터링·Play Console 증거가 남아 목표는 계속 활성 상태입니다.
+
+## 2026-07-15 FE-014 조리 진행 서버 저장 기반
+
+- Preview: `https://jipbab-note-mkf56pfrw-youngbeens-projects.vercel.app`
+- 구현: 영구 사용자 전용 GET/POST API, 비공개 service-role-only RLS, 8KB·100단계·20인분·24시간 입력 상한, 서버 revision 기반 409 충돌, 데이터 보존 rollback
+- 검증: 진행 계약 11/11, unit 506/506, TypeScript pass, lint 오류 0, production build 41/41 routes, API v1 24/24, observability 16/16, Supabase 150/150, rollback 15/15·critical pair 10/10, CI-safe 19/19, release security 4/4
+- 로컬 HTTP: 무인증 GET 401·POST 401, 9,000바이트 POST 413, PUT 405, no-store·request ID 확인
+- 범위 경계: staging/운영 DB는 변경하지 않았고 실제 계정 200/201/409·교차 사용자 격리와 프런트 병합·충돌 안내는 migration history·백업·격리 staging 뒤에 진행
 
 ## 2026-07-15 FE-001 전체 프런트 API 클라이언트
 
@@ -35,10 +43,10 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 - Version: `1.0`
 - Build: `2026062602`
-- Git SHA: `1444d79d3570655017a39fd586d900e35d3ace9c`
-- Preview evidence checkpoint: `975c3399cebf478f1b4e776571b4d4d4a310da84`
+- Git SHA: `61b90176fa2fd6e3f45c0d31984ad948419e60ad`
+- Preview evidence checkpoint: `2c4a25fb63470cfb56ac378b0cecf9da0d74e373`
 - Branch: `agent/phase6-observability-analytics`
-- Phase: `phase7_recipe_completion_fe001_frontend_complete_preview_ready_external_and_human_gates_blocked`
+- Phase: `phase7_recipe_completion_fe014_server_foundation_preview_ready_staging_and_human_gates_blocked`
 - 원장: `release-ledger.yaml`
 
 ## 통과 또는 기록된 증거
@@ -51,6 +59,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 - App Store 국가 가용성 생성(KOR/USA only), `appAvailabilityV2` 200 확인, KR/US 공개 App Store 직접 URL HTTP 200 확인, iTunes Lookup API 지연 기록: `output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md`
 - App Store 출시 앱 원격 WebView production UX 갱신: `output/ui-evidence/shopping-production-vercel-cdp-390.png`
 - OPS-005 레시피 단위 점진 활성화·즉시 비활성 fallback·Vercel Preview·390px 증거: `docs/current-release-state.md`
+- FE-014 영구 사용자 조리 진행 API·비공개 RLS·409 충돌·rollback·Preview 증거: `docs/current-release-state.md`
 - FE-001 전체 프런트 공통 클라이언트·retry/timeout/cancel/401/429/204·브라우저 QA: `docs/api-client.md`
 - App Store Review 제출 완료 UI 증거: `output/release-evidence/2026-06-27T-appstore-review-submitted/summary.md`
 - App Store 최신 스크린샷 5장 교체 완료 증거: `output/release-evidence/2026-06-27T-appstore-screenshot-refresh/appstore-screenshot-refresh.md`
@@ -69,7 +78,7 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 ## 막힌 항목
 
-- P0: Supabase migration history·복구 가능한 백업·격리 staging 미확인으로 Phase 0/1/2/7 DB 적용 및 정상 피드백 저장 미수행
+- P0: Supabase migration history·복구 가능한 백업·격리 staging 미확인으로 Phase 0/1/2/7/FE-014 DB 적용, 정상 피드백·조리 진행 저장 미수행
 - P0: 핵심 20개 실제 조리·초보자·식품 안전·출처·이미지 권리 사람 증거 0/20
 - P0: 현재 후보 build `2026062602`의 iOS/Android 전체 실기기 QA 미완료
 - P0: Play Console 내부 테스트 증거 미완료
@@ -80,4 +89,4 @@ QA 기준 App Store 제출 차단점은 해소됐습니다. 사용자가 TestFli
 
 ## 다음 행동
 
-계획서에서 외부 승인 없이 가능한 FE-001 프런트 마이그레이션은 완료했습니다. 다음 항목은 사람 실제 조리·검수, 현재 후보 실기기 QA, 외부 모니터링, Play Console, migration history·백업이 확인된 격리 staging처럼 외부 또는 사람 증거가 필요합니다. DB 범위는 `docs/external-release-unblock-runbook.md` 0단계부터 시작하며, 증거 전에는 `supabase db push`, Production 승격, 실제 사용자 데이터 수집을 진행하지 않습니다.
+계획서에서 외부 승인 없이 가능한 FE-014 서버 저장 기반까지 완료했습니다. 다음 항목은 migration history·백업을 확인한 격리 staging에서 진행 API 200/201/409·교차 사용자 격리를 검증하고 프런트 병합·충돌 안내를 연결하는 일, 사람 실제 조리·검수, 현재 후보 실기기 QA, 외부 모니터링, Play Console입니다. DB 범위는 `docs/external-release-unblock-runbook.md` 0단계부터 시작하며, 증거 전에는 `supabase db push`, FE-014 프런트 연결, Production 승격, 실제 사용자 데이터 수집을 진행하지 않습니다.
