@@ -2,6 +2,17 @@
 
 Updated: 2026-07-15 KST
 
+## 2026-07-15 FE-011 조리 모드 한 단계 화면
+
+- 상세 상단의 `조리 시작`이 한 단계 화면으로 직접 이동한다. 현재 단계는 큰 21px 행동 문장, 단계/전체 수, 완료 상태, 불 세기, 최소~최대 시간, 시각 완료 신호, 초보·안전·주의·복구 안내를 한 카드에서 제공한다. 검수된 단계 이미지가 있으면 실제 이미지와 대체 텍스트·캡션을 표시하고, 이미지가 없을 때는 자리표시자를 만들지 않는다.
+- API v1에 이미 있던 `ingredientUsages`를 화면 모델까지 보존한다. 단계별 recipe ingredient ID를 현재 인분의 검수된 재료 ID와 정확히 연결해 이름·수량·사용 안내를 표시하며 이름 유사도나 문자열 포함으로 재료를 추론하지 않는다. 레시피 전체 도구는 `이 레시피 도구`로 구분해 단계 전용 정보처럼 오인하지 않게 했다.
+- 동급이던 이전·완료·다음 버튼을 `이 단계 완료하고 다음으로` 한 개의 주 행동으로 합쳤다. 마지막 단계는 `요리 완성하기`로 기존 완료·소진·보관·피드백 흐름에 연결한다. 완료 단계는 상태와 `완료 취소`를 제공하고 전체 단계 목록은 `aria-expanded`, `aria-controls`, `aria-current=step`으로 현재 위치를 전달한다. 본문은 21px, 타이머·보조 탐색은 실제 52px, 주 행동은 56px로 고정했다.
+- 인앱 브라우저의 실제 413px 집밥노트 레시피에서 4인분을 선택했다. 1단계 달걀 `4개`, 2단계 양파 `1/2개`, 3단계 소금 `1/2작은술`이 API의 단계 연결과 검수 인분 수량을 함께 반영했다. 주 행동으로 0→33→100%까지 이동했고 마지막에 `요리를 완성했어요`와 기존 완료 기록 화면이 열렸다. 단계 본문 21px, 타이머·이전 52px, 주 행동 56px, 조리 섹션 413/413px로 가로 넘침 0을 확인했다.
+- 전체 단위 테스트 467/467, TypeScript, production build 40/40 경로, 콘텐츠 176개·초보 안내 186개, Phase 1 계약 25/25, Phase 5 자동 감사 11/11, beginner readiness 22/22가 통과했다. lint는 오류 0건이며 기존 iOS 생성물·업로드 스크립트 경고 33건만 남았다.
+- secret ignore·추적된 secret 부재·`SECURITY DEFINER` 계약은 통과했다. `pnpm release:security-check`와 CI-safe gate의 유일한 실패는 pnpm이 호출하는 폐기된 npm audit endpoint HTTP 410이다. 설치된 production 트리 107개 패키지를 공식 npm bulk advisory endpoint로 재검사해 moderate/high/critical 0건, 기존 `@babel/core@7.29.0` 경로의 low 1건(`GHSA-4x5r-pxfx-6jf8`)을 확인했다. 의존성·lockfile 변경은 없다. Owner `FullStackDev`, due `before_dependency_maintenance_release`로 유지한다.
+- 구현 커밋 `c62fc4cefdaceec284aada925f51daf43295be48`을 `origin/agent/phase6-observability-analytics`에 push했다. 사용자 로컬의 `lib/ingredients-catalog-data.json`과 `ios/App/CapApp-SPM/Package.resolved`를 제외한 같은 깨끗한 커밋을 Vercel Preview `dpl_GEPY4F1xY3XCUshhif4TjdyFerVS` (`https://jipbab-note-1l7pavdqn-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`, 원격 build는 40/40 경로를 통과했고 `/`와 `/recipe/[id]`는 HTTP 200이다. 런타임 허용목록 로그의 `deployment_sha`가 구현 SHA와 정확히 일치한다. SHA가 `unknown`이었던 중간 Preview `dpl_4CgFHhiDnkCLogTUMxfNPjhDht4G`는 검증 후 제거했다.
+- Preview의 목록 API는 운영 DB migration·검수 데이터 미적용 상태라 예상된 redacted `503 DEPENDENCY_NOT_READY`, `Cache-Control: no-store`, `Retry-After: 60`, request ID를 반환한다. Production 승격·DB migration·실제 조리·사람 검수·실기기·스토어·외부 모니터링 증거는 변경하지 않았다. 다음 계획 항목은 FE-012 타이머 엔진·백그라운드 복원이다.
+
 ## 2026-07-15 FE-010 장보기 선택·중복 처리
 
 - 레시피 부족 재료를 새 항목과 기존 장보기 항목으로 구분한다. 새 항목만 기본 선택하고, 이미 담긴 재료는 비활성화하지 않고 사용자가 명시적으로 `수량 합치기`를 선택할 때만 병합한다. `새 재료만 선택`, `모두 해제`, 추가·병합 개수를 분리한 실행 버튼과 완료 후 `장보기 목록 확인` 이동을 제공한다.
