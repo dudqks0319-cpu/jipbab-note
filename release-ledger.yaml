@@ -15,9 +15,9 @@ candidate:
   phase: "phase6_recipe_preview_and_signed_guest_sync_preview_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
+  git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
   branch: "agent/sync-ux-release"
-  dirty_state: "release_ledger_matches_recipe_discovery_runtime_checkpoint"
+  dirty_state: "release_ledger_matches_security_gate_checkpoint"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -588,8 +588,8 @@ security:
     status: "not_applicable"
     evidence: "No payment flow in current release ledger."
   dependency_audit:
-    status: "current_pass_no_known_production_vulnerabilities_at_moderate_or_higher"
-    evidence: "pnpm release:security-check passed 4 of 4"
+    status: "current_pass_bulk_advisory_107_production_packages_zero_moderate_or_higher"
+    evidence: "pnpm release:security-check passed 4 of 4 at b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
 
 blockers:
   - id: "P0-JIPBAB-PHASE5-HUMAN-EVIDENCE"
@@ -709,11 +709,10 @@ sync_preview_backup_20260715:
   recipe_preview_quick_filter_runtime_verified: true
   recipe_preview_detail_runtime_verified: true
   recipe_preview_console_log_count: 0
-  recipe_preview_unit_status: "verified_392_of_392"
+  recipe_preview_unit_status: "verified_394_of_394"
   recipe_preview_build_status: "verified_38_of_38_routes"
-  dependency_audit_status: "blocked_registry_audit_endpoint_retired_http_410_client_update_required"
-  dependency_audit_followup_owner: "FullStackDev"
-  dependency_audit_followup_due: "before_next_production_promotion"
+  dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
+  dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
   local_only_sync_copy_verified: true
   backup_migration_version: "20260715095212"
   backup_migration_name: "backup_sync_domain_pre_signed_session_20260715"
