@@ -459,7 +459,7 @@ export function isRecipeApiV1Detail(value: unknown): value is RecipeApiV1Detail 
   return (
     new Set(stepIds).size === stepIds.length &&
     stepOrders.every((order, index) => order === index + 1) &&
-    uniqueTextArray(detail.safetyNotes, 0, 50, 1_000) &&
+    uniqueTextArray(detail.safetyNotes, 1, 50, 1_000) &&
     boundedText(detail.storageGuide, 1, 2_000) &&
     boundedText(detail.reheatingGuide, 1, 2_000) &&
     source(detail.source) &&

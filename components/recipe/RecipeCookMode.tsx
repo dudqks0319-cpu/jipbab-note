@@ -286,8 +286,9 @@ export default function RecipeCookMode({
           </div>
           <div className="mt-3 space-y-2 text-[12px] font-semibold leading-5">
             {activeStep.visualCue ? <p className="rounded-[12px] bg-white px-3 py-2 text-[#6e431d]">눈으로 확인: {activeStep.visualCue}</p> : null}
-            {activeStep.beginnerTip ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">안전: {activeStep.beginnerTip}</p> : null}
-            {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">망했어요: {activeStep.rescueTip}</p> : null}
+            {activeStep.beginnerTip ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">초보 팁: {activeStep.beginnerTip}</p> : null}
+            {activeStep.safetyNote ? <p className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[#a66a17]">안전: {activeStep.safetyNote}</p> : null}
+            {activeStep.rescueTip ? <p className="rounded-[12px] bg-[#eef4ff] px-3 py-2 text-[#2f6fec]">막혔을 때: {activeStep.rescueTip}</p> : null}
           </div>
           <div className="mt-4 grid grid-cols-[0.8fr_1.2fr_0.8fr] gap-2">
             <button type="button" onClick={() => setActiveStepIndex((current) => Math.max(0, current - 1))} disabled={activeStepIndex === 0} className="flex min-h-12 items-center justify-center gap-1 rounded-[14px] border border-[#eadcc9] text-[12px] font-black text-[#7d6d5f] disabled:opacity-40"><ChevronLeft size={15} /> 이전</button>

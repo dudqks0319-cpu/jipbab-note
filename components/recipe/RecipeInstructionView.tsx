@@ -20,26 +20,6 @@ const modeOptions: Array<{ id: InstructionMode; label: string; icon: typeof Grid
   { id: "text", label: "전체", icon: List },
 ];
 
-function getStepTools(step: RecipeDetailStep): string[] {
-  const source = [step.beginnerTip, step.description].filter(Boolean).join(" ");
-  const tools = ["프라이팬", "냄비", "전자레인지", "도마", "칼", "볼", "주걱", "채망"].filter((tool) =>
-    source.includes(tool),
-  );
-  return tools.slice(0, 3);
-}
-
-function getHeatLabel(step: RecipeDetailStep): string | null {
-  if (step.heat) {
-    return String(step.heat);
-  }
-  const text = step.description;
-  if (text.includes("강불")) return "강불";
-  if (text.includes("중불")) return "중불";
-  if (text.includes("약불")) return "약불";
-  if (text.includes("불을 끄") || text.includes("불 끄")) return "불 끄기";
-  return null;
-}
-
 export default function RecipeInstructionView({ recipeName, steps }: RecipeInstructionViewProps) {
   const [mode, setMode] = useState<InstructionMode>("list");
   const hasAnyStepImage = steps.some((step) => Boolean(step.imageUrl));
@@ -77,8 +57,7 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
 
       <ol className={mode === "compact" ? "mt-6 grid gap-3" : hasAnyStepImage ? "mt-7 space-y-12" : "mt-6 space-y-8"}>
         {steps.map((step) => {
-          const tools = getStepTools(step);
-          const heatLabel = getHeatLabel(step);
+          const heatLabel = step.heat ? String(step.heat) : null;
           const showMediaColumn = mode !== "text" && Boolean(step.imageUrl);
           const gridClassName = showMediaColumn
             ? "grid grid-cols-[38px_minmax(0,1fr)_112px] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)_128px]"
@@ -107,11 +86,6 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                     {mode === "compact" ? step.action || step.description.split(".")[0] : step.action || step.description}
                   </p>
                   <div className={metaClassName}>
-                    {tools.length > 0 ? (
-                      <p className={showMediaColumn ? "break-keep" : "rounded-full bg-[#eef6df] px-2 py-1"}>
-                        {showMediaColumn ? `• ${tools.join(" · ")}` : tools.join(" · ")}
-                      </p>
-                    ) : null}
                     {heatLabel ? (
                       <p className={showMediaColumn ? "break-keep" : "rounded-full bg-[#eef6df] px-2 py-1"}>
                         {showMediaColumn ? `• ${heatLabel}` : heatLabel}
@@ -133,10 +107,12 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                   />
                 ) : null}
               </div>
-              {mode !== "compact" && (step.visualCue || step.beginnerTip) ? (
+              {mode !== "compact" && (step.visualCue || step.beginnerTip || step.safetyNote || step.rescueTip) ? (
                 <div className={noteClassName}>
                   {step.visualCue ? <p>눈으로 확인: {step.visualCue}</p> : null}
                   {step.beginnerTip ? <p>초보 팁: {step.beginnerTip}</p> : null}
+                  {step.safetyNote ? <p className="text-[#a66a17]">안전: {step.safetyNote}</p> : null}
+                  {step.rescueTip ? <p className="text-[#2f6fec]">막혔을 때: {step.rescueTip}</p> : null}
                 </div>
               ) : null}
             </li>

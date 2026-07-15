@@ -28,6 +28,7 @@ import {
   RecipeApiV1ClientError,
   submitRecipeFeedbackV1,
 } from "../lib/recipe-api-v1-client.ts";
+import { isRecipeDetailPublicationApproved } from "../lib/recipe-publication.ts";
 
 const REVIEWED_AT = "2026-07-10T05:00:00.000Z";
 
@@ -447,9 +448,28 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
   assert.equal(displayRecord.steps[0]?.minutes, 1);
   assert.equal(displayRecord.steps[0]?.durationSecondsMin, 60);
   assert.equal(displayRecord.steps[0]?.timerPresetSeconds, 60);
+  assert.equal(displayRecord.steps[0]?.safetyNote, "뜨거운 냄비를 조심한다.");
   assert.equal(displayRecord.steps[0]?.rescueTip, "너무 익으면 불을 끄고 물을 조금 넣는다.");
   assert.deepEqual(displayRecord.safetyNotes, ["달걀은 충분히 익힌다."]);
+  assert.equal(displayRecord.sourceTitle, "집밥노트 자체 작성");
   assert.equal(displayRecord.sourceAttribution, "집밥노트");
+  assert.equal(isRecipeDetailPublicationApproved(displayRecord), true);
+
+  for (const invalidRecord of [
+    { ...displayRecord, safetyNotes: [] },
+    { ...displayRecord, sourceTitle: null },
+    { ...displayRecord, sourceProvider: null },
+    { ...displayRecord, sourceAttribution: null },
+    { ...displayRecord, sourceLicense: null },
+    {
+      ...displayRecord,
+      steps: displayRecord.steps.map((step, index) =>
+        index === 0 ? { ...step, rescueTip: null } : step,
+      ),
+    },
+  ]) {
+    assert.equal(isRecipeDetailPublicationApproved(invalidRecord), false);
+  }
 
   const listIngredients = detailIngredients.map((ingredient) => ({ ...ingredient, recipe_id: row.id }));
   const listSteps = detailSteps.map((step) => ({ ...step, recipe_id: row.id }));
@@ -481,6 +501,11 @@ test("API v1 detail returns structured ingredients, steps, source, safety, and s
         ...detail,
         source: { ...detail.source, viewerEmail: "private@example.com" },
       }),
+    (error: unknown) =>
+      error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
+  );
+  assert.throws(
+    () => parseRecipeApiV1Detail({ ...detail, safetyNotes: [] }),
     (error: unknown) =>
       error instanceof RecipeApiV1ClientError && error.code === "INVALID_RESPONSE",
   );

@@ -380,7 +380,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     durationSecondsMin: step.durationSeconds.min,
     durationSecondsMax: step.durationSeconds.max,
     timerPresetSeconds: step.durationSeconds.timerPreset,
-    beginnerTip: step.safetyNote,
+    safetyNote: step.safetyNote,
     visualCue: step.cues.visual,
     rescueTip: step.recoveryTip,
   }));
@@ -417,6 +417,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     storageTip: detail.storageGuide,
     reheatTip: detail.reheatingGuide,
     sourceProvider: detail.source.provider,
+    sourceTitle: detail.source.title,
     sourceExternalId: detail.source.external_id,
     sourceUrl: detail.source.source_url,
     sourceAttribution: detail.source.attribution,

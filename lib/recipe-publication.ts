@@ -42,6 +42,11 @@ type PublishedRecipeDetailRecord = RecipeDetailRecord & {
   totalMinutes: number;
   servings: number;
   ingredientDetails: NonNullable<RecipeDetailRecord["ingredientDetails"]>;
+  safetyNotes: string[];
+  sourceProvider: string;
+  sourceTitle: string;
+  sourceAttribution: string;
+  sourceLicense: string;
 };
 
 function hasText(value: unknown): value is string {
@@ -215,10 +220,18 @@ export function isRecipeDetailPublicationApproved(
         hasText(step.description) &&
         hasText(step.heat) &&
         isFiniteNumber(step.minutes, 0) &&
-        hasText(step.visualCue),
+        hasText(step.visualCue) &&
+        hasText(step.rescueTip),
     ) &&
+    Array.isArray(recipe.safetyNotes) &&
+    recipe.safetyNotes.length >= 1 &&
+    recipe.safetyNotes.every(hasText) &&
     hasText(recipe.storageTip) &&
-    hasText(recipe.reheatTip)
+    hasText(recipe.reheatTip) &&
+    hasText(recipe.sourceProvider) &&
+    hasText(recipe.sourceTitle) &&
+    hasText(recipe.sourceAttribution) &&
+    hasText(recipe.sourceLicense)
   );
 }
 

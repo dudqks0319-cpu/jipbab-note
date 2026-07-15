@@ -486,6 +486,7 @@ export interface RecipeDetailStep {
   durationSecondsMax?: number | null;
   timerPresetSeconds?: number | null;
   beginnerTip?: string | null;
+  safetyNote?: string | null;
   visualCue?: string | null;
   commonMistake?: string | null;
   rescueTip?: string | null;
@@ -536,6 +537,7 @@ export interface RecipeDetailRecord extends RecipeRecord {
   recipePrepImageUrl?: string | null;
   recipeStepsImageUrl?: string | null;
   sourceProvider?: string | null;
+  sourceTitle?: string | null;
   sourceExternalId?: string | null;
   sourceUrl?: string | null;
   sourceAttribution?: string | null;

@@ -20,7 +20,10 @@ import RecipeImage from "@/components/recipe/RecipeImage";
 import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
-import { recipeApiV1DetailToRecord } from "@/lib/recipe-api-v1-client";
+import {
+  parseRecipeApiV1Detail,
+  recipeApiV1DetailToRecord,
+} from "@/lib/recipe-api-v1-client";
 import { getPublicRecipeDetailV1 } from "@/lib/recipe-api-v1-repository";
 import { isBeginnerRecipeGeneratedImage } from "@/lib/recipe-images";
 import { isRecipeDetailPublicationApproved } from "@/lib/recipe-publication";
@@ -32,7 +35,7 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
   if (!UUID_PATTERN.test(recipeId)) return null;
   try {
     const detail = await getPublicRecipeDetailV1(recipeId);
-    return detail ? recipeApiV1DetailToRecord(detail) : null;
+    return detail ? recipeApiV1DetailToRecord(parseRecipeApiV1Detail(detail)) : null;
   } catch {
     return null;
   }
@@ -87,8 +90,6 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     : false;
   const ingredientDetails = recipe.ingredientDetails ?? [];
   const difficultyLabel = formatDifficulty(recipe.difficulty);
-  const sourceLabel = recipe.sourceAttribution || recipe.sourceProvider || "출처 표시 없음";
-  const sourceLicense = recipe.sourceLicense || "라이선스 표시 없음";
 
   return (
     <div className="min-h-full bg-white pb-8 text-[#2b2b2b]">
@@ -254,7 +255,10 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
       <section className="px-5 pb-24 pt-6">
         <div className="rounded-2xl border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
           <h2 className="text-[15px] font-black text-[#242424]">레시피 출처</h2>
-          <p className="mt-2 break-keep text-[13px] font-semibold leading-6 text-[#6f655b]">{sourceLabel} · {sourceLicense}</p>
+          <p className="mt-2 break-keep text-[14px] font-black leading-6 text-[#39342f]">{recipe.sourceTitle}</p>
+          <p className="mt-1 break-keep text-[13px] font-semibold leading-6 text-[#6f655b]">
+            {recipe.sourceAttribution} · {recipe.sourceLicense}
+          </p>
           <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#7a7168]">
             제공자: {recipe.sourceProvider}{recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
           </p>
