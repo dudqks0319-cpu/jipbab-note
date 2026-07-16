@@ -49,6 +49,22 @@ test("home exposes recipe previews before the user has saved fridge ingredients"
   assert.match(homePage, /<h2 className="text-\[16px\] font-black text-\[#2f2117\]">먼저 보는 레시피<\/h2>/);
 });
 
+test("home prioritizes recipe discovery before the full fridge visualization", () => {
+  const recipeSectionIndex = homePage.indexOf(
+    '<section className="space-y-5 px-5 pt-5">',
+  );
+  const fridgeSectionIndex = homePage.indexOf(
+    '<p className="text-[12px] font-black text-[#2f2117]">냉장고에 있는 재료</p>',
+  );
+
+  assert.ok(recipeSectionIndex >= 0, "recipe discovery section must exist");
+  assert.ok(fridgeSectionIndex >= 0, "fridge summary section must exist");
+  assert.ok(
+    recipeSectionIndex < fridgeSectionIndex,
+    "recipe discovery must render before the full fridge visualization",
+  );
+});
+
 test("home recipe cards use plain-language difficulty instead of a rating star", () => {
   assert.doesNotMatch(homePage, /<Star(?:\s|>)/);
   assert.match(homePage, /<ChefHat size=\{13\}/);

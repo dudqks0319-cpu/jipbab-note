@@ -288,50 +288,6 @@ export default function HomePage() {
         )}
       </section>
 
-      {!shouldShowEmptyHome ? (
-      <section className="px-5 pt-3">
-        <div className="jipbab-panel rounded-[18px] px-4 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[12px] font-black text-[#2f2117]">냉장고에 있는 재료</p>
-              <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
-                {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개 · 소진임박 ${expiringIngredients.length}개`}
-              </p>
-            </div>
-            <Link
-              href={buildHomeHref('/fridge?add=1', { demoMode: isAppStoreDemo })}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-full bg-[#ea5a1f] px-3 text-[12px] font-black text-white"
-            >
-              <Plus size={14} />
-              재료 추가
-            </Link>
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            <FridgeCount label="냉장" value={storageCounts.cold} />
-            <FridgeCount label="냉동" value={storageCounts.frozen} />
-            <FridgeCount label="실온" value={storageCounts.room} />
-          </div>
-          <FridgeIllustration ingredients={activeDisplayIngredients} compact maxItemsPerZone={10} />
-          <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
-            <Link
-              href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] text-[13px] font-black text-white"
-            >
-              <Refrigerator size={16} />
-              내 냉장고 보기
-            </Link>
-            <Link
-              href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#fff0e4] text-[13px] font-black text-[#d94d19]"
-            >
-              <Search size={16} />
-              메뉴 더 찾기
-            </Link>
-          </div>
-        </div>
-      </section>
-      ) : null}
-
       <section className="space-y-5 px-5 pt-5">
         {isLoading && recommendedRecipes.length === 0 ? (
           <div>
@@ -405,6 +361,50 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {!shouldShowEmptyHome ? (
+      <section className="px-5 pt-5">
+        <div className="jipbab-panel rounded-[18px] px-4 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[12px] font-black text-[#2f2117]">냉장고에 있는 재료</p>
+              <p className="mt-1 text-[11px] font-semibold text-[#8f7f70]">
+                {isLoading ? '동기화 중' : `보관 ${activeDisplayIngredients.length}개 · 소진임박 ${expiringIngredients.length}개`}
+              </p>
+            </div>
+            <Link
+              href={buildHomeHref('/fridge?add=1', { demoMode: isAppStoreDemo })}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-full bg-[#ea5a1f] px-3 text-[12px] font-black text-white"
+            >
+              <Plus size={14} />
+              재료 추가
+            </Link>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <FridgeCount label="냉장" value={storageCounts.cold} />
+            <FridgeCount label="냉동" value={storageCounts.frozen} />
+            <FridgeCount label="실온" value={storageCounts.room} />
+          </div>
+          <FridgeIllustration ingredients={activeDisplayIngredients} compact maxItemsPerZone={10} />
+          <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2">
+            <Link
+              href={buildHomeHref('/fridge', { demoMode: isAppStoreDemo })}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] text-[13px] font-black text-white"
+            >
+              <Refrigerator size={16} />
+              내 냉장고 보기
+            </Link>
+            <Link
+              href={buildHomeHref('/recipe', { demoMode: isAppStoreDemo })}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#fff0e4] text-[13px] font-black text-[#d94d19]"
+            >
+              <Search size={16} />
+              메뉴 더 찾기
+            </Link>
+          </div>
+        </div>
+      </section>
+      ) : null}
 
       {!shouldShowEmptyHome ? (
       <section className="px-5 pt-5">
