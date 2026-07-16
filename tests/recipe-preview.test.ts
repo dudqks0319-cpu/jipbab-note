@@ -34,6 +34,8 @@ test("preview catalog exposes only original structured recipes with local images
 });
 
 test("preview ingredient metadata keeps required state separate from preparation guidance", () => {
+  const optionalGuidance = /생략|없어도|선택/;
+
   for (const recipe of RECIPE_PREVIEW_CATALOG) {
     for (const ingredient of recipe.ingredientDetails ?? []) {
       assert.equal(typeof ingredient.required, "boolean", `${recipe.name}: ${ingredient.name}`);
@@ -43,6 +45,13 @@ test("preview ingredient metadata keeps required state separate from preparation
         /필수 재료입니다|있으면 더 좋아요/,
         `${recipe.name}: ${ingredient.name}`,
       );
+      if (optionalGuidance.test([ingredient.beginnerNote, ingredient.prepNote].filter(Boolean).join(" "))) {
+        assert.equal(
+          ingredient.required,
+          false,
+          `${recipe.name}: ${ingredient.name} is described as optional`,
+        );
+      }
     }
   }
 });
