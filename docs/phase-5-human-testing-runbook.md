@@ -10,7 +10,7 @@ Updated: 2026-07-11 KST
 - 실패, 중단, 안전 문제도 성공 기록과 같은 우선순위로 남긴다.
 - 조리 결과와 검수 결과는 해당 `recipe_version` 하나에만 유효하다.
 - `pnpm check:phase5-human-evidence`가 20/20을 반환해도 DB를 자동 변경하지 않는다. 승인된 운영자가 원본 증거를 다시 확인한 뒤 별도 관리자 경로로 반영한다.
-- 현재 production DB migration과 source link가 준비되지 않았으므로 이 패킷만으로 발행할 수 없다.
+- 현재 production DB migration은 적용됐지만 핵심 20개의 DB recipe/source UUID 연결과 사람 검수는 준비되지 않았으므로 이 패킷만으로 발행할 수 없다.
 
 ## 역할
 
@@ -121,11 +121,12 @@ output/phase5-human-evidence/
 
 ```bash
 pnpm phase5:audit
+PHASE5_APP_BUILD_SHA=<실제 테스트 앱 Git SHA> pnpm phase5:prepare-pilot
 pnpm check:phase5-core-audit
 pnpm check:phase5-human-evidence
 ```
 
-첫 두 명령은 템플릿을 최초 생성하되 호환되는 사람 기록을 덮어쓰지 않는다. 마지막 명령은 현재 미완료 상태에서 의도적으로 non-zero와 `BLOCKED`를 반환한다.
+`phase5:audit`은 템플릿을 최초 생성하되 호환되는 사람 기록을 덮어쓰지 않는다. `phase5:prepare-pilot`은 현재 Git SHA와 Wave 1A 레시피 내용 hash를 `output/phase5-human-evidence/pilot-wave-1a/`에 고정하지만 CSV·DB·승인 상태는 바꾸지 않는다. 마지막 명령은 현재 미완료 상태에서 의도적으로 non-zero와 `BLOCKED`를 반환한다.
 
 ## 수정 루프
 

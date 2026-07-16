@@ -87,6 +87,7 @@
     "phase2:schema:sync": "node scripts/sync-phase-1-schema.mjs",
     "phase1:migration:dry-run": "node --experimental-strip-types scripts/generate-phase-1-migration-dry-run.mjs",
     "phase5:audit": "node --experimental-strip-types scripts/generate-phase-5-core-recipe-audit.mjs",
+    "phase5:prepare-pilot": "node --experimental-strip-types scripts/prepare-phase-5-pilot-packet.mjs",
     "check:phase5-core-audit": "node --experimental-strip-types --test tests/phase-5-core-recipe-audit.test.ts",
     "check:phase5-human-evidence": "node --experimental-strip-types scripts/check-phase-5-human-evidence.mjs",
     "check:phase1-data-contract": "node scripts/check-phase-1-data-contract.mjs",
