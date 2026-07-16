@@ -4,7 +4,7 @@ Updated: 2026-07-16 KST
 
 ## 2026-07-16 공식 원본·운영 DB 재확인
 
-- canonical GitHub 저장소는 `dudqks0319-cpu/jipbab-note`, 보호된 기본 브랜치는 `main` @ `86e2bc23abab13f028349d39e8b27d5a42a627c1`이다. 최신 코드 후보는 `agent/sync-ux-release`의 `01e9895a20ae0dc1243a19f776753289ee05dce2`, 문서 후속을 포함한 원격 HEAD는 `edf651f5b52b79e84797b72981bde45d45acf8a1`이다. 현재 이 브랜치를 `main`으로 보내는 열린 PR은 없다.
+- canonical GitHub 저장소는 `dudqks0319-cpu/jipbab-note`, 보호된 기본 브랜치는 `main` @ `86e2bc23abab13f028349d39e8b27d5a42a627c1`이다. 최신 코드 후보는 `agent/sync-ux-release`의 `01e9895a20ae0dc1243a19f776753289ee05dce2`다. 재감사 시작 시 문서 후속을 포함한 원격 HEAD는 `edf651f5b52b79e84797b72981bde45d45acf8a1`이었고 이 브랜치를 `main`으로 보내는 열린 PR은 없었다.
 - 운영 별칭은 계속 `dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ`(`READY`)을 가리키고 runtime code는 `3a8f72f78cde6588be86795d6fd4da4dc9d6308f`다. Preview 코드 후보를 Production으로 승격하지 않았다.
 - Supabase CLI의 linked 프로젝트는 `JipbabNote` ref `xqelabiwtjntwrjqcteo`로 재확인했다. `supabase migration list --linked`는 로컬·원격 40개 버전이 모두 일치하고 최신 버전이 `20260715135424`임을 보여준다. `supabase db push --dry-run --linked`는 `Remote database is up to date`로 종료해 추가 적용 SQL이 없었다. `supabase inspect db table-stats --linked`로 `ops_backup`의 recipes 1,152건, signed-session 전 냉장고 51건·장보기 18건·정책 36건·함수 8건, 분류 수정 전 20건·1건 백업이 남아 있음을 재확인했다. 중복 migration은 실행하지 않았다.
 - 남은 P0는 DB migration이 아니라 보호된 `main`·후보 브랜치·Production SHA 통합이다. Draft PR #4는 오래된 `ux/home-today-action-v2` base와 실패 중인 Toddler Meals CI를 사용하므로 현재 release candidate와 분리한다.

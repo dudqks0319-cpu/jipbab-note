@@ -16,7 +16,7 @@ Status: `canonical Git repository connected; branch and production SHA alignment
 | Vercel Git 연결 | public `dudqks0319-cpu/jipbab-note` | `dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5` 빌드 로그의 실제 clone 경로로 확인 |
 | 현재 production deployment | `dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ` | `READY`, `3a8f72f` 레시피 미리보기 즉시 표시 hotfix |
 | 최신 검증 코드 후보 | `agent/sync-ux-release` @ `01e9895a20ae0dc1243a19f776753289ee05dce2` | 홈 레시피 즉시 노출·동기화 단일 실행 포함, exact Git Preview 검증 완료 |
-| 후보 브랜치 원격 HEAD | `edf651f5b52b79e84797b72981bde45d45acf8a1` | 위 코드 후보 이후 출시 문서만 갱신한 clean HEAD |
+| 재감사 시작 시 후보 브랜치 원격 HEAD | `edf651f5b52b79e84797b72981bde45d45acf8a1` | 위 코드 후보 이후 출시 문서만 갱신한 2026-07-16 기준점 |
 | 동일 SHA Preview | `dpl_2bw49EivkL5wJSEWo8TkqT7zGRLg` | `READY`, 레시피 2개 즉시 노출, loading/skeleton 0, console warning/error 0 |
 | 운영 도메인 | `https://jipbab-note-app.vercel.app` | iOS·Android remote WebView도 사용 |
 | 운영 Supabase | `JipbabNote`, ref `xqelabiwtjntwrjqcteo` | `ACTIVE_HEALTHY` |
@@ -25,7 +25,7 @@ Status: `canonical Git repository connected; branch and production SHA alignment
 | 계획서 기준 공개 가능 recipes | 0 rows | 초보자 검수·출처 ledger·실조리 증거 미충족 |
 | 원격 migration history | 로컬·원격 40개 버전 일치, 최신 `20260715135424` | 공식 history repair 완료, `db push --dry-run` 추가 적용 0건 |
 
-현재 production 런타임은 canonical 저장소의 `3a8f72f78cde6588be86795d6fd4da4dc9d6308f` 제한 웹 hotfix와 일치한다. Vercel Git 연결 자체는 public canonical 저장소로 교정된 상태지만, 보호된 GitHub 기본 브랜치 `main`(`86e2bc2`), 최신 검증 코드 후보 `01e9895`, 후보 브랜치 원격 HEAD `edf651f`, production 런타임 `3a8f72f`가 서로 다르다. `agent/sync-ux-release`를 `main`으로 보내는 열린 PR도 없다. 따라서 P0는 저장소 연결 문제가 아니라 검증 후보를 보호 브랜치에 통합하고 production 승격 SHA를 하나로 정하는 문제로 좁혀진다.
+현재 production 런타임은 canonical 저장소의 `3a8f72f78cde6588be86795d6fd4da4dc9d6308f` 제한 웹 hotfix와 일치한다. Vercel Git 연결 자체는 public canonical 저장소로 교정된 상태지만, 보호된 GitHub 기본 브랜치 `main`(`86e2bc2`), 최신 검증 코드 후보 `01e9895`, production 런타임 `3a8f72f`가 서로 다르다. 재감사 시작 시 `agent/sync-ux-release`를 `main`으로 보내는 열린 PR도 없었다. 따라서 P0는 저장소 연결 문제가 아니라 검증 후보를 보호 브랜치에 통합하고 production 승격 SHA를 하나로 정하는 문제로 좁혀진다.
 
 `20260710130000`, `20260710150000`, `20260710160000`은 원격 migration history에 기록돼 있고, 2026-07-15 재감사에서 publication 컬럼 21개, 제약조건 4개, partial index, `recipes`·`recipe_sources` RLS 정책과 Phase 1 `schema_version`을 live schema에서 확인했다. `recipes` 1,152건은 모두 `approved=0`, `published_at=0`, publication evidence-ready 0건이며 공개 API는 빈 승인 목록만 반환한다. `20260715101534`, `20260715101553`, `20260715101658`, `20260715101716`의 동기화 prerequisite·signed-session·삭제 cascade·SECURITY DEFINER hardening도 운영 DB에 적용됐다. `20260715135333` 백업 뒤 `20260715135424` 정정 시드까지 적용해 카탈로그 173개·별칭 258개를 확인했다. 의미상 적용 완료된 로컬 버전 9건은 공식 `supabase migration repair --status applied`로 정렬했고, 로컬·원격 40개 버전이 모두 일치한다. `supabase db push --dry-run --linked`는 추가 적용 대상이 없음을 확인했다.
 
@@ -46,7 +46,7 @@ Status: `canonical Git repository connected; branch and production SHA alignment
 ## 최신 코드 후보와 동일한 Preview 증거
 
 - GitHub 코드 후보: `agent/sync-ux-release`의 `01e9895a20ae0dc1243a19f776753289ee05dce2`
-- GitHub 원격 브랜치 HEAD: `edf651f5b52b79e84797b72981bde45d45acf8a1`이며 `01e9895` 이후 문서-only 커밋만 포함한다.
+- 재감사 시작 시 GitHub 원격 브랜치 HEAD: `edf651f5b52b79e84797b72981bde45d45acf8a1`이며 `01e9895` 이후 문서-only 커밋만 포함한다. 이 값은 감사 기준점이지 이후 문서 커밋을 포함한 영구 HEAD 주장이 아니다.
 - Vercel Preview: `dpl_2bw49EivkL5wJSEWo8TkqT7zGRLg`, `https://jipbab-note-26cc8f9eq-youngbeens-projects.vercel.app`, `READY`
 - 배포 입력: canonical 저장소, `agent/sync-ux-release`, 코드 후보 `01e9895`를 Vercel Git integration이 clone했다.
 - Chrome: 첫 완료 렌더와 재로딩에서 레시피 카드 2개가 냉장고보다 먼저 보이고, `불러오는 중`·추천 skeleton·동기화 지연 배너·console warning/error는 모두 0건이다.

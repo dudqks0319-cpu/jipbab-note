@@ -50,11 +50,11 @@ source_alignment_20260715:
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
   candidate_git_sha: "01e9895a20ae0dc1243a19f776753289ee05dce2"
-  candidate_branch_remote_head_sha: "edf651f5b52b79e84797b72981bde45d45acf8a1"
+  candidate_branch_remote_head_at_reaudit_sha: "edf651f5b52b79e84797b72981bde45d45acf8a1"
   candidate_remote_head_matches: false
   candidate_runtime_sha_is_remote_ancestor: true
   latest_successful_exact_preview_sha_is_remote_ancestor: true
-  candidate_remote_head_note: "01e9895 is the latest code candidate and exact Git Preview runtime; edf651f is the clean remote branch HEAD with docs-only follow-up commits"
+  candidate_remote_head_note: "01e9895 is the latest code candidate and exact Git Preview runtime; edf651f was the clean remote branch HEAD at the start of the 2026-07-16 reaudit and is not a permanent HEAD claim"
   candidate_to_main_open_pr: false
   unrelated_toddler_draft_pr_number: 4
   unrelated_toddler_draft_pr_base: "ux/home-today-action-v2"
