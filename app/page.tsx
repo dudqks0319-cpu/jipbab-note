@@ -168,10 +168,15 @@ export default function HomePage() {
   }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group])
   const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 6), [rankedHomeRecipes])
   const previewRecipes = useMemo(
-    () =>
-      rankRecipeRecommendations(RECIPE_PREVIEW_CATALOG, activeDisplayIngredients)
+    () => {
+      const previewCatalog = activeDisplayIngredients.length === 0
+        ? RECIPE_PREVIEW_CATALOG.slice(0, 2)
+        : RECIPE_PREVIEW_CATALOG
+
+      return rankRecipeRecommendations(previewCatalog, activeDisplayIngredients)
         .map(({ recipe, match }) => ({ ...recipe, ...match }))
-        .slice(0, 2),
+        .slice(0, 2)
+    },
     [activeDisplayIngredients],
   )
   const homeRecipeSections = useMemo(() => {

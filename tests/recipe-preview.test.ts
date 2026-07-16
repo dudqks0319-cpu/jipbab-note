@@ -5,8 +5,21 @@ import test from "node:test";
 import { RECIPE_PREVIEW_CATALOG, findRecipePreview } from "../lib/recipe-preview.ts";
 
 test("preview catalog exposes only original structured recipes with local images", () => {
-  assert.equal(RECIPE_PREVIEW_CATALOG.length, 20);
-  assert.equal(new Set(RECIPE_PREVIEW_CATALOG.map((recipe) => recipe.id)).size, 20);
+  const expectedTitles = [
+    "버터간장계란밥",
+    "김치볶음밥",
+    "참치마요덮밥",
+    "햄야채볶음밥",
+    "스팸마요덮밥",
+    "간장버터밥",
+    "참치주먹밥",
+    "두부부침",
+    "두부조림",
+    "어묵볶음",
+  ];
+
+  assert.deepEqual(RECIPE_PREVIEW_CATALOG.map((recipe) => recipe.name), expectedTitles);
+  assert.equal(new Set(RECIPE_PREVIEW_CATALOG.map((recipe) => recipe.id)).size, expectedTitles.length);
 
   for (const recipe of RECIPE_PREVIEW_CATALOG) {
     assert.equal(recipe.source?.sourceName, "집밥노트 자체 작성");

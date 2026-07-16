@@ -41,6 +41,7 @@ test("home shows the safe recipe preview instead of a blocking API error", () =>
 
 test("home exposes recipe previews before the user has saved fridge ingredients", () => {
   assert.match(homePage, /const shouldShowEmptyHome = isEmptyFridge/);
+  assert.match(homePage, /activeDisplayIngredients\.length === 0[\s\S]*RECIPE_PREVIEW_CATALOG\.slice\(0, 2\)/);
   assert.match(homePage, /<StarterActionCard[\s\S]*<section className="space-y-5 px-5 pt-5">/);
   assert.doesNotMatch(
     homePage,

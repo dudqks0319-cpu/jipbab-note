@@ -349,17 +349,13 @@ test("recipe list quick filters expose beginner and ready states", () => {
   assert.equal(matchesPreviewQuickFilter(eggPorridge, "few-ingredients"), true);
 });
 
-test("recipe preview categories map legacy editorial labels to user-facing groups", () => {
+test("safe recipe preview categories map editorial labels to user-facing groups", () => {
   const categoryByTitle = new Map(
     RECIPE_PREVIEW_CATALOG.map((recipe) => [recipe.name, getPreviewDisplayCategory(recipe)]),
   );
   assert.equal(categoryByTitle.get("버터간장계란밥"), "밥·한 그릇");
   assert.equal(categoryByTitle.get("두부부침"), "두부");
-  assert.equal(categoryByTitle.get("된장찌개"), "찌개·전골");
-  assert.equal(categoryByTitle.get("미역국"), "국");
-  assert.equal(categoryByTitle.get("잔치국수"), "면");
-  assert.equal(categoryByTitle.get("콩나물무침"), "반찬");
-  assert.equal(categoryByTitle.get("제육볶음"), "고기");
+  assert.equal(categoryByTitle.get("어묵볶음"), "반찬");
   assert.equal([...categoryByTitle.values()].includes("기타"), false);
 });
 
