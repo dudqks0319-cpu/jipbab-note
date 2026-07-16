@@ -55,7 +55,15 @@ source_alignment_20260715:
   candidate_runtime_sha_is_remote_ancestor: true
   latest_successful_exact_preview_sha_is_remote_ancestor: true
   candidate_remote_head_note: "01e9895 is the latest code candidate and exact Git Preview runtime; edf651f was the clean remote branch HEAD at the start of the 2026-07-16 reaudit and is not a permanent HEAD claim"
-  candidate_to_main_open_pr: false
+  candidate_to_main_open_pr: true
+  candidate_to_main_pr_number: 9
+  candidate_to_main_pr_url: "https://github.com/dudqks0319-cpu/jipbab-note/pull/9"
+  candidate_to_main_pr_draft: true
+  candidate_to_main_pr_initial_head_sha: "69f18cbee06fc6ad11ca896fa20041826a7efbc8"
+  candidate_to_main_pr_commit_count_at_open: 102
+  candidate_to_main_pr_file_count_at_open: 2586
+  candidate_to_main_pr_merge_tree_conflict_count: 0
+  candidate_to_main_pr_initial_checks: "release_gate_in_progress_vercel_pending"
   unrelated_toddler_draft_pr_number: 4
   unrelated_toddler_draft_pr_base: "ux/home-today-action-v2"
   unrelated_toddler_draft_pr_checks: "failing_keep_separate_from_release_candidate"
@@ -766,7 +774,7 @@ blockers:
   - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
     severity: "P0"
     status: "open"
-    title: "Canonical repo is connected, but protected main 86e2bc2, verified code candidate 01e9895, branch HEAD edf651f, and production runtime 3a8f72f are not aligned; no candidate-to-main PR exists."
+    title: "Draft PR #9 now tracks the candidate-to-main integration, but protected main 86e2bc2, verified code candidate 01e9895, and production runtime 3a8f72f remain unaligned until review, checks, merge, and an explicit promotion decision."
     owner: "project_owner"
     evidence: "docs/official-production-sources.md"
     due: "before_next_non_hotfix_production_deploy"
