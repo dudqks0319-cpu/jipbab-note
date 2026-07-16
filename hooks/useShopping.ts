@@ -397,6 +397,18 @@ export function useShopping(options?: ShoppingScopeOptions): UseShoppingResult {
     void listItems();
   }, [listItems]);
 
+  useEffect(() => {
+    if (scopeContext.scope !== "family" || !scopeContext.familyGroupId) return undefined;
+    const handleFamilyDataChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ familyGroupId?: string; table?: string }>).detail;
+      if (detail?.familyGroupId === scopeContext.familyGroupId && detail.table === "shopping_items") {
+        void syncInBackground().catch(() => setSource("local"));
+      }
+    };
+    window.addEventListener("jipbab:family-data-changed", handleFamilyDataChange);
+    return () => window.removeEventListener("jipbab:family-data-changed", handleFamilyDataChange);
+  }, [scopeContext, syncInBackground]);
+
   const uncheckedCount = useMemo(
     () => items.filter((item) => !item.checked).length,
     [items],

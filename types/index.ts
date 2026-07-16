@@ -252,6 +252,13 @@ export interface FamilyMemberRecord {
   joinedAt: string;
 }
 
+export interface FamilyActivityRecord {
+  id: string;
+  eventType: "group_created" | "member_joined" | "member_updated" | "member_left";
+  actorName: string;
+  createdAt: string;
+}
+
 export interface FamilyGroupRecord {
   id: string;
   name: string;
@@ -553,13 +560,25 @@ export interface RecipeCommentRecord {
   userId: string | null;
   authorName: string;
   content: string;
-  status: "visible" | "hidden" | "deleted";
+  status: "pending" | "visible" | "hidden" | "rejected" | "deleted";
+  outcome: "success" | "partial" | "failed" | null;
+  taste: "not_rated" | "bland" | "balanced" | "salty" | null;
+  remakeIntent: "yes" | "maybe" | "no" | null;
+  actualDurationMinutes: number | null;
+  substitutionNotes: string | null;
+  familyReaction: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface RecipeCommentPayload {
   content: string;
+  outcome: "success" | "partial" | "failed";
+  taste: "not_rated" | "bland" | "balanced" | "salty";
+  remakeIntent: "yes" | "maybe" | "no";
+  actualDurationMinutes: number;
+  substitutionNotes?: string | null;
+  familyReaction?: string | null;
 }
 
 export interface FavoriteRecipeSummary {

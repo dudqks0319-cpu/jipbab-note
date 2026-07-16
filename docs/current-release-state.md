@@ -64,7 +64,7 @@ Updated: 2026-07-14 KST
 ## 2026-07-13 Phase 6 앱 내 배포 정보 Preview
 
 - 구현 커밋 `51458b429866815cbdfea6ed136519c4e1159c7d`를 `origin/agent/phase6-observability-analytics`에 push하고, 같은 SHA의 깨끗한 `git archive`를 Vercel Preview `dpl_6Rz4X6sHq8auV8YFbhmHvjoL5FDg` (`https://jipbab-note-dh9uis8k7-youngbeens-projects.vercel.app`)로 배포했다. 상태는 `READY`, target은 `preview`이며 Production alias는 승격하지 않았다.
-- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260711170000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
+- 설정의 `앱 정보` 화면에서 앱 버전 `1.0.0`, 배포 환경 `미리보기`, 전체 배포 SHA, KST 빌드 시각, 레시피 스키마 `v2`, 최신 포함 migration `20260717102000`, 콘텐츠 기준 `phase5-core-20-draft-v1`을 확인할 수 있다. 이 값은 코드 포함 정보를 뜻하며 DB 운영 적용이나 사람·실제 조리 승인을 뜻하지 않는다고 화면에 명시했다.
 - 공개 화면에는 allowlist로 정규화한 release metadata만 표시한다. raw environment, 계정, 이메일, 냉장고 재료, token, secret은 노출하지 않는다. malformed environment와 build time은 각각 `local`, `확인 불가`로 fail-closed한다.
 - 원격 build는 compile, TypeScript, 39/39 routes를 통과했다. `/`, `/settings`, `/settings/app-info`는 HTTP 200이다. `/api/v1/recipes?limit=1`은 운영 migration과 HMAC secret 미적용에 따른 예상된 redacted 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Request-Id`, `DEPENDENCY_NOT_READY`를 반환한다.
 - Vercel runtime log의 `deployment_sha`는 위 GitHub 구현 SHA와 정확히 일치한다. 구조화 로그에는 request ID, endpoint, status, latency, error code, deployment SHA만 있고 query, body, token, email, free text는 없다.

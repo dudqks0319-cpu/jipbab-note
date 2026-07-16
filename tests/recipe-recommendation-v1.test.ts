@@ -53,6 +53,7 @@ test("recommendation input is bounded, normalized, and deduplicated", () => {
     ingredientIds: ["DAIRY-EGG", "dairy-egg", "veg-green-onion"],
     expiringIngredientIds: ["dairy-egg"],
     excludedIngredients: ["meat-pork"],
+    excludedAllergenIds: ["eggs", "soy"],
     maxTime: 20,
     difficulty: 2,
     maxMissingIngredients: 1,
@@ -63,6 +64,7 @@ test("recommendation input is bounded, normalized, and deduplicated", () => {
   assert.deepEqual(input.ingredientIds, ["dairy-egg", "veg-green-onion"]);
   assert.deepEqual(input.expiringIngredientIds, ["dairy-egg"]);
   assert.deepEqual(input.excludedIngredientIds, ["meat-pork"]);
+  assert.deepEqual(input.excludedAllergenIds, ["eggs", "soy"]);
   assert.equal(input.maxTime, 20);
   assert.equal(input.servings, 3);
   assert.equal(input.limit, 5);
@@ -75,6 +77,7 @@ test("recommendation input rejects unknown shapes and unrelated expiring IDs", (
     { ingredientIds: ["dairy-egg"], expiringIngredientIds: ["veg-onion"] },
     { ingredientIds: ["dairy-egg"], servings: 21 },
     { ingredientIds: ["dairy-egg"], maxMinutes: 20 },
+    { ingredientIds: ["dairy-egg"], excludedAllergenIds: ["unknown"] },
     {
       ingredientIds: ["dairy-egg"],
       excludedIngredientIds: ["meat-pork"],

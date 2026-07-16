@@ -65,6 +65,7 @@ export async function POST(request: Request) {
       maxMissingIngredients: input.maxMissingIngredients,
       ingredientIds: input.ingredientIds,
       excludeIngredientIds: input.excludedIngredientIds,
+      excludedAllergenIds: input.excludedAllergenIds,
       sort: "recommended",
       cursor: null,
       limit: 200,

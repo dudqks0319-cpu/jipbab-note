@@ -242,8 +242,8 @@ try {
   await waitForBrowserCondition(
     client,
     "publication gate visible",
-    bodyIncludes,
-    ["현재 공개 가능한 레시피를 준비 중이에요."],
+    bodyIncludesAny,
+    [["레시피 서비스를 점검하고 있습니다.", "현재 공개 가능한 레시피를 준비 중이에요."]],
   );
   checks.push("guest_ingredients_saved", "recommendation_fail_closed");
 
@@ -301,8 +301,9 @@ try {
       displayName: "tester",
     }),
   });
-  assert.equal(familyResponse.status, 401);
+  assert.equal(familyResponse.status, 503);
   assert.match(familyResponse.headers.get("cache-control") ?? "", /no-store/);
+  assert.equal(familyResponse.headers.get("retry-after"), null);
 
   const mergeResponse = await fetch(`${origin}/api/auth/merge-anonymous`, {
     method: "POST",
@@ -319,7 +320,7 @@ try {
   });
   assert.equal(deleteResponse.status, 400);
   assert.match(deleteResponse.headers.get("cache-control") ?? "", /no-store/);
-  checks.push("family_auth_rejected", "merge_auth_rejected", "account_delete_input_rejected");
+  checks.push("family_dependency_fail_closed", "merge_auth_rejected", "account_delete_input_rejected");
 } finally {
   if (client) {
     try {

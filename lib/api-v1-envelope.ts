@@ -5,6 +5,7 @@ export type ApiV1ErrorCode =
   | "INVALID_CURSOR"
   | "INVALID_LIMIT"
   | "NOT_FOUND"
+  | "UNAUTHORIZED"
   | "RATE_LIMITED"
   | "DEPENDENCY_NOT_READY"
   | "INTERNAL_ERROR";

@@ -15,6 +15,7 @@ import {
 } from '@/lib/recipe-cook-progress'
 import type { RecipeDetailStep } from '@/types'
 import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
+import RecipeCookingSessionForm from '@/components/recipe/RecipeCookingSessionForm'
 
 type RecipeCookModeProps = {
   recipeId: string
@@ -72,6 +73,8 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
   const [activeStepIndex, setActiveStepIndex] = useState(0)
   const [showAllSteps, setShowAllSteps] = useState(false)
   const [feedback, setFeedback] = useState<RecipeCookFeedback | null>(null)
+  const [clientSessionId, setClientSessionId] = useState<string | null>(null)
+  const [startedAt, setStartedAt] = useState<string | null>(null)
   const [completedAt, setCompletedAt] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [hydrated, setHydrated] = useState(false)
@@ -101,6 +104,8 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
         }
         setCompletedAt(saved.completedAt)
         setFeedback(saved.feedback)
+        setClientSessionId(saved.clientSessionId)
+        setStartedAt(saved.startedAt)
         setHasStarted(Boolean(saved.checkedStepIndexes.length || saved.timer || saved.completedAt))
         completedEventRef.current = Boolean(saved.completedAt)
       }
@@ -116,6 +121,8 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
         version: 1,
+        clientSessionId,
+        startedAt,
         activeStepIndex,
         checkedStepIndexes: [...checkedSteps].sort((left, right) => left - right),
         timer: activeTimer,
@@ -126,7 +133,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     } catch {
       return
     }
-  }, [activeStepIndex, activeTimer, checkedSteps, completedAt, feedback, hydrated, storageKey])
+  }, [activeStepIndex, activeTimer, checkedSteps, clientSessionId, completedAt, feedback, hydrated, startedAt, storageKey])
 
   useEffect(() => {
     if (!activeTimer || timerPaused || remainingTimerSeconds(activeTimer) <= 0) return
@@ -264,11 +271,15 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     setTimerAnnouncement('')
     setCompletedAt(null)
     setFeedback(null)
+    setClientSessionId(null)
+    setStartedAt(null)
     setHasStarted(false)
     completedEventRef.current = false
   }
 
   const startCooking = () => {
+    setClientSessionId(window.crypto.randomUUID())
+    setStartedAt(new Date().toISOString())
     setHasStarted(true)
     trackProductAnalyticsEvent('cooking_started', { recipeId, stepIndex: 1 })
     trackProductAnalyticsEvent('cooking_step_viewed', { recipeId, stepIndex: steps[0]?.index ?? 1 })
@@ -370,6 +381,15 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
                 <button key={value} type="button" data-testid={`cook-feedback-${value}`} onClick={() => setFeedback(value)} aria-pressed={feedback === value} className={`min-h-11 rounded-xl px-2 text-[12px] font-black ${feedback === value ? 'bg-[#315f2d] text-white' : 'bg-white text-[#557b4f]'}`}>{label}</button>
               ))}
             </div>
+            {completedAt ? (
+              <RecipeCookingSessionForm
+                recipeId={recipeId}
+                clientSessionId={clientSessionId}
+                startedAt={startedAt}
+                completedAt={completedAt}
+                difficulty={feedback}
+              />
+            ) : null}
           </div>
         ) : null}
 

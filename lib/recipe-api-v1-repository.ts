@@ -26,6 +26,7 @@ export interface PublicRecipeListQuery {
   maxMissingIngredients: number | null;
   ingredientIds: string[];
   excludeIngredientIds: string[];
+  excludedAllergenIds: string[];
   sort: RecipeSort;
   cursor: RecipeCursor | null;
   limit: number;
@@ -109,6 +110,39 @@ export class RecipeApiDependencyError extends Error {
   }
 }
 
+export type RecipeIngredientAllergenProfileRow = {
+  ingredient_id: string;
+  review_status: string;
+};
+
+export type RecipeIngredientAllergenLinkRow = {
+  ingredient_id: string;
+  allergen_group_id: string;
+  presence_type: string;
+};
+
+export function recipePassesAllergenHardFilter(
+  ingredientIds: string[],
+  excludedAllergenIds: string[],
+  profiles: RecipeIngredientAllergenProfileRow[],
+  links: RecipeIngredientAllergenLinkRow[],
+): boolean {
+  if (excludedAllergenIds.length === 0) return true;
+
+  const profileByIngredient = new Map(
+    profiles.map((profile) => [profile.ingredient_id, profile.review_status]),
+  );
+  if (ingredientIds.some((ingredientId) => profileByIngredient.get(ingredientId) !== "approved")) {
+    return false;
+  }
+
+  const recipeIngredientIds = new Set(ingredientIds);
+  const excluded = new Set(excludedAllergenIds);
+  return !links.some(
+    (link) => recipeIngredientIds.has(link.ingredient_id) && excluded.has(link.allergen_group_id),
+  );
+}
+
 function recommendationReason(owned: number, missing: number, total: number): string {
   if (total > 0 && missing === 0) {
     return "필수 재료가 모두 있어 바로 만들 수 있어요.";
@@ -190,6 +224,8 @@ export function buildPublicRecipeListResult(
   input: PublicRecipeListQuery,
   scanLimit: number,
   scannedRows: PublicRecipeRow[] = rawRows,
+  allergenProfiles: RecipeIngredientAllergenProfileRow[] = [],
+  allergenLinks: RecipeIngredientAllergenLinkRow[] = [],
 ): PublicRecipeListResult {
   const scanCursor =
     scannedRows.length >= scanLimit && scannedRows.length > 0
@@ -224,6 +260,16 @@ export function buildPublicRecipeListResult(
       .map((ingredient) => ingredient.ingredient_id)
       .filter((value): value is string => Boolean(value));
     if (allIngredientIds.length === 0 || allIngredientIds.some((id) => excluded.has(id))) {
+      continue;
+    }
+    if (
+      !recipePassesAllergenHardFilter(
+        allIngredientIds,
+        input.excludedAllergenIds,
+        allergenProfiles,
+        allergenLinks,
+      )
+    ) {
       continue;
     }
 
@@ -378,6 +424,40 @@ export async function listPublicRecipesV1(
   }
 
   const ingredientData = ingredientResult.data as RecipeV1ListIngredientRow[];
+  let allergenProfiles: RecipeIngredientAllergenProfileRow[] = [];
+  let allergenLinks: RecipeIngredientAllergenLinkRow[] = [];
+  if (input.excludedAllergenIds.length > 0) {
+    const catalogIngredientIds = [
+      ...new Set(
+        ingredientData
+          .map((ingredient) => ingredient.ingredient_id)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    if (catalogIngredientIds.length === 0) {
+      throw new RecipeApiDependencyError();
+    }
+    const [profileResult, linkResult] = await Promise.all([
+      client
+        .from("ingredient_allergen_profiles")
+        .select("ingredient_id,review_status")
+        .in("ingredient_id", catalogIngredientIds),
+      client
+        .from("ingredient_allergen_links")
+        .select("ingredient_id,allergen_group_id,presence_type")
+        .in("ingredient_id", catalogIngredientIds),
+    ]);
+    if (
+      profileResult.error ||
+      linkResult.error ||
+      !Array.isArray(profileResult.data) ||
+      !Array.isArray(linkResult.data)
+    ) {
+      throw new RecipeApiDependencyError();
+    }
+    allergenProfiles = profileResult.data as RecipeIngredientAllergenProfileRow[];
+    allergenLinks = linkResult.data as RecipeIngredientAllergenLinkRow[];
+  }
   const normalizedRows = filterNormalizedPublicRecipeRows(
     rows,
     ingredientData,
@@ -392,6 +472,8 @@ export async function listPublicRecipesV1(
     rankedSort ? { ...input, cursor: null, limit: 201 } : input,
     scanLimit,
     rows,
+    allergenProfiles,
+    allergenLinks,
   );
   if (!rankedSort) {
     return listResult;

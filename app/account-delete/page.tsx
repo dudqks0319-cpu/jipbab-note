@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getDeviceId } from "@/lib/device-id";
 import { getSupportEmail, getSupportMailtoUrl } from "@/lib/external-links";
 import { clearSupabaseAuthStorage, getSupabaseClient } from "@/lib/supabase";
+import { clearAccountLinkedLocalData } from "@/lib/account-local-data";
 
 type DeletionRequestRecord = {
   id: string;
@@ -104,11 +105,19 @@ export default function AccountDeletePage() {
         throw new Error("Account deletion API did not accept the request.");
       }
 
+      let localCleanupFailed = false;
+      try {
+        await clearAccountLinkedLocalData();
+      } catch {
+        localCleanupFailed = true;
+      }
       await client.auth.signOut({ scope: "local" }).catch(() => undefined);
       clearSupabaseAuthStorage();
 
       setDeleted(true);
-      setStatusMessage("계정이 삭제되었습니다. 로그인 정보와 계정에 연결된 데이터는 복구할 수 없습니다.");
+      setStatusMessage(localCleanupFailed
+        ? "계정은 삭제되었지만 기기 데이터 일부를 지우지 못했습니다. 앱 저장공간을 삭제해 주세요."
+        : "계정과 이 기기의 냉장고·장보기·식단·조리 기록이 삭제되었습니다. 복구할 수 없습니다.");
       setConfirmText("");
       setRequests([]);
     } catch {
@@ -135,7 +144,8 @@ export default function AccountDeletePage() {
           <h2 className="text-base font-bold text-gray-800">삭제되는 항목</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-7 text-gray-600">
             <li>로그인 계정 정보</li>
-            <li>냉장고 재료, 장보기 목록, 즐겨찾기</li>
+            <li>냉장고 재료, 장보기 목록, 즐겨찾기, 주간 식단</li>
+            <li>기기에 저장된 조리 진행 기록과 가족 보드</li>
             <li>계정에 연결된 커뮤니티 작성 데이터</li>
           </ul>
         </article>

@@ -112,6 +112,7 @@ test("Phase 6 fixture recommendation card calculates owned and missing ingredien
     maxMissingIngredients: null,
     ingredientIds: ["dairy-egg", "dairy-tofu"],
     excludeIngredientIds: [],
+    excludedAllergenIds: [],
     sort: "recommended",
     cursor: null,
     limit: 24,

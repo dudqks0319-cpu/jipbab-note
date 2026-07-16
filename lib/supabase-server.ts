@@ -27,6 +27,28 @@ export function getServerSupabaseUserClient(): SupabaseClient {
   );
 }
 
+export function getServerSupabaseAuthenticatedClient(
+  authorizationHeader: string | null,
+): SupabaseClient {
+  const accessToken = getBearerAccessToken(authorizationHeader);
+  if (!accessToken) {
+    throw new Error("인증 토큰이 설정되어 있지 않습니다.");
+  }
+  return createClient(
+    getRequiredValue(PUBLIC_SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL"),
+    getRequiredValue(PUBLIC_SUPABASE_ANON_KEY, "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+      global: {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    },
+  );
+}
+
 export function getServerSupabaseAdminClient(): SupabaseClient {
   return createClient(
     getRequiredValue(PUBLIC_SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL"),

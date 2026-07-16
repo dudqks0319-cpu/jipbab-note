@@ -17,6 +17,7 @@ import {
   type GemmaStatus,
 } from '@/lib/gemma'
 import { scheduleDeviceExpiryNotifications } from '@/lib/notifications'
+import { RECIPE_ALLERGEN_OPTIONS } from '@/lib/recipe-allergens'
 import {
   getProductAnalyticsConsent,
   setProductAnalyticsConsent,
@@ -57,6 +58,7 @@ export default function SettingsPage() {
     settings,
     toggleSetting,
     setPreferenceText,
+    toggleAllergen,
     setCravingKeyword,
     toggleExcludedCategory,
     setServingSize,
@@ -296,11 +298,38 @@ export default function SettingsPage() {
             <h2 className="text-[15px] font-black text-[#2f2117]">취향과 식단</h2>
             <p className="mt-1 text-[12px] font-semibold text-[#8f7f70]">추천과 장보기 기준으로 사용할 기본 정보를 저장합니다.</p>
           </div>
+          <div>
+            <p className="mb-2 text-[12px] font-black text-[#4b3929]">알레르기 하드 필터</p>
+            <div className="flex flex-wrap gap-2">
+              {RECIPE_ALLERGEN_OPTIONS.map((allergen) => {
+                const selected = settings.allergenIds.includes(allergen.id)
+                return (
+                  <button
+                    key={allergen.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => toggleAllergen(allergen.id)}
+                    className={`min-h-11 rounded-full border px-3 text-[11px] font-black ${
+                      selected
+                        ? 'border-[#b42318] bg-[#fff0ee] text-[#b42318]'
+                        : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                    }`}
+                  >
+                    {allergen.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-2 text-[11px] font-semibold leading-5 text-[#8f7f70]">
+              선택한 항목이 포함되거나 알레르기 검수가 끝나지 않은 레시피는 추천에서 제외합니다. 가공식품 표시는 보호자가 다시 확인해 주세요.
+            </p>
+          </div>
           <div className="grid grid-cols-[1fr_104px] gap-2">
             <input
               value={settings.allergyNotes}
               onChange={(event) => setPreferenceText('allergyNotes', event.target.value)}
-              placeholder="알레르기: 새우, 땅콩"
+              placeholder="추가 주의 메모 (필터에는 사용 안 함)"
+              aria-label="추가 알레르기 주의 메모"
               className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[13px] font-semibold text-[#4b3929] outline-none focus:border-[#ea5a1f]"
             />
             <select

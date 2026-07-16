@@ -1,12 +1,12 @@
 # Phase 6 브라우저 E2E·데모 네트워크 보고서
 
-Updated: 2026-07-11 KST
+Updated: 2026-07-17 KST
 
 ## 결론
 
-현재 운영 계약에서 자동화할 수 있는 게스트 첫 사용, 재료 저장·복원, publication fail-closed, 인증·입력 음성 경로를 fresh Chrome profile에서 검증했다. 총 12개 runtime check가 통과했고 데모 홈과 목록의 `/api/v1/*` 요청은 각각 0건이다.
+현재 운영 계약에서 자동화할 수 있는 게스트 첫 사용, 재료 저장·복원, publication fail-closed, 인증·입력 음성 경로를 fresh Chrome profile에서 검증했다. negative runtime check 12개가 통과했고 데모 홈과 목록의 `/api/v1/*` 요청은 각각 0건이다. 별도 기술 fixture에서는 추천부터 조리 완료·후기 저장·재고 소진까지 happy-path runtime check 23개가 통과했다.
 
-이 결과는 계획서의 전체 E2E 완료를 뜻하지 않는다. 공개 승인된 staging 레시피가 0개이므로 추천 성공, 상세, 장보기 추가, 조리 모드, 타이머, 완료 happy path는 실행할 수 없다. 자동 점수나 데모 fixture에 가짜 사람 검수 증거를 붙여 이 차단을 우회하지 않았다.
+이 결과는 계획서의 실제 운영 E2E 완료를 뜻하지 않는다. happy path는 사람 검수 증거로 계산하지 않는 격리 기술 fixture에서만 실행했다. 공개 승인된 staging 레시피는 여전히 0개이며, 자동 점수나 기술 fixture에 가짜 사람 검수 증거를 붙여 이 차단을 우회하지 않았다.
 
 ## 변경 전 상태와 원인
 
@@ -34,14 +34,14 @@ Updated: 2026-07-11 KST
 | ---: | --- | --- | --- |
 | 1 | 게스트 첫 사용 | fresh profile에서 starter 화면 확인 | 검증됨 |
 | 2 | 재료 등록 | 계란·두부 저장, reload 후 `보관 2개` 복원 | 검증됨 |
-| 3 | 추천 확인 | 미검수 0개 상태에서 publication 안내 | 음성 경로만 검증 |
-| 4 | 레시피 검색 | `q=계란` URL·input 복원과 503 안내 | 음성 경로만 검증 |
-| 5 | 상세 진입 | non-UUID/unapproved 상세 fail-closed | 음성 경로만 검증 |
-| 6 | 장보기 추가 | 공개 승인 recipe fixture 없음 | 차단 |
-| 7 | 조리 시작 | 공개 승인 detail fixture 없음 | 차단 |
-| 8 | 타이머 | unit·Phase 4 하네스는 통과, 이번 E2E에서는 미실행 | 차단 |
-| 9 | 조리 완료 | 공개 승인 detail fixture 없음 | 차단 |
-| 10 | 로그인·데이터 이전 | 위조 device와 invalid merge token 401 | 음성 경로만 검증 |
+| 3 | 추천 확인 | publication fail-closed와 기술 fixture 추천 | 기술 fixture 검증 |
+| 4 | 레시피 검색 | `q=계란` URL·input 복원과 503 안내 | 음성 경로 검증 |
+| 5 | 상세 진입 | non-UUID/unapproved fail-closed와 fixture 상세 | 기술 fixture 검증 |
+| 6 | 장보기 추가 | 부족 재료 추가와 중복 병합 | 기술 fixture 검증 |
+| 7 | 조리 시작 | 조리 시작과 단계 이동 | 기술 fixture 검증 |
+| 8 | 타이머 | 30초·90초 타이머, pause와 reload 복원 | 기술 fixture 검증 |
+| 9 | 조리 완료 | 완료, 후기 저장, 재고 소진, reload 복원 | 기술 fixture 검증 |
+| 10 | 로그인·데이터 이전 | 분산 제한 설정 없는 가족 API 503, invalid merge token 401 | 음성 경로만 검증 |
 | 11 | 오프라인 복구 | 실기기·서비스 워커 기준 미검증 | 차단 |
 | 12 | 계정 삭제 | 잘못된 확인 문구 400/no-store | 음성 경로만 검증 |
 
@@ -58,7 +58,7 @@ Updated: 2026-07-11 KST
 - `recipe_detail_fail_closed`
 - `demo_home_no_recipe_api`
 - `demo_list_no_recipe_api`
-- `family_auth_rejected`
+- `family_dependency_fail_closed`
 - `merge_auth_rejected`
 - `account_delete_input_rejected`
 
@@ -81,7 +81,7 @@ Screenshot: `output/ui-evidence/phase6-e2e-guest-negative-390.png` (로컬 ignor
 
 ## 남은 위험과 다음 증거
 
-- 공개 승인된 recipe v2 staging fixture를 만든 뒤 추천 → 상세 → 장보기 → 조리 → 타이머 → 완료 happy path를 같은 자동화에서 실행해야 한다.
+- 동일 happy path를 공개 승인된 실제 staging recipe v2와 격리 계정으로 재실행해야 한다.
 - 로그인 성공·anonymous merge 성공·authenticated account deletion은 격리된 staging 계정과 정리 절차가 필요하다.
 - 오프라인 복구와 iOS/Android background 동작은 실제 기기 증거가 필요하다.
 - Phase 5 실제 조리·초보자·식품 안전·출처·이미지 권리 검수는 각각 0/20이다.

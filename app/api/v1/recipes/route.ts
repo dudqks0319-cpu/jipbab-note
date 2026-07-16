@@ -14,6 +14,7 @@ import {
   RecipeApiDependencyError,
 } from "@/lib/recipe-api-v1-repository";
 import { isCanonicalRecipeCategoryId } from "@/lib/recipe-category-taxonomy";
+import { parseRecipeAllergenIds } from "@/lib/recipe-allergens";
 import {
   listPhase6E2EFixtureRecipes,
   shouldUsePhase6E2EFixture,
@@ -60,6 +61,14 @@ export async function GET(request: Request) {
     }
 
     const sort = parseApiSort(searchParams.get("sort"));
+    let excludedAllergenIds;
+    try {
+      excludedAllergenIds = parseRecipeAllergenIds(
+        parseApiIdList(searchParams.get("excludedAllergenIds"), "excludedAllergenIds"),
+      );
+    } catch {
+      throw new ApiV1ValidationError("INVALID_FILTER", "excludedAllergenIds 필터를 확인해 주세요.");
+    }
     const input = {
       query: parseApiQuery(searchParams.get("q")),
       categoryId: categoryValue && isCanonicalRecipeCategoryId(categoryValue) ? categoryValue : null,
@@ -81,6 +90,7 @@ export async function GET(request: Request) {
         searchParams.get("excludeIngredientIds"),
         "excludeIngredientIds",
       ),
+      excludedAllergenIds,
       sort,
       cursor: parseRepositoryCursor(searchParams.get("cursor"), sort),
       limit: parseApiLimit(searchParams.get("limit")),

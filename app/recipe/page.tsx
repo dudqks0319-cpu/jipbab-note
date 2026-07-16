@@ -29,6 +29,7 @@ import {
   type RecipeToolListFilter,
 } from '@/lib/recipe-list-filters'
 import { useDemoModeState } from '@/hooks/useDemoMode'
+import { useAppSettings } from '@/hooks/useAppSettings'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useRecipes } from '@/hooks/useRecipes'
 import { isBeginnerRecipeGeneratedImage } from '@/lib/recipe-images'
@@ -60,6 +61,7 @@ function getDisplayCategoryLabelLines(category: DisplayRecipeCategory): string[]
 }
 
 export default function RecipePage() {
+  const { settings } = useAppSettings()
   const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [quickFilter, setQuickFilter] = useState<RecipeQuickFilter>('all')
@@ -98,6 +100,7 @@ export default function RecipePage() {
     difficulty: difficultyFilter === 'level-1' ? 1 : null,
     maxTotalTime: timeFilter === 'all' ? null : Number(timeFilter),
     maxMissingIngredients: fridgeFilter === 'ready' ? 0 : fridgeFilter === 'almost' ? 2 : null,
+    excludedAllergenIds: settings.allergenIds,
   })
 
   const { favorites, isFavorite, toggleFavorite } = useFavorites()

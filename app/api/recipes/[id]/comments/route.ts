@@ -3,16 +3,16 @@ import { NextResponse } from "next/server";
 import { createClient, type User } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 
-import { getRateLimitKey, noStoreHeaders, readJsonObject } from "@/lib/request-security";
+import { consumeDistributedRateLimit } from "@/lib/distributed-rate-limit";
+import { parsePublicRecipeReviewInput } from "@/lib/public-recipe-review";
+import { noStoreHeaders, readBoundedJsonObject } from "@/lib/request-security";
 import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 import type { RecipeCommentRecord } from "@/types";
 
-const MAX_CONTENT_LENGTH = 500;
 const MAX_RECIPE_ID_LENGTH = 120;
-const REQUEST_WINDOW_MS = 60_000;
 const MAX_GET_REQUESTS = 120;
 const MAX_POST_REQUESTS = 12;
-const requestStore = new Map<string, { count: number; startedAt: number }>();
+const MAX_BODY_BYTES = 4 * 1024;
 
 type RecipeCommentRow = {
   id: string;
@@ -21,7 +21,13 @@ type RecipeCommentRow = {
   user_id: string | null;
   author_name: string;
   content: string;
-  status: "visible" | "hidden" | "deleted";
+  status: "pending" | "visible" | "hidden" | "rejected" | "deleted";
+  outcome: "success" | "partial" | "failed" | null;
+  taste: "not_rated" | "bland" | "balanced" | "salty" | null;
+  remake_intent: "yes" | "maybe" | "no" | null;
+  actual_duration_minutes: number | null;
+  substitution_notes: string | null;
+  family_reaction: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -47,30 +53,6 @@ function normalizeRecipeId(value: string): string | null {
   const decoded = safeDecodeURIComponent(value);
   const trimmed = decoded?.trim() ?? "";
   return trimmed.length > 0 && trimmed.length <= MAX_RECIPE_ID_LENGTH ? trimmed : null;
-}
-
-function normalizeContent(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const trimmed = value.trim();
-  if (trimmed.length < 1 || trimmed.length > MAX_CONTENT_LENGTH) {
-    return null;
-  }
-  return trimmed;
-}
-
-function isRateLimited(request: Request, maxRequests: number): boolean {
-  const key = `${request.method}:${getRateLimitKey(request)}`;
-  const now = Date.now();
-  const current = requestStore.get(key);
-  if (!current || now - current.startedAt > REQUEST_WINDOW_MS) {
-    requestStore.set(key, { count: 1, startedAt: now });
-    return false;
-  }
-
-  current.count += 1;
-  return current.count > maxRequests;
 }
 
 function getSupabaseConfig() {
@@ -145,6 +127,12 @@ function rowToComment(row: RecipeCommentRow): RecipeCommentRecord {
     authorName: row.author_name,
     content: row.content,
     status: row.status,
+    outcome: row.outcome,
+    taste: row.taste,
+    remakeIntent: row.remake_intent,
+    actualDurationMinutes: row.actual_duration_minutes,
+    substitutionNotes: row.substitution_notes,
+    familyReaction: row.family_reaction,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -166,9 +154,14 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (isRateLimited(request, MAX_GET_REQUESTS)) {
+  const rateLimit = await consumeDistributedRateLimit(request, "recipe-comments:list", {
+    limit: MAX_GET_REQUESTS,
+    windowSeconds: 60,
+  });
+  if (rateLimit.status === "limited") {
     return jsonError("요청이 많습니다. 잠시 후 다시 시도해주세요.", 429);
   }
+  if (rateLimit.status === "unavailable") return jsonError("후기 요청 제한 설정을 확인 중입니다.", 503);
 
   const { id } = await context.params;
   const recipeId = normalizeRecipeId(id);
@@ -183,7 +176,7 @@ export async function GET(
 
   const { data, error } = await client
     .from("recipe_comments")
-    .select("id,recipe_id,device_id,user_id,author_name,content,status,created_at,updated_at")
+    .select("id,recipe_id,device_id,user_id,author_name,content,status,outcome,taste,remake_intent,actual_duration_minutes,substitution_notes,family_reaction,created_at,updated_at")
     .eq("recipe_id", recipeId)
     .eq("status", "visible")
     .order("created_at", { ascending: false })
@@ -206,9 +199,14 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (isRateLimited(request, MAX_POST_REQUESTS)) {
+  const rateLimit = await consumeDistributedRateLimit(request, "recipe-comments:create", {
+    limit: MAX_POST_REQUESTS,
+    windowSeconds: 60,
+  });
+  if (rateLimit.status === "limited") {
     return jsonError("댓글 작성이 너무 빠릅니다. 잠시 후 다시 시도해주세요.", 429);
   }
+  if (rateLimit.status === "unavailable") return jsonError("후기 요청 제한 설정을 확인 중입니다.", 503);
 
   const auth = await getAuthenticatedUser(request);
   if (!auth) {
@@ -221,10 +219,14 @@ export async function POST(
     return jsonError("레시피 정보를 확인해 주세요.", 400);
   }
 
-  const body = await readJsonObject(request);
-  const content = normalizeContent(body?.content);
-  if (!content) {
-    return jsonError("댓글은 1자 이상 500자 이하로 입력해주세요.", 400);
+  const body = await readBoundedJsonObject(request, MAX_BODY_BYTES);
+  if (body.status === "too_large") return jsonError("후기 내용이 너무 깁니다.", 413);
+  if (body.status !== "ok") return jsonError("후기 내용을 확인해 주세요.", 400);
+  let review;
+  try {
+    review = parsePublicRecipeReviewInput(body.value);
+  } catch {
+    return jsonError("요리 결과, 소요시간, 후기 내용을 확인해 주세요.", 400);
   }
 
   const client = createAnonClient(auth.token);
@@ -239,10 +241,16 @@ export async function POST(
       device_id: `signed:${randomUUID()}`,
       user_id: auth.user.id,
       author_name: resolveAuthorName(auth.user),
-      content,
-      status: "visible",
+      content: review.content,
+      status: "pending",
+      outcome: review.outcome,
+      taste: review.taste,
+      remake_intent: review.remakeIntent,
+      actual_duration_minutes: review.actualDurationMinutes,
+      substitution_notes: review.substitutionNotes,
+      family_reaction: review.familyReaction,
     })
-    .select("id,recipe_id,device_id,user_id,author_name,content,status,created_at,updated_at")
+    .select("id,status,created_at")
     .single();
 
   if (error) {
@@ -250,7 +258,7 @@ export async function POST(
   }
 
   return NextResponse.json(
-    { comment: rowToComment(data as RecipeCommentRow) },
+    { review: { id: data.id, status: data.status, createdAt: data.created_at } },
     { status: 201, headers: noStoreHeaders() },
   );
 }

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:recommendation-top3": "node --experimental-strip-types scripts/check-recommendation-top3-evaluation.mjs",
     "dev": "next dev --webpack",
     "dev:mobile": "next dev --webpack --port 3002",
     "prebuild": "node --experimental-strip-types scripts/build-ingredients-catalog.mjs",

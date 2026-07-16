@@ -11,6 +11,7 @@ import {
   type RecipeApiV1Sort,
 } from "@/lib/recipe-api-v1-client";
 import { resolveLegacyRecipeCategory } from "@/lib/recipe-category-taxonomy";
+import type { RecipeAllergenId } from "@/lib/recipe-allergens";
 import {
   buildRecipeRecommendationReason,
   findExpiringMatchedIngredients,
@@ -85,6 +86,7 @@ export function useRecipeCatalog(
   pageSize = DEFAULT_PAGE_SIZE,
   options: {
     ingredientIds?: string[];
+    excludedAllergenIds?: RecipeAllergenId[];
     sort?: RecipeApiV1Sort;
     difficulty?: number | null;
     maxTotalTime?: number | null;
@@ -94,6 +96,7 @@ export function useRecipeCatalog(
 ): UseRecipeCatalogResult {
   const safePageSize = Math.min(Math.max(Math.floor(pageSize), 1), 50);
   const ingredientKey = (options.ingredientIds ?? []).join(",");
+  const excludedAllergenKey = (options.excludedAllergenIds ?? []).join(",");
   const sort = options.sort ?? "recommended";
   const [recipes, setRecipes] = useState<RecipeRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -128,6 +131,9 @@ export function useRecipeCatalog(
           category:
             categoryResolution?.status === "mapped" ? categoryResolution.categoryId : null,
           ingredientIds: ingredientKey ? ingredientKey.split(",") : [],
+          excludedAllergenIds: excludedAllergenKey
+            ? (excludedAllergenKey.split(",") as RecipeAllergenId[])
+            : [],
           sort,
           difficulty: options.difficulty,
           maxTotalTime: options.maxTotalTime,
@@ -159,6 +165,7 @@ export function useRecipeCatalog(
   }, [
     debouncedQuery,
     ingredientKey,
+    excludedAllergenKey,
     options.difficulty,
     options.maxMissingIngredients,
     options.maxTotalTime,
@@ -179,6 +186,7 @@ export function useRecipeCatalog(
   }, [
     debouncedQuery,
     ingredientKey,
+    excludedAllergenKey,
     options.difficulty,
     options.maxMissingIngredients,
     options.maxTotalTime,
@@ -244,6 +252,7 @@ export function useRecipes(
     difficulty?: number | null;
     maxTotalTime?: number | null;
     maxMissingIngredients?: number | null;
+    excludedAllergenIds?: RecipeAllergenId[];
     enabled?: boolean;
   } = {},
 ): UseRecipesResult {

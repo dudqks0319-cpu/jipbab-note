@@ -77,6 +77,7 @@ function query(overrides: Partial<PublicRecipeListQuery> = {}): PublicRecipeList
     maxMissingIngredients: null,
     ingredientIds: [],
     excludeIngredientIds: [],
+    excludedAllergenIds: [],
     sort: "recent",
     cursor: null,
     limit: 24,

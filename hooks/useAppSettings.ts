@@ -4,10 +4,12 @@
 import { useCallback, useMemo, useState } from "react";
 
 import type { IngredientUnitSystem } from "@/types";
+import { isRecipeAllergenId, type RecipeAllergenId } from "@/lib/recipe-allergens";
 
 const STORAGE_KEY = "jipbab-note-app-settings";
 
 export type AppSettings = {
+  allergenIds: RecipeAllergenId[];
   allergyNotes: string;
   expiryAlerts: boolean;
   expiryReminderDays: number[];
@@ -22,6 +24,7 @@ export type AppSettings = {
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
+  allergenIds: [],
   allergyNotes: "",
   expiryAlerts: true,
   expiryReminderDays: [3, 1, 0],
@@ -48,6 +51,9 @@ function safeReadSettings(): AppSettings {
   try {
     const parsed = JSON.parse(raw) as Partial<AppSettings>;
     return {
+      allergenIds: Array.isArray(parsed.allergenIds)
+        ? [...new Set(parsed.allergenIds.filter(isRecipeAllergenId))]
+        : DEFAULT_SETTINGS.allergenIds,
       allergyNotes:
         typeof parsed.allergyNotes === "string" && parsed.allergyNotes.length <= 120
           ? parsed.allergyNotes
@@ -114,6 +120,7 @@ export interface UseAppSettingsResult {
   settings: AppSettings;
   enabledCount: number;
   setPreferenceText: (key: "allergyNotes" | "dislikedIngredients", value: string) => void;
+  toggleAllergen: (allergenId: RecipeAllergenId) => void;
   setCravingKeyword: (value: string) => void;
   toggleExcludedCategory: (category: string) => void;
   setServingSize: (servingSize: number) => void;
@@ -132,6 +139,19 @@ export function useAppSettings(): UseAppSettingsResult {
       const nextSettings = {
         ...prev,
         [key]: value.slice(0, 120),
+      };
+      safeWriteSettings(nextSettings);
+      return nextSettings;
+    });
+  }, []);
+
+  const toggleAllergen = useCallback((allergenId: RecipeAllergenId) => {
+    setSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        allergenIds: prev.allergenIds.includes(allergenId)
+          ? prev.allergenIds.filter((item) => item !== allergenId)
+          : [...prev.allergenIds, allergenId],
       };
       safeWriteSettings(nextSettings);
       return nextSettings;
@@ -209,6 +229,7 @@ export function useAppSettings(): UseAppSettingsResult {
   const toggleSetting = useCallback((key: keyof AppSettings) => {
     if (
       key === "unitSystem" ||
+      key === "allergenIds" ||
       key === "allergyNotes" ||
       key === "dislikedIngredients" ||
       key === "servingSize" ||
@@ -253,6 +274,7 @@ export function useAppSettings(): UseAppSettingsResult {
     settings,
     enabledCount,
     setPreferenceText,
+    toggleAllergen,
     setCravingKeyword,
     toggleExcludedCategory,
     setServingSize,

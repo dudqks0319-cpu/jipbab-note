@@ -424,7 +424,8 @@ const sourceChecks = [
     terms: [
       "filterBeginnerHomeRecipes",
       "rankRecipeRecommendations",
-      "scope: group ? \"family\" : \"personal\"",
+      "scope: familyGroupId ? \"family\" : \"personal\"",
+      "syncState === \"synced\"",
       "?scope=family#shopping-assistant",
     ],
   },

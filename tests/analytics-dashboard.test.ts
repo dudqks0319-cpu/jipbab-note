@@ -73,7 +73,7 @@ test("operational dashboard separates status rates and latency by endpoint", () 
   assert.equal(report.operations.overall.server_error_rate_pct, 25);
   assert.equal(report.operations.overall.p50_latency_ms, 90);
   assert.equal(report.operations.overall.p95_latency_ms, 410);
-  assert.equal(report.operations.endpoints.length, 3);
+  assert.equal(report.operations.endpoints.length, 7);
   assert.deepEqual(report.operations.instrumentation_gaps, [
     "external_api_failures_not_instrumented",
     "database_errors_not_instrumented",

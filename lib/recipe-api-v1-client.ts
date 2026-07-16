@@ -1,5 +1,6 @@
 import { getIngredientCatalog } from "./ingredient-catalog.ts";
 import type { CanonicalRecipeCategoryId } from "./recipe-category-taxonomy.ts";
+import type { RecipeAllergenId } from "./recipe-allergens.ts";
 import type {
   RecipeDetailRecord,
   RecipePublicationEvidence,
@@ -364,6 +365,7 @@ export async function fetchRecipeListV1(
     maxMissingIngredients?: number | null;
     ingredientIds?: string[];
     excludeIngredientIds?: string[];
+    excludedAllergenIds?: RecipeAllergenId[];
     sort?: RecipeApiV1Sort;
     cursor?: string | null;
     limit?: number;
@@ -382,6 +384,9 @@ export async function fetchRecipeListV1(
   if (input.excludeIngredientIds?.length) {
     params.set("excludeIngredientIds", input.excludeIngredientIds.join(","));
   }
+  if (input.excludedAllergenIds?.length) {
+    params.set("excludedAllergenIds", input.excludedAllergenIds.join(","));
+  }
   params.set("sort", input.sort ?? "recommended");
   if (input.cursor) params.set("cursor", input.cursor);
   params.set("limit", String(Math.min(Math.max(input.limit ?? 24, 1), 50)));
@@ -398,6 +403,7 @@ export async function fetchRecipeRecommendationsV1(
     ingredientIds: string[];
     expiringIngredientIds?: string[];
     excludedIngredientIds?: string[];
+    excludedAllergenIds?: RecipeAllergenId[];
     maxTime?: number | null;
     difficulty?: number | null;
     maxMissingIngredients?: number;

@@ -1,4 +1,5 @@
 import { ApiV1ValidationError } from "./api-v1-contract.ts";
+import { parseRecipeAllergenIds, type RecipeAllergenId } from "./recipe-allergens.ts";
 import type { RecipeV1Card } from "./recipe-api-v1-repository.ts";
 
 const INGREDIENT_ID_PATTERN = /^[a-z0-9-]{1,80}$/;
@@ -7,6 +8,7 @@ const RECOMMENDATION_INPUT_KEYS = new Set([
   "expiringIngredientIds",
   "excludedIngredientIds",
   "excludedIngredients",
+  "excludedAllergenIds",
   "maxTime",
   "difficulty",
   "maxMissingIngredients",
@@ -18,6 +20,7 @@ export interface RecipeRecommendationV1Input {
   ingredientIds: string[];
   expiringIngredientIds: string[];
   excludedIngredientIds: string[];
+  excludedAllergenIds: RecipeAllergenId[];
   maxTime: number | null;
   difficulty: number | null;
   maxMissingIngredients: number;
@@ -87,6 +90,12 @@ export function parseRecipeRecommendationV1Input(
     30,
     false,
   );
+  let excludedAllergenIds: RecipeAllergenId[];
+  try {
+    excludedAllergenIds = parseRecipeAllergenIds(body.excludedAllergenIds);
+  } catch {
+    throw new ApiV1ValidationError("INVALID_BODY", "excludedAllergenIds 목록을 확인해 주세요.");
+  }
   const owned = new Set(ingredientIds);
   if (expiringIngredientIds.some((id) => !owned.has(id))) {
     throw new ApiV1ValidationError(
@@ -99,6 +108,7 @@ export function parseRecipeRecommendationV1Input(
     ingredientIds,
     expiringIngredientIds,
     excludedIngredientIds,
+    excludedAllergenIds,
     maxTime: integer(body.maxTime, "maxTime", 1, 1440, null),
     difficulty: integer(body.difficulty, "difficulty", 1, 3, null),
     maxMissingIngredients: integer(

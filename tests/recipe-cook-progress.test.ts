@@ -25,6 +25,8 @@ test("cook timer rejects invalid or unbounded durations", () => {
 test("saved cook progress restores only current recipe steps", () => {
   const progress = normalizeRecipeCookProgress({
     version: 1,
+    clientSessionId: "c1028db3-6d0b-44b3-8128-9f28d633604b",
+    startedAt: "2026-07-10T23:30:00.000Z",
     activeStepIndex: 1,
     checkedStepIndexes: [1, 2, 2, 99],
     timer: { stepIndex: 2, endsAt: 50_000, durationSeconds: 60 },
@@ -38,6 +40,8 @@ test("saved cook progress restores only current recipe steps", () => {
   assert.equal(progress.activeStepIndex, 1);
   assert.equal(progress.timer?.stepIndex, 2);
   assert.equal(progress.feedback, "easy");
+  assert.equal(progress.clientSessionId, "c1028db3-6d0b-44b3-8128-9f28d633604b");
+  assert.equal(progress.startedAt, "2026-07-10T23:30:00.000Z");
   assert.equal(recipeCookProgressKey("recipe-1"), "jipbab:recipe-cook-progress:v1:recipe-1");
 });
 

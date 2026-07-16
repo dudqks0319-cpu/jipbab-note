@@ -362,6 +362,18 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     void listIngredients();
   }, [listIngredients]);
 
+  useEffect(() => {
+    if (scopeContext.scope !== "family" || !scopeContext.familyGroupId) return undefined;
+    const handleFamilyDataChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ familyGroupId?: string; table?: string }>).detail;
+      if (detail?.familyGroupId === scopeContext.familyGroupId && detail.table === "ingredients") {
+        void syncInBackground().catch(() => setSource("local"));
+      }
+    };
+    window.addEventListener("jipbab:family-data-changed", handleFamilyDataChange);
+    return () => window.removeEventListener("jipbab:family-data-changed", handleFamilyDataChange);
+  }, [scopeContext, syncInBackground]);
+
   return {
     ingredients: ingredients.filter(
       (item, index, list) =>

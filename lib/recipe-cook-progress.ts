@@ -9,6 +9,8 @@ export type RecipeCookTimer = {
 
 export type RecipeCookProgress = {
   version: 1;
+  clientSessionId: string | null;
+  startedAt: string | null;
   activeStepIndex: number;
   checkedStepIndexes: number[];
   timer: RecipeCookTimer | null;
@@ -107,9 +109,17 @@ export function normalizeRecipeCookProgress(
   const feedback = record.feedback === "easy" || record.feedback === "okay" || record.feedback === "hard"
     ? record.feedback
     : null;
+  const clientSessionId = typeof record.clientSessionId === "string" && record.clientSessionId.length <= 64
+    ? record.clientSessionId
+    : null;
+  const startedAt = typeof record.startedAt === "string" && Number.isFinite(Date.parse(record.startedAt))
+    ? new Date(record.startedAt).toISOString()
+    : null;
 
   return {
     version: 1,
+    clientSessionId,
+    startedAt,
     activeStepIndex:
       Number.isInteger(activeStepIndex) && activeStepIndex >= 0 && activeStepIndex < stepIndexes.length
         ? activeStepIndex

@@ -21,12 +21,29 @@ Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z
 
 - live schema에서 `20260521160347` 이후 로컬 migration 각각의 실제 적용 상태를 확인하고 remote migration history를 안전하게 복구합니다.
 - 출력이나 공유 로그에 DB 연결 자격증명이 노출되지 않는 경로로 복원 가능한 운영 백업을 만들고 실제 복원 절차를 확인합니다.
-- staging에 `supabase/migrations/20260710130000_gate_recipe_publication.sql`, `supabase/migrations/20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql`, `supabase/migrations/20260710151000_seed_phase1_ingredient_catalog.sql`, `supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql`을 순서대로 적용합니다.
+- staging에 `supabase/migrations/20260710130000_gate_recipe_publication.sql`부터 `20260717102000_add_moderated_recipe_reviews.sql`까지 미적용 additive migration을 timestamp 순서대로 적용합니다. 이번 업그레이드의 마지막 일곱 migration은 구조화 알레르기 검수 계약, 비공개 오류 신고 큐, 명시적 비공개 조리 완료 기록, 실제 주간 식단, 오류 신고 운영 감사 이력, 가족 Realtime 활동 신호, 운영 검수형 공개 후기를 추가합니다.
 - staging에서 version capture/edit/restore 왕복, 같은 recipe 안의 step-ingredient 무결성, alias 유일성, non-destructive rollback을 실제 PostgreSQL로 검증합니다.
 - staging에서 무서명 요청, 위조 `x-device-id`, 다른 signed user, anonymous user의 family/community write가 모두 차단되는지 확인합니다.
 - staging 서버에 32자 이상의 server-only `API_RATE_LIMIT_HMAC_SECRET`을 설정하고 목록·상세·추천 API의 정상, `429`, `503`, 잘못된 입력 경로를 검증합니다. 자세한 계약은 `docs/api-v1-operations.md`를 따릅니다.
 - 운영에는 migration history와 백업 확인 후 Phase 0 두 migration과 matching app build를 먼저 함께 적용합니다. Phase 1 두 migration과 Phase 2 rate-limit migration은 staging 복원 시험과 API cutover 계획이 승인된 뒤 별도 rollout합니다. `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED`는 abuse controls가 준비될 때까지 `false`로 유지합니다.
 - 기존 migration 파일은 수정하지 않습니다.
+
+staging 적용 순서는 아래 14개 파일로 고정합니다.
+
+1. `20260710130000_gate_recipe_publication.sql`
+2. `20260710140000_replace_device_guest_auth_with_signed_sessions.sql`
+3. `20260710150000_add_recipe_v2_schema_and_versioning.sql`
+4. `20260710151000_seed_phase1_ingredient_catalog.sql`
+5. `20260710160000_add_distributed_api_rate_limits.sql`
+6. `20260711113000_harden_security_definer_privileges.sql`
+7. `20260711170000_reclassify_egg_tofu_catalog.sql`
+8. `20260717090000_add_structured_allergen_safety.sql`
+9. `20260717091000_add_recipe_issue_reports.sql`
+10. `20260717092000_add_cooking_sessions.sql`
+11. `20260717093000_add_meal_plans.sql`
+12. `20260717100000_add_recipe_issue_triage.sql`
+13. `20260717101000_add_family_realtime_activity.sql`
+14. `20260717102000_add_moderated_recipe_reviews.sql`
 
 SQL Editor에 붙여 넣을 정확한 bundle은 아래 명령으로 출력합니다.
 

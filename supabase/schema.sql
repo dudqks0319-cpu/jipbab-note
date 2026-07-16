@@ -2718,6 +2718,232 @@ comment on column public.recipes.schema_version is
 
 notify pgrst, 'reload schema';
 
+-- 이 migration은 가족 구성원 활동 이력, 안전한 탈퇴, 실시간 갱신 신호를 추가합니다.
+create table if not exists public.family_activity_events (
+  id uuid primary key default gen_random_uuid(),
+  family_group_id uuid not null references public.family_groups(id) on delete cascade,
+  actor_user_id uuid references auth.users(id) on delete set null,
+  actor_display_name text not null,
+  event_type text not null,
+  created_at timestamptz not null default now(),
+  constraint family_activity_events_actor_length
+    check (char_length(actor_display_name) between 1 and 24),
+  constraint family_activity_events_type_allowed
+    check (event_type in ('group_created', 'member_joined', 'member_updated', 'member_left'))
+);
+
+create index if not exists idx_family_activity_events_group_created
+on public.family_activity_events(family_group_id, created_at desc);
+
+alter table public.family_activity_events enable row level security;
+
+drop policy if exists family_activity_events_select_member on public.family_activity_events;
+create policy family_activity_events_select_member
+on public.family_activity_events
+for select
+to authenticated
+using (public.is_current_family_member(family_group_id));
+
+revoke all on table public.family_activity_events from public, anon, authenticated;
+grant select on table public.family_activity_events to authenticated;
+grant all on table public.family_activity_events to service_role;
+
+create or replace function public.record_family_member_activity()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into public.family_activity_events (
+      family_group_id, actor_user_id, actor_display_name, event_type
+    ) values (
+      new.family_group_id,
+      new.user_id,
+      new.display_name,
+      case when new.role = 'owner' then 'group_created' else 'member_joined' end
+    );
+    return new;
+  end if;
+
+  if tg_op = 'UPDATE' and new.display_name is distinct from old.display_name then
+    insert into public.family_activity_events (
+      family_group_id, actor_user_id, actor_display_name, event_type
+    ) values (
+      new.family_group_id, new.user_id, new.display_name, 'member_updated'
+    );
+    return new;
+  end if;
+
+  if tg_op = 'DELETE' then
+    insert into public.family_activity_events (
+      family_group_id, actor_user_id, actor_display_name, event_type
+    ) values (
+      old.family_group_id, old.user_id, old.display_name, 'member_left'
+    );
+    return old;
+  end if;
+
+  return coalesce(new, old);
+end;
+$$;
+
+drop trigger if exists record_family_member_activity on public.family_members;
+create trigger record_family_member_activity
+  after insert or update of display_name or delete on public.family_members
+  for each row execute function public.record_family_member_activity();
+
+create or replace function public.leave_family_group(group_id_input uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public, app, auth, pg_temp
+as $$
+declare
+  acting_user_id uuid := (select auth.uid());
+  current_member public.family_members%rowtype;
+  member_count integer;
+begin
+  if not app.is_permanent_user() then
+    raise exception 'permanent_user_required';
+  end if;
+
+  select * into current_member
+  from public.family_members
+  where family_group_id = group_id_input
+    and user_id = acting_user_id
+  for update;
+  if current_member.id is null then
+    raise exception 'family_group_access_denied';
+  end if;
+
+  select count(*)::integer into member_count
+  from public.family_members
+  where family_group_id = group_id_input;
+
+  if current_member.role = 'owner' then
+    if member_count > 1 then
+      raise exception 'ownership_transfer_required';
+    end if;
+    delete from public.family_groups where id = group_id_input;
+    return 'group_deleted';
+  end if;
+
+  delete from public.family_members where id = current_member.id;
+  return 'member_left';
+end;
+$$;
+
+revoke all on function public.record_family_member_activity() from public, anon, authenticated;
+revoke all on function public.leave_family_group(uuid) from public, anon;
+grant execute on function public.leave_family_group(uuid) to authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.family_activity_events;
+exception
+  when duplicate_object then null;
+  when undefined_object then
+    raise notice 'supabase_realtime publication is unavailable; realtime remains disabled until staging setup';
+end $$;
+
+alter table public.ingredients replica identity full;
+alter table public.shopping_items replica identity full;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.ingredients;
+exception
+  when duplicate_object then null;
+  when undefined_object then
+    raise notice 'supabase_realtime publication is unavailable for ingredients';
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.shopping_items;
+exception
+  when duplicate_object then null;
+  when undefined_object then
+    raise notice 'supabase_realtime publication is unavailable for shopping_items';
+end $$;
+
+comment on table public.family_activity_events is
+  'Member-visible bounded family membership activity used with RLS-scoped inventory realtime refresh signals.';
+comment on function public.leave_family_group(uuid) is
+  'Members may leave; an owner must remain while other members exist and can delete only a one-member group.';
+
+notify pgrst, 'reload schema';
+
+-- 이 migration은 로그인 사용자가 명시적으로 저장한 비공개 조리 완료 세션을 추가합니다.
+create table if not exists public.cooking_sessions (
+  id uuid primary key default gen_random_uuid(),
+  client_session_id uuid not null,
+  recipe_id uuid not null references public.recipes(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  started_at timestamptz not null,
+  completed_at timestamptz not null,
+  actual_duration_minutes integer not null,
+  outcome text not null,
+  difficulty text not null,
+  taste text not null default 'not_rated',
+  remake_intent text not null,
+  substitute_notes text,
+  family_reaction text,
+  comment text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint cooking_sessions_user_client_unique unique (user_id, client_session_id),
+  constraint cooking_sessions_time_order check (completed_at >= started_at),
+  constraint cooking_sessions_duration_range check (actual_duration_minutes between 1 and 1440),
+  constraint cooking_sessions_outcome_allowed check (outcome in ('success', 'partial', 'failed')),
+  constraint cooking_sessions_difficulty_allowed check (difficulty in ('easy', 'okay', 'hard')),
+  constraint cooking_sessions_taste_allowed check (taste in ('not_rated', 'bland', 'balanced', 'salty')),
+  constraint cooking_sessions_remake_allowed check (remake_intent in ('yes', 'maybe', 'no')),
+  constraint cooking_sessions_text_lengths check (
+    (substitute_notes is null or char_length(substitute_notes) <= 300)
+    and (family_reaction is null or char_length(family_reaction) <= 300)
+    and (comment is null or char_length(comment) <= 500)
+  )
+);
+
+create index if not exists idx_cooking_sessions_recipe_completed
+on public.cooking_sessions(recipe_id, completed_at desc);
+create index if not exists idx_cooking_sessions_user_completed
+on public.cooking_sessions(user_id, completed_at desc);
+
+drop trigger if exists set_cooking_sessions_updated_at on public.cooking_sessions;
+create trigger set_cooking_sessions_updated_at
+  before update on public.cooking_sessions
+  for each row execute function public.set_updated_at();
+
+alter table public.cooking_sessions enable row level security;
+
+drop policy if exists cooking_sessions_insert_own on public.cooking_sessions;
+create policy cooking_sessions_insert_own
+on public.cooking_sessions
+for insert
+to authenticated
+with check (user_id = (select auth.uid()));
+
+drop policy if exists cooking_sessions_select_own on public.cooking_sessions;
+create policy cooking_sessions_select_own
+on public.cooking_sessions
+for select
+to authenticated
+using (user_id = (select auth.uid()));
+
+revoke all on table public.cooking_sessions from anon;
+revoke all on table public.cooking_sessions from authenticated;
+grant select, insert on table public.cooking_sessions to authenticated;
+grant all on table public.cooking_sessions to service_role;
+
+comment on table public.cooking_sessions is
+  'Private user cooking outcomes. Rows are saved only after explicit user action and are not editorial recipe approval evidence.';
+
+notify pgrst, 'reload schema';
+
 insert into public.ingredients_catalog (
   id, canonical_name, category, default_storage_type, common_unit, allergen_group
 ) values
@@ -3302,5 +3528,402 @@ values
   ('category', null, '계란·난류', '계란·난류', 'https://link.coupang.com/a/eEzpQo', 1001, 'Phase 6 정확한 계란 분류 fallback'),
   ('category', null, '콩·두부', '콩·두부', 'https://link.coupang.com/a/eEzG5O', 1002, 'Phase 6 정확한 두부 분류 fallback')
 on conflict (kind, normalized_key) do nothing;
+
+notify pgrst, 'reload schema';
+
+-- 이 migration은 구조화 알레르기 분류와 사람 검수 상태를 추가합니다.
+create table if not exists public.allergen_groups (
+  id text primary key,
+  display_name text not null unique,
+  sort_order integer not null check (sort_order >= 0),
+  created_at timestamptz not null default now(),
+  constraint allergen_groups_id_format
+    check (id ~ '^[a-z][a-z0-9-]{1,39}$'),
+  constraint allergen_groups_display_name_length
+    check (char_length(btrim(display_name)) between 1 and 40)
+);
+
+insert into public.allergen_groups (id, display_name, sort_order)
+values
+  ('eggs', '난류', 10), ('milk', '우유', 20), ('buckwheat', '메밀', 30),
+  ('peanut', '땅콩', 40), ('soy', '대두', 50), ('wheat', '밀', 60),
+  ('mackerel', '고등어', 70), ('crab', '게', 80), ('shrimp', '새우', 90),
+  ('pork', '돼지고기', 100), ('peach', '복숭아', 110), ('tomato', '토마토', 120),
+  ('sulfites', '아황산류', 130), ('walnut', '호두', 140), ('chicken', '닭고기', 150),
+  ('beef', '쇠고기', 160), ('squid', '오징어', 170), ('shellfish', '조개류', 180),
+  ('pine-nut', '잣', 190)
+on conflict (id) do update
+set display_name = excluded.display_name,
+    sort_order = excluded.sort_order;
+
+create table if not exists public.ingredient_allergen_profiles (
+  ingredient_id text primary key references public.ingredients_catalog(id) on delete cascade,
+  review_status text not null default 'unreviewed',
+  reviewer text,
+  reviewed_at timestamptz,
+  review_note text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint ingredient_allergen_profiles_status_allowed
+    check (review_status in ('unreviewed', 'approved', 'needs_revision')),
+  constraint ingredient_allergen_profiles_review_evidence
+    check (
+      review_status <> 'approved'
+      or (nullif(btrim(reviewer), '') is not null and reviewed_at is not null)
+    ),
+  constraint ingredient_allergen_profiles_text_lengths
+    check (
+      (reviewer is null or char_length(reviewer) <= 120)
+      and (review_note is null or char_length(review_note) <= 1000)
+    )
+);
+
+create table if not exists public.ingredient_allergen_links (
+  ingredient_id text not null references public.ingredient_allergen_profiles(ingredient_id) on delete cascade,
+  allergen_group_id text not null references public.allergen_groups(id) on delete restrict,
+  presence_type text not null,
+  evidence_reference text,
+  created_at timestamptz not null default now(),
+  primary key (ingredient_id, allergen_group_id, presence_type),
+  constraint ingredient_allergen_links_presence_allowed
+    check (presence_type in ('contains', 'may_contain', 'cross_contact')),
+  constraint ingredient_allergen_links_evidence_length
+    check (evidence_reference is null or char_length(evidence_reference) <= 2048)
+);
+
+insert into public.ingredient_allergen_profiles (ingredient_id, review_status)
+select id, 'unreviewed'
+from public.ingredients_catalog
+on conflict (ingredient_id) do nothing;
+
+drop trigger if exists set_ingredient_allergen_profiles_updated_at on public.ingredient_allergen_profiles;
+create trigger set_ingredient_allergen_profiles_updated_at
+  before update on public.ingredient_allergen_profiles
+  for each row execute function public.set_updated_at();
+
+alter table public.allergen_groups enable row level security;
+alter table public.ingredient_allergen_profiles enable row level security;
+alter table public.ingredient_allergen_links enable row level security;
+
+revoke all on table public.allergen_groups from anon, authenticated;
+revoke all on table public.ingredient_allergen_profiles from anon, authenticated;
+revoke all on table public.ingredient_allergen_links from anon, authenticated;
+
+grant all on table public.allergen_groups to service_role;
+grant all on table public.ingredient_allergen_profiles to service_role;
+grant all on table public.ingredient_allergen_links to service_role;
+
+comment on table public.ingredient_allergen_profiles is
+  'Every catalog ingredient starts unreviewed. Allergy-filtered recommendations require approved human review.';
+comment on table public.ingredient_allergen_links is
+  'Structured direct, possible, and cross-contact allergen relationships for approved ingredient profiles.';
+
+notify pgrst, 'reload schema';
+
+-- 이 migration은 로그인 사용자의 비공개 레시피 오류 신고 큐를 추가합니다.
+create table if not exists public.recipe_issue_reports (
+  id uuid primary key default gen_random_uuid(),
+  recipe_id uuid not null references public.recipes(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  issue_type text not null,
+  details text not null,
+  status text not null default 'open',
+  resolution_note text,
+  resolved_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint recipe_issue_reports_type_allowed
+    check (issue_type in ('ingredient_amount', 'instruction', 'time_servings', 'allergen', 'food_safety', 'image', 'source_rights', 'other')),
+  constraint recipe_issue_reports_details_length
+    check (char_length(btrim(details)) between 3 and 500),
+  constraint recipe_issue_reports_status_allowed
+    check (status in ('open', 'triaged', 'resolved', 'rejected')),
+  constraint recipe_issue_reports_resolution_length
+    check (resolution_note is null or char_length(resolution_note) <= 2000)
+);
+
+create index if not exists idx_recipe_issue_reports_recipe_status
+on public.recipe_issue_reports(recipe_id, status, created_at desc);
+create index if not exists idx_recipe_issue_reports_user_created
+on public.recipe_issue_reports(user_id, created_at desc);
+
+drop trigger if exists set_recipe_issue_reports_updated_at on public.recipe_issue_reports;
+create trigger set_recipe_issue_reports_updated_at
+  before update on public.recipe_issue_reports
+  for each row execute function public.set_updated_at();
+
+alter table public.recipe_issue_reports enable row level security;
+
+drop policy if exists recipe_issue_reports_insert_own on public.recipe_issue_reports;
+create policy recipe_issue_reports_insert_own
+on public.recipe_issue_reports
+for insert
+to authenticated
+with check (user_id = (select auth.uid()) and status = 'open');
+
+drop policy if exists recipe_issue_reports_select_own on public.recipe_issue_reports;
+create policy recipe_issue_reports_select_own
+on public.recipe_issue_reports
+for select
+to authenticated
+using (user_id = (select auth.uid()));
+
+revoke all on table public.recipe_issue_reports from anon;
+revoke all on table public.recipe_issue_reports from authenticated;
+grant select, insert on table public.recipe_issue_reports to authenticated;
+grant all on table public.recipe_issue_reports to service_role;
+
+comment on table public.recipe_issue_reports is
+  'Private recipe quality and safety reports. Public comments must not be used as the moderation queue.';
+
+notify pgrst, 'reload schema';
+
+-- 이 migration은 사용자별 실제 주간 식단과 아침·점심·저녁 슬롯을 추가합니다.
+create table if not exists public.meal_plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  week_start date not null,
+  timezone text not null default 'Asia/Seoul',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint meal_plans_user_week_unique unique (user_id, week_start),
+  constraint meal_plans_timezone_length check (char_length(timezone) between 1 and 80)
+);
+
+create table if not exists public.meal_plan_items (
+  id uuid primary key default gen_random_uuid(),
+  meal_plan_id uuid not null references public.meal_plans(id) on delete cascade,
+  meal_date date not null,
+  meal_type text not null,
+  entry_kind text not null,
+  recipe_id uuid references public.recipes(id) on delete set null,
+  title text not null,
+  servings integer not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint meal_plan_items_slot_unique unique (meal_plan_id, meal_date, meal_type),
+  constraint meal_plan_items_type_allowed check (meal_type in ('breakfast', 'lunch', 'dinner')),
+  constraint meal_plan_items_kind_allowed check (entry_kind in ('recipe', 'leftovers', 'dining_out', 'delivery', 'custom')),
+  constraint meal_plan_items_recipe_shape check (
+    (entry_kind = 'recipe' and recipe_id is not null)
+    or (entry_kind <> 'recipe' and recipe_id is null)
+  ),
+  constraint meal_plan_items_title_length check (char_length(btrim(title)) between 1 and 120),
+  constraint meal_plan_items_servings_range check (servings between 1 and 12)
+);
+
+create index if not exists idx_meal_plans_user_week on public.meal_plans(user_id, week_start desc);
+create index if not exists idx_meal_plan_items_plan_date on public.meal_plan_items(meal_plan_id, meal_date, meal_type);
+
+drop trigger if exists set_meal_plans_updated_at on public.meal_plans;
+create trigger set_meal_plans_updated_at before update on public.meal_plans
+for each row execute function public.set_updated_at();
+drop trigger if exists set_meal_plan_items_updated_at on public.meal_plan_items;
+create trigger set_meal_plan_items_updated_at before update on public.meal_plan_items
+for each row execute function public.set_updated_at();
+
+alter table public.meal_plans enable row level security;
+alter table public.meal_plan_items enable row level security;
+
+revoke all on table public.meal_plans from anon, authenticated;
+revoke all on table public.meal_plan_items from anon, authenticated;
+grant all on table public.meal_plans to service_role;
+grant all on table public.meal_plan_items to service_role;
+
+create or replace function public.replace_meal_plan_items(input_plan_id uuid, input_items jsonb)
+returns void
+language plpgsql
+set search_path = public, pg_temp
+as $$
+declare
+  plan_week_start date;
+begin
+  if jsonb_typeof(input_items) <> 'array' or jsonb_array_length(input_items) > 21 then
+    raise exception 'invalid_meal_plan_items';
+  end if;
+
+  select week_start into plan_week_start
+  from public.meal_plans
+  where id = input_plan_id;
+  if plan_week_start is null then
+    raise exception 'meal_plan_not_found';
+  end if;
+  if exists (
+    select 1
+    from jsonb_to_recordset(input_items) as checked(meal_date date)
+    where checked.meal_date < plan_week_start
+       or checked.meal_date > plan_week_start + 6
+  ) then
+    raise exception 'meal_plan_date_out_of_range';
+  end if;
+
+  delete from public.meal_plan_items where meal_plan_id = input_plan_id;
+  insert into public.meal_plan_items (
+    meal_plan_id, meal_date, meal_type, entry_kind, recipe_id, title, servings
+  )
+  select
+    input_plan_id,
+    item.meal_date,
+    item.meal_type,
+    item.entry_kind,
+    item.recipe_id,
+    item.title,
+    item.servings
+  from jsonb_to_recordset(input_items) as item(
+    meal_date date,
+    meal_type text,
+    entry_kind text,
+    recipe_id uuid,
+    title text,
+    servings integer
+  );
+end;
+$$;
+
+revoke all on function public.replace_meal_plan_items(uuid, jsonb) from public, anon, authenticated;
+grant execute on function public.replace_meal_plan_items(uuid, jsonb) to service_role;
+
+comment on table public.meal_plans is 'Private persisted weekly meal plans. Family sharing requires a later explicit scope migration.';
+comment on function public.replace_meal_plan_items(uuid, jsonb) is 'Atomically replaces one validated personal meal plan through the service role API.';
+
+notify pgrst, 'reload schema';
+
+-- 이 migration은 레시피 오류 신고의 운영 처리와 감사 이력을 추가합니다.
+alter table public.recipe_issue_reports
+  add column if not exists resolution_recipe_version_id uuid
+    references public.recipe_versions(id) on delete set null,
+  add column if not exists triaged_by text,
+  add column if not exists triaged_at timestamptz;
+
+alter table public.recipe_issue_reports
+  drop constraint if exists recipe_issue_reports_triaged_by_length;
+alter table public.recipe_issue_reports
+  add constraint recipe_issue_reports_triaged_by_length
+    check (triaged_by is null or char_length(triaged_by) between 3 and 320);
+
+create index if not exists idx_recipe_issue_reports_resolution_version
+on public.recipe_issue_reports(resolution_recipe_version_id)
+where resolution_recipe_version_id is not null;
+
+create table if not exists public.recipe_issue_report_events (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid not null references public.recipe_issue_reports(id) on delete cascade,
+  actor_email text not null,
+  from_status text not null,
+  to_status text not null,
+  note text,
+  recipe_version_id uuid references public.recipe_versions(id) on delete set null,
+  created_at timestamptz not null default now(),
+  constraint recipe_issue_report_events_actor_length
+    check (char_length(actor_email) between 3 and 320),
+  constraint recipe_issue_report_events_status_allowed
+    check (
+      from_status in ('open', 'triaged', 'resolved', 'rejected')
+      and to_status in ('open', 'triaged', 'resolved', 'rejected')
+      and from_status <> to_status
+    ),
+  constraint recipe_issue_report_events_note_length
+    check (note is null or char_length(note) <= 2000)
+);
+
+create index if not exists idx_recipe_issue_report_events_report_created
+on public.recipe_issue_report_events(report_id, created_at desc);
+
+alter table public.recipe_issue_report_events enable row level security;
+
+revoke all on table public.recipe_issue_report_events from public, anon, authenticated;
+grant all on table public.recipe_issue_report_events to service_role;
+
+comment on table public.recipe_issue_report_events is
+  'Service-role-only audit log for admin recipe issue status transitions.';
+comment on column public.recipe_issue_reports.resolution_recipe_version_id is
+  'Required by the admin API when an issue is resolved; must belong to the reported recipe.';
+
+create or replace function public.transition_recipe_issue_report(
+  target_report_id uuid,
+  input_expected_status text,
+  input_next_status text,
+  input_actor_email text,
+  input_resolution_note text default null,
+  input_resolution_recipe_version_id uuid default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  current_report public.recipe_issue_reports%rowtype;
+  updated_report public.recipe_issue_reports%rowtype;
+begin
+  if (select auth.role()) <> 'service_role' then
+    raise exception 'service_role_required';
+  end if;
+  if input_actor_email is null or char_length(input_actor_email) not between 3 and 320 then
+    raise exception 'invalid_actor';
+  end if;
+
+  select * into current_report
+  from public.recipe_issue_reports
+  where id = target_report_id
+  for update;
+
+  if current_report.id is null then
+    raise exception 'report_not_found';
+  end if;
+  if current_report.status <> input_expected_status then
+    raise exception 'report_status_conflict';
+  end if;
+  if not (
+    (input_expected_status = 'open' and input_next_status in ('triaged', 'rejected'))
+    or (input_expected_status = 'triaged' and input_next_status in ('open', 'resolved', 'rejected'))
+    or (input_expected_status in ('resolved', 'rejected') and input_next_status = 'triaged')
+  ) then
+    raise exception 'invalid_status_transition';
+  end if;
+  if input_next_status = 'resolved' and (
+    input_resolution_recipe_version_id is null
+    or input_resolution_note is null
+    or char_length(btrim(input_resolution_note)) < 3
+  ) then
+    raise exception 'resolution_evidence_required';
+  end if;
+  if input_resolution_recipe_version_id is not null and not exists (
+    select 1 from public.recipe_versions
+    where id = input_resolution_recipe_version_id
+      and recipe_id = current_report.recipe_id
+  ) then
+    raise exception 'recipe_version_mismatch';
+  end if;
+
+  update public.recipe_issue_reports
+  set status = input_next_status,
+      resolution_note = nullif(btrim(input_resolution_note), ''),
+      resolution_recipe_version_id = input_resolution_recipe_version_id,
+      triaged_by = input_actor_email,
+      triaged_at = now(),
+      resolved_at = case when input_next_status = 'resolved' then now() else null end
+  where id = target_report_id
+  returning * into updated_report;
+
+  insert into public.recipe_issue_report_events (
+    report_id, actor_email, from_status, to_status, note, recipe_version_id
+  ) values (
+    target_report_id,
+    input_actor_email,
+    input_expected_status,
+    input_next_status,
+    nullif(btrim(input_resolution_note), ''),
+    input_resolution_recipe_version_id
+  );
+
+  return to_jsonb(updated_report);
+end;
+$$;
+
+revoke all on function public.transition_recipe_issue_report(uuid, text, text, text, text, uuid)
+from public, anon, authenticated;
+grant execute on function public.transition_recipe_issue_report(uuid, text, text, text, text, uuid)
+to service_role;
 
 notify pgrst, 'reload schema';

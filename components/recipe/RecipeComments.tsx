@@ -7,6 +7,14 @@ import { MessageCircle, Trash2 } from "lucide-react";
 
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  COOKING_OUTCOMES,
+  COOKING_REMAKE_INTENTS,
+  COOKING_TASTES,
+  type CookingOutcome,
+  type CookingRemakeIntent,
+  type CookingTaste,
+} from "@/lib/recipe-cooking-session";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { RecipeCommentRecord } from "@/types";
 
@@ -51,6 +59,12 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [comments, setComments] = useState<RecipeCommentRecord[]>([]);
   const [content, setContent] = useState("");
+  const [outcome, setOutcome] = useState<CookingOutcome>("success");
+  const [taste, setTaste] = useState<CookingTaste>("not_rated");
+  const [remakeIntent, setRemakeIntent] = useState<CookingRemakeIntent>("yes");
+  const [actualDurationMinutes, setActualDurationMinutes] = useState("30");
+  const [substitutionNotes, setSubstitutionNotes] = useState("");
+  const [familyReaction, setFamilyReaction] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,8 +96,13 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
   const submitComment = async () => {
     const trimmed = content.trim();
     setErrorMessage(null);
-    if (trimmed.length < 1 || trimmed.length > MAX_COMMENT_LENGTH) {
-      setErrorMessage("댓글은 1자 이상 500자 이하로 입력해주세요.");
+    const duration = Number(actualDurationMinutes);
+    if (trimmed.length < 3 || trimmed.length > MAX_COMMENT_LENGTH) {
+      setErrorMessage("후기는 3자 이상 500자 이하로 입력해 주세요.");
+      return;
+    }
+    if (!Number.isInteger(duration) || duration < 1 || duration > 1440) {
+      setErrorMessage("실제 소요시간은 1분 이상 1,440분 이하로 입력해 주세요.");
       return;
     }
 
@@ -101,18 +120,27 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
           "content-type": "application/json",
           authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ content: trimmed }),
+        body: JSON.stringify({
+          content: trimmed,
+          outcome,
+          taste,
+          remakeIntent,
+          actualDurationMinutes: duration,
+          substitutionNotes,
+          familyReaction,
+        }),
       });
       if (!response.ok) {
         setErrorMessage(getSafeCommentErrorMessage(response.status));
         return;
       }
 
-      const payload = (await response.json()) as { comment?: RecipeCommentRecord };
-      if (payload.comment) {
-        setComments((prev) => [payload.comment as RecipeCommentRecord, ...prev]);
-      }
+      const payload = (await response.json()) as { review?: { status?: string } };
+      if (payload.review?.status !== "pending") throw new Error("unexpected_review_status");
       setContent("");
+      setSubstitutionNotes("");
+      setFamilyReaction("");
+      setErrorMessage("후기를 검수 대기로 접수했습니다. 운영자가 승인하기 전에는 공개되지 않습니다.");
     } catch {
       setErrorMessage("댓글을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
@@ -162,10 +190,10 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
           <div>
             <h2 className="flex items-center gap-2 text-[17px] font-black text-[#2f2117]">
               <MessageCircle size={17} className="text-[#d94d19]" />
-              이 레시피 어땠나요?
+              검수된 요리 후기
             </h2>
             <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
-              {recipeName}을 만들어 본 느낌이나 다음에 볼 메모를 남겨보세요.
+              {recipeName}을 실제로 만든 결과를 남겨주세요. 운영 검수 후에만 공개됩니다.
             </p>
           </div>
           <span className="shrink-0 rounded-full bg-[#fff7ed] px-3 py-1 text-[11px] font-black text-[#8a5a2a]">
@@ -179,10 +207,43 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
           </p>
         ) : isAuthenticated ? (
           <div className="mt-4 space-y-2">
+            <div className="grid grid-cols-3 gap-2" aria-label="요리 결과">
+              {COOKING_OUTCOMES.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setOutcome(item.id)}
+                  aria-pressed={outcome === item.id}
+                  className={`min-h-11 rounded-xl px-2 text-[11px] font-black ${outcome === item.id ? "bg-[#ea5a1f] text-white" : "bg-[#fffaf3] text-[#7d6d5f]"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <label className="grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+                맛
+                <select value={taste} onChange={(event) => setTaste(event.target.value as CookingTaste)} className="min-h-11 rounded-xl border border-[#eadcc9] bg-[#fffaf3] px-2 text-[12px] font-bold text-[#4b3929]">
+                  {COOKING_TASTES.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+                다시 만들기
+                <select value={remakeIntent} onChange={(event) => setRemakeIntent(event.target.value as CookingRemakeIntent)} className="min-h-11 rounded-xl border border-[#eadcc9] bg-[#fffaf3] px-2 text-[12px] font-bold text-[#4b3929]">
+                  {COOKING_REMAKE_INTENTS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1 text-[11px] font-black text-[#7d6d5f]">
+                실제 소요시간(분)
+                <input type="number" min={1} max={1440} value={actualDurationMinutes} onChange={(event) => setActualDurationMinutes(event.target.value)} className="min-h-11 rounded-xl border border-[#eadcc9] bg-[#fffaf3] px-3 text-[12px] font-bold text-[#4b3929]" />
+              </label>
+            </div>
+            <input value={substitutionNotes} onChange={(event) => setSubstitutionNotes(event.target.value.slice(0, 300))} placeholder="대체한 재료 (선택)" className="min-h-11 w-full rounded-xl border border-[#eadcc9] bg-[#fffaf3] px-3 text-sm font-semibold text-[#4b3929]" />
+            <input value={familyReaction} onChange={(event) => setFamilyReaction(event.target.value.slice(0, 300))} placeholder="가족 반응 (선택)" className="min-h-11 w-full rounded-xl border border-[#eadcc9] bg-[#fffaf3] px-3 text-sm font-semibold text-[#4b3929]" />
             <textarea
               value={content}
               onChange={(event) => setContent(event.target.value.slice(0, MAX_COMMENT_LENGTH))}
-              placeholder="예: 간을 조금 줄이니 아이도 잘 먹었어요."
+              placeholder="예: 안내대로 익히니 성공했고 다음에는 간장을 조금 줄이려고 해요."
               className="min-h-24 w-full resize-none rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-semibold leading-6 text-[#4b3929] outline-none focus:border-[#ea5a1f]"
             />
             <div className="flex items-center justify-between gap-3">
@@ -193,7 +254,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
                 disabled={submitting || content.trim().length === 0}
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#ea5a1f] px-4 text-[12px] font-black text-white disabled:bg-[#e6b49a]"
               >
-                {submitting ? "등록 중..." : "댓글 등록"}
+                {submitting ? "접수 중..." : "후기 검수 요청"}
               </button>
             </div>
           </div>
@@ -222,7 +283,7 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
             </p>
           ) : comments.length === 0 ? (
             <p className="rounded-[12px] bg-[#fffaf3] px-3 py-3 text-[12px] font-bold text-[#7d6d5f]">
-              아직 댓글이 없습니다. 첫 후기를 남겨보세요.
+              아직 승인된 후기가 없습니다. 실제 요리 후기를 검수 요청해 보세요.
             </p>
           ) : (
             comments.map((comment) => {
@@ -250,6 +311,11 @@ export default function RecipeComments({ recipeId, recipeName }: RecipeCommentsP
                   <p className="mt-2 whitespace-pre-line text-[13px] font-semibold leading-6 text-[#4b3929]">
                     {comment.content}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-1 text-[10px] font-black text-[#8a5a2a]">
+                    {comment.outcome ? <span className="rounded-full bg-[#fff0e4] px-2 py-1">{COOKING_OUTCOMES.find((item) => item.id === comment.outcome)?.label}</span> : null}
+                    {comment.actualDurationMinutes ? <span className="rounded-full bg-[#fff0e4] px-2 py-1">실제 {comment.actualDurationMinutes}분</span> : null}
+                    {comment.remakeIntent ? <span className="rounded-full bg-[#fff0e4] px-2 py-1">{COOKING_REMAKE_INTENTS.find((item) => item.id === comment.remakeIntent)?.label}</span> : null}
+                  </div>
                 </article>
               );
             })

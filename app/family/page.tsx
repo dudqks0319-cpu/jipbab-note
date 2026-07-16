@@ -3,8 +3,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronLeft, Copy, Home, Plus, Trash2, Users } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, ChevronLeft, CloudOff, Copy, Home, LoaderCircle, RefreshCw, Users } from "lucide-react";
 
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useFamilyShare } from "@/hooks/useFamilyShare";
 import { useIngredients } from "@/hooks/useIngredients";
 import { filterBeginnerHomeRecipes } from "@/lib/beginner-recipe-contract";
@@ -16,18 +17,21 @@ import { getDday } from "@/lib/utils";
 export default function FamilyPage() {
   const {
     group,
+    activities,
+    syncState,
+    realtimeState,
     maxMembers,
     statusMessage,
     error,
     createGroup,
     joinGroup,
-    addLocalMember,
-    removeMember,
+    refreshGroup,
     leaveGroup,
   } = useFamilyShare();
-  const familyGroupId = group?.id ?? null;
+  const { requestConfirmation, confirmationDialog } = useConfirmDialog();
+  const familyGroupId = syncState === "synced" ? group?.id ?? null : null;
   const { ingredients } = useIngredients({
-    scope: group ? "family" : "personal",
+    scope: familyGroupId ? "family" : "personal",
     familyGroupId,
   });
   const [groupName, setGroupName] = useState("우리집 냉장고");
@@ -59,9 +63,31 @@ export default function FamilyPage() {
     [ingredients],
   );
   const todayRecipe = familyRecommendations[0] ?? null;
+  const syncIndicator = syncState === "synced"
+    ? { label: "가족과 동기화됨", className: "bg-[#eef8e9] text-[#315f2d]", icon: CheckCircle2 }
+    : syncState === "syncing"
+      ? { label: "동기화 중", className: "bg-[#fff6df] text-[#8a6214]", icon: LoaderCircle }
+      : syncState === "failed"
+        ? { label: "동기화 실패 · 이 기기에만 저장", className: "bg-[#fff0ed] text-[#b42318]", icon: AlertTriangle }
+        : { label: "이 기기에만 저장됨", className: "bg-[#f1eee9] text-[#6f655b]", icon: CloudOff };
+  const SyncIcon = syncIndicator.icon;
+  const realtimeLabel = realtimeState === "connected"
+    ? "실시간 연결됨"
+    : realtimeState === "connecting"
+      ? "실시간 연결 중"
+      : realtimeState === "degraded"
+        ? "실시간 지연 · 수동 새로고침 가능"
+        : "실시간 대기";
+  const activityLabel = (eventType: (typeof activities)[number]["eventType"]) => {
+    if (eventType === "group_created") return "가족 냉장고를 만들었습니다.";
+    if (eventType === "member_joined") return "가족 냉장고에 참여했습니다.";
+    if (eventType === "member_updated") return "표시 이름을 변경했습니다.";
+    return "가족 냉장고에서 나갔습니다.";
+  };
 
   return (
     <div className="min-h-full bg-[#fbf6ee] pb-6">
+      {confirmationDialog}
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
           <Link href="/mypage" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
@@ -85,6 +111,11 @@ export default function FamilyPage() {
               <p className="mt-1 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
                 최대 {maxMembers}명까지 같은 냉장고 보드를 보고, 오늘 추천 메뉴와 소진임박 재료를 확인합니다.
               </p>
+              {group ? (
+                <span data-testid="family-sync-state" className={`mt-2 inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-[11px] font-black ${syncIndicator.className}`}>
+                  <SyncIcon size={13} className={syncState === "syncing" ? "animate-spin" : ""} /> {syncIndicator.label}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -161,10 +192,16 @@ export default function FamilyPage() {
                   }}
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fff0e4] text-[#d94d19]"
                   aria-label="초대코드 복사"
+                  disabled={syncState !== "synced"}
                 >
                   <Copy size={17} />
                 </button>
               </div>
+              {syncState !== "synced" ? (
+                <p className="mt-3 rounded-xl bg-[#fff0ed] px-3 py-2 text-[11px] font-bold leading-5 text-[#b42318]">
+                  동기화되지 않은 초대코드는 다른 기기에서 사용할 수 없습니다.
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -181,28 +218,51 @@ export default function FamilyPage() {
                       <p className="text-sm font-black text-[#4b3929]">{member.name}</p>
                       <p className="mt-0.5 text-[11px] font-bold text-[#9f8d7a]">{member.role === "owner" ? "대표" : "가족"}</p>
                     </div>
-                    {member.role === "member" ? (
-                      <button type="button" onClick={() => removeMember(member.id)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#b5a493]" aria-label={`${member.name} 제거`}>
-                        <Trash2 size={15} />
-                      </button>
-                    ) : null}
                   </div>
                 ))}
               </div>
               {group.members.length < maxMembers ? (
-                <div className="mt-3 grid grid-cols-[1fr_92px] gap-2">
-                  <input
-                    value={memberName}
-                    onChange={(event) => setMemberName(event.target.value)}
-                    placeholder="가족 이름"
-                    className="rounded-[13px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-sm font-bold text-[#4b3929] outline-none"
-                  />
-                  <button type="button" onClick={() => { addLocalMember(memberName); setMemberName(""); }} className="inline-flex items-center justify-center gap-1 rounded-[13px] bg-[#2f2117] text-sm font-black text-white">
-                    <Plus size={15} />
-                    추가
-                  </button>
-                </div>
+                <p className="mt-3 rounded-[13px] bg-[#fffaf3] px-3 py-3 text-[11px] font-bold leading-5 text-[#7d6d5f]">
+                  가족 구성원은 각자 로그인한 뒤 동기화된 초대코드로 참여해야 합니다. 이 기기에서 이름만 추가하지 않습니다.
+                </p>
               ) : null}
+            </div>
+          </section>
+
+          <section className="px-5 pt-4">
+            <div className="jipbab-panel rounded-[18px] px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 text-[15px] font-black text-[#2f2117]">
+                    <Activity size={16} /> 가족 활동
+                  </h2>
+                  <p className="mt-1 text-[11px] font-bold text-[#8f7f70]">{realtimeLabel}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { void refreshGroup(); }}
+                  disabled={syncState !== "synced"}
+                  className="flex min-h-11 items-center gap-1 rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19] disabled:opacity-50"
+                >
+                  <RefreshCw size={13} /> 새로고침
+                </button>
+              </div>
+              <div className="mt-3 space-y-2">
+                {activities.length === 0 ? (
+                  <p className="rounded-[13px] bg-[#fffaf3] px-3 py-3 text-[11px] font-bold text-[#8f7f70]">
+                    기록된 가족 활동이 없습니다.
+                  </p>
+                ) : activities.slice(0, 8).map((activity) => (
+                  <div key={activity.id} className="rounded-[13px] bg-[#fffaf3] px-3 py-3">
+                    <p className="text-[12px] font-black text-[#4b3929]">
+                      {activity.actorName}님이 {activityLabel(activity.eventType)}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold text-[#9f8d7a]">
+                      {new Date(activity.createdAt).toLocaleString("ko-KR")}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -240,7 +300,7 @@ export default function FamilyPage() {
                   {familyRecommendations.slice(0, 4).map((recipe) => (
                     <Link
                       key={recipe.id}
-                      href={`/recipe/${recipe.id}?scope=family#shopping-assistant`}
+                      href={syncState === "synced" ? `/recipe/${recipe.id}?scope=family#shopping-assistant` : `/recipe/${recipe.id}#shopping-assistant`}
                       className="flex items-center justify-between gap-3 rounded-[14px] bg-[#fffaf3] px-3 py-3"
                     >
                       <div className="min-w-0">
@@ -262,10 +322,19 @@ export default function FamilyPage() {
           <section className="px-5 pt-4">
             <button
               type="button"
-              onClick={leaveGroup}
+              onClick={() => {
+                void requestConfirmation({
+                  title: "가족 냉장고에서 나갈까요?",
+                  message: "일반 구성원은 그룹에서 탈퇴합니다. 대표가 혼자 남은 그룹이면 공유 재료와 장보기 데이터가 함께 삭제될 수 있습니다.",
+                  confirmLabel: "탈퇴하기",
+                  destructive: true,
+                }).then((confirmed) => {
+                  if (confirmed) void leaveGroup();
+                });
+              }}
               className="w-full rounded-[14px] border border-[#ea5a1f] bg-[#fffaf3] py-3 text-sm font-black text-[#d94d19]"
             >
-              가족 공유 해제
+              가족 냉장고 탈퇴
             </button>
           </section>
         </>

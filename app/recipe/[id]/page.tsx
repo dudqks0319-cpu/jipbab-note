@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import type { ReactNode } from "react";
+import { cache, type ReactNode } from "react";
+import type { Metadata } from "next";
 import {
   BookOpenText,
   ChevronLeft,
@@ -20,6 +21,7 @@ import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
 import RecipeImage from "@/components/recipe/RecipeImage";
 import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
 import RecipeIngredientList from "@/components/recipe/RecipeIngredientList";
+import RecipeIssueReport from "@/components/recipe/RecipeIssueReport";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
 import { recipeApiV1DetailToRecord } from "@/lib/recipe-api-v1-client";
@@ -34,7 +36,7 @@ import {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
+const fetchRecipeDetail = cache(async (recipeId: string): Promise<RecipeDetailRecord | null> => {
   if (!UUID_PATTERN.test(recipeId)) return null;
   try {
     const detail = await getPublicRecipeDetailV1(recipeId);
@@ -42,7 +44,7 @@ async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord |
   } catch {
     return null;
   }
-}
+});
 
 function formatDifficulty(difficulty: RecipeDetailRecord["difficulty"]): string {
   if (typeof difficulty === "number") {
@@ -65,6 +67,53 @@ function DetailMetric({ icon, label }: { icon: ReactNode; label: string }) {
 type RecipeDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({ params }: RecipeDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const recipe = await fetchRecipeDetail(id);
+  if (!recipe || !isRecipeDetailPublicationApproved(recipe)) {
+    return {
+      title: "검수 중인 레시피",
+      description: "출처와 조리 안전 정보가 확인된 레시피만 공개합니다.",
+      robots: { index: false, follow: false },
+    };
+  }
+  const description = recipe.beginnerSummary || recipe.summary || `${recipe.name} 재료, 계량, 조리 순서와 실패 복구법을 확인하세요.`;
+  const canonical = `/recipe/${recipe.id}`;
+  return {
+    title: `${recipe.name} 레시피`,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title: `${recipe.name} | 집밥노트`,
+      description,
+      images: recipe.thumbnailUrl ? [{ url: recipe.thumbnailUrl, alt: recipe.imageAlt || `${recipe.name} 완성 사진` }] : [],
+    },
+  };
+}
+
+function recipeStructuredData(recipe: RecipeDetailRecord) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: recipe.name,
+    description: recipe.beginnerSummary || recipe.summary || undefined,
+    image: recipe.thumbnailUrl ? [recipe.thumbnailUrl] : undefined,
+    recipeYield: recipe.servings ? `${recipe.servings}인분` : undefined,
+    totalTime: recipe.totalMinutes ? `PT${recipe.totalMinutes}M` : undefined,
+    recipeCategory: recipe.category,
+    recipeIngredient: (recipe.ingredientDetails ?? []).map((ingredient) => ingredient.display || ingredient.name),
+    recipeInstructions: recipe.steps.map((step) => ({
+      "@type": "HowToStep",
+      name: step.title || `${step.index}단계`,
+      text: step.action || step.description,
+      image: step.imageUrl || undefined,
+    })),
+    author: { "@type": "Organization", name: recipe.sourceAttribution || "집밥노트" },
+  };
+}
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { id } = await params;
@@ -101,9 +150,11 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const difficultyLabel = formatDifficulty(recipe.difficulty);
   const sourceLabel = recipe.sourceAttribution || recipe.sourceProvider || "출처 표시 없음";
   const sourceLicense = recipe.sourceLicense || "라이선스 표시 없음";
+  const structuredData = JSON.stringify(recipeStructuredData(recipe)).replace(/</g, "\\u003c");
 
   return (
     <div className="min-h-full bg-white pb-8 text-[#2b2b2b]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
       <section className="relative overflow-hidden bg-white">
         <div className="mobile-safe-top absolute left-4 top-0 z-20">
           <Link
@@ -236,6 +287,10 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         <div id="recipe-qna" className="scroll-mt-24">
           <RecipeComments recipeId={recipe.id} recipeName={recipe.name} />
         </div>
+      ) : null}
+
+      {!recipe.isTestFixture ? (
+        <RecipeIssueReport recipeId={recipe.id} recipeName={recipe.name} />
       ) : null}
 
       <section className="px-5 pb-24 pt-6">

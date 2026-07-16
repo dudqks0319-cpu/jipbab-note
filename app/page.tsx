@@ -24,6 +24,7 @@ import RecipeImage from '@/components/recipe/RecipeImage'
 import { useDemoModeState } from '@/hooks/useDemoMode'
 import { useFamilyShare } from '@/hooks/useFamilyShare'
 import { useIngredients } from '@/hooks/useIngredients'
+import { useAppSettings } from '@/hooks/useAppSettings'
 import { useRecipeCatalog } from '@/hooks/useRecipes'
 import { useShopping } from '@/hooks/useShopping'
 import {
@@ -53,6 +54,7 @@ type StorageCounts = {
 }
 
 export default function HomePage() {
+  const { settings } = useAppSettings()
   const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
   const {
     ingredients,
@@ -91,6 +93,7 @@ export default function HomePage() {
     refresh: refreshRecipes,
   } = useRecipeCatalog(12, {
     ingredientIds: recipeIngredientIds,
+    excludedAllergenIds: settings.allergenIds,
     sort: 'recommended',
     enabled: demoModeReady && !isAppStoreDemo,
   })
