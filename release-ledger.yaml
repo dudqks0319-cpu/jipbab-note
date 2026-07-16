@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "home_recipe_first_exact_git_preview_verified"
+  phase: "home_recipe_immediate_exact_git_preview_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  git_sha: "01e98951b5b2df079fe1f74bb92cb3569bf7973d"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_remote_head_exact_git_preview_verified"
+  dirty_state: "clean_code_candidate_pushed_exact_git_preview_verified_docs_followup_pending"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -48,11 +48,11 @@ source_alignment_20260715:
   github_default_branch: "main"
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
-  candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  candidate_git_sha: "01e98951b5b2df079fe1f74bb92cb3569bf7973d"
   candidate_remote_head_matches: false
   candidate_runtime_sha_is_remote_ancestor: true
   latest_successful_exact_preview_sha_is_remote_ancestor: true
-  candidate_remote_head_note: "remote head cce0098 adds release evidence after the f6bdc07 code candidate and is the exact Git Preview runtime"
+  candidate_remote_head_note: "01e9895 is the latest code candidate and exact Git Preview runtime; the next docs-only commit may make it an ancestor without changing app code"
   sync_coalescing_candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
   sync_coalescing_candidate_remote_head_matches_before_docs: true
   sync_coalescing_candidate_preview_status: "verified_in_exact_git_preview_head_cce0098"
@@ -80,6 +80,20 @@ source_alignment_20260715:
   home_recipe_first_preview_sync_copy: "클라우드 동기화 완료"
   home_recipe_first_preview_sync_delay_visible: false
   home_recipe_first_preview_production_promoted: false
+  home_recipe_immediate_candidate_git_sha: "01e98951b5b2df079fe1f74bb92cb3569bf7973d"
+  home_recipe_immediate_preview_deployment_id: "dpl_2bw49EivkL5wJSEWo8TkqT7zGRLg"
+  home_recipe_immediate_preview_url: "https://jipbab-note-26cc8f9eq-youngbeens-projects.vercel.app"
+  home_recipe_immediate_preview_status: "READY"
+  home_recipe_immediate_preview_source: "git"
+  home_recipe_immediate_preview_metadata_git_ref: "agent/sync-ux-release"
+  home_recipe_immediate_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
+  home_recipe_immediate_preview_initial_cards: 2
+  home_recipe_immediate_preview_loading_copy_count: 0
+  home_recipe_immediate_preview_skeleton_count: 0
+  home_recipe_immediate_preview_recipe_before_fridge: true
+  home_recipe_immediate_preview_sync_delay_visible: false
+  home_recipe_immediate_preview_console_warning_error_count: 0
+  home_recipe_immediate_preview_production_promoted: false
   exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
   exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
@@ -343,6 +357,14 @@ phase6_quality_security:
   home_recipe_first_security_status: "verified_4_of_4"
   home_recipe_first_chrome_status: "verified_recipe_cards_before_fridge_after_ingredient_save"
   home_recipe_first_git_preview_status: "verified_ready_head_cce0098_recipe_count_20_sync_complete_reload_persistence"
+  home_recipe_immediate_git_sha: "01e98951b5b2df079fe1f74bb92cb3569bf7973d"
+  home_recipe_immediate_unit_status: "verified_full_suite_414_of_414"
+  home_recipe_immediate_typecheck_status: "verified"
+  home_recipe_immediate_eslint_status: "verified_changed_files"
+  home_recipe_immediate_build_status: "verified_38_of_38_routes"
+  home_recipe_immediate_ci_static_status: "verified_15_of_15"
+  home_recipe_immediate_security_status: "verified_4_of_4"
+  home_recipe_immediate_chrome_status: "verified_exact_git_preview_cards_before_loading_fallback"
 
 phase6_vercel_preview:
   deployed_at: "2026-07-11 KST"

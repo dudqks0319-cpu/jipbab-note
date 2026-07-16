@@ -9,6 +9,8 @@ Updated: 2026-07-16 KST
 - 로컬 Next 런타임을 Chrome에서 열고 계란·두부를 저장한 뒤 DOM과 화면을 확인했다. 대표 미리보기 → 레시피 카드 2개 → 다른 메뉴 CTA → 냉장고 카드 순서였고, 측정상 첫 레시피 영역 상단은 125.75px, 냉장고 라벨 상단은 766.65px였다. 로컬 API v1은 서버 설정이 없어 예상대로 503 fail-closed였지만 안전한 자체 작성 미리보기는 정상 노출됐다.
 - Git integration이 원격 HEAD `cce0098901e88feb935759f5563116cff3dcfb9f`을 Vercel Preview `dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof` (`https://jipbab-note-587urq4he-youngbeens-projects.vercel.app`)에 자동 배포했고 상태는 `READY`다. 빌드 로그는 canonical 저장소 `dudqks0319-cpu/jipbab-note`, 브랜치 `agent/sync-ux-release`, 커밋 `cce0098` clone과 TypeScript·38/38 routes 통과를 확인한다. 이 HEAD는 홈 UX 코드 후보 `f6bdc07`과 동기화 단일 실행 후보 `f555092`를 모두 포함한다.
 - 정확한 Git Preview를 Chrome에서 재검증했다. 계란·두부 저장 후 첫 레시피 영역 상단은 325.15px, 냉장고 라벨은 766.65px로 레시피 카드 2개가 먼저 보였고, `/recipe`에는 `지금 볼 수 있는 레시피 20개`, 고유 미리보기 링크 20개, `조리 검수 중` 잠금이 표시됐다. 새로고침 뒤에도 계란·두부가 유지되고 냉장고에는 `클라우드 동기화 완료`가 표시됐으며 `동기화가 지연되고 있어요`·`클라우드에 저장 중` 잔류 문구는 없었다. Production 별칭은 승격하지 않았다.
+- 후속 UX 후보 `01e98951b5b2df079fe1f74bb92cb3569bf7973d`는 홈 첫 진입에서 안전한 미리보기 2개가 준비돼 있는데도 전역 로딩 분기가 먼저 skeleton을 보여주던 우선순위를 교정했다. 자체 작성 미리보기가 있으면 상단 CTA와 카드부터 즉시 표시하고, skeleton은 미리보기조차 없는 경우에만 사용한다. 회귀 테스트를 추가한 전체 unit 414/414, TypeScript, ESLint, production build 38/38 routes, CI-safe 15/15, security 4/4를 통과했다.
+- 정확한 Git Preview `dpl_2bw49EivkL5wJSEWo8TkqT7zGRLg` (`https://jipbab-note-26cc8f9eq-youngbeens-projects.vercel.app`)은 canonical 저장소의 `agent/sync-ux-release` 커밋 `01e9895`를 clone해 `READY`가 됐다. Chrome의 첫 완료 렌더와 재로딩에서 `먼저 보는 레시피`와 카드 2개가 보였고 `불러오는 중`·추천 skeleton은 0건이었다. 계란·두부 저장 직후에도 순두부계란탕·달걀죽이 유지되고 냉장고보다 앞에 있었으며 동기화 지연 배너와 console warning/error는 0건이다. Production 별칭은 변경하지 않았다.
 
 ## 2026-07-16 동기화 단일 실행 보강·Preview 할당량 상태
 
