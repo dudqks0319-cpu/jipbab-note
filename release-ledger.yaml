@@ -12,13 +12,43 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "production_sync_recipe_visibility_and_release_evidence_paths_verified"
+  phase: "production_cost_abuse_guard_and_daily_rate_limit_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "c8b32c5612b9f183b79bbc67d29ddfdba6aa934c"
+  git_sha: "23847f97fb52470ca16f2fc6fa38cd7cd3ea3461"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_runtime_candidate_production_deployed_evidence_ledger_followup_pending"
+  dirty_state: "clean_runtime_candidate_production_deployed_and_ledgered"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
+
+cost_abuse_guard_20260716:
+  implementation_sha: "0d1e6b88ad93f85be27da7e4627a4cccee9ad40b"
+  compatibility_fix_sha: "23847f97fb52470ca16f2fc6fa38cd7cd3ea3461"
+  production_migration: "20260716131500_allow_daily_api_rate_limit_windows.sql"
+  production_migration_status: "applied_and_local_remote_history_matched"
+  migration_history_count: 41
+  migration_dry_run_after_apply: "remote_database_up_to_date"
+  ops_backup_reverified: true
+  rollback_sql: "supabase/rollbacks/20260716131500_allow_daily_api_rate_limit_windows.sql"
+  rollback_policy: "restore_one_hour_max_without_drop_truncate_or_counter_deletion"
+  initial_incompatible_deployment_result: "rolled_back_after_daily_window_rpc_returned_fail_closed_503"
+  restored_deployment_id: "dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv"
+  production_deployment_id: "dpl_3jKPxBHvPBXKYpVojYYrm9BhSNeR"
+  production_deployment_url: "https://jipbab-note-ceey0jbux-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  production_status: "READY"
+  production_recipe_list_http: 200
+  production_invalid_barcode_http: 400
+  production_unsigned_product_http: 401
+  production_cost_guard_header: "active"
+  production_error_log_count_in_verification_window: 0
+  production_fatal_log_count_in_verification_window: 0
+  static_contract: "22_of_22_pass"
+  github_code_and_static_release_gates: "pass"
+  vercel_preview_gate: "pass"
+  application_guards_operational: true
+  provider_account_budget_cap_verified: false
+  edge_waf_distributed_bot_controls_verified: false
+  unresolved_external_controls: "provider budget alerts and edge WAF evidence required before claiming full account-level cost protection"
 
 phase0_baseline:
   audited_at: "2026-07-10 KST"

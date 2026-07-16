@@ -2,6 +2,16 @@
 
 Updated: 2026-07-16 KST
 
+## 2026-07-16 사용량 기반 과금 악용 방지 운영 적용
+
+- 비용 보호 구현 커밋 `0d1e6b88ad93f85be27da7e4627a4cccee9ad40b`에 사용자·HMAC 처리 IP·기기별 burst/daily 제한, 전역 burst/daily 비용 한도, 인증 후 외부 상품 조회, 입력·응답 크기 제한, 동시성 제한, 4초 timeout·취소, 무재시도, circuit breaker, 안전 캐시, redacted 비용 이벤트와 production fail-closed를 추가했다. 정적 비용 보호 계약 22/22와 음수 경로 단위 테스트를 통과했다.
+- 최초 Production 배포에서 기존 `consume_api_rate_limit` RPC가 `window_seconds > 3600`을 거부해 24시간 쿼터가 정상 요청도 503으로 차단하는 호환성 문제를 발견했다. 사용자 운영 주소는 즉시 기존 검증 배포 `dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv`로 롤백했으며 `/api/v1/recipes?limit=1` HTTP 200을 확인한 뒤 교정 작업을 진행했다.
+- 운영 재적용 전에 linked Supabase 이력과 백업을 다시 확인했다. 기존 로컬·원격 40개 migration은 모두 일치했고 새 migration은 `20260716131500_allow_daily_api_rate_limit_windows.sql` 하나뿐이었다. `ops_backup`에는 recipes 1,152건, signed-session 전 냉장고 51건·장보기 18건·정책 36건·함수 8건, 분류 수정 전 20건·1건이 그대로 남아 있었다.
+- 교정 커밋 `23847f97fb52470ca16f2fc6fa38cd7cd3ea3461`은 rate-limit RPC의 최대 창을 86,400초, 최대 요청 한도를 100,000으로 확장하되 service-role 전용 권한, 고정 `search_path`, HMAC pseudonym counter와 비파괴 rollback을 유지한다. migration 적용 후 `supabase migration list --linked`는 로컬·원격 41개가 일치했고 `supabase db push --dry-run --linked`는 `Remote database is up to date`였다.
+- GitHub PR #9의 Code and Static Release Gates와 Vercel Preview가 `23847f9`에서 통과했다. 같은 clean commit을 Production deployment `dpl_3jKPxBHvPBXKYpVojYYrm9BhSNeR` (`https://jipbab-note-ceey0jbux-youngbeens-projects.vercel.app`)으로 배포하고 운영 별칭 `https://jipbab-note-app.vercel.app`에 명시적으로 연결했다. 상태는 `READY`, build는 TypeScript와 38/38 routes를 통과했다.
+- 운영 별칭에서 `/`와 `/api/v1/recipes?limit=1`은 HTTP 200, 잘못된 바코드는 HTTP 400과 `X-Cost-Guard: active`, 유효 형식 바코드의 무인증 조회는 HTTP 401과 같은 보호 헤더를 반환했다. 401 이전에 pre-auth burst·daily·global 쿼터가 실행되므로 24시간 운영 RPC가 더 이상 503을 만들지 않음을 확인했다. 검증 시간대 Vercel error/fatal 로그는 0건이다.
+- 현재 보호는 애플리케이션과 운영 DB에서 활성화·관찰됐다. 다만 분산 봇·계정 회전 대응용 edge/WAF, Vercel·외부 제공자 계정 수준의 실제 비용 상한·예산 알림은 별도 운영 계정 설정 증거가 없어 완료로 계산하지 않는다.
+
 ## 2026-07-16 동기화 UX 최종 운영 검증·출시 증거 경로 복구
 
 - 운영 runtime commit `c8b32c5612b9f183b79bbc67d29ddfdba6aa934c`을 Vercel Production deployment `dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv` (`https://jipbab-note-7e78cozu4-youngbeens-projects.vercel.app`)으로 배포하고 `https://jipbab-note-app.vercel.app`에 연결했다. 상태는 `READY`이며 `/`, `/fridge`, `/recipe?q=두부`, `/recipe/preview/beginner-recipe-028`은 모두 HTTP 200이다.
