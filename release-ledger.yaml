@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "exact_sha_user_first_recipe_preview_runtime_verified"
+  phase: "sync_coalescing_candidate_local_verified_preview_quota_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
+  git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_commit_pushed_and_exact_sha_preview_verified"
+  dirty_state: "clean_docs_commit_pushed_candidate_is_ancestor"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -48,10 +48,17 @@ source_alignment_20260715:
   github_default_branch: "main"
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
-  candidate_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
+  candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
   candidate_remote_head_matches: false
   candidate_runtime_sha_is_remote_ancestor: true
-  candidate_remote_head_note: "remote head adds release-ledger evidence only; runtime preview remains bound to candidate_git_sha"
+  candidate_remote_head_note: "remote head adds release evidence after the code candidate; the latest successful exact runtime preview remains bound to 0f0aab0"
+  sync_coalescing_candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_candidate_remote_head_matches_before_docs: true
+  sync_coalescing_candidate_preview_status: "blocked_vercel_free_daily_deployment_quota"
+  sync_coalescing_candidate_preview_error_code: "api-deployments-free-per-day"
+  sync_coalescing_candidate_preview_retry_after: "24_hours_or_after_quota_reset"
+  sync_coalescing_candidate_preview_deployment_id: null
+  sync_coalescing_candidate_production_promoted: false
   exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
   exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
@@ -298,6 +305,16 @@ phase6_quality_security:
   accessibility_production_deploy_status: "not_deployed"
   accessibility_preview_deploy_status: "deployed_ready"
   p0_p1_claim: "not_complete_external_and_human_evidence_blockers_remain"
+  sync_coalescing_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_status: "verified_single_flight_with_followup_queue_scan"
+  sync_coalescing_unit_status: "verified_full_suite_412_of_412"
+  sync_coalescing_typecheck_status: "verified"
+  sync_coalescing_eslint_status: "verified_changed_files"
+  sync_coalescing_build_status: "verified_38_of_38_routes"
+  sync_coalescing_ci_static_status: "verified_15_of_15"
+  sync_coalescing_security_status: "verified_4_of_4"
+  sync_coalescing_browser_flow_status: "verified_phase6_12_of_12_on_prior_exact_sha_preview"
+  sync_coalescing_exact_preview_status: "blocked_vercel_free_daily_deployment_quota_not_runtime_verified"
 
 phase6_vercel_preview:
   deployed_at: "2026-07-11 KST"
@@ -762,6 +779,13 @@ blockers:
     owner: "me"
     evidence: "docs/current-release-state.md"
     due: "before_cloudflare_primary"
+  - id: "P1-JIPBAB-VERCEL-PREVIEW-QUOTA"
+    severity: "P1"
+    status: "open_external_quota"
+    title: "The f555092 sync-coalescing candidate is pushed and locally verified, but Vercel rejected a new Preview before deployment creation because the Free project exceeded 100 deployments in one day."
+    owner: "Vercel+project_owner"
+    evidence: "docs/current-release-state.md"
+    due: "after_daily_quota_reset_before_exact_runtime_preview_claim"
 
 sync_preview_backup_20260715:
   branch: "agent/sync-ux-release"
@@ -778,6 +802,9 @@ sync_preview_backup_20260715:
   recipe_preview_20_git_sha: "0f09d3310a7af34566c555777c7798a99534c330"
   recipe_preview_responsive_search_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
   responsive_search_preview_deployment_id: "dpl_F1KXJPiR9atXoHpeBb5X8zKyjhpU"
+  sync_coalescing_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_preview_status: "blocked_before_creation_by_daily_free_quota"
+  sync_coalescing_production_promoted: false
   responsive_search_preview_url: "https://jipbab-note-qomiey7ml-youngbeens-projects.vercel.app"
   preview_20_deployment_id: "dpl_DMt2svACuJ1hfygCevJqc5WrBBAd"
   preview_20_url: "https://jipbab-note-jqz1axvfd-youngbeens-projects.vercel.app"

@@ -2,6 +2,14 @@
 
 Updated: 2026-07-16 KST
 
+## 2026-07-16 동기화 단일 실행 보강·Preview 할당량 상태
+
+- 동기화 후보 `f555092b9ddfd9a2dea67f3770649eb9d445ad07`에서 냉장고와 장보기의 백그라운드 업로드를 단일 실행으로 합쳤다. 첫 동기화가 진행되는 동안 새 변경이 생기면 같은 실행이 한 번 더 큐를 확인하므로, 병렬 업로드 경쟁이나 다음 사용자 행동까지 대기열이 남는 경로를 제거했다.
+- 냉장고와 장보기에는 대기 중인 변경이 있을 때 `클라우드에 저장 중`과 `이 기기에 먼저 저장했어요 · N개 변경사항을 반영하고 있어요.`를 `role="status"`, `aria-live="polite"`로 표시한다. 기존 로컬 전용·완료·오류 상태는 유지하며 저장 중 상태를 오류로 오해시키지 않는다.
+- 검증은 새 단일 실행 테스트 2건을 포함한 unit 412/412, TypeScript, 변경 파일 ESLint, production build 38/38 routes, CI-safe 15/15, release security 4/4를 통과했다. 최신 Phase 6 Chrome E2E 계약은 현재 문구와 안전한 레시피 미리보기 흐름에 맞게 갱신했고, 기존 exact-SHA Preview `dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3`에서 게스트 저장·재로딩·레시피 20개 노출·인증/입력 음성 경로 12/12를 통과했다.
+- `f555092` 자체를 새 Preview로 배포하려고 했으나 Vercel Free 프로젝트의 일일 배포 100회 제한(`api-deployments-free-per-day`)에 도달해 배포 생성 전에 중단됐다. 새 deployment ID는 없고 Production 별칭·환경 변수·DB는 변경하지 않았다. 기존 Preview는 계속 `READY`지만 런타임 SHA는 `0f0aab0`이므로, `f555092`의 브라우저 런타임 확인은 일일 할당량이 초기화된 뒤 다시 진행해야 한다.
+- 2026-07-16 Chrome에서 운영 `/recipe`의 미리보기 카드 20개와 홈의 대표 레시피·`메뉴 20개` 노출을 재확인했다. 이는 기존 운영 런타임의 레시피 가시성 증거이며 `f555092` 동기화 코드가 Production에 승격됐다는 증거로 사용하지 않는다.
+
 ## 2026-07-16 레시피 20개 우선 노출 Preview 재검증
 
 - 사용자 중심 레시피 런타임 후보 `0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1`을 새 Vercel Preview `dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3` (`https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app`)에 다시 배포했고 상태는 `READY`다. 배포 메타데이터의 Git SHA, ref, repo, org는 각각 해당 커밋, `agent/sync-ux-release`, `jipbab-note`, `dudqks0319-cpu`와 일치한다. Production 별칭과 Production 환경 변수는 변경하지 않았다.
