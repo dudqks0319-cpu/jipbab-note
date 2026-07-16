@@ -32,7 +32,7 @@
 - 레시피 상세의 보유/부족 재료 비교
 - 조리 체크리스트와 장보기 목록 연결
 - Google/Apple/Kakao 로그인 기반 데이터 동기화
-- 계정 삭제 요청 및 고객센터/개인정보 처리방침 제공
+- 계정 직접 삭제 및 고객센터/개인정보 처리방침 제공
 
 추천 대상
 
@@ -64,7 +64,7 @@
 데이터 처리 기준
 
 - 데이터는 HTTPS로 전송합니다.
-- 계정 삭제 요청 흐름을 앱 안에서 제공합니다.
+- 계정 직접 삭제 흐름을 앱 안에서 제공합니다.
 - 개인정보 처리방침 URL: `https://jipbab-note-app.vercel.app/privacy`
 - 지원 URL: `https://jipbab-note-app.vercel.app/support`
 - 광고 ID는 현재 앱 기능에 사용하지 않습니다.
@@ -81,7 +81,7 @@
 - 로그인은 선택 기능이며 Apple, Google, Kakao 제공자 플래그는 운영 환경변수로 제어됩니다.
 - 이번 제출 버전은 카메라/바코드 스캔을 핵심 기능으로 노출하지 않습니다.
 - 외부 쇼핑 링크는 사용자가 직접 탭했을 때만 브라우저로 이동합니다.
-- 계정 삭제 요청은 앱의 `/account-delete` 화면에서 시작할 수 있습니다.
+- 계정 삭제는 앱의 `/account-delete` 화면에서 바로 완료할 수 있습니다.
 
 ## 출시 전 Play Console 체크
 
@@ -93,4 +93,4 @@
 - [ ] 스크린샷 및 기능 그래픽 업로드
 - [ ] `pnpm check:store-assets` 통과 후 `docs/play-store-assets/phone` 스크린샷 5장과 `docs/play-store-assets/feature-graphic.png` 업로드
 - [ ] 내부 테스트 트랙에 AAB 업로드
-- [ ] Android 실기기에서 로그인, 장보기 링크, 계정 삭제 요청 QA
+- [ ] Android 실기기에서 로그인, 장보기 링크, 계정 직접 삭제 QA

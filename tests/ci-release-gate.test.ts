@@ -18,7 +18,11 @@ test("CI static release gate is wired into package scripts", () => {
 test("CI static release gate runs only repository-local deterministic release checks", () => {
   assert.match(ciGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-local-mode-release\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-phase-1-data-contract\.mjs/);
+  assert.match(ciGateSource, /--experimental-strip-types/);
   assert.match(ciGateSource, /scripts\/check-supabase-release\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-repository-asset-budget\.mjs/);
   assert.match(ciGateSource, /scripts\/check-partner-links\.mjs/);
   assert.match(ciGateSource, /scripts\/check-store-assets\.mjs/);
   assert.match(ciGateSource, /scripts\/check-release-security\.mjs/);
@@ -49,6 +53,8 @@ test("GitHub release workflow runs code gates and keeps goal status informationa
     "node scripts/check-release-security.mjs",
   );
   assert.match(packageJson.scripts["release:full-check"], /pnpm release:security-check/);
+  assert.match(packageJson.scripts["release:full-check"], /pnpm release:external-check/);
+  assert.match(packageJson.scripts["release:external-check"], /pnpm check:supabase-storage-live/);
   assert.doesNotMatch(workflowSource, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(workflowSource, /ADMIN_EMAILS/);
   assert.doesNotMatch(workflowSource, /release:external-check/);

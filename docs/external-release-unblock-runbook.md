@@ -3,19 +3,67 @@
 이 문서는 코드/백엔드 게이트가 통과한 뒤에도 남는 외부 차단을 해제하는 순서입니다.
 아래 항목은 실제 콘솔, 실제 기기, 실제 계정 상태를 봐야 하므로 확인 전에는 `confirmed`로 바꾸지 않습니다.
 
+Latest evidence packet: `<repo>/output/release-evidence/2026-05-27T03-46-27-019Z` captured on 2026-05-27 12:46 KST. It preserves the current external-status, real-device availability, real-device QA evidence, and store-console confirmation outputs; review it for screenshots, account names, device identifiers, and other sensitive details before sharing.
+
 ## 현재 차단
 
-- 실기기 QA: iPhone `영빈`은 CoreDevice `unavailable`, iPhone Mirroring은 Mac 로그인 암호 입력 필요, Android 물리 기기는 미연결입니다.
-- App Store Connect/TestFlight: JipbabNote 앱 레코드는 보였지만, 직접 TestFlight URL이 `authResult=FAILED`로 돌아가므로 Apple 계정 재인증이 필요합니다.
-- Play Console 내부 테스트: 개발자 계정 설정이 미완료라 앱 생성, AAB 업로드, 내부 테스트 트랙 생성이 막혀 있습니다.
+- Supabase migration history: 공식 repair와 로컬 bridge 추가 후 로컬·원격 40개 버전이 모두 일치한다. `supabase db push --dry-run --linked`는 `Remote database is up to date.`를 반환했으며, 실제 `db push`나 스키마 DDL 재실행은 하지 않았다.
+- Phase 0/1/2 DB rollout: publication gate, Phase 1 schema·catalog seed, distributed rate limit, signed guest auth는 운영에 적용돼 있다. 운영 DB의 미검수 recipes 1,152건은 승인·발행·evidence-ready 모두 0건이고 공개 API는 빈 승인 목록만 반환한다. 남은 DB 작업은 복원 rehearsal과 실제 승인 staging fixture 검증이다.
+- 실기기 QA: 최신 `pnpm release:external-status`는 iOS CoreDevice를 `unavailable iPhone 16 Pro (iPhone17,1)`로 보고하고, Android 물리 기기는 미연결입니다. iOS/Android 실제 QA 증거도 아직 gate를 통과하지 못합니다.
+- Play Console 내부 테스트: 개발자 계정 설정/검증과 Google Play Developer API credential이 미완료라 AAB 업로드 및 내부 테스트 트랙 확인이 막혀 있습니다.
+- App Store Connect/TestFlight: 2026-07-10 `pnpm check:store-console-confirmation -- --platform=appstore` 재확인에서 build `2026062602`가 `VALID`이고 내부 TestFlight 그룹이 존재했습니다. 제출 직전에는 같은 명령 또는 App Store Connect API로 다시 확인합니다.
 
-브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
+브라우저 로그인 상태가 반복해서 끊기면 [store-api-credentials-runbook.md](<repo>/docs/store-api-credentials-runbook.md)를 먼저 설정해 `.env.store-api.local` + `.release-secrets/` 기반으로 `pnpm check:store-console-confirmation`이 공식 API로 TestFlight/Internal testing 상태를 확인하게 합니다.
+
+## 0. Supabase migration history·백업·Phase 0/1/2 staging 검증
+
+운영자가 먼저 해야 할 일:
+
+- 공식 history repair는 완료됐습니다. 향후 새 migration 적용 전 `supabase migration list --linked`와 `supabase db push --dry-run --linked`를 다시 실행하고, 기존 적용 버전은 재실행하지 않습니다.
+- 운영 적용 완료 기준 파일은 `20260710130000_gate_recipe_publication.sql`, `20260710140000_replace_device_guest_auth_with_signed_sessions.sql`, `20260710150000_add_recipe_v2_schema_and_versioning.sql`, `20260710151000_seed_phase1_ingredient_catalog.sql`이며 새 빈 환경이 아닌 운영 DB에서 다시 실행하지 않습니다.
+- 비공개 `ops_backup`에는 Phase 0/1 적용 전 recipes 1,152건·정책 8건·migration history 19건과 signed-session 적용 전 동기화 데이터·정책·함수·history가 보존돼 있습니다. 이 스냅샷을 대상으로 실제 복원 rehearsal을 완료합니다.
+- staging에는 현재 원격 이력과 live schema를 기준으로 새 migration만 적용합니다. publication/auth/schema/catalog/rate-limit migration은 새 빈 staging branch가 아닌 이상 중복 실행하지 않습니다.
+- staging에서 version capture/edit/restore 왕복, 같은 recipe 안의 step-ingredient 무결성, alias 유일성, non-destructive rollback을 실제 PostgreSQL로 검증합니다.
+- staging에서 무서명 요청, 위조 `x-device-id`, 다른 signed user, anonymous user의 family/community write가 모두 차단되는지 확인합니다.
+- staging 서버에 32자 이상의 server-only `API_RATE_LIMIT_HMAC_SECRET`을 설정하고 목록·상세·추천 API의 정상, `429`, `503`, 잘못된 입력 경로를 검증합니다. 자세한 계약은 `docs/api-v1-operations.md`를 따릅니다.
+- 운영 publication/auth/schema/rate-limit과 matching web build는 적용·검증 완료 상태입니다. 이후 운영 DB 변경은 catalog seed, 과거 이력 복구, 복원 rehearsal을 각각 분리하고 사전/사후 count를 남깁니다. 익명 동기화 feature flag는 현재 운영에서 활성화됐으므로 CAPTCHA·rate limit·abuse monitoring을 후속 보안 항목으로 유지합니다.
+- 기존 migration 파일은 수정하지 않습니다.
+
+SQL Editor에 붙여 넣을 정확한 bundle은 아래 명령으로 출력합니다.
+
+확인 전 `pnpm release:supabase-live-unblock-sql`은 의도적으로 실패합니다. 아래 acknowledgement는 실제 확인을 마친 운영자만 설정합니다.
+
+```bash
+SUPABASE_MIGRATION_HISTORY_RECONCILED=1 SUPABASE_BACKUP_VERIFIED=1 pnpm release:supabase-live-unblock-sql
+```
+
+그 다음 실행:
+
+```bash
+SUPABASE_MIGRATION_HISTORY_RECONCILED=1 SUPABASE_BACKUP_VERIFIED=1 pnpm release:supabase-live-unblock-check
+pnpm release:external-status
+```
+
+세부 실패 지점을 따로 확인해야 하면 아래 명령을 개별 실행합니다.
+
+```bash
+pnpm check:supabase-release
+SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live
+pnpm check:supabase-storage-live
+```
+
+확인할 항목:
+
+- `check:supabase-release`가 `family fridge and shopping rows are member-scoped`를 PASS로 표시
+- `check:supabase-live`에서 unsigned/device-header 접근 0건, signed owner readback, cross-user 차단, family member read, non-member 차단 PASS
+- `check:supabase-storage-live`에서 unauthenticated upload와 cross-prefix upload 차단, permanent user auth UID prefix upload PASS
+- `/api/recipes`가 검수 증거 없는 레시피를 0건 반환
 
 ## 1. 실기기 QA 해제
 
 운영자가 먼저 해야 할 일:
 
-- iPhone `영빈`을 잠그고, Mac의 iPhone Mirroring 잠금 화면에 Mac 로그인 암호를 입력합니다.
+- iPhone `[redacted-device]`을 잠그고, Mac의 iPhone Mirroring 잠금 화면에 Mac 로그인 암호를 입력합니다.
 - iPhone에서 이 Mac 신뢰, Developer Mode, 화면 잠금 해제 상태를 확인합니다.
 - Android 물리 기기를 USB로 연결하고, 개발자 옵션과 USB 디버깅을 켠 뒤 RSA 프롬프트를 허용합니다.
 
@@ -45,20 +93,21 @@ pnpm release:capture-ios-real-device-qa
 - 계정 삭제 요청 화면 접근
 - 오류 화면에 raw error, stack trace, env 이름 미노출
 
-완료 후 [real-device-qa.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/real-device-qa.md)에 `confirmed`, evidence date, evidence artifacts를 실제 증거 기준으로만 갱신합니다.
+완료 후 [real-device-qa.md](<repo>/docs/real-device-qa.md)에 `confirmed`, evidence date, evidence artifacts를 실제 증거 기준으로만 갱신합니다.
 
-## 2. App Store Connect/TestFlight 해제
+## 2. App Store Connect/TestFlight 재확인
 
 운영자가 먼저 해야 할 일:
 
-- App Store Connect에 Apple 계정으로 재로그인합니다.
+- 최신 게이트에서는 App Store Connect/TestFlight가 PASS입니다.
+- 제출 직전 App Store Connect에 Apple 계정으로 재로그인하거나 App Store Connect API credential을 사용합니다.
 - JipbabNote 앱 레코드를 엽니다.
 - 직접 URL: `https://appstoreconnect.apple.com/teams/d0f73d2e-b3a6-49ef-938f-4639fea25fee/apps/6762567054/testflight/ios`
 - 앱 메뉴가 `jipbab-note`인지 확인합니다.
-- iOS build `2026052001` 처리 완료 상태를 확인합니다.
+- iOS build `2026062602` 처리 완료 상태를 확인합니다.
 - 내부 테스터 그룹이 이 빌드를 설치할 수 있는지 확인합니다.
 
-완료 후 [store-console-confirmation.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
+완료 후 [store-console-confirmation.md](<repo>/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
 
 - `App Store Connect/TestFlight: confirmed`
 - `TestFlight processing: confirmed`
@@ -70,14 +119,14 @@ pnpm release:capture-ios-real-device-qa
 
 운영자가 먼저 해야 할 일:
 
-- Google Play Console 개발자 계정 `정영빈`의 본인 확인을 완료합니다.
+- Google Play Console 개발자 계정 `[redacted-operator-name]`의 본인 확인을 완료합니다.
 - Play Console 모바일 앱으로 Android 휴대기기 접근 확인을 완료합니다.
 - 연락처 전화번호 인증을 완료합니다.
 - 앱 만들기가 활성화되면 패키지명 `com.jipbab.note`로 앱을 생성합니다.
 - 서명된 `android/app/build/outputs/bundle/release/app-release.aab`를 내부 테스트 트랙에 업로드합니다.
 - 내부 테스트 트랙이 생성되고 처리/사용 가능한 상태인지 확인합니다.
 
-완료 후 [store-console-confirmation.md](/Users/jyb-m3max/Desktop/codex/jipbab-note/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
+완료 후 [store-console-confirmation.md](<repo>/docs/store-console-confirmation.md)에서 아래 항목만 실제 화면 증거 기준으로 갱신합니다.
 
 - `Play Console internal testing: confirmed`
 - `AAB upload: confirmed`

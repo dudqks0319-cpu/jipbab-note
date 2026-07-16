@@ -1,6 +1,7 @@
 import { createSign } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { releaseEvidenceReferenceExists } from "./lib/release-evidence-reference.mjs";
 
 const evidencePath = path.join(process.cwd(), "docs/store-console-confirmation.md");
 const envPaths = [
@@ -8,12 +9,13 @@ const envPaths = [
   path.join(process.cwd(), ".env.android-signing.local"),
   path.join(process.cwd(), ".env.store-api.local"),
 ];
+const iosProjectPath = path.join(process.cwd(), "ios/App/App.xcodeproj/project.pbxproj");
 const appStoreConnectApiBaseUrl = "https://api.appstoreconnect.apple.com";
 const googleTokenUrl = "https://oauth2.googleapis.com/token";
 const googleAndroidPublisherBaseUrl = "https://androidpublisher.googleapis.com/androidpublisher/v3";
 const androidPublisherScope = "https://www.googleapis.com/auth/androidpublisher";
 const defaultBundleId = "com.jipbab.note";
-const defaultIosBuild = "2026052001";
+const defaultIosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const defaultAndroidVersionCode = "1";
 const defaultPlayTrack = "internal";
 const storePlatformAliases = {
@@ -26,6 +28,16 @@ const storePlatformAliases = {
   "play-store": "play",
   android: "play",
 };
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 function targetStorePlatform() {
   const arg = process.argv.find((item) => item.startsWith("--platform="));
@@ -64,7 +76,7 @@ const requiredEvidence = [
     terms: [
       "App Store Connect/TestFlight: confirmed",
       "Bundle ID: com.jipbab.note",
-      "iOS build: 2026052001",
+      `iOS build: ${defaultIosBuild}`,
       "TestFlight processing: confirmed",
       "Internal tester availability: confirmed",
     ],
@@ -105,24 +117,12 @@ function lineValue(source, label) {
   return match?.[1]?.trim() ?? "";
 }
 
-function artifactExists(value) {
-  const normalized = value.replace(/^`|`$/g, "").trim();
-  if (!normalized || normalized === "pending") {
-    return false;
-  }
-  if (/^https?:\/\//.test(normalized)) {
-    return true;
-  }
-  const artifactPath = path.isAbsolute(normalized) ? normalized : path.join(process.cwd(), normalized);
-  return existsSync(artifactPath);
-}
-
 function missingExtraEvidence(source, item) {
   const missingPatterns = (item.patterns ?? [])
     .filter((requirement) => !requirement.pattern.test(source))
     .map((requirement) => requirement.label);
   const missingArtifacts = (item.artifactLabels ?? [])
-    .filter((label) => !artifactExists(lineValue(source, label)))
+    .filter((label) => !releaseEvidenceReferenceExists(lineValue(source, label)))
     .map((label) => `${label}: existing local path or URL`);
   return [...missingPatterns, ...missingArtifacts];
 }

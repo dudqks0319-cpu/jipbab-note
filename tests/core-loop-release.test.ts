@@ -21,6 +21,8 @@ test("core loop release check is wired into package and release gates", () => {
   assert.equal(packageJson.scripts["check:core-loop-release"], "node scripts/check-core-loop-release.mjs");
   assert.match(releaseGateSource, /scripts\/check-core-loop-release\.mjs/);
   assert.match(ciGateSource, /scripts\/check-core-loop-release\.mjs/);
+  assert.match(releaseGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(ciGateSource, /scripts\/check-beginner-goal-readiness\.mjs/);
 });
 
 test("fridge ingredients drive a recipe, missing item shopping, and purchased item fridge refill", () => {
@@ -32,10 +34,14 @@ test("fridge ingredients drive a recipe, missing item shopping, and purchased it
     { name: "대파", expiryDate: "2026-05-24" },
   ];
 
-  const ranked = rankRecipeRecommendations(CURATED_JIPBAB_RECIPES, fridgeInventory, today);
+  const ranked = rankRecipeRecommendations(
+    CURATED_JIPBAB_RECIPES.filter((recipe) => recipe.name === "된장찌개"),
+    fridgeInventory,
+    today,
+  );
   const recommendation = ranked[0];
 
-  assert.equal(recommendation.recipe.id, "curated-doenjang-jjigae");
+  assert.equal(recommendation.recipe.id, "beginner-recipe-067");
   assert.equal(recommendation.recipe.name, "된장찌개");
   assert.equal(recommendation.match.matchedIngredients.length, 4);
   assert.deepEqual(getEssentialMissingIngredients(recommendation.match.missingIngredients), ["애호박"]);

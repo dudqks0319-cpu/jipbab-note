@@ -4,9 +4,14 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import path from "node:path";
 
 const cwd = process.cwd();
-const adbPath = process.env.ADB_PATH || "/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb";
+const defaultAndroidSdk =
+  process.env.ANDROID_HOME ||
+  process.env.ANDROID_SDK_ROOT ||
+  (process.env.HOME ? path.join(process.env.HOME, "Library/Android/sdk") : "");
+const adbPath = process.env.ADB_PATH || path.join(defaultAndroidSdk, "platform-tools/adb");
 const appId = "com.jipbab.note";
-const iosBuildNumber = "2026052001";
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuildNumber = readIosProjectBuildNumber() ?? "2026052001";
 const androidVersionCode = "1";
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const platformAliases = {
@@ -32,6 +37,16 @@ function parsePlatform() {
 const platform = parsePlatform();
 const outDirSuffix = platform === "all" ? "real-device-qa" : `real-device-qa-${platform}`;
 const outDir = path.join(cwd, "output", "release-evidence", `${stamp}-${outDirSuffix}`);
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 const commandCaptures = [
   {
@@ -104,6 +119,14 @@ function redact(value) {
     .replace(/\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g, "[redacted-jwt]")
     .replace(/\bsk-[A-Za-z0-9_-]{20,}\b/g, "[redacted-api-key]")
     .replace(/\b(AIza[0-9A-Za-z_-]{20,})\b/g, "[redacted-google-api-key]")
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}\b/g, "[redacted-device-id]")
+    .replace(/\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b/g, "[redacted-device-id]")
+    .replace(/^.+?MacBook[^\n]*\(\[redacted-device-id\]\)$/gm, "Apple host ([redacted-device-id])")
+    .replace(/^.+?(?=\s+\[redacted-device-id\]\s+(?:available|unavailable))/gm, "iOS device")
+    .replace(/^.+?(?=\s+\(\d+(?:\.\d+){0,2}\)\s+\(\[redacted-device-id\]\)$)/gm, "iOS device")
+    .replace(/[^\s()]+의\s+(?=iPhone|iPad)/g, "[redacted-device] ")
+    .replace(/[^\s()]+(?:'s|’s)\s+(?=iPhone|iPad)/g, "[redacted-device] ")
+    .replace(/(^|\n)(\S+)(\s+device\b(?=\s+(?:usb:|product:|model:|transport_id:)|\s*$)[^\n]*)/g, "$1[redacted-android-device]$3")
     .replace(/((?:SUPABASE_SERVICE_ROLE_KEY|ADMIN_EMAILS|APP_STORE_CONNECT_API_PRIVATE_KEY|GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)\s*=\s*)\S+/g, "$1[redacted]");
 }
 
@@ -201,7 +224,7 @@ function writeManualQaTemplate() {
     "- iOS Kakao login: confirmed",
     "- iOS local notification permission and scheduling: confirmed",
     "- iOS shopping external link: confirmed",
-    "- iOS account deletion request: confirmed",
+    "- iOS account deletion: confirmed",
     "- iOS raw error disclosure: not observed",
     "- iOS evidence date: YYYY-MM-DD",
     `- iOS evidence artifacts: ${outDir}`,
@@ -222,7 +245,7 @@ function writeManualQaTemplate() {
     "- Android Apple login/provider behavior: confirmed",
     "- Android local notification permission and scheduling: confirmed",
     "- Android shopping external link: confirmed",
-    "- Android account deletion request: confirmed",
+    "- Android account deletion: confirmed",
     "- Android back navigation: confirmed",
     "- Android raw error disclosure: not observed",
     "- Android evidence date: YYYY-MM-DD",
@@ -271,7 +294,7 @@ function writeOperatorChecklist() {
     "- [ ] Complete Kakao login and return to the app with a session.",
     "- [ ] Allow or deny local notification permission and verify the app remains usable.",
     "- [ ] Open the external shopping link in the expected browser/app surface.",
-    "- [ ] Submit an account deletion request or reach the account deletion request screen.",
+    "- [ ] Complete direct account deletion from the account deletion screen using a disposable QA account.",
     "- [ ] Confirm no raw stack trace, env name, token, or server error detail is visible.",
     "",
     );
@@ -291,7 +314,7 @@ function writeOperatorChecklist() {
     "- [ ] Verify Apple login/provider behavior on Android matches the release decision.",
     "- [ ] Allow or deny local notification permission and verify the app remains usable.",
     "- [ ] Open the external shopping link in the expected browser/app surface.",
-    "- [ ] Submit an account deletion request or reach the account deletion request screen.",
+    "- [ ] Complete direct account deletion from the account deletion screen using a disposable QA account.",
     "- [ ] Android back navigation returns to the previous screen or exits only from the top-level screen.",
     "- [ ] Confirm no raw stack trace, env name, token, or server error detail is visible.",
     "",
@@ -326,7 +349,7 @@ function writeDeviceUnblockChecklist() {
     lines.push(
     "## iOS CoreDevice",
     "",
-    "- [ ] Keep iPhone `영빈` unlocked and awake.",
+    "- [ ] Keep iPhone `[redacted-device]` unlocked and awake.",
     "- [ ] Confirm the iPhone trusts this Mac if the trust prompt appears.",
     "- [ ] Confirm Developer Mode is enabled on the iPhone.",
     "- [ ] If iPhone Mirroring prompts for the Mac password, the operator must unlock it before QA continues.",

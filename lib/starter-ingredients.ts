@@ -9,7 +9,7 @@ type StarterIngredientTemplate = Omit<IngredientFormPayload, "expiryDate"> & {
 export const STARTER_INGREDIENT_TEMPLATES: StarterIngredientTemplate[] = [
   {
     name: "계란",
-    category: "유제품",
+    category: "육류",
     storageType: "냉장",
     quantity: "10개",
     expiryOffsetDays: 10,
@@ -18,7 +18,7 @@ export const STARTER_INGREDIENT_TEMPLATES: StarterIngredientTemplate[] = [
   },
   {
     name: "두부",
-    category: "유제품",
+    category: "통조림/가공식품",
     storageType: "냉장",
     quantity: "1모",
     expiryOffsetDays: 5,
@@ -52,6 +52,33 @@ export const STARTER_INGREDIENT_TEMPLATES: StarterIngredientTemplate[] = [
     memo: "첫 냉장고 세팅",
     reason: "볶음과 국물에 단맛을 더하는 가장 대중적인 채소",
   },
+  {
+    name: "밥",
+    category: "곡물/면/빵",
+    storageType: "냉장",
+    quantity: "1공기",
+    expiryOffsetDays: 2,
+    memo: "첫 냉장고 세팅",
+    reason: "볶음밥과 덮밥으로 바로 이어지는 기본 주식",
+  },
+  {
+    name: "감자",
+    category: "채소",
+    storageType: "실온",
+    quantity: "3개",
+    expiryOffsetDays: 14,
+    memo: "첫 냉장고 세팅",
+    reason: "볶음, 국, 전자레인지 조리에 모두 쓰기 쉬운 재료",
+  },
+  {
+    name: "참치캔",
+    category: "통조림/가공식품",
+    storageType: "실온",
+    quantity: "1캔",
+    expiryOffsetDays: 120,
+    memo: "첫 냉장고 세팅",
+    reason: "김치찌개, 덮밥, 주먹밥에 바로 쓰는 비상 단백질",
+  },
 ];
 
 export const STARTER_INGREDIENT_NAMES = STARTER_INGREDIENT_TEMPLATES.map((item) => item.name);
@@ -70,10 +97,17 @@ function buildFutureDate(offsetDays: number): string {
   return formatLocalDate(target);
 }
 
-export function buildStarterIngredientPayloads(existingIngredientNames: string[]): IngredientFormPayload[] {
+export function buildStarterIngredientPayloads(
+  existingIngredientNames: string[],
+  selectedIngredientNames?: string[],
+): IngredientFormPayload[] {
   const existing = new Set(existingIngredientNames.map((name) => name.trim().toLowerCase()));
+  const selected = selectedIngredientNames
+    ? new Set(selectedIngredientNames.map((name) => name.trim().toLowerCase()).filter(Boolean))
+    : null;
 
   return STARTER_INGREDIENT_TEMPLATES
+    .filter((item) => !selected || selected.has(item.name.toLowerCase()))
     .filter((item) => !existing.has(item.name.toLowerCase()))
     .map((item) => ({
       name: item.name,

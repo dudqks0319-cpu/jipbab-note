@@ -65,3 +65,19 @@ test("marks skipped migration tables as partial instead of failed", () => {
   assert.equal(summary.health, "partial");
   assert.equal(summary.statLabel, "일부확인");
 });
+
+test("signed-session sync treats deliberate remote device-claim skips as normal", () => {
+  const summary = summarizeAuthMigrationState({
+    migrating: false,
+    error: null,
+    migrationResult: migrationResult({
+      remoteMigrationMode: "signed_session_sync",
+      tableResults: [
+        { table: "ingredients", migratedCount: 0, skipped: true, reason: "signed uid sync" },
+      ],
+    }),
+  });
+
+  assert.equal(summary.health, "normal");
+  assert.equal(summary.statLabel, "정상");
+});

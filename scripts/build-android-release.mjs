@@ -10,7 +10,10 @@ const envFilePaths = [
 ];
 const jdk21Home = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
 const jdk21Bin = "/opt/homebrew/opt/openjdk@21/bin";
-const androidSdk = "/Users/jyb-m3max/Library/Android/sdk";
+const androidSdk =
+  process.env.ANDROID_HOME ||
+  process.env.ANDROID_SDK_ROOT ||
+  (process.env.HOME ? path.join(process.env.HOME, "Library/Android/sdk") : "");
 
 function readEnvFile(filePath) {
   if (!existsSync(filePath)) {

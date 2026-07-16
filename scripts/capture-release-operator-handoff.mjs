@@ -1,10 +1,22 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const cwd = process.cwd();
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuild = readIosProjectBuildNumber() ?? "2026052001";
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(cwd, "output", "release-evidence", `${stamp}-operator-handoff`);
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 const commands = [
   {
@@ -140,7 +152,7 @@ const summary = [
   "",
   "- Real-device QA: use the latest real-device packet's `device-unblock-checklist.md`, then run the physical-device flows in `operator-checklist.md` before updating `docs/real-device-qa.md`.",
   "- Store API credentials: review `store-api-credential-status.txt`; if it still reports `Ready: 0`, configure `.env.store-api.local` from `store-api-env-template.txt` before relying on official store API verification.",
-  "- App Store Connect/TestFlight: reauthenticate in App Store Connect or configure `.env.store-api.local` from `store-api-env-template.txt`, then verify build `2026052001` processing and internal tester availability.",
+  `- App Store Connect/TestFlight: reauthenticate in App Store Connect or configure \`.env.store-api.local\` from \`store-api-env-template.txt\`, then verify build \`${iosBuild}\` processing and internal tester availability.`,
   "- Play Console internal testing: complete developer account verification, create/open package `com.jipbab.note`, upload the signed AAB to internal testing, or configure Google Play Developer API credentials after app setup.",
   "- Platform submit gates: run `pnpm release:appstore-submit-gate` and `pnpm release:playstore-submit-gate` to confirm each store lane before running the combined `pnpm release:submit-gate`.",
   "- Store metadata and images: use the latest store submission packet for App Store screenshots, Play screenshots, feature graphic, icon, and Korean metadata. If iOS is ready before Play, use the latest App Store review packet for the App Store-only upload set.",

@@ -1,4 +1,5 @@
 // 이 파일은 출시 전 로컬에서 환경변수와 핵심 라우트 구성을 점검합니다.
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -18,6 +19,16 @@ const REQUIRED_ENV_KEYS = [
   "NEXT_PUBLIC_SUPABASE_OAUTH_KAKAO_ENABLED",
   "NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED",
 ];
+const REQUIRED_OAUTH_WEBVIEW_HOSTS = [
+  "jipbab-note-app.vercel.app",
+  process.env.CAPACITOR_CLOUDFLARE_HOST,
+  "xqelabiwtjntwrjqcteo.supabase.co",
+].filter(Boolean);
+const FORBIDDEN_OAUTH_WEBVIEW_HOSTS = [
+  "accounts.google.com",
+  "appleid.apple.com",
+  "kauth.kakao.com",
+];
 
 const COUPANG_LINK_KEYS = [
   "NEXT_PUBLIC_COUPANG_PARTNERS_POTATO_URL",
@@ -34,6 +45,7 @@ const RECIPE_SOURCES_MIGRATION = "supabase/migrations/20260508133157_add_recipe_
 const REQUIRED_ROUTE_FILES = [
   ["login", "app/login/page.tsx"],
   ["oauth callback", "app/auth/callback/page.tsx"],
+  ["native oauth callback bridge", "app/auth/native-callback/page.tsx"],
   ["fridge", "app/fridge/page.tsx"],
   ["recipe list", "app/recipe/page.tsx"],
   ["recipe detail", "app/recipe/[id]/page.tsx"],
@@ -162,8 +174,46 @@ function missingTerms(source, terms) {
   return terms.filter((term) => !source.includes(term));
 }
 
+function hasRequiredOAuthNavigationHosts(capacitorConfig) {
+  const allowNavigation = capacitorConfig.server?.allowNavigation;
+  return (
+    Array.isArray(allowNavigation) &&
+    REQUIRED_OAUTH_WEBVIEW_HOSTS.every((host) => allowNavigation.includes(host)) &&
+    FORBIDDEN_OAUTH_WEBVIEW_HOSTS.every((host) => !allowNavigation.includes(host))
+  );
+}
+
 function readProjectFile(relativePath) {
   return readFileSync(path.join(cwd, relativePath), "utf8");
+}
+
+function summarizeCheckOutput(output) {
+  const lines = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return lines.find((line) => line.startsWith("PASS -")) ?? lines.find((line) => line.startsWith("FAIL -")) ?? lines.at(-1) ?? "no output";
+}
+
+function runProjectCheck(command, args) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: "utf8",
+  });
+
+  if (result.error) {
+    return {
+      ok: false,
+      detail: result.error.message,
+    };
+  }
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  return {
+    ok: result.status === 0,
+    detail: summarizeCheckOutput(output) || `exit ${result.status ?? "unknown"}`,
+  };
 }
 
 function resolveProjectPath(value) {
@@ -452,7 +502,7 @@ if (existsSync(path.join(cwd, playStoreMetadataPath))) {
     "앱 활동",
     "기기 또는 기타 ID",
     "HTTPS",
-    "계정 삭제 요청",
+    "계정 직접 삭제",
     "개인정보 처리방침 URL",
     "지원 URL",
     "내부 테스트 트랙",
@@ -474,6 +524,12 @@ if (existsSync(path.join(cwd, packageJsonPath))) {
   } else {
     addResult(results, "fail", "@capacitor/local-notifications", "native local notification plugin is required for release alarm claims");
   }
+
+  if (dependencies["@capacitor/app"] && dependencies["@capacitor/browser"]) {
+    addResult(results, "pass", "Native OAuth plugins", "Capacitor App and Browser plugins are installed for system-browser OAuth");
+  } else {
+    addResult(results, "fail", "Native OAuth plugins", "@capacitor/app and @capacitor/browser are required for Google-safe OAuth");
+  }
 } else {
   addResult(results, "fail", packageJsonPath, "package.json is missing");
 }
@@ -483,10 +539,6 @@ let curatedThumbnailPaths = [];
 if (existsSync(path.join(cwd, curatedRecipesPath))) {
   const curatedRecipesSource = readProjectFile(curatedRecipesPath);
   const curatedRecipeCount = countMatches(curatedRecipesSource, /id:\s*"curated-/g);
-  const beginnerTipCount = countMatches(curatedRecipesSource, /beginnerTip:\s*"/g);
-  const visualCueCount = countMatches(curatedRecipesSource, /visualCue:\s*"/g);
-  const beginnerSummaryCount = countMatches(curatedRecipesSource, /beginnerSummary:\s*"/g);
-  const measurementTipsCount = countMatches(curatedRecipesSource, /measurementTips:\s*DEFAULT_MEASUREMENT_TIPS/g);
 
   curatedThumbnailPaths = Array.from(
     curatedRecipesSource.matchAll(/thumbnailUrl:\s*"([^"]+)"/g),
@@ -504,19 +556,18 @@ if (existsSync(path.join(cwd, curatedRecipesPath))) {
     );
   }
 
-  if (
-    beginnerSummaryCount >= curatedRecipeCount &&
-    measurementTipsCount >= curatedRecipeCount &&
-    beginnerTipCount >= curatedRecipeCount * 4 &&
-    visualCueCount >= curatedRecipeCount * 4
-  ) {
-    addResult(results, "pass", "Beginner recipe guidance", "summary, measurement tips, beginner tips, and visual cues present");
+  const beginnerGuidanceCheck = runProjectCheck("node", [
+    "--experimental-strip-types",
+    "scripts/check-curated-beginner-guidance.mjs",
+  ]);
+  if (beginnerGuidanceCheck.ok) {
+    addResult(results, "pass", "Beginner recipe guidance", beginnerGuidanceCheck.detail);
   } else {
     addResult(
       results,
       "fail",
       "Beginner recipe guidance",
-      "each curated recipe must include beginner summary, measurement tips, step tips, and visual cues",
+      beginnerGuidanceCheck.detail,
     );
   }
 
@@ -694,11 +745,12 @@ if (existsSync(androidCapacitorConfigPath)) {
     androidCapacitorConfig.appName === "집밥노트" &&
     typeof serverUrl === "string" &&
     serverUrl.startsWith("https://") &&
-    androidCapacitorConfig.server?.cleartext === false
+    androidCapacitorConfig.server?.cleartext === false &&
+    hasRequiredOAuthNavigationHosts(androidCapacitorConfig)
   ) {
-    addResult(results, "pass", "Android Capacitor config", "release WebView URL is HTTPS and cleartext is disabled");
+    addResult(results, "pass", "Android Capacitor config", "release WebView URL is HTTPS, app hosts stay in WebView, provider OAuth hosts stay out, and cleartext is disabled");
   } else {
-    addResult(results, "fail", "Android Capacitor config", "must use com.jipbab.note, 집밥노트, HTTPS server URL, and cleartext=false");
+    addResult(results, "fail", "Android Capacitor config", "must use com.jipbab.note, 집밥노트, HTTPS server URL, app allowNavigation hosts only, provider OAuth outside WebView, and cleartext=false");
   }
 } else {
   addResult(results, "fail", "android/app/src/main/assets/capacitor.config.json", "Android Capacitor config is missing");
@@ -711,6 +763,9 @@ if (existsSync(iosCapacitorConfigPath)) {
   const packageClassList = Array.isArray(iosCapacitorConfig.packageClassList)
     ? iosCapacitorConfig.packageClassList
     : [];
+  const hasBrowserPlugin =
+    packageClassList.includes("CAPBrowserPlugin") ||
+    packageClassList.includes("BrowserPlugin");
 
   if (
     iosCapacitorConfig.appId === "com.jipbab.note" &&
@@ -719,15 +774,18 @@ if (existsSync(iosCapacitorConfigPath)) {
     serverUrl.startsWith("https://") &&
     serverUrl === capacitorServerUrl &&
     iosCapacitorConfig.server?.cleartext === false &&
+    hasRequiredOAuthNavigationHosts(iosCapacitorConfig) &&
+    packageClassList.includes("AppPlugin") &&
+    hasBrowserPlugin &&
     packageClassList.includes("LocalNotificationsPlugin")
   ) {
-    addResult(results, "pass", "iOS Capacitor config", "release WebView URL, cleartext, app identity, and local notifications plugin are configured");
+    addResult(results, "pass", "iOS Capacitor config", "release WebView URL, app-only allowNavigation, native OAuth plugins, cleartext, app identity, and local notifications plugin are configured");
   } else {
     addResult(
       results,
       "fail",
       "iOS Capacitor config",
-      "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, cleartext=false, and LocalNotificationsPlugin",
+      "must use com.jipbab.note, 집밥노트, CAPACITOR_SERVER_URL HTTPS URL, app-only allowNavigation hosts, cleartext=false, AppPlugin, CAPBrowserPlugin or BrowserPlugin, and LocalNotificationsPlugin",
     );
   }
 } else {
@@ -741,18 +799,20 @@ if (existsSync(iosInfoPlistPath)) {
   const hasCameraUsage =
     /<key>NSCameraUsageDescription<\/key>\s*<string>[^<]*바코드[^<]*<\/string>/.test(iosInfoPlist);
   const hasEncryptionDeclaration = /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\/>/.test(iosInfoPlist);
+  const hasNativeAuthScheme =
+    /<key>CFBundleURLSchemes<\/key>[\s\S]*<string>com\.jipbab\.note<\/string>/.test(iosInfoPlist);
   const hasPortraitOrientation =
     iosInfoPlist.includes("<string>UIInterfaceOrientationPortrait</string>") &&
     !iosInfoPlist.includes("<string>UIInterfaceOrientationLandscape");
 
-  if (hasDisplayName && hasCameraUsage && hasEncryptionDeclaration && hasPortraitOrientation) {
-    addResult(results, "pass", "iOS Info.plist", "display name, camera purpose, encryption declaration, and portrait orientation are configured");
+  if (hasDisplayName && hasCameraUsage && hasEncryptionDeclaration && hasNativeAuthScheme && hasPortraitOrientation) {
+    addResult(results, "pass", "iOS Info.plist", "display name, camera purpose, encryption declaration, native auth URL scheme, and portrait orientation are configured");
   } else {
     addResult(
       results,
       "fail",
       "iOS Info.plist",
-      "must define 집밥노트 display name, barcode camera purpose text, ITSAppUsesNonExemptEncryption=false, and portrait-only orientation",
+      "must define 집밥노트 display name, barcode camera purpose text, ITSAppUsesNonExemptEncryption=false, com.jipbab.note URL scheme, and portrait-only orientation",
     );
   }
 } else {
@@ -781,16 +841,16 @@ if (existsSync(iosSpmPackagePath)) {
   addResult(results, "fail", "ios/App/CapApp-SPM/Package.swift", "iOS SPM package is missing");
 }
 
-const runtimeAppConfigPath = path.join(cwd, "public/runtime-app-config.json");
+const runtimeAppConfigPath = path.join(cwd, "capacitor-shell/runtime-app-config.json");
 if (existsSync(runtimeAppConfigPath)) {
   const runtimeAppConfig = JSON.parse(readFileSync(runtimeAppConfigPath, "utf8"));
   if (runtimeAppConfig.remoteUrl === capacitorServerUrl && isHttpsUrl(runtimeAppConfig.remoteUrl)) {
-    addResult(results, "pass", "Runtime app config", "public runtime remote URL matches CAPACITOR_SERVER_URL");
+    addResult(results, "pass", "Runtime app config", "Capacitor shell runtime remote URL matches CAPACITOR_SERVER_URL");
   } else {
-    addResult(results, "fail", "Runtime app config", "public runtime remoteUrl must match CAPACITOR_SERVER_URL and use HTTPS");
+    addResult(results, "fail", "Runtime app config", "Capacitor shell runtime remoteUrl must match CAPACITOR_SERVER_URL and use HTTPS");
   }
 } else {
-  addResult(results, "fail", "public/runtime-app-config.json", "runtime app config is missing");
+  addResult(results, "fail", "capacitor-shell/runtime-app-config.json", "runtime app config is missing");
 }
 
 if (!isPresent(env.MFDS_API_KEY) && !isPresent(env.FOODSAFETY_API_KEY)) {

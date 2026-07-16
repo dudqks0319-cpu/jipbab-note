@@ -63,6 +63,7 @@ pnpm dev
 ```bash
 pnpm lint
 pnpm exec tsc --noEmit
+pnpm test
 pnpm build
 ```
 
@@ -88,9 +89,11 @@ pnpm build
 
 ## 데이터/백엔드 메모
 
-- 재료, 즐겨찾기, 계정 전환은 Supabase 구조를 기준으로 설계되어 있습니다.
-- 일부 UX는 베타 안정성을 위해 로컬 저장 기반 보조 상태를 사용합니다.
-- 레시피는 Supabase 저장 데이터 우선, 없으면 MFDS API를 fallback으로 사용합니다.
+- 재료, 장보기, 즐겨찾기, 레시피 캐시는 IndexedDB 기반 Local-first 구조로 먼저 읽고 씁니다.
+- Supabase는 로그인, 백업, 가족 공유, 여러 기기 동기화 경로로 유지합니다.
+- 재료/장보기 변경은 로컬 DB에 즉시 반영하고 `pending_sync_queue`에 기록한 뒤 백그라운드에서 Supabase에 업로드합니다.
+- 기존 localStorage 재료/장보기/즐겨찾기 데이터는 첫 로컬 DB 접근 시 IndexedDB로 1회 마이그레이션한 뒤 제거합니다.
+- 레시피는 로컬 `recipe_cache`를 먼저 표시하고, API 응답이 성공하면 캐시를 갱신합니다. 원격 데이터가 없으면 curated/MFDS fallback을 사용합니다.
 - 장보기에는 쿠팡 파트너스 딥링크를 연결할 수 있고, 값이 없으면 쿠팡 검색 링크로 fallback 됩니다.
 - OAuth 로그인은 `/auth/callback` 경로에서 세션 교환을 수행합니다.
 

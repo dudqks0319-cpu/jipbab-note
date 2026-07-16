@@ -35,8 +35,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
   const [formError, setFormError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>({})
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const quickProviders = providers
-  const quickEnabledProviders = quickProviders.filter((item) => item.enabled)
+  const quickProviders = providers.filter((item) => item.enabled)
 
   if (mode === 'welcome') {
     return (
@@ -120,22 +119,33 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
       return
     }
 
-    const succeeded = isSignup
-      ? await signUpWithEmail(trimmedEmail, password, nickname)
-      : await signInWithEmail(trimmedEmail, password)
-
-    if (succeeded) {
-      setSuccessMessage(isSignup ? '회원가입이 완료되었습니다. 메일 확인이 필요한 경우 받은편지함을 확인해주세요.' : '로그인되었습니다.')
-      if (!isSignup) {
-        router.push('/mypage')
+    if (isSignup) {
+      const result = await signUpWithEmail(trimmedEmail, password, nickname)
+      if (!result.ok) {
+        return
       }
+
+      if (result.requiresEmailConfirmation) {
+        setSuccessMessage('인증 메일을 보냈습니다. 메일에서 확인을 완료한 뒤 로그인해주세요.')
+        return
+      }
+
+      setSuccessMessage('회원가입이 완료되어 로그인되었습니다.')
+      router.push('/mypage')
+      return
+    }
+
+    const result = await signInWithEmail(trimmedEmail, password)
+    if (result.ok) {
+      setSuccessMessage('로그인되었습니다.')
+      router.push('/mypage')
     }
   }
 
   return (
     <div className="min-h-full bg-[#fbf6ee] px-5 pb-8">
       <section className="mobile-safe-top">
-        <Link href="/welcome" className="flex h-9 w-9 items-center justify-center rounded-full text-[#2f2117]" aria-label="인증 시작 화면으로 돌아가기">
+        <Link href="/welcome" className="flex h-11 w-11 items-center justify-center rounded-full text-[#2f2117]" aria-label="인증 시작 화면으로 돌아가기">
           <ArrowLeft size={20} />
         </Link>
       </section>
@@ -148,26 +158,17 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
       </section>
 
       <section className="space-y-2 pt-6">
-        {quickProviders.map((provider) =>
-          provider.enabled ? (
-            <AuthProviderButton
-              key={provider.provider}
-              disabled={signingIn}
-              provider={provider.provider}
-              onClick={() => {
-                void signInWithProvider(provider.provider)
-              }}
-            />
-          ) : (
-            <div
-              key={provider.provider}
-              className="rounded-[12px] border border-dashed border-[#d8c6b3] bg-[#fffaf3] px-4 py-3 text-center text-sm font-bold text-[#8f7f70]"
-            >
-              {provider.userDisabledReason ?? '지금은 소셜 로그인을 사용할 수 없습니다. 이메일로 계속해주세요.'}
-            </div>
-          ),
-        )}
-        {quickEnabledProviders.length === 0 ? (
+        {quickProviders.map((provider) => (
+          <AuthProviderButton
+            key={provider.provider}
+            disabled={signingIn}
+            provider={provider.provider}
+            onClick={() => {
+              void signInWithProvider(provider.provider)
+            }}
+          />
+        ))}
+        {quickProviders.length === 0 ? (
           <p className="rounded-[12px] bg-[#fff0e4] px-4 py-3 text-center text-sm font-bold text-[#d94d19]">
             지금은 소셜 로그인을 사용할 수 없습니다. 아래 이메일로 계속해주세요.
           </p>
@@ -250,7 +251,7 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
         ) : (
           <section className="flex items-center justify-between pt-2">
             <CheckboxLine text="로그인 상태 유지" />
-            <Link href="/support" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
+            <Link href="/reset-password" className="text-[12px] font-bold text-[#7d6d5f]">비밀번호 찾기</Link>
           </section>
         )}
 

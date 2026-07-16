@@ -5,6 +5,7 @@ type PartnerLinkKind = "item" | "category" | "search";
 type PartnerLinkInput = {
   name: string;
   category: IngredientCategory | null;
+  allowCategoryFallback?: boolean;
 };
 
 export type PartnerLinkConfig = {
@@ -98,7 +99,7 @@ export function resolvePartnerLink(
     }
   }
 
-  if (input.category) {
+  if (input.allowCategoryFallback && input.category) {
     const categoryHref = validPartnerHref(config.categoryLinks[input.category]);
     if (categoryHref) {
       return {

@@ -6,10 +6,23 @@ const supabaseDir = path.join(cwd, "supabase");
 const migrationsDir = path.join(supabaseDir, "migrations");
 const schemaPath = path.join(supabaseDir, "schema.sql");
 
+const phaseOneTables = [
+  "recipe_categories",
+  "ingredients_catalog",
+  "ingredient_aliases",
+  "recipe_ingredients",
+  "recipe_ingredient_substitutions",
+  "recipe_steps",
+  "recipe_step_ingredients",
+  "recipe_reviews",
+  "recipe_versions",
+];
+
 const requiredTables = [
   "ingredients",
   "recipes",
   "recipe_sources",
+  "recipe_comments",
   "favorites",
   "shopping_items",
   "partner_links",
@@ -17,6 +30,8 @@ const requiredTables = [
   "family_members",
   "account_deletion_requests",
   "account_deletion_request_events",
+  "api_rate_limit_buckets",
+  ...phaseOneTables,
 ];
 
 const requiredPolicies = {
@@ -37,6 +52,12 @@ const requiredPolicies = {
     "recipe_sources_insert_service_role",
     "recipe_sources_update_service_role",
     "recipe_sources_delete_service_role",
+  ],
+  recipe_comments: [
+    "recipe_comments_select_visible",
+    "recipe_comments_insert_authenticated",
+    "recipe_comments_update_own",
+    "recipe_comments_delete_own",
   ],
   favorites: [
     "favorites_select_own",
@@ -66,9 +87,10 @@ const requiredPolicies = {
     "account_deletion_requests_insert_own",
   ],
   account_deletion_request_events: ["account_deletion_request_events_select_own"],
+  recipe_categories: ["recipe_categories_select_public"],
 };
 
-const guestDevicePolicies = [
+const signedOwnershipPolicies = [
   ...requiredPolicies.ingredients,
   ...requiredPolicies.favorites,
   ...requiredPolicies.shopping_items,
@@ -95,6 +117,23 @@ const requiredMigrationFiles = [
   "20260508133307_add_partner_links.sql",
   "20260508143719_optimize_rls_initplan.sql",
   "20260521160347_add_family_group_rpc.sql",
+  "20260523090000_add_recipe_comments.sql",
+  "20260526093000_harden_community_image_storage.sql",
+  "20260527093000_add_family_scoped_fridge_shopping.sql",
+  "20260528010000_fix_family_member_rls_recursion.sql",
+  "20260710130000_gate_recipe_publication.sql",
+  "20260710140000_replace_device_guest_auth_with_signed_sessions.sql",
+  "20260710150000_add_recipe_v2_schema_and_versioning.sql",
+  "20260710151000_seed_phase1_ingredient_catalog.sql",
+  "20260710160000_add_distributed_api_rate_limits.sql",
+  "20260711113000_harden_security_definer_privileges.sql",
+  "20260715101534_add_recipe_comments_sync_prerequisite_20260715.sql",
+  "20260715101553_replace_device_guest_auth_with_signed_sessions_20260715.sql",
+  "20260715101658_cascade_user_deletion_sync_prerequisite_20260715.sql",
+  "20260715101716_harden_security_definer_privileges_20260715.sql",
+  "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715.sql",
+  "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715.sql",
+  "20260716131500_allow_daily_api_rate_limit_windows.sql",
 ];
 
 function readSqlBundle() {
@@ -143,7 +182,7 @@ function hasPolicy(sql, tableName, policyName) {
 
 function getPolicyBlock(sql, policyName) {
   const marker = `create policy ${policyName.toLowerCase()}`;
-  const start = sql.indexOf(marker);
+  const start = sql.lastIndexOf(marker);
   if (start < 0) {
     return "";
   }
@@ -154,6 +193,40 @@ function getPolicyBlock(sql, policyName) {
 
 function addResult(results, level, label, detail) {
   results.push({ level, label, detail });
+}
+
+function hasCommunityImageOwnerPathConstraint(block) {
+  return (
+    block.includes("bucket_id = 'community-images'") &&
+    block.includes("to authenticated") &&
+    block.includes("app.is_permanent_user()") &&
+    block.includes("name like") &&
+    block.includes("(select auth.uid())::text || '/%'") &&
+    !block.includes("current_device_id")
+  );
+}
+
+function hasFamilyScopePolicyConstraint(block, tableName) {
+  const hasInlineFamilyMemberCheck =
+    block.includes("family_group_id is null") &&
+    block.includes("family_group_id is not null") &&
+    block.includes("from public.family_members m") &&
+    block.includes(`m.family_group_id = ${tableName}.family_group_id`) &&
+    block.includes("(select auth.uid())") &&
+    !block.includes("current_device_id");
+  const hasNonRecursiveFamilyMemberCheck =
+    block.includes("family_group_id is null") &&
+    block.includes("family_group_id is not null") &&
+    block.includes(`public.is_current_family_member(${tableName}.family_group_id)`) &&
+    block.includes("(select auth.uid())") &&
+    !block.includes("current_device_id");
+
+  return (
+    hasInlineFamilyMemberCheck ||
+    (hasNonRecursiveFamilyMemberCheck &&
+      sql.includes("create or replace function public.is_current_family_member") &&
+      sql.includes("security definer"))
+  );
 }
 
 const results = [];
@@ -189,20 +262,25 @@ for (const tableName of requiredTables) {
   }
 }
 
-for (const policyName of guestDevicePolicies) {
+for (const policyName of signedOwnershipPolicies) {
   const block = getPolicyBlock(sql, policyName);
   if (!block) {
     continue;
   }
 
-  if (block.includes("(select auth.uid())") && block.includes("(select app.current_device_id())")) {
-    addResult(results, "pass", `${policyName} ownership`, "uses cached auth uid and current device id");
+  if (
+    block.includes("to authenticated") &&
+    block.includes("(select auth.uid())") &&
+    !block.includes("current_device_id") &&
+    !block.includes("request_header")
+  ) {
+    addResult(results, "pass", `${policyName} ownership`, "uses only the signed auth uid");
   } else {
     addResult(
       results,
       "fail",
       `${policyName} ownership`,
-      "must constrain both authenticated user_id and guest device_id with cached auth/app calls",
+      "must require authenticated and constrain ownership to the signed auth uid",
     );
   }
 }
@@ -217,6 +295,167 @@ for (const policyName of serviceRolePolicies) {
     addResult(results, "pass", `${policyName} role`, "restricted to service_role");
   } else {
     addResult(results, "fail", `${policyName} role`, "must be restricted to service_role");
+  }
+}
+
+for (const tableName of phaseOneTables.filter((name) => name !== "recipe_categories")) {
+  const revokePattern = new RegExp(
+    `revoke\\s+all\\s+on\\s+table\\s+public\\.${escapeRegex(tableName)}\\s+from\\s+anon,\\s*authenticated`,
+    "i",
+  );
+  if (revokePattern.test(sql)) {
+    addResult(results, "pass", `${tableName} privileges`, "direct app-role access is revoked");
+  } else {
+    addResult(results, "fail", `${tableName} privileges`, "must revoke direct anon/authenticated access");
+  }
+}
+
+const phaseOneFunctionRequirements = [
+  "create or replace function app.build_recipe_v2_snapshot",
+  "create or replace function public.capture_recipe_version",
+  "create or replace function public.restore_recipe_version",
+  "set search_path = pg_catalog, public, app",
+  "recipe_version_conflict",
+  "snapshot_recipe_mismatch",
+  "grant execute on function public.capture_recipe_version(uuid, integer, text, uuid) to service_role",
+  "grant execute on function public.restore_recipe_version(uuid, integer, integer, text, uuid) to service_role",
+  "revoke all on function public.capture_recipe_version(uuid, integer, text, uuid) from public, anon, authenticated",
+  "revoke all on function public.restore_recipe_version(uuid, integer, integer, text, uuid) from public, anon, authenticated",
+];
+if (phaseOneFunctionRequirements.every((requirement) => sql.includes(requirement))) {
+  addResult(results, "pass", "recipe version RPC", "capture and restore are optimistic and service-role only");
+} else {
+  addResult(results, "fail", "recipe version RPC", "service-role capture/restore contract is incomplete");
+}
+
+if (
+  sql.includes("add column if not exists schema_version smallint not null default 1") &&
+  sql.includes("check (schema_version in (1, 2))") &&
+  sql.includes("foreign key (recipe_step_id, recipe_id)") &&
+  sql.includes("foreign key (recipe_ingredient_id, recipe_id)")
+) {
+  addResult(results, "pass", "recipe v2 integrity", "schema promotion is explicit and step usage cannot cross recipes");
+} else {
+  addResult(results, "fail", "recipe v2 integrity", "schema version or same-recipe foreign keys are missing");
+}
+
+if (
+  sql.includes("unique (locale, normalized_alias)") &&
+  sql.includes("ingredient_aliases_normalized_matches_alias") &&
+  sql.includes("on conflict (locale, normalized_alias) do update")
+) {
+  addResult(results, "pass", "ingredient alias integrity", "aliases are normalized exact keys with one global owner");
+} else {
+  addResult(results, "fail", "ingredient alias integrity", "alias normalization and global uniqueness are required");
+}
+
+const apiRateLimitMigration = readFileSync(
+  path.join(migrationsDir, "20260710160000_add_distributed_api_rate_limits.sql"),
+  "utf8",
+).toLowerCase();
+const apiDailyRateLimitMigration = readFileSync(
+  path.join(migrationsDir, "20260716131500_allow_daily_api_rate_limit_windows.sql"),
+  "utf8",
+).toLowerCase();
+if (
+  apiRateLimitMigration.includes("primary key (route_key, key_hash, window_start)") &&
+  apiRateLimitMigration.includes("on conflict (route_key, key_hash, window_start)") &&
+  apiRateLimitMigration.includes("security definer") &&
+  apiRateLimitMigration.includes("set search_path = pg_catalog, public") &&
+  apiRateLimitMigration.includes("revoke all on function public.consume_api_rate_limit") &&
+  apiRateLimitMigration.includes("from public, anon, authenticated") &&
+  apiRateLimitMigration.includes("to service_role") &&
+  !/\bto\s+(anon|authenticated)\b/i.test(apiRateLimitMigration)
+) {
+  addResult(results, "pass", "API rate-limit RPC", "atomic counters are private and service-role only");
+} else {
+  addResult(results, "fail", "API rate-limit RPC", "atomic fixed-window RPC privileges are incomplete");
+}
+
+if (
+  apiDailyRateLimitMigration.includes("window_seconds > 86400") &&
+  apiDailyRateLimitMigration.includes("request_limit > 100000") &&
+  apiDailyRateLimitMigration.includes("set search_path = pg_catalog, public") &&
+  apiDailyRateLimitMigration.includes("from public, anon, authenticated, service_role") &&
+  apiDailyRateLimitMigration.includes("to service_role")
+) {
+  addResult(results, "pass", "API daily rate-limit RPC", "24-hour global and identity budgets are service-role only");
+} else {
+  addResult(results, "fail", "API daily rate-limit RPC", "24-hour window or least-privilege contract is incomplete");
+}
+
+const recipePublicationPolicy = getPolicyBlock(sql, "recipes_select_public");
+const publicationRequirements = [
+  "review_status = 'approved'",
+  "reviewed_for_beginner is true",
+  "actual_cooking_tested is true",
+  "food_safety_reviewed is true",
+  "image_rights_status in ('approved', 'no_image_approved')",
+  "source_id is not null",
+  "published_at is not null",
+  "jsonb_array_length(ingredients) >= 3",
+  "jsonb_array_length(steps) >= 3",
+  "jsonb_array_elements(ingredients)",
+  "jsonb_array_elements(steps)",
+  "step.value ->> 'visualcue'",
+];
+if (
+  publicationRequirements.every((requirement) => recipePublicationPolicy.includes(requirement)) &&
+  !recipePublicationPolicy.includes("using (true)")
+) {
+  addResult(results, "pass", "recipes publication gate", "anon reads require approved, sourced, reviewed content");
+} else {
+  addResult(
+    results,
+    "fail",
+    "recipes publication gate",
+    "anon reads must require complete approval, source, rights, safety, and cooking-test evidence",
+  );
+}
+
+const recipeSourcePublicationPolicy = getPolicyBlock(sql, "recipe_sources_select_public");
+if (
+  recipeSourcePublicationPolicy.includes("exists") &&
+  recipeSourcePublicationPolicy.includes("from public.recipes") &&
+  recipeSourcePublicationPolicy.includes("recipes.source_id = recipe_sources.id") &&
+  !recipeSourcePublicationPolicy.includes("using (true)")
+) {
+  addResult(results, "pass", "recipe sources publication gate", "only sources referenced by public recipes are readable");
+} else {
+  addResult(
+    results,
+    "fail",
+    "recipe sources publication gate",
+    "anon source reads must be limited to sources referenced by public recipes",
+  );
+}
+
+for (const tableName of ["ingredients", "shopping_items"]) {
+  const columnPattern = new RegExp(
+    `alter\\s+table\\s+public\\.${tableName}\\s+add\\s+column\\s+if\\s+not\\s+exists\\s+family_group_id\\s+uuid`,
+    "i",
+  );
+  if (columnPattern.test(sql)) {
+    addResult(results, "pass", `${tableName}.family_group_id`, "family scope column migration exists");
+  } else {
+    addResult(results, "fail", `${tableName}.family_group_id`, "family scope column migration is missing");
+  }
+
+  for (const policyName of requiredPolicies[tableName]) {
+    const block = getPolicyBlock(sql, policyName);
+    if (!block) {
+      continue;
+    }
+    if (hasFamilyScopePolicyConstraint(block, tableName)) {
+      addResult(results, "pass", `${policyName} family scope`, "family rows are constrained to family_members");
+    } else {
+      addResult(
+        results,
+        "fail",
+        `${policyName} family scope`,
+        "family scoped rows must remain readable/writable only by family_members",
+      );
+    }
   }
 }
 
@@ -252,6 +491,46 @@ if (
   );
 }
 
+if (
+  sql.includes("insert into storage.buckets") &&
+  sql.includes("'community-images'") &&
+  sql.includes("file_size_limit") &&
+  sql.includes("allowed_mime_types") &&
+  sql.includes("array['image/png', 'image/jpeg', 'image/webp']")
+) {
+  addResult(results, "pass", "community-images bucket", "bucket has size and MIME restrictions in SQL");
+} else {
+  addResult(
+    results,
+    "fail",
+    "community-images bucket",
+    "must declare size and MIME restrictions for the community image bucket",
+  );
+}
+
+for (const policyName of [
+  "community_images_insert_own_path",
+  "community_images_update_own_path",
+  "community_images_delete_own_path",
+]) {
+  const block = getPolicyBlock(sql, policyName);
+  if (!block) {
+    addResult(results, "fail", policyName, "community image storage write policy is missing");
+    continue;
+  }
+
+  if (hasCommunityImageOwnerPathConstraint(block)) {
+    addResult(results, "pass", policyName, "storage writes require permanent auth uid paths");
+  } else {
+    addResult(
+      results,
+      "fail",
+      policyName,
+      "must require a permanent signed user and an auth.uid path prefix",
+    );
+  }
+}
+
 const failures = results.filter((item) => item.level === "fail");
 const passes = results.filter((item) => item.level === "pass");
 
@@ -273,3 +552,6 @@ console.log("- required tables have RLS enabled in SQL");
 console.log("- required ownership and service-role policies are present");
 console.log("- partner_links is read-only for anon/authenticated users");
 console.log("- family invite-code RPC contract is present");
+console.log("- family fridge and shopping rows are member-scoped");
+console.log("- community image storage writes are owner/path constrained");
+console.log("- recipe and source reads are publication-gated");

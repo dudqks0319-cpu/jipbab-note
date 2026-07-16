@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { getDeviceId } from "@/lib/device-id";
 import { getSupabaseClient } from "@/lib/supabase";
+import { isPermanentSupabaseUser } from "@/lib/supabase-session";
 import type {
   CommunityCommentPayload,
   CommunityCommentRecord,
@@ -39,16 +40,6 @@ interface UseCommunityState {
 
 function createCommunityError(message: string, source: CommunityQueryError["source"]): CommunityQueryError {
   return { message, source };
-}
-
-function normalizeMessage(value: unknown, fallback: string): string {
-  if (value instanceof Error && value.message.trim()) {
-    return value.message;
-  }
-  if (typeof value === "string" && value.trim()) {
-    return value;
-  }
-  return fallback;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -106,9 +97,9 @@ function isMissingColumnError(value: unknown): boolean {
   return message.includes("column") && message.includes("does not exist");
 }
 
-function createCommunityClient(deviceId: string): SupabaseClient | null {
+function createCommunityClient(): SupabaseClient | null {
   try {
-    return getSupabaseClient({ deviceId });
+    return getSupabaseClient();
   } catch {
     return null;
   }
@@ -145,7 +136,7 @@ async function resolveViewer(client: SupabaseClient | null, deviceId: string): P
   }
 
   const { data, error } = await client.auth.getUser();
-  if (error || !data.user) {
+  if (error || !isPermanentSupabaseUser(data.user)) {
     return {
       userId: null,
       deviceId,
@@ -499,7 +490,7 @@ export function useCommunity(): UseCommunityResult {
     setLoading(true);
     setError(null);
 
-    const client = createCommunityClient(deviceId);
+    const client = createCommunityClient();
     if (!client) {
       loadLocalFallback("Supabase 환경변수가 없어 로컬 모드로 동작합니다.");
       setLoading(false);
@@ -539,7 +530,7 @@ export function useCommunity(): UseCommunityResult {
       if (isMissingTableError(caught)) {
         loadLocalFallback("커뮤니티 테이블이 아직 없어 로컬 모드로 동작합니다.");
       } else {
-        loadLocalFallback(normalizeMessage(caught, "커뮤니티 데이터를 불러오지 못해 로컬 모드로 전환했습니다."));
+        loadLocalFallback("커뮤니티 데이터를 불러오지 못해 로컬 모드로 전환했습니다.");
       }
     } finally {
       setLoading(false);
@@ -557,7 +548,7 @@ export function useCommunity(): UseCommunityResult {
       setWriting(true);
       setError(null);
 
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         const actor = await resolveViewer(client, deviceId);
@@ -613,7 +604,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에 글을 저장했습니다."
-          : normalizeMessage(caught, "글 저장 실패로 로컬에 임시 저장했습니다.");
+          : "글 저장 실패로 로컬에 임시 저장했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return localRecord;
@@ -643,7 +634,7 @@ export function useCommunity(): UseCommunityResult {
         return null;
       }
 
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         if (!client) {
@@ -701,7 +692,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에서 수정했습니다."
-          : normalizeMessage(caught, "글 수정 실패로 로컬 반영만 완료했습니다.");
+          : "글 수정 실패로 로컬 반영만 완료했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return nextRecord;
@@ -709,7 +700,7 @@ export function useCommunity(): UseCommunityResult {
         setWriting(false);
       }
     },
-    [commitState, deviceId],
+    [commitState],
   );
 
   const deletePost = useCallback(
@@ -725,7 +716,7 @@ export function useCommunity(): UseCommunityResult {
         return false;
       }
 
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         if (!client) {
@@ -768,7 +759,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에서 삭제했습니다."
-          : normalizeMessage(caught, "삭제 실패로 로컬 상태에서만 제거했습니다.");
+          : "삭제 실패로 로컬 상태에서만 제거했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return true;
@@ -776,7 +767,7 @@ export function useCommunity(): UseCommunityResult {
         setWriting(false);
       }
     },
-    [commitState, deviceId],
+    [commitState],
   );
 
   const createComment = useCallback(
@@ -790,7 +781,7 @@ export function useCommunity(): UseCommunityResult {
       setWriting(true);
       setError(null);
 
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         const actor = await resolveViewer(client, deviceId);
@@ -845,7 +836,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에 댓글을 저장했습니다."
-          : normalizeMessage(caught, "댓글 저장 실패로 로컬에 임시 저장했습니다.");
+          : "댓글 저장 실패로 로컬에 임시 저장했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return localRecord;
@@ -870,7 +861,7 @@ export function useCommunity(): UseCommunityResult {
         return false;
       }
 
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         if (!client) {
@@ -903,7 +894,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에서 댓글을 삭제했습니다."
-          : normalizeMessage(caught, "댓글 삭제 실패로 로컬 상태에서만 제거했습니다.");
+          : "댓글 삭제 실패로 로컬 상태에서만 제거했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return true;
@@ -911,7 +902,7 @@ export function useCommunity(): UseCommunityResult {
         setWriting(false);
       }
     },
-    [commitState, deviceId],
+    [commitState],
   );
 
   const toggleLike = useCallback(
@@ -921,7 +912,7 @@ export function useCommunity(): UseCommunityResult {
 
       const actor = viewerRef.current;
       const existingLocalLike = likesRef.current.find((like) => like.postId === postId && isLikeOfViewer(like, actor));
-      const client = createCommunityClient(deviceId);
+      const client = createCommunityClient();
 
       try {
         if (!client) {
@@ -1027,7 +1018,7 @@ export function useCommunity(): UseCommunityResult {
 
         const fallbackMessage = isMissingTableError(caught)
           ? "커뮤니티 테이블이 없어 로컬에서 좋아요를 처리했습니다."
-          : normalizeMessage(caught, "좋아요 처리 실패로 로컬 상태만 반영했습니다.");
+          : "좋아요 처리 실패로 로컬 상태만 반영했습니다.";
 
         setError(createCommunityError(fallbackMessage, "supabase"));
         return nextLikedState;
@@ -1035,11 +1026,11 @@ export function useCommunity(): UseCommunityResult {
         setWriting(false);
       }
     },
-    [commitState, deviceId],
+    [commitState],
   );
 
   useEffect(() => {
-    const client = createCommunityClient(deviceId);
+    const client = createCommunityClient();
     if (!client) {
       updateViewer({
         userId: null,

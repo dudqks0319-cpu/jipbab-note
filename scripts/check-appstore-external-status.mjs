@@ -9,6 +9,10 @@ const checks = [
     },
   },
   {
+    label: "Supabase Storage path policy",
+    args: ["scripts/check-supabase-storage-live.mjs"],
+  },
+  {
     label: "OAuth provider start/callback boundary",
     args: ["scripts/check-oauth-live.mjs"],
   },
@@ -27,6 +31,14 @@ const checks = [
   {
     label: "iOS real-device availability",
     args: ["scripts/check-real-device-availability.mjs", "--platform=ios"],
+  },
+  {
+    label: "iOS cable QA evidence",
+    args: ["scripts/check-ios-cable-qa-evidence.mjs"],
+  },
+  {
+    label: "iOS XCUITest smoke evidence",
+    args: ["scripts/check-ios-xcuitest-smoke-evidence.mjs"],
   },
   {
     label: "iOS real-device QA evidence",
@@ -72,7 +84,7 @@ const passed = results.filter((result) => result.status === "pass");
 const blocked = results.filter((result) => result.status !== "pass");
 
 console.log("App Store external release status");
-console.log("This command checks iOS/App Store blockers only; it does not validate Play Console readiness.");
+console.log("This command checks shared production blockers and iOS/App Store blockers only; it does not validate Play Console readiness.");
 console.log(`Passed: ${passed.length}`);
 console.log(`Blocked: ${blocked.length}`);
 

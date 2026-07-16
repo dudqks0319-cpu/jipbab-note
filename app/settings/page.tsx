@@ -107,9 +107,8 @@ export default function SettingsPage() {
         const result = await generateWithGemma(gemmaPrompt)
         setGemmaAnswer(result.text)
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gemma 실행 중 오류가 발생했습니다.'
-      setGemmaError(message)
+    } catch {
+      setGemmaError('온디바이스 추천을 실행하지 못했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setGemmaBusy(null)
     }
@@ -137,8 +136,8 @@ export default function SettingsPage() {
           ? '브라우저 알림'
           : '앱 내 예약 원장'
       setNotificationMessage(`${modeLabel}으로 ${result.jobs.length}개 알림을 준비했어요.`)
-    } catch (error) {
-      setNotificationMessage(error instanceof Error ? error.message : '알림 예약 중 오류가 발생했습니다.')
+    } catch {
+      setNotificationMessage('알림을 예약하지 못했습니다. 알림 권한과 기기 설정을 확인해주세요.')
     } finally {
       setNotificationBusy(false)
     }
@@ -148,7 +147,7 @@ export default function SettingsPage() {
     <div className="min-h-full bg-[#fbf6ee] pb-6">
       <section className="mobile-safe-top px-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-center">
-          <Link href="/mypage" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
+          <Link href="/mypage" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="마이페이지로 돌아가기">
             <ChevronLeft size={18} />
           </Link>
           <h1 className="text-center text-[16px] font-black text-[#2f2117]">설정</h1>
@@ -192,7 +191,7 @@ export default function SettingsPage() {
                 key={item.day}
                 type="button"
                 onClick={() => toggleExpiryReminderDay(item.day)}
-                className={`min-h-10 rounded-[12px] border px-2 text-[12px] font-black ${
+                className={`min-h-11 rounded-[12px] border px-2 text-[12px] font-black ${
                   settings.expiryReminderDays.includes(item.day)
                     ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
                     : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'

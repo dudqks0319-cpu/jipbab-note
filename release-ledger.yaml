@@ -1,0 +1,1052 @@
+schema_version: 1
+
+project:
+  name: "집밥노트"
+  slug: "jipbab-note"
+  platforms:
+    - "web"
+    - "capacitor-ios"
+    - "capacitor-android"
+    - "cloudflare-workers"
+  owner: "me"
+  release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
+
+candidate:
+  phase: "production_cost_abuse_guard_and_daily_rate_limit_verified"
+  version: "1.0"
+  build_number: "2026062602"
+  git_sha: "23847f97fb52470ca16f2fc6fa38cd7cd3ea3461"
+  branch: "agent/sync-ux-release"
+  dirty_state: "clean_runtime_candidate_production_deployed_and_ledgered"
+  source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
+
+cost_abuse_guard_20260716:
+  implementation_sha: "0d1e6b88ad93f85be27da7e4627a4cccee9ad40b"
+  compatibility_fix_sha: "23847f97fb52470ca16f2fc6fa38cd7cd3ea3461"
+  production_migration: "20260716131500_allow_daily_api_rate_limit_windows.sql"
+  production_migration_status: "applied_and_local_remote_history_matched"
+  migration_history_count: 41
+  migration_dry_run_after_apply: "remote_database_up_to_date"
+  ops_backup_reverified: true
+  rollback_sql: "supabase/rollbacks/20260716131500_allow_daily_api_rate_limit_windows.sql"
+  rollback_policy: "restore_one_hour_max_without_drop_truncate_or_counter_deletion"
+  initial_incompatible_deployment_result: "rolled_back_after_daily_window_rpc_returned_fail_closed_503"
+  restored_deployment_id: "dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv"
+  production_deployment_id: "dpl_3jKPxBHvPBXKYpVojYYrm9BhSNeR"
+  production_deployment_url: "https://jipbab-note-ceey0jbux-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  production_status: "READY"
+  production_recipe_list_http: 200
+  production_invalid_barcode_http: 400
+  production_unsigned_product_http: 401
+  production_cost_guard_header: "active"
+  production_error_log_count_in_verification_window: 0
+  production_fatal_log_count_in_verification_window: 0
+  static_contract: "22_of_22_pass"
+  github_code_and_static_release_gates: "pass"
+  vercel_preview_gate: "pass"
+  application_guards_operational: true
+  provider_account_budget_cap_verified: false
+  edge_waf_distributed_bot_controls_verified: false
+  unresolved_external_controls: "provider budget alerts and edge WAF evidence required before claiming full account-level cost protection"
+
+phase0_baseline:
+  audited_at: "2026-07-10 KST"
+  canonical_repo_candidate: "https://github.com/dudqks0319-cpu/jipbab-note"
+  github_default_branch: "main"
+  github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
+  release_branch: "ux/home-today-action-v2"
+  release_sha: "efd86133c12bb509bb8eedbd033bfed98d24b250"
+  default_branch_behind_release_by: 33
+  vercel_project: "youngbeens-projects/jipbab-note-app"
+  vercel_linked_repo: "dudqks0319-cpu/jipbab-note-app"
+  vercel_production_branch: "main"
+  vercel_deployment_id: "dpl_GEJgsnCvRuofgWg82z74Wdw2UR9K"
+  production_domain: "https://jipbab-note-app.vercel.app"
+  supabase_project_ref: "xqelabiwtjntwrjqcteo"
+  live_recipe_count: 1152
+  recipe_source_count: 0
+  plan_gate_eligible_recipe_count: 0
+  external_alignment_status: "decision_required"
+  inventory: "docs/recipe-inventory.csv"
+  source_ledger: "docs/recipe-source-ledger.csv"
+
+source_alignment_20260715:
+  reaudited_at: "2026-07-16 KST"
+  canonical_repo: "https://github.com/dudqks0319-cpu/jipbab-note"
+  canonical_repo_vercel_clone_verified: true
+  canonical_repo_vercel_clone_evidence_deployment: "dpl_GUViZ6f3SEe7zVeWXQnqcyzpc1b5"
+  github_default_branch: "main"
+  github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
+  candidate_branch: "agent/sync-ux-release"
+  candidate_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  candidate_branch_remote_head_at_reaudit_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  candidate_remote_head_matches: true
+  candidate_runtime_sha_is_remote_ancestor: true
+  latest_successful_exact_preview_sha_is_remote_ancestor: true
+  candidate_remote_head_note: "062df1b is the clean runtime candidate deployed to Production; a documentation-only follow-up may advance the branch without changing runtime code"
+  candidate_to_main_open_pr: true
+  candidate_to_main_pr_number: 9
+  candidate_to_main_pr_url: "https://github.com/dudqks0319-cpu/jipbab-note/pull/9"
+  candidate_to_main_pr_draft: true
+  candidate_to_main_pr_initial_head_sha: "69f18cbee06fc6ad11ca896fa20041826a7efbc8"
+  candidate_to_main_pr_commit_count_at_open: 102
+  candidate_to_main_pr_file_count_at_open: 2586
+  candidate_to_main_pr_merge_tree_conflict_count: 0
+  candidate_to_main_pr_initial_checks: "release_gate_and_vercel_passed_at_runtime_sha_062df1b"
+  unrelated_toddler_draft_pr_number: 4
+  unrelated_toddler_draft_pr_base: "ux/home-today-action-v2"
+  unrelated_toddler_draft_pr_checks: "failing_keep_separate_from_release_candidate"
+  linked_supabase_project_ref: "xqelabiwtjntwrjqcteo"
+  migration_history_reaudit_local_remote_count: 40
+  migration_history_reaudit_latest_version: "20260715135424"
+  migration_history_reaudit_dry_run: "remote_database_up_to_date_no_pending_sql"
+  ops_backup_reaudit_command: "supabase inspect db table-stats --linked"
+  ops_backup_reaudit_status: "verified_live_read_only"
+  ops_backup_recipe_rows: 1152
+  ops_backup_signed_session_ingredient_rows: 51
+  ops_backup_signed_session_shopping_rows: 18
+  ops_backup_signed_session_policy_rows: 36
+  ops_backup_signed_session_function_rows: 8
+  ops_backup_category_fix_rows: "20_and_1"
+  sync_coalescing_candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_candidate_remote_head_matches_before_docs: true
+  sync_coalescing_candidate_preview_status: "verified_in_exact_git_preview_head_cce0098"
+  sync_coalescing_candidate_preview_error_code: "api-deployments-free-per-day"
+  sync_coalescing_candidate_preview_retry_after: "24_hours_or_after_quota_reset"
+  sync_coalescing_candidate_preview_deployment_id: "dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
+  sync_coalescing_candidate_production_promoted: false
+  home_recipe_first_candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  home_recipe_first_candidate_local_runtime_status: "verified_chrome_recipe_cards_before_fridge"
+  home_recipe_first_candidate_preview_status: "verified_exact_git_preview_recipe_cards_before_fridge"
+  home_recipe_first_candidate_production_promoted: false
+  home_recipe_first_preview_deployment_id: "dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
+  home_recipe_first_preview_url: "https://jipbab-note-587urq4he-youngbeens-projects.vercel.app"
+  home_recipe_first_preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
+  home_recipe_first_preview_status: "READY"
+  home_recipe_first_preview_source: "git"
+  home_recipe_first_preview_metadata_git_sha: "cce0098901e88feb935759f5563116cff3dcfb9f"
+  home_recipe_first_preview_metadata_git_ref: "agent/sync-ux-release"
+  home_recipe_first_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
+  home_recipe_first_preview_recipe_first_order_verified: true
+  home_recipe_first_preview_recipe_top_px: 325.15
+  home_recipe_first_preview_fridge_top_px: 766.65
+  home_recipe_first_preview_recipe_count: 20
+  home_recipe_first_preview_reload_persistence: "verified_egg_tofu"
+  home_recipe_first_preview_sync_copy: "클라우드 동기화 완료"
+  home_recipe_first_preview_sync_delay_visible: false
+  home_recipe_first_preview_production_promoted: false
+  home_recipe_immediate_candidate_git_sha: "01e9895a20ae0dc1243a19f776753289ee05dce2"
+  home_recipe_immediate_preview_deployment_id: "dpl_2bw49EivkL5wJSEWo8TkqT7zGRLg"
+  home_recipe_immediate_preview_url: "https://jipbab-note-26cc8f9eq-youngbeens-projects.vercel.app"
+  home_recipe_immediate_preview_status: "READY"
+  home_recipe_immediate_preview_source: "git"
+  home_recipe_immediate_preview_metadata_git_ref: "agent/sync-ux-release"
+  home_recipe_immediate_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
+  home_recipe_immediate_preview_initial_cards: 2
+  home_recipe_immediate_preview_loading_copy_count: 0
+  home_recipe_immediate_preview_skeleton_count: 0
+  home_recipe_immediate_preview_recipe_before_fridge: true
+  home_recipe_immediate_preview_sync_delay_visible: false
+  home_recipe_immediate_preview_console_warning_error_count: 0
+  home_recipe_immediate_preview_production_promoted: false
+  exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
+  exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
+  exact_sha_preview_status: "READY"
+  exact_sha_preview_source: "cli_with_explicit_github_commit_metadata"
+  exact_sha_preview_metadata_git_sha: "0f0aab0ec42c5defe8b7897648e37c0b5bf3cef1"
+  exact_sha_preview_metadata_git_ref: "agent/sync-ux-release"
+  exact_sha_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
+  exact_sha_preview_recipe_http: 200
+  exact_sha_preview_recipe_count: 20
+  exact_sha_preview_mobile_widths: "360,390,430"
+  exact_sha_preview_horizontal_overflow: 0
+  exact_sha_preview_lock_verified: true
+  exact_sha_preview_vercel_error_log_count: 0
+  exact_sha_preview_screenshot: "output/ui-evidence/phase6-accessibility-home-390-cdp.png"
+  exact_sha_preview_api_status: 503
+  exact_sha_preview_api_hmac_status: "registered_preview_encrypted_value_not_logged"
+  exact_sha_preview_api_status_reason: "preview_hmac_ready_but_isolated_supabase_server_dependency_not_configured_fail_closed"
+  exact_sha_preview_production_service_role_copied: false
+  production_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  production_deployment_id: "dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp"
+  production_deployment_url: "https://jipbab-note-na24ds4wi-youngbeens-projects.vercel.app"
+  production_promoted: true
+  production_sync_browser_status: "cloud_sync_complete_pending_zero_egg_tofu_persisted"
+  production_safe_preview_count: 10
+  production_browser_console_warning_error_count: 0
+  alignment_status: "production_matches_runtime_candidate_protected_main_integration_pending"
+
+publication_gate:
+  migration: "20260710130000_gate_recipe_publication.sql"
+  rollback: "supabase/rollbacks/20260710130000_gate_recipe_publication.sql"
+  local_code_status: "verified"
+  production_migration_status: "recorded_and_live_schema_verified_20260715"
+  production_deploy_status: "code_deployed_and_database_gate_verified"
+  local_public_recipe_count: 0
+  production_plan_gate_eligible_recipe_count: 0
+  policy: "approved_with_beginner_actual_cooking_food_safety_image_rights_source_and_complete_v2_content_only"
+  browser_evidence: "output/ui-evidence/2026-07-10-publication-empty-home-390.png"
+
+signed_guest_auth:
+  migration: "20260710140000_replace_device_guest_auth_with_signed_sessions.sql"
+  rollback: "supabase/rollbacks/20260710140000_replace_device_guest_auth_with_signed_sessions.sql"
+  design: "docs/guest-session-security.md"
+  local_code_status: "verified"
+  production_migration_status: "applied_20260715101553_with_prerequisites_and_hardening"
+  production_deploy_status: "production_promoted_and_browser_sync_verified_at_062df1b"
+  anonymous_auth_feature_flag_default: false
+  preview_anonymous_auth_feature_flag: true
+  ownership_contract: "verified_supabase_auth_uid_only"
+  permanent_user_only_features: "family,community_writes,recipe_comments,community_images,account_operations"
+  legacy_null_user_rows: "preserved_ingredients_51_shopping_18_not_claimed_by_device_id"
+  browser_sync_status: "verified_8_signed_ingredients_reload_persistence_pending_zero"
+  signed_user_count: 1
+  app_helper_search_path_migration: "20260715120555_fix_app_helper_search_paths_20260715"
+  app_helper_search_path_status: "production_applied_current_device_pg_catalog_permanent_user_pg_catalog_auth"
+  mutable_search_path_advisor_count: 0
+  post_search_path_migration_regression: "production_api_200_preview_recipes_8_cloud_sync_complete_2_ingredients"
+  ingredient_category_migrations:
+    - "20260715121727_fix_legacy_ingredient_categories_20260715"
+    - "20260715121937_enforce_canonical_egg_tofu_categories_20260715"
+
+phase1_recipe_data:
+  schema_migration: "20260710150000_add_recipe_v2_schema_and_versioning.sql"
+  catalog_seed_migration: "20260710151000_seed_phase1_ingredient_catalog.sql"
+  production_catalog_backup_migration: "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715"
+  production_catalog_seed_migration: "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715"
+  rollback: "supabase/rollbacks/20260710150000_add_recipe_v2_schema_and_versioning.sql"
+  local_contract_status: "verified_28_of_28"
+  production_migration_status: "schema_and_reconciled_catalog_seed_recorded_live_verified"
+  staging_execution_status: "production_catalog_seed_verified_history_repaired"
+  canonical_category_count: 15
+  ingredient_catalog_count: 173
+  exact_alias_count: 258
+  duplicate_alias_count: 0
+  canonical_egg_category: "육류"
+  canonical_tofu_category: "통조림/가공식품"
+  catalog_app_role_select_privileges: 0
+  live_dry_run_recipe_count: 1152
+  live_v2_candidate_count: 0
+  live_legacy_string_ingredient_count: 1148
+  live_complete_step_v2_count: 0
+  evidence: "docs/phase-1-migration-dry-run.md"
+
+phase2_api_v1:
+  rate_limit_migration: "20260710160000_add_distributed_api_rate_limits.sql"
+  rollback: "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql"
+  operations: "docs/api-v1-operations.md"
+  report: "docs/phase-2-api-v1-report.md"
+  local_contract_status: "verified_14_of_14"
+  focused_test_status: "verified_21_of_21"
+  runtime_negative_path_status: "verified_400_413_429_503"
+  production_fail_closed_status: "verified_recipe_list_200_empty_approved_result_no_store_request_id"
+  production_migration_status: "rate_limit_migration_recorded_and_live_schema_present"
+  staging_healthy_path_status: "blocked_no_reconciled_postgres_and_no_reviewed_v2_fixture"
+  production_deploy_status: "active_production_code_and_empty_approved_api_verified"
+  server_secret_status: "registered_on_active_production_project_value_not_logged"
+  endpoint_count: 3
+  public_v2_candidate_count: 0
+
+phase3_frontend_api_v1:
+  report: "docs/phase-3-frontend-integration-report.md"
+  debug_audit: "docs/phase-3-debug-audit.md"
+  local_code_status: "verified"
+  home_data_path: "api_v1_exact_ingredient_ids_no_curated_fallback"
+  list_data_path: "api_v1_cursor_sort_filter_url_state"
+  detail_data_path: "api_v1_normalized_ingredients_steps_safety_source"
+  canonical_category_count: 15
+  unit_test_status: "verified_full_suite_339_of_339"
+  production_build_status: "verified_38_pages_and_routes"
+  cloudflare_build_status: "verified_opennext_worker_bundle"
+  ci_static_gate_status: "verified_12_of_12"
+  local_release_gate_status: "verified_11_of_11"
+  security_gate_status: "verified"
+  mobile_negative_path_status: "verified_360_390_430"
+  mobile_detail_unavailable_status: "verified_390"
+  staging_healthy_path_status: "blocked_no_reconciled_postgres_no_hmac_secret_no_reviewed_v2_fixture"
+  production_deploy_status: "deployed_dependency_blocked"
+  evidence:
+    - "output/ui-evidence/phase3-recipe-360.png"
+    - "output/ui-evidence/phase3-recipe-390.png"
+    - "output/ui-evidence/phase3-recipe-430.png"
+    - "output/ui-evidence/phase3-detail-unavailable-390.png"
+
+phase4_cook_mode:
+  report: "docs/phase-4-cook-mode-report.md"
+  local_code_status: "verified"
+  timer_contract: "absolute_deadline_structured_seconds"
+  app_return_status: "verified_time_recalculation_in_browser_and_unit_driver"
+  local_progress_status: "verified_recipe_scoped_versioned_restore"
+  wake_lock_status: "implemented_browser_capability_guarded"
+  completion_signal_status: "implemented_audio_vibration_and_aria_live"
+  completion_feedback_status: "verified_local_restore"
+  unit_test_status: "verified_full_suite_343_of_343"
+  production_build_status: "verified_38_pages_and_routes"
+  mobile_harness_status: "verified_then_removed"
+  real_v2_detail_status: "blocked_no_reviewed_v2_fixture"
+  real_device_background_status: "blocked_device_qa_required"
+  server_progress_sync_status: "not_implemented_product_decision_required"
+  production_deploy_status: "deployed_real_device_qa_pending"
+  evidence: "output/ui-evidence/phase4-cook-mode-restored-390.png"
+
+phase5_core20:
+  base_content_git_sha: "b3774145285077290c04c2d91515f12981beb4f3"
+  evidence_preservation_git_sha: "992e2ced41db4df47c4b5dff1182d630ca2425d5"
+  human_evidence_gate_git_sha: "1d77369b6c9ca55cb0278f0183256e1f71aab668"
+  implementation_git_sha: "3d01c1b13627265b38429d6736c12e7e55bc5795"
+  audit: "docs/phase-5-core-20-audit.md"
+  audit_csv: "docs/phase-5-core-20-audit.csv"
+  actual_cooking_template: "docs/phase-5-actual-cooking-template.csv"
+  human_review_template: "docs/phase-5-human-review-template.csv"
+  human_testing_runbook: "docs/phase-5-human-testing-runbook.md"
+  human_evidence_check_command: "pnpm check:phase5-human-evidence"
+  selected_recipe_count: 20
+  exact_or_named_variant_count: 16
+  substitute_count: 4
+  automatic_editorial_score_90_plus_count: 20
+  local_bitmap_present_count: 20
+  actual_cooking_evidence_count: 0
+  beginner_human_review_count: 0
+  food_safety_human_review_count: 0
+  legal_source_human_review_count: 0
+  image_rights_human_review_count: 0
+  approved_for_publication_count: 0
+  detailed_recipe_rewrites: "프라이팬 계란말이, 돼지고기 김치찌개, 된장찌개, 감자조림, 두부조림, 참치김치볶음밥"
+  phase5_test_status: "verified_core_9_of_9_and_human_evidence_contract_9_of_9"
+  full_unit_test_status: "verified_362_of_362"
+  content_gate_status: "verified"
+  production_build_status: "verified_current_checkpoint_next_16_2_6_turbopack_38_of_38_routes"
+  last_verified_build_status: "phase5_3d01c1b_38_routes"
+  secret_hygiene_status: "verified_no_tracked_env_or_release_secret_files"
+  dependency_audit_status: "verified_no_known_production_vulnerabilities_at_moderate_or_higher_dependencies_and_lockfile_unchanged"
+  publication_status: "blocked_missing_human_evidence_and_db_source_links"
+  human_evidence_status: "expected_blocked_actual_cooking_0_beginner_0_food_safety_0_legal_source_0_image_rights_0_publication_0_invalid_records_0"
+  actual_cooking_template_preservation: "verified_append_only_attempts_preserved_latest_attempt_controls_current_decision"
+  release_gate_status: "11_pass_1_expected_fail_phase5_human_evidence"
+  goal_gate_status: "phase5_human_evidence_missing_goal_not_complete"
+
+phase5_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  deployed_git_sha: "be66b5f6abacadd48c5b8cf7de6c26afe7652c29"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_EZdssB9T4Zv3FQCSrW6oQCnpq2Fq"
+  deployment_url: "https://jipbab-note-cjbhtp2a0-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_and_db_source_links_missing"
+
+phase6_quality_security:
+  implementation_git_sha: "c5e06f4d7771fc88529e789319f0145024548c22"
+  report: "docs/phase-6-security-definer-review.md"
+  accessibility_implementation_git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
+  accessibility_report: "docs/phase-6-mobile-accessibility-report.md"
+  accessibility_static_status: "verified_214_tags_8_contracts_zero_failures"
+  accessibility_runtime_status: "verified_exact_360_390_430"
+  accessibility_runtime_visible_controls_per_width: 17
+  accessibility_runtime_undersized_controls: 0
+  accessibility_runtime_horizontal_overflow: 0
+  accessibility_zoom_status: "verified_enabled"
+  accessibility_skip_link_status: "verified_visible_on_focus_44px"
+  reduced_motion_status: "verified"
+  home_lcp_hint_status: "verified_warning_resolved"
+  e2e_implementation_git_sha: "1c91aa814ffc80182b73d390c768e574aaf25c51"
+  e2e_report: "docs/phase-6-e2e-report.md"
+  e2e_static_contract_status: "verified_8_of_8"
+  e2e_negative_runtime_status: "verified_12_of_12"
+  e2e_guest_ingredient_persistence_status: "verified_fresh_profile_and_reload"
+  e2e_demo_recipe_api_request_count: 0
+  e2e_full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
+  e2e_offline_status: "blocked_real_device_and_offline_harness_required"
+  e2e_preview_deploy_status: "deployed_ready_verified_12_of_12"
+  performance_implementation_git_sha: "1c2d353237220153aa943dbbc76dad1cfc9ea7fd"
+  performance_report: "docs/phase-6-performance-report.md"
+  performance_static_contract_status: "verified_11_of_11"
+  performance_runtime_profile: "390x844_cpu4x_1_6mbps_750kbps_150ms_rtt_three_cold_runs"
+  performance_guest_home_lcp_p75_ms: 1240
+  performance_recipe_list_lcp_p75_ms: 876
+  performance_shopping_lcp_p75_ms: 1736
+  performance_max_cls_p75: 0.0412
+  performance_interaction_p75_ms: 40
+  performance_search_input_p75_ms: 34.1
+  performance_console_error_count: 0
+  performance_unexpected_network_error_count: 0
+  performance_field_p75_status: "blocked_insufficient_real_user_data_lab_guard_only"
+  ios_sync_fix_git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
+  ios_sync_oauth_test_status: "verified_26_of_26"
+  migration: "20260711113000_harden_security_definer_privileges.sql"
+  rollback: "supabase/rollbacks/20260711113000_harden_security_definer_privileges.sql"
+  security_definer_contract_status: "verified_14_of_14"
+  security_definer_effective_count: 11
+  removed_unused_security_definer_count: 1
+  focused_security_test_status: "verified_29_of_29"
+  full_unit_test_status: "verified_clean_checkout_ios_sync_372_of_372"
+  supabase_contract_status: "verified_146_of_146"
+  integration_status: "verified_zero_unreviewed_exposed_and_signed_session_negative_paths"
+  release_security_status: "verified_4_of_4"
+  production_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  ci_static_gate_status: "verified_15_of_15"
+  release_gate_status: "14_pass_1_expected_fail_phase5_human_evidence"
+  isolated_postgres_execution_status: "blocked_no_docker_or_psql"
+  production_migration_status: "not_applied"
+  production_deploy_status: "not_deployed"
+  accessibility_production_deploy_status: "not_deployed"
+  accessibility_preview_deploy_status: "deployed_ready"
+  p0_p1_claim: "not_complete_external_and_human_evidence_blockers_remain"
+  sync_coalescing_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_status: "verified_single_flight_with_followup_queue_scan"
+  sync_coalescing_unit_status: "verified_full_suite_412_of_412"
+  sync_coalescing_typecheck_status: "verified"
+  sync_coalescing_eslint_status: "verified_changed_files"
+  sync_coalescing_build_status: "verified_38_of_38_routes"
+  sync_coalescing_ci_static_status: "verified_15_of_15"
+  sync_coalescing_security_status: "verified_4_of_4"
+  sync_coalescing_browser_flow_status: "verified_phase6_12_of_12_on_prior_exact_sha_preview"
+  sync_coalescing_exact_preview_status: "verified_in_git_preview_dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
+  home_recipe_first_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  home_recipe_first_unit_status: "verified_full_suite_413_of_413"
+  home_recipe_first_build_status: "verified"
+  home_recipe_first_ci_static_status: "verified_15_of_15"
+  home_recipe_first_security_status: "verified_4_of_4"
+  home_recipe_first_chrome_status: "verified_recipe_cards_before_fridge_after_ingredient_save"
+  home_recipe_first_git_preview_status: "verified_ready_head_cce0098_recipe_count_20_sync_complete_reload_persistence"
+  home_recipe_immediate_git_sha: "01e9895a20ae0dc1243a19f776753289ee05dce2"
+  home_recipe_immediate_unit_status: "verified_full_suite_414_of_414"
+  home_recipe_immediate_typecheck_status: "verified"
+  home_recipe_immediate_eslint_status: "verified_changed_files"
+  home_recipe_immediate_build_status: "verified_38_of_38_routes"
+  home_recipe_immediate_ci_static_status: "verified_15_of_15"
+  home_recipe_immediate_security_status: "verified_4_of_4"
+  home_recipe_immediate_chrome_status: "verified_exact_git_preview_cards_before_loading_fallback"
+
+phase6_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  implementation_git_sha: "f9866d659804b2be04c29c46084b3085ba15bca8"
+  deployed_git_sha: "ce855a6f7ba1396513bf9d2a258850a5f44e9a25"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_2aCT3GhGL5s9Zb7B22AoJhxZgWkM"
+  deployment_url: "https://jipbab-note-chz9fy0f1-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  exact_mobile_runtime_status: "verified_360_390_430_17_controls_each_zero_undersized_zero_overflow"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
+
+phase6_e2e_vercel_preview:
+  deployed_at: "2026-07-11 KST"
+  implementation_git_sha: "1c91aa814ffc80182b73d390c768e574aaf25c51"
+  deployed_git_sha: "f90f0679821443f07ee7fd019885f89d97ef3e7d"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_BwNQjXMxLJyt3ev41Dp3JDFaefGT"
+  deployment_url: "https://jipbab-note-qg1qr7uz5-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  e2e_negative_runtime_status: "verified_12_of_12"
+  demo_recipe_api_request_count: 0
+  runtime_error_fatal_log_count: 0
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_and_production_migrations_not_applied"
+
+phase6_performance_vercel_preview:
+  deployed_at: "2026-07-13 KST"
+  performance_implementation_git_sha: "1c2d353237220153aa943dbbc76dad1cfc9ea7fd"
+  deployed_git_sha: "d25691a594cb02a832ee502f17c687d23a1250e9"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_CXQDf9vKvvo5YGAxvMarSNjMt8H4"
+  deployment_url: "https://jipbab-note-3wkvam4y5-youngbeens-projects.vercel.app"
+  target: "preview"
+  vercel_status: "READY"
+  remote_build_status: "verified_next_16_2_6_turbopack_38_of_38_routes"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  api_v1_cache_control: "no-store"
+  api_v1_request_id_present: true
+  e2e_negative_runtime_status: "verified_12_of_12"
+  performance_runtime_status: "verified_all_lab_budgets_zero_failures"
+  performance_profile: "390x844_cpu4x_1_6mbps_750kbps_150ms_rtt_three_cold_runs"
+  guest_home_lcp_p75_ms: 1240
+  recipe_list_lcp_p75_ms: 876
+  shopping_lcp_p75_ms: 1736
+  max_cls_p75: 0.0412
+  interaction_p75_ms: 40
+  search_input_p75_ms: 34.1
+  app_console_error_count: 0
+  unexpected_network_error_count: 0
+  runtime_error_log_count: 0
+  runtime_fatal_log_count: 0
+  field_p75_status: "blocked_insufficient_real_user_data_lab_guard_only"
+  full_happy_path_status: "blocked_no_publication_approved_staging_fixture"
+  production_promoted: false
+  production_promotion_blocker: "phase5_human_evidence_zero_of_twenty_migration_history_drift_production_migrations_not_applied_and_field_p75_missing"
+
+phase0_to_phase4_vercel_deployment:
+  deployed_at: "2026-07-11 KST"
+  content_git_sha: "a1b7e0f79d0e5004caac7b305e40feb3496c347d"
+  branch: "ux/home-today-action-v2"
+  deployment_id: "dpl_7HQNoLYJMnSxEShYtEJNEMYXM9Ku"
+  deployment_url: "https://jipbab-note-m34pu5z3c-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  vercel_status: "READY"
+  root_http_status: 200
+  recipe_http_status: 200
+  api_v1_http_status: 503
+  api_v1_status_reason: "expected_dependency_not_ready_until_migrations_and_hmac_secret"
+  api_v1_retry_after_seconds: 60
+  database_migrations_applied: false
+  server_hmac_secret_registered: false
+
+migration_history:
+  remote_latest_recorded: "20260715135424"
+  local_unrecorded_before_repair:
+    - "20260521160347"
+    - "20260523090000"
+    - "20260526093000"
+    - "20260527093000"
+    - "20260528010000"
+    - "20260530000000"
+    - "20260710140000"
+    - "20260710151000"
+    - "20260711113000"
+  local_unrecorded_after_repair: []
+  repaired_as_applied:
+    - "20260521160347"
+    - "20260523090000"
+    - "20260526093000"
+    - "20260527093000"
+    - "20260528010000"
+    - "20260530000000"
+    - "20260710140000"
+    - "20260710151000"
+    - "20260711113000"
+  remote_bridge_versions:
+    - "20260715101534"
+    - "20260715101553"
+    - "20260715101658"
+    - "20260715101716"
+  publication_migration_recorded_remote: true
+  signed_guest_auth_migration_recorded_remote: true
+  phase1_schema_migration_recorded_remote: true
+  phase1_catalog_seed_recorded_remote: true
+  phase1_catalog_reconciled_seed_recorded_remote: true
+  phase2_rate_limit_migration_recorded_remote: true
+  phase6_security_definer_migration_recorded_remote: true
+  app_helper_search_path_migration_recorded_remote: true
+  ingredient_category_migrations_recorded_remote: true
+  publication_live_schema_status: "verified_columns_constraints_index_rls_approved_zero_evidence_ready_zero"
+  phase01_backup_status: "verified_ops_backup_recipes_1152_sources_0_policies_8_history_19_app_role_privileges_0"
+  local_remote_version_count: 40
+  db_push_status: "dry_run_remote_database_up_to_date_no_pending_migrations"
+  reconciliation_evidence: "docs/migration-history-reconciliation-2026-07-15.md"
+
+local_checks:
+  - name: "Phase 6 performance static contract"
+    command: "pnpm check:phase6-performance"
+    status: "current_pass_11_of_11"
+    evidence: "docs/phase-6-performance-report.md"
+  - name: "Phase 6 mobile performance lab budget"
+    command: "pnpm capture:phase6-performance"
+    status: "current_pass_all_budgets_zero_failures_lab_guard_not_field_p75"
+    evidence: "output/performance-evidence/phase6-performance-lab.json"
+  - name: "iOS sync OAuth plugin registration"
+    command: "CAPACITOR_ALLOW_PLACEHOLDER=1 pnpm mobile:sync:ios then auth-config test"
+    status: "current_pass_26_of_26"
+    evidence: "scripts/sync-capacitor.mjs, tests/auth-config.test.ts"
+  - name: "Phase 6 E2E static contract"
+    command: "pnpm check:phase6-e2e-contract"
+    status: "current_pass_8_of_8"
+    evidence: "docs/phase-6-e2e-report.md"
+  - name: "Phase 6 guest and fail-closed browser E2E"
+    command: "pnpm capture:phase6-e2e-negative"
+    status: "current_pass_12_of_12_full_happy_path_blocked"
+    evidence: "output/ui-evidence/phase6-e2e-guest-negative-390.png"
+  - name: "Phase 6 mobile accessibility static contract"
+    command: "pnpm check:phase6-accessibility"
+    status: "current_pass_214_tags_8_contracts_zero_failures"
+    evidence: "docs/phase-6-mobile-accessibility-report.md"
+  - name: "Phase 6 exact mobile viewport runtime"
+    command: "pnpm capture:phase6-accessibility"
+    status: "current_pass_360_390_430_zero_undersized_zero_overflow"
+    evidence: "output/ui-evidence/phase6-accessibility-home-{360,390,430}-cdp.png"
+  - name: "Phase 6 SECURITY DEFINER contract"
+    command: "pnpm check:security-definer"
+    status: "current_pass_14_of_14"
+    evidence: "docs/phase-6-security-definer-review.md"
+  - name: "Phase 6 focused security regression"
+    command: "node --experimental-strip-types --test tests/security-definer-contract.test.ts tests/account-deletion-cascade.test.ts tests/guest-session-security.test.ts tests/family-share.test.ts tests/release-security.test.ts"
+    status: "current_pass_29_of_29"
+    evidence: "tests/security-definer-contract.test.ts"
+  - name: "Frozen dependency installation"
+    command: "pnpm install --frozen-lockfile"
+    status: "current_pass_lockfile_unchanged"
+    evidence: "pnpm-lock.yaml"
+  - name: "Full local lint, typecheck, and unit suite"
+    command: "pnpm test"
+    status: "current_pass_clean_checkout_ios_sync_372_of_372"
+    evidence: "tests/phase-5-core-recipe-audit.test.ts, tests/phase-5-human-evidence.test.ts, tests/phase-6-mobile-accessibility.test.ts, tests/phase-6-e2e-contract.test.ts, tests/phase-6-performance-budget.test.ts"
+  - name: "Phase 0 recipe inventory"
+    command: "pnpm test:content"
+    status: "current_pass_phase0_and_phase1"
+    evidence: "docs/recipe-inventory.md, docs/phase-1-data-contract.md"
+  - name: "Phase 5 core 20 editorial and evidence audit"
+    command: "pnpm check:phase5-core-audit"
+    status: "current_pass_9_of_9_editorial_20_of_20_score_90_plus_publication_0_of_20"
+    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-actual-cooking-template.csv, docs/phase-5-human-review-template.csv"
+  - name: "Phase 5 actual cooking and human evidence gate"
+    command: "pnpm check:phase5-human-evidence"
+    status: "expected_blocked_0_of_20_invalid_records_0"
+    evidence: "docs/phase-5-human-testing-runbook.md"
+  - name: "Phase 1 recipe data contract"
+    command: "pnpm check:phase1-data-contract"
+    status: "current_pass_25_of_25"
+    evidence: "docs/phase-1-migration-dry-run.md"
+  - name: "Recipe publication integration"
+    command: "pnpm test:integration"
+    status: "current_pass_zero_unreviewed_exposed_and_signed_session_negative_paths"
+    evidence: "output/ui-evidence/2026-07-10-publication-empty-list-390.png"
+  - name: "Recipe publication RLS contract"
+    command: "pnpm check:supabase-release"
+    status: "current_pass_146_of_146"
+    evidence: "supabase/migrations/20260710130000_gate_recipe_publication.sql, supabase/migrations/20260710150000_add_recipe_v2_schema_and_versioning.sql, supabase/migrations/20260710160000_add_distributed_api_rate_limits.sql"
+  - name: "API v1 contract"
+    command: "pnpm check:api-v1-contract"
+    status: "current_pass_14_of_14"
+    evidence: "docs/phase-2-api-v1-report.md"
+  - name: "API v1 focused tests"
+    command: "node --experimental-strip-types --test tests/api-v1-contract.test.ts tests/distributed-rate-limit.test.ts tests/recipe-api-v1.test.ts tests/recipe-recommendation-v1.test.ts"
+    status: "current_pass_21_of_21"
+    evidence: "tests/recipe-api-v1.test.ts"
+  - name: "API v1 HTTP negative paths"
+    command: "next dev and next start on local loopback"
+    status: "current_pass_400_413_429_503"
+    evidence: "docs/phase-2-api-v1-report.md"
+  - name: "Signed guest authorization negative tests"
+    command: "node --experimental-strip-types --test tests/guest-session-security.test.ts"
+    status: "current_pass_8_of_8"
+    evidence: "docs/guest-session-security.md"
+  - name: "Production build after publication gate"
+    command: "pnpm build"
+    status: "current_pass"
+    evidence: "docs/current-release-state.md"
+  - name: "Cloudflare OpenNext build"
+    command: "pnpm cloudflare:build"
+    status: "current_pass"
+    evidence: "docs/current-release-state.md"
+  - name: "CI-safe release gates"
+    command: "pnpm release:ci-static-check"
+    status: "current_pass_15_of_15"
+    evidence: "docs/current-release-state.md"
+  - name: "Local release gates"
+    command: "pnpm release:check"
+    status: "current_pass_14_with_1_expected_phase5_human_evidence_failure"
+    evidence: "docs/current-release-state.md"
+  - name: "Release security gate"
+    command: "pnpm release:security-check"
+    status: "documented_pass"
+    evidence: "docs/current-release-state.md"
+  - name: "Store submit gate"
+    command: "pnpm release:submit-gate"
+    status: "documented_blocked"
+    evidence: "docs/current-release-state.md"
+  - name: "App Store review packet"
+    command: "pnpm release:capture-appstore-review-packet"
+    status: "released_ready_for_sale"
+    evidence: "output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md"
+
+runtime_checks:
+  - name: "App Store remote WebView production UX update"
+    target: "https://jipbab-note-app.vercel.app"
+    status: "deployed_verified"
+    command: "vercel deploy --prod --yes"
+    evidence: "output/ui-evidence/shopping-production-vercel-cdp-390.png"
+  - name: "iOS real-device QA"
+    target: "iPhone"
+    status: "confirmed_appstore_scope"
+    evidence: "docs/real-device-qa.md"
+  - name: "iOS cable QA evidence"
+    target: "iPhone 12 Pro over USB/CoreDevice"
+    status: "confirmed_cable_only"
+    command: "pnpm check:ios-cable-qa"
+    evidence: "output/release-evidence/2026-06-25T00-16-cable-ios-qa/summary.md"
+  - name: "iOS cable XCUITest primary-tab smoke"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed_primary_tabs_only"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testCableLaunchAndPrimaryTabs"
+    evidence: "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke/summary.md"
+  - name: "iOS cable XCUITest recipe-to-shopping core loop"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testCoreLoopRecipeRecommendationToShoppingList"
+    evidence: "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke/summary.md"
+  - name: "iOS cable XCUITest shopping external-link handoff"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testShoppingExternalLinkHandoff"
+    evidence: "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke/summary.md"
+  - name: "iOS cable XCUITest local notification preparation"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testNotificationPreparationFromSettings"
+    evidence: "output/release-evidence/2026-06-25T09-30-ios-xcuitest-cable-smoke/summary.md"
+  - name: "iOS cable XCUITest OAuth completion probes"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed_google_apple_kakao_user_owned"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testOAuthProviderCompletionProbe|testAppleOAuthProviderCompletionProbe|testKakaoOAuthProviderCompletionProbe"
+    evidence: "output/release-evidence/2026-06-25T13-00-ios-native-bridge-oauth-rerun/summary.md"
+  - name: "iOS Kakao provider-start"
+    target: "iPhone 16 Pro over iPhone Mirroring"
+    status: "provider_start_confirmed_login_completion_user_owned"
+    command: "manual iPhone Mirroring QA"
+    evidence: "output/release-evidence/2026-06-26T08-40-kakao-mirroring-provider-start/summary.md"
+  - name: "iOS Kakao open-callback completion fix"
+    target: "Vercel Production and iPhone 16 Pro over iPhone Mirroring"
+    status: "deployed_post_deploy_retest_blocked_by_mirroring_lock"
+    command: "vercel --prod --yes"
+    evidence: "output/release-evidence/2026-06-26T09-20-kakao-open-callback-fix/summary.md"
+  - name: "iOS OAuth browserFinished race fix"
+    target: "Vercel Production and iOS WebView runtime"
+    status: "deployed_retested_superseded_by_native_oauth"
+    command: "vercel deploy --prod --yes"
+    evidence: "output/release-evidence/2026-06-25T11-05-ios-oauth-race-fix/summary.md"
+  - name: "iOS native ASWebAuthenticationSession OAuth rerun"
+    target: "iPhone 12 Pro over USB/XCTest"
+    status: "confirmed_google_apple_after_https_bridge"
+    command: "xcodebuild test -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination id=00008101-000525241EE3003A -only-testing:AppReleaseSmokeUITests/AppReleaseSmokeUITests/testOAuthProviderCompletionProbe|testAppleOAuthProviderCompletionProbe"
+    evidence: "output/release-evidence/2026-06-25T13-00-ios-native-bridge-oauth-rerun/summary.md"
+  - name: "iOS direct account deletion"
+    target: "TestFlight iPhone via operator screenshots"
+    status: "confirmed_completed_operator_executed"
+    command: "manual operator QA"
+    evidence: "output/release-evidence/2026-06-26T13-56-ios-account-delete-completed/summary.md"
+  - name: "App Store screenshot refresh"
+    target: "App Store Connect iPhone 6.9 screenshot set"
+    status: "confirmed_uploaded_complete_public_html_cdn_current"
+    command: "APP_STORE_CONNECT_BUILD_VERSION=2026062602 node scripts/upload-appstore-screenshots.mjs --execute --delete-existing-after-upload"
+    evidence: "output/release-evidence/2026-06-29T17-38-appstore-public-screenshot-check/summary.md"
+  - name: "Android real-device QA"
+    target: "Android physical device"
+    status: "partial_not_confirmed"
+    evidence: "docs/real-device-qa.md"
+  - name: "Cloudflare live home"
+    target: "Cloudflare Worker"
+    status: "documented_pass"
+    evidence: "docs/current-release-state.md"
+
+external_checks:
+  - name: "App Store Connect and TestFlight"
+    target: "appstore"
+    status: "ready_for_sale_public_url_live_screenshots_current_lookup_api_pending"
+    evidence: "output/release-evidence/2026-07-10T04-02-31-522Z-store-console/summary.md"
+  - name: "Google Play Console"
+    target: "play"
+    status: "blocked"
+    evidence: "docs/current-release-state.md"
+  - name: "Cloudflare production cutover"
+    target: "cloudflare"
+    status: "blocked"
+    evidence: "docs/current-release-state.md"
+
+security:
+  secrets:
+    status: "local_secret_files_0600_and_git_ignored"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
+  authz:
+    status: "local_phase6_definer_hardening_verified_production_migrations_pending"
+    evidence: "docs/guest-session-security.md, docs/phase-6-security-definer-review.md"
+  api_abuse_controls:
+    status: "local_contract_verified_staging_secret_and_proxy_trust_pending"
+    evidence: "docs/phase-2-api-v1-report.md"
+  privacy:
+    status: "documented"
+    evidence: "docs/real-device-qa.md"
+  payments_legal:
+    status: "not_applicable"
+    evidence: "No payment flow in current release ledger."
+  dependency_audit:
+    status: "current_pass_bulk_advisory_107_production_packages_zero_moderate_or_higher"
+    evidence: "pnpm release:security-check passed 4 of 4 at b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
+
+blockers:
+  - id: "P0-JIPBAB-PHASE5-HUMAN-EVIDENCE"
+    severity: "P0"
+    status: "open"
+    title: "Core 20 automatic editorial scores and local bitmap checks pass, but actual cooking, beginner, food-safety, legal-source, image-rights, and DB source-link evidence are 0/20."
+    owner: "ContentQA+BeginnerTesters+FoodSafety+Legal"
+    evidence: "docs/phase-5-core-20-audit.md, docs/phase-5-human-testing-runbook.md"
+    due: "before_any_phase5_recipe_publication"
+  - id: "P0-JIPBAB-MIGRATION-HISTORY-DRIFT"
+    severity: "P0"
+    status: "closed_20260715"
+    title: "Official history repair completed for nine semantically applied local versions; local and remote now match at 40 versions and db push dry-run is clean."
+    owner: "FullStackDev+DBA"
+    evidence: "docs/migration-history-reconciliation-2026-07-15.md"
+    due: "completed_before_any_future_supabase_db_push"
+  - id: "P0-JIPBAB-SOURCE-ALIGNMENT"
+    severity: "P0"
+    status: "open"
+    title: "Draft PR #9 now tracks the candidate-to-main integration, but protected main 86e2bc2, verified code candidate 01e9895, and production runtime 3a8f72f remain unaligned until review, checks, merge, and an explicit promotion decision."
+    owner: "project_owner"
+    evidence: "docs/official-production-sources.md"
+    due: "before_next_non_hotfix_production_deploy"
+  - id: "P0-JIPBAB-RECIPE-PUBLISH-GATE"
+    severity: "P0"
+    status: "production_publication_gate_verified_approved_zero_preview_twenty"
+    title: "Production publication gate is live; the UI exposes 0 approved recipes and 20 clearly labeled previews with cooking and shopping locked until human evidence exists."
+    owner: "FullStackDev"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
+    due: "before_any_db_backed_recipe_publication"
+  - id: "P0-JIPBAB-GUEST-AUTHORIZATION"
+    severity: "P0"
+    status: "resolved_production_db_and_client_verified"
+    title: "Production DB authorizes signed auth UID only, and the matching Production client automatically migrated pending local rows to cloud-synced rows with reload persistence."
+    owner: "FullStackDev+Security"
+    evidence: "docs/phase-0-baseline-2026-07-10.md"
+    due: "resolved_2026_07_15"
+  - id: "P0-JIPBAB-PHASE1-STAGING-SQL"
+    severity: "P0"
+    status: "local_static_contract_verified_staging_execution_pending"
+    title: "Recipe v2 capture/restore SQL is statically verified but has not run in isolated PostgreSQL because this machine has no local PostgreSQL or Docker runtime."
+    owner: "FullStackDev+DBA"
+    evidence: "docs/phase-1-data-contract.md"
+    due: "before_any_phase1_production_migration"
+  - id: "P0-JIPBAB-PHASE2-STAGING-API"
+    severity: "P0"
+    status: "local_contract_verified_staging_healthy_path_pending"
+    title: "API v1 negative paths and fail-closed production behavior are verified locally, but no reviewed v2 fixture or reconciled staging PostgreSQL exists for healthy 200-path and distributed-RPC verification."
+    owner: "FullStackDev+DBA+ContentQA"
+    evidence: "docs/phase-2-api-v1-report.md"
+    due: "before_any_api_v1_client_cutover"
+  - id: "P0-JIPBAB-PHASE6-DEFINER-ROLLOUT"
+    severity: "P0"
+    status: "production_applied_contract_verified_advisor_followup_open"
+    title: "Production hardening removed PUBLIC/anon SECURITY DEFINER grants and header-based policies; remaining advisor search-path warnings and authenticated family RPC intent require follow-up documentation."
+    owner: "FullStackDev+DBA+Security"
+    evidence: "docs/phase-6-security-definer-review.md"
+    due: "before_next_supabase_production_rollout"
+  - id: "P0-JIPBAB-IOS-FULL-QA"
+    severity: "P0"
+    status: "resolved"
+    title: "iOS App Store QA evidence is complete for build 2026062601: cable QA, Google/Apple OAuth, operator-confirmed Kakao login, and operator-confirmed direct account deletion are documented."
+    owner: "me"
+    evidence: "output/release-evidence/2026-06-26T13-56-ios-account-delete-completed/summary.md"
+    due: "done"
+  - id: "P0-JIPBAB-APPSTORE-BUILD-MISMATCH"
+    severity: "P0"
+    status: "resolved"
+    title: "Old App Store pending release was canceled; build 2026062602 is attached to iOS 1.0 and released with App Store state READY_FOR_SALE."
+    owner: "me"
+    evidence: "output/release-evidence/2026-06-28T01-08-06-521Z-appstore-review-preflight/summary.md"
+    due: "done"
+  - id: "P0-JIPBAB-ANDROID-FULL-QA"
+    severity: "P0"
+    status: "open"
+    title: "Android Google/Kakao login completion and logged-in account deletion remain unconfirmed."
+    owner: "me"
+    evidence: "docs/real-device-qa.md"
+    due: "before_play_submit"
+  - id: "P0-JIPBAB-STORE-CONSOLE"
+    severity: "P0"
+    status: "open"
+    title: "Play Console submission evidence is still blocked; App Store iOS 1.0 build 2026062602 is READY_FOR_SALE and KOR/USA public App Store direct URLs are live."
+    owner: "me"
+    evidence: "output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md"
+    due: "before_play_public_release"
+  - id: "P0-JIPBAB-APPSTORE-PUBLIC-LISTING"
+    severity: "P1"
+    status: "resolved_direct_url_lookup_pending"
+    title: "App Store Connect is READY_FOR_SALE and KOR/USA appAvailabilityV2 is created; public App Store direct URLs return HTTP 200, while iTunes Lookup API still returns resultCount 0 pending search/index propagation."
+    owner: "apple"
+    evidence: "output/release-evidence/2026-06-29T08-02-34-508Z-appstore-availability-enable-kor-usa/summary.md"
+    due: "monitor_lookup_until_resultCount_1"
+  - id: "P1-JIPBAB-CLOUDFLARE-CUTOVER"
+    severity: "P1"
+    status: "open"
+    title: "Cloudflare secrets, custom domain, auth redirect, and mobile runtime URL need operator-controlled cutover."
+    owner: "me"
+    evidence: "docs/current-release-state.md"
+    due: "before_cloudflare_primary"
+  - id: "P1-JIPBAB-VERCEL-PREVIEW-QUOTA"
+    severity: "P1"
+    status: "resolved_by_git_integration_preview_20260716"
+    title: "The manual CLI deploy hit the Free daily quota, but Git integration later deployed remote HEAD cce0098 with f555092 and f6bdc07 to a READY Preview and Chrome runtime verification passed."
+    owner: "Vercel+project_owner"
+    evidence: "docs/current-release-state.md"
+    due: "closed_20260716_production_promotion_still_separate"
+
+sync_preview_backup_20260715:
+  branch: "agent/sync-ux-release"
+  recipe_preview_git_sha: "fcf34220448840c3f53d628755aefe717b6b6330"
+  sync_rekey_git_sha: "46e1ed0918141c788c079ca5646c79830d17e3c6"
+  sync_ui_git_sha: "ac6229a8b4e3cd86935315f29e1955135da2499f"
+  shopping_sync_ui_git_sha: "729a1df"
+  recipe_discovery_ui_git_sha: "661c97489748e52c6fb4108d88d82c913dd31869"
+  home_recipe_visibility_git_sha: "556c37452e87dde56abe966d02ec9b7462d0d265"
+  difficulty_label_git_sha: "c7fbbbfd2698dec5741ad04e9432ddeee75b58b4"
+  ingredient_category_fix_git_sha: "9f7a9473f55d062c1ed156ff1874dd346ad5b290"
+  recipe_readability_git_sha: "58df42b208b8e28ede0dd518cf32d575fc37a5e9"
+  recipe_ingredient_guidance_git_sha: "e12fd87ff4e8f0252356f9af05749caf27b13dc6"
+  recipe_preview_20_git_sha: "0f09d3310a7af34566c555777c7798a99534c330"
+  recipe_preview_responsive_search_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
+  responsive_search_preview_deployment_id: "dpl_F1KXJPiR9atXoHpeBb5X8zKyjhpU"
+  sync_coalescing_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  sync_coalescing_preview_status: "blocked_before_creation_by_daily_free_quota"
+  sync_coalescing_production_promoted: false
+  responsive_search_preview_url: "https://jipbab-note-qomiey7ml-youngbeens-projects.vercel.app"
+  preview_20_deployment_id: "dpl_DMt2svACuJ1hfygCevJqc5WrBBAd"
+  preview_20_url: "https://jipbab-note-jqz1axvfd-youngbeens-projects.vercel.app"
+  preview_deployment_id: "dpl_FNSVuHw3aW5iNj6jzv8gRb9KegeG"
+  preview_url: "https://jipbab-note-95m5agmad-youngbeens-projects.vercel.app"
+  preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
+  preview_status: "READY"
+  production_promoted: false
+  production_web_hotfix_deployed: true
+  production_full_release_promoted: false
+  production_deployment_id: "dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ"
+  production_deployment_url: "https://jipbab-note-r2ddhk83a-youngbeens-projects.vercel.app"
+  production_alias: "https://jipbab-note-app.vercel.app"
+  production_status: "READY"
+  production_anonymous_auth_feature_flag_enabled: true
+  recipe_preview_count: 20
+  recipe_preview_runtime_verified: true
+  recipe_preview_search_runtime_verified: true
+  recipe_preview_quick_filter_runtime_verified: true
+  recipe_preview_detail_runtime_verified: true
+  recipe_preview_console_log_count: 0
+  recipe_preview_unit_status: "verified_396_of_396"
+  latest_unit_status: "verified_409_of_409"
+  recipe_preview_build_status: "verified_38_of_38_routes"
+  dependency_audit_git_sha: "b81fbee8b0c9d80697089ce9b45eb67ed9307baf"
+  dependency_audit_status: "verified_bulk_advisory_107_production_packages_zero_moderate_or_higher"
+  local_only_sync_copy_verified: true
+  backup_migration_version: "20260715095212"
+  backup_migration_name: "backup_sync_domain_pre_signed_session_20260715"
+  backup_scope: "migration_scoped_ops_backup_not_full_disaster_recovery"
+  backup_app_role_schema_privileges: 0
+  backup_app_role_table_privileges: 0
+  prerequisite_migrations_applied:
+    - "20260715101534_add_recipe_comments_sync_prerequisite_20260715"
+    - "20260715101658_cascade_user_deletion_sync_prerequisite_20260715"
+  signed_session_migration_applied: true
+  signed_session_migration: "20260715101553_replace_device_guest_auth_with_signed_sessions_20260715"
+  security_hardening_migration: "20260715101716_harden_security_definer_privileges_20260715"
+  anonymous_auth_enabled: true
+  header_based_policy_count: 0
+  anonymous_or_public_security_definer_grant_count: 0
+  signed_ingredient_count: 8
+  signed_user_count: 1
+  legacy_ingredient_count_preserved: 51
+  legacy_shopping_count_preserved: 18
+  browser_reload_persistence_verified: true
+  browser_pending_sync_count: 0
+  browser_console_warning_error_count: 0
+  browser_evidence: "/tmp/jipbab-sync-verified.png"
+  shopping_browser_sync_verified: true
+  shopping_browser_pending_sync_count: 0
+  shopping_browser_console_warning_error_count: 0
+  shopping_browser_evidence: "/tmp/jipbab-shopping-sync-verified.png"
+  production_browser_sync_verified: true
+  production_browser_reload_persistence_verified: true
+  production_browser_pending_sync_count: 0
+  production_browser_console_warning_error_count: 0
+  production_browser_sync_before_evidence: "/tmp/jipbab-production-sync-before.png"
+  production_browser_sync_after_evidence: "/tmp/jipbab-production-sync-fixed.png"
+  production_recipe_preview_count: 20
+  production_recipe_list_verified: true
+  production_recipe_detail_verified: true
+  production_recipe_evidence: "/tmp/jipbab-production-recipe-list-ready.png"
+  production_api_v1_status: "verified_200_empty_publication_approved_list"
+  production_api_v1_cache_control: "no-store"
+  production_api_v1_request_id_verified: true
+  ingredient_category_backup_migrations:
+    - migration: "20260715121727_fix_legacy_ingredient_categories_20260715"
+      backup_table: "ops_backup.ingredients_pre_category_fix_20260715"
+      backup_rows: 20
+    - migration: "20260715121937_enforce_canonical_egg_tofu_categories_20260715"
+      backup_table: "ops_backup.ingredients_pre_canonical_category_fix_20260715"
+      backup_rows: 1
+  ingredient_category_backup_app_role_privileges: 0
+  canonical_egg_rows: 12
+  canonical_egg_category: "육류"
+  canonical_tofu_rows: 9
+  canonical_tofu_category: "통조림/가공식품"
+  production_fridge_category_browser_verified: true
+  production_fridge_tofu_recipe_link_verified: true
+  production_fridge_category_browser_console_warning_error_count: 0
+  production_recipe_card_heading_font_px: 14
+  production_recipe_card_meta_font_px: 12
+  production_recipe_card_app_width_px: 428
+  production_recipe_card_horizontal_overflow_px: 0
+  production_recipe_card_detail_navigation_verified: true
+  production_recipe_card_browser_console_warning_error_count: 0
+  external_recipe_link_copy_platform_neutral: true
+  production_recipe_ingredient_required_count: 4
+  production_recipe_ingredient_optional_count: 2
+  production_recipe_ingredient_beginner_tip_count: 6
+  production_recipe_ingredient_substitute_count: 5
+  production_recipe_ingredient_wrong_prep_copy_count: 0
+  production_recipe_ingredient_browser_console_log_count: 0
+  production_recipe_ingredient_framework_overlay_count: 0
+  production_recipe_ingredient_screenshot: "/tmp/jipbab-recipe-detail-production.png"
+  production_recipe_preview_20_unique_link_count: 20
+  production_recipe_preview_20_search_verified: true
+  production_recipe_preview_20_category_filter_verified: true
+  production_recipe_preview_20_forbidden_action_count: 0
+  production_recipe_preview_20_horizontal_overflow_px: 0
+  production_recipe_preview_20_browser_console_log_count: 0
+  production_recipe_preview_20_screenshot: "/tmp/jipbab-recipe-preview-20.png"
+  production_recipe_preview_20_latest_screenshot: "/tmp/jipbab-production-recipes-visible.png"
+  production_catalog_seed_sync_screenshot: "/tmp/jipbab-production-sync-complete.png"
+  production_catalog_seed_sync_copy: "클라우드 동기화 완료"
+  production_catalog_seed_recipe_link_count: 20
+  production_recipe_preview_initial_visible_after_ms: 100
+  production_recipe_preview_initial_visible_link_count: 20
+  production_recipe_search_result_visible_after_ms: 100
+  production_recipe_search_result_count: 1
+  production_recipe_search_stable_after_ms: 2500
+  production_recipe_search_loading_copy_count: 0
+  production_recipe_search_screenshot: "/tmp/jipbab-recipe-search-immediate.png"
+  residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
+  production_alias_runtime_project: "jipbab-note-app"
+  production_alias_runtime_git_sha: "c8b32c5612b9f183b79bbc67d29ddfdba6aa934c"
+  production_alias_runtime_deployment_id: "dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv"
+  production_alias_runtime_alignment: "runtime_matches_remote_candidate_protected_main_integration_pending"
+  production_safe_preview_current_count: 10
+  production_safe_preview_home_cards: "두부부침,두부조림"
+  production_sync_current_copy: "클라우드 동기화 완료"
+  production_sync_current_pending_count: 0
+  production_sync_current_screenshot: "output/ui-evidence/production-sync-complete-2026-07-16.png"
+  production_safe_preview_current_screenshot: "output/ui-evidence/production-safe-recipes-2026-07-16.png"
+  production_sync_latest_screenshot: "output/ui-evidence/production-sync-complete-c8b32c5.png"
+  production_recipe_detail_latest_screenshot: "output/ui-evidence/production-recipe-detail-c8b32c5.png"
+  release_goal_latest_gate_count: "14_pass_2_blocked_1_missing"
+  release_goal_latest_progress_percent: 82.4
+
+next_action:
+  owner: "ContentQA+BeginnerTesters"
+  command: "Run Wave 1 from docs/phase-5-human-testing-runbook.md, append cooking attempts to docs/phase-5-actual-cooking-template.csv, record four human reviews in docs/phase-5-human-review-template.csv, then run pnpm check:phase5-human-evidence."
+  description: "Do not publish or set human-review flags from code. Record failed attempts as well as successful attempts, then route evidence to separate beginner, food-safety, legal-source, and image-rights reviewers before any DB publication change."

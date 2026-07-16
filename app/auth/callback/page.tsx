@@ -7,7 +7,30 @@ import { LoaderCircle } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { normalizeAuthNextPath } from "@/lib/auth-redirect";
+import { mergePendingAnonymousUserData } from "@/lib/anonymous-user-merge";
 import { getSupabaseClient } from "@/lib/supabase";
+
+function getCallbackErrorMessage(caught: unknown): string {
+  const rawMessage = caught instanceof Error ? caught.message.toLowerCase() : "";
+  if (rawMessage.includes("code verifier") || rawMessage.includes("pkce")) {
+    return "인증 링크는 확인했지만 자동 로그인을 이어가지 못했습니다. 같은 브라우저에서 다시 로그인하거나 이메일로 로그인해주세요.";
+  }
+
+  return "로그인 세션을 연결하지 못했습니다. 같은 브라우저에서 다시 시도해주세요.";
+}
+
+function getProviderCallbackErrorMessage(rawError: string | null): string {
+  const normalized = rawError?.toLowerCase() ?? "";
+  if (
+    normalized.includes("access_denied") ||
+    normalized.includes("user_denied") ||
+    normalized.includes("cancel")
+  ) {
+    return "소셜 로그인이 취소되었습니다. 다시 로그인하거나 이메일로 계속해주세요.";
+  }
+
+  return "소셜 로그인 승인을 완료하지 못했습니다. 다시 로그인하거나 이메일로 계속해주세요.";
+}
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -22,7 +45,14 @@ function AuthCallbackContent() {
     hasStartedRef.current = true;
 
     const code = searchParams.get("code");
+    const providerErrorCode = searchParams.get("error");
+    const providerErrorDescription = searchParams.get("error_description");
     const next = normalizeAuthNextPath(searchParams.get("next"));
+
+    if (providerErrorCode || providerErrorDescription) {
+      setErrorMessage(getProviderCallbackErrorMessage(providerErrorCode ?? providerErrorDescription));
+      return;
+    }
 
     if (!code) {
       setErrorMessage("로그인 승인 코드를 찾지 못했습니다. 다시 시도해 주세요.");
@@ -36,9 +66,10 @@ function AuthCallbackContent() {
         if (error) {
           throw error;
         }
+        await mergePendingAnonymousUserData(client);
         router.replace(next);
       } catch (caught) {
-        setErrorMessage(caught instanceof Error ? caught.message : "로그인 처리 중 오류가 발생했습니다.");
+        setErrorMessage(getCallbackErrorMessage(caught));
       }
     };
 
@@ -52,8 +83,11 @@ function AuthCallbackContent() {
           <p className="text-base font-bold text-gray-800">로그인을 완료하지 못했습니다.</p>
           <p className="mt-2 text-sm leading-6 text-gray-500">{errorMessage}</p>
           <div className="mt-4 flex justify-center gap-2">
-            <Link href="/mypage" className="rounded-full bg-mint-100 px-4 py-2 text-sm font-bold text-mint-600">
-              마이페이지로 이동
+            <Link href="/login" className="rounded-full bg-mint-100 px-4 py-2 text-sm font-bold text-mint-600">
+              로그인하기
+            </Link>
+            <Link href="/signup" className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600">
+              회원가입
             </Link>
             <Link href="/support" className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600">
               문의하기

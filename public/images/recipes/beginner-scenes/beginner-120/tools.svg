@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">어묵김치국 필요한 조리도구</title>
+  <desc id="desc">어묵김치국 레시피는 15분 안에 만들 수 있는 초보자용 집밥 메뉴입니다. 필요한 조리도구 장면 이미지입니다. 외부 사진, 브랜드, 캐릭터를 사용하지 않은 집밥노트 자체 제작 SVG입니다.</desc>
+  <defs>
+    <radialGradient id="warmBg" cx="50%" cy="18%" r="78%">
+      <stop offset="0%" stop-color="#fffdf8"/>
+      <stop offset="100%" stop-color="#fff0e6"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#5b3219" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#warmBg)"/>
+  <rect x="14" y="14" width="1172" height="872" rx="20" fill="#fffdf8" opacity="0.88" stroke="#e6cda8"/>
+  
+  <g>
+    <rect x="42" y="34" width="108" height="66" rx="20" fill="#df321c"/>
+    <path d="M143 68 L171 52 L171 84 Z" fill="#df321c"/>
+    <text x="96" y="78" text-anchor="middle" font-size="34" font-weight="950" fill="#fff">3/7</text>
+  </g>
+
+  <text x="600" y="74" text-anchor="middle" font-size="46" font-weight="950" fill="#1e1510">필요한 조리도구</text>
+  <text x="600" y="118" text-anchor="middle" font-size="24" font-weight="850" fill="#d94324">어묵김치국을 만들 때 필요한 기본 도구입니다.</text>
+  <g fill="#551d12" opacity="0.96">
+    <rect x="44" y="165" width="1112" height="610" rx="22" fill="#fffaf3" stroke="#e7d3bb"/>
+    
+    <g>
+      <rect x="78" y="230" width="210" height="190" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <rect x="114" y="279" width="112" height="74" rx="24" fill="#202020"/><ellipse cx="170" cy="279" rx="56" ry="20" fill="#3a3a3a"/><rect x="96" y="298" width="28" height="24" rx="10" fill="#262626"/><rect x="217" y="298" width="28" height="24" rx="10" fill="#262626"/>
+      <text x="183" y="396" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">냄비</text>
+    </g>
+  
+
+    <g>
+      <rect x="348" y="230" width="210" height="190" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="420" cy="297" rx="35" ry="30" fill="#cfd4d9"/><rect x="448" y="316" width="19" height="92" rx="9" fill="#cfd4d9" transform="rotate(-31 457 362)"/>
+      <text x="453" y="396" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">국자</text>
+    </g>
+  
+
+    <g>
+      <rect x="618" y="230" width="210" height="190" rx="18" fill="#fffaf3" stroke="#e7d3bb"/>
+      <ellipse cx="710" cy="305" rx="68" ry="32" fill="#f7f3ed" stroke="#d0c5b8" stroke-width="4"/><path d="M648 307 C663 369, 757 369, 772 307" fill="#fffaf3" stroke="#d0c5b8" stroke-width="4"/>
+      <text x="723" y="396" text-anchor="middle" font-size="22" font-weight="950" fill="#251b14">그릇</text>
+    </g>
+  
+    <rect x="176" y="810" width="848" height="45" rx="15" fill="#fff7df" stroke="#e4cba7"/>
+    <text x="600" y="840" text-anchor="middle" font-size="21" font-weight="850" fill="#6a4128">불을 켜기 전 도구를 먼저 꺼내두면 조리 중 당황하지 않습니다.</text>
+  </g>
+</svg>

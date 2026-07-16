@@ -45,7 +45,6 @@ export default function MyPage() {
     refreshUser,
   } = useAuth()
 
-  const isAdminUser = Boolean(userEmail && userEmail === 'dudqks0319@gmail.com')
   const syncSummary = summarizeAuthMigrationState({ migrating, error, migrationResult })
 
   return (
@@ -69,10 +68,10 @@ export default function MyPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Link href="/settings#notifications" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="알림 설정">
+            <Link href="/settings#notifications" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="알림 설정">
               <Bell size={17} />
             </Link>
-            <Link href="/settings" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="설정">
+            <Link href="/settings" className="flex h-11 w-11 items-center justify-center rounded-full border border-[#eadcc9] bg-[#fffaf3] text-[#2f2117]" aria-label="설정">
               <Settings size={17} />
             </Link>
           </div>
@@ -149,8 +148,7 @@ export default function MyPage() {
           ))}
           <MenuLink href="/community" icon={MessageCircle} label="커뮤니티 안내" />
           <MenuLink href="/support" icon={MessageCircle} label="고객센터" />
-          {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제 요청" danger /> : null}
-          {isAdminUser ? <MenuLink href="/admin/account-deletions" icon={Settings} label="운영자 삭제 요청함" /> : null}
+          {isAuthenticated ? <MenuLink href="/account-delete" icon={LogOut} label="계정 삭제" danger /> : null}
         </div>
       </section>
 

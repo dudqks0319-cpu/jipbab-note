@@ -22,7 +22,7 @@ const mapIngredientPhotos = (
 // 재료명과 별칭을 같은 쇼핑형 썸네일로 연결합니다.
 const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos([
   [['양파', '흰양파', '적양파'], 'onion-shop.png'],
-  [['대파', '쪽파'], 'green-onion-shop.png'],
+  [['파', '대파', '쪽파'], 'green-onion-shop.png'],
   [['계란', '달걀'], 'egg-shop.png'],
   [['두부', '연두부', '순두부'], 'tofu-shop.png'],
   [['마늘', '통마늘', '깐마늘', '다진마늘', '다진 마늘'], 'garlic-shop.png'],
@@ -97,7 +97,11 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
 
   [['냉동만두'], 'dumpling-shop.png'],
   [['냉동야채믹스'], 'frozen-vegetable-mix-photo.png'],
-  [['냉동볶음밥', '냉동피자', '냉동우동면', '냉동돈까스', '냉동감자튀김'], 'dumpling-shop.png'],
+  [['냉동볶음밥'], 'frozen-fried-rice-photo.png'],
+  [['냉동피자'], 'frozen-pizza-photo.png'],
+  [['냉동우동면'], 'udon-shop.png'],
+  [['냉동돈까스'], 'frozen-donkatsu-photo.png'],
+  [['냉동감자튀김'], 'frozen-fries-photo.png'],
   [['냉동새우'], 'shrimp-shop.png'],
   [['냉동오징어'], 'squid-shop.png'],
   [['냉동닭가슴살'], 'chicken-breast-shop.png'],
@@ -121,7 +125,7 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
   [['식용유', '올리브오일', '카놀라유', '포도씨유', '해바라기유'], 'cooking-oil-shop.png'],
 
   [['참치캔', '참치 통조림'], 'tuna-can-shop.png'],
-  [['옥수수캔'], 'corn-can-shop.png'],
+  [['옥수수', '옥수수캔', '통조림 옥수수', '콘옥수수', '스위트콘'], 'corn-can-shop.png'],
   [['콩통조림', '병아리콩', '강낭콩'], 'mixed-beans-photo.png'],
   [['스팸', '햄통조림'], 'spam-shop.png'],
   [['김치', '배추김치'], 'kimchi-shop.png'],
@@ -130,12 +134,13 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
   [['잼', '딸기잼', '블루베리잼'], 'jam-shop.png'],
   [['토마토소스', '파스타소스'], 'pasta-sauce-shop.png'],
 
+  [['밥', '즉석밥', '공기밥', '흰밥', '쌀밥', '찬밥'], 'cooked-rice-shop.png'],
   [['쌀', '현미'], 'rice-bag-shop.png'],
   [['밀가루'], 'flour-shop.png'],
   [['전분', '감자전분', '옥수수전분'], 'starch-powder-photo.png'],
   [['국수', '당면'], 'noodle-shop.png'],
   [['라면'], 'ramen-pack-shop.png'],
-  [['파스타면', '스파게티면'], 'spaghetti-shop.png'],
+  [['파스타', '파스타면', '스파게티면'], 'spaghetti-shop.png'],
   [['우동면'], 'udon-shop.png'],
   [['식빵'], 'white-bread-shop.png'],
   [['바게트'], 'baguette-shop.png'],
@@ -144,11 +149,12 @@ const INGREDIENT_PHOTO_BY_KEYWORD: Record<string, string> = mapIngredientPhotos(
 
   [['생수', '탄산수'], 'water-bottle-shop.png'],
   [['오렌지주스', '사과주스'], 'orange-juice-photo.png'],
-  [['커피', '원두커피'], 'water-bottle-shop.png'],
+  [['커피', '원두커피'], 'coffee-beans-photo.png'],
   [['티백', '홍차', '녹차'], 'tea-bag-shop.png'],
   [['견과류', '아몬드', '호두'], 'mixed-nuts-shop.png'],
   [['꿀'], 'honey-shop.png'],
-  [['올리고당', '코코아가루'], 'water-bottle-shop.png'],
+  [['올리고당'], 'oligosaccharide-syrup-photo.png'],
+  [['코코아가루'], 'cocoa-powder-photo.png'],
 ])
 
 const INGREDIENT_PHOTO_BY_CATEGORY: Record<string, string> = {
@@ -157,7 +163,7 @@ const INGREDIENT_PHOTO_BY_CATEGORY: Record<string, string> = {
   육류: ingredientAsset('meat-shop.png'),
   수산물: ingredientAsset('salmon-shop.png'),
   유제품: ingredientAsset('milk-shop.png'),
-  냉동식품: ingredientAsset('dumpling-shop.png'),
+  냉동식품: ingredientAsset('frozen-ice-pixabay.jpg'),
   조미료: ingredientAsset('soy-sauce-shop.png'),
   '곡물/면/빵': ingredientAsset('rice-bag-shop.png'),
   '통조림/가공식품': ingredientAsset('tuna-can-shop.png'),
@@ -169,17 +175,88 @@ export function getIngredientPhotoUrl(
   name: string | null | undefined,
   category: string | null | undefined,
 ): string {
-  const normalizedName = (name ?? '').trim()
-  if (normalizedName) {
-    const keywordHit = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD)
-      .sort((left, right) => right.length - left.length)
-      .find((keyword) => normalizedName.includes(keyword))
-    if (keywordHit) {
-      return INGREDIENT_PHOTO_BY_KEYWORD[keywordHit]
+  const lookupKeys = getIngredientPhotoLookupKeys(name ?? '')
+  if (lookupKeys.length > 0) {
+    const photoKeywords = Object.keys(INGREDIENT_PHOTO_BY_KEYWORD)
+
+    for (const lookupKey of lookupKeys) {
+      const exactHit = photoKeywords.find((keyword) => normalizeIngredientPhotoKey(keyword) === lookupKey)
+      if (exactHit) {
+        return INGREDIENT_PHOTO_BY_KEYWORD[exactHit]
+      }
     }
   }
 
   return INGREDIENT_PHOTO_BY_CATEGORY[category ?? ''] || INGREDIENT_PHOTO_BY_CATEGORY['음료/기타']
+}
+
+const INGREDIENT_PHOTO_NOISE_TOKENS = new Set([
+  '개',
+  '장',
+  '봉',
+  '봉지',
+  '팩',
+  '컵',
+  '모',
+  '캔',
+  '통',
+  '판',
+  '줄',
+  '단',
+  '알',
+  '마리',
+  '공기',
+  '조금',
+  '약간',
+  '소량',
+  '작은',
+  '큰',
+  '남은',
+  '냉장',
+  '실온',
+  '신선한',
+  '손질한',
+  '자른',
+  '썬',
+])
+
+function getIngredientPhotoLookupKeys(value: string): string[] {
+  const trimmed = value.normalize('NFC').trim().toLowerCase()
+  if (!trimmed) {
+    return []
+  }
+
+  const stripped = stripIngredientPhotoInputModifiers(trimmed)
+  const tokenKeys = stripped
+    .split(/[\s,./·]+/g)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .filter((token) => !INGREDIENT_PHOTO_NOISE_TOKENS.has(normalizeIngredientPhotoKey(token)))
+    .map(normalizeIngredientPhotoKey)
+    .sort((left, right) => right.length - left.length)
+
+  return Array.from(new Set([
+    normalizeIngredientPhotoKey(trimmed),
+    normalizeIngredientPhotoKey(stripped),
+    ...tokenKeys,
+  ])).filter(Boolean)
+}
+
+function stripIngredientPhotoInputModifiers(value: string): string {
+  return value
+    .replace(/\d+\/\d+\s*(?:개|장|봉지|봉|팩|g|kg|ml|l|큰술|작은술|컵|모|캔|통|판|줄|단|알|마리|인분|공기)?/gi, ' ')
+    .replace(/\d+(?:\.\d+)?\s*(?:개|장|봉지|봉|팩|g|kg|ml|l|큰술|작은술|컵|모|캔|통|판|줄|단|알|마리|인분|공기)?/gi, ' ')
+    .replace(/(?:한|두|세|네|반)\s*(?:개|장|봉지|봉|팩|컵|모|캔|통|판|줄|단|알|마리|공기)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function normalizeIngredientPhotoKey(value: string): string {
+  return value
+    .normalize('NFC')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
 }
 
 export function getCoupangSearchUrl(keyword: string): string {

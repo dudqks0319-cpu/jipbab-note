@@ -11,11 +11,29 @@ import {
   rankRecipeRecommendations,
 } from "../lib/matching.ts";
 import { CURATED_JIPBAB_RECIPES } from "../lib/curated-recipes.ts";
+import { RECIPE_PREVIEW_CATALOG } from "../lib/recipe-preview.ts";
 import {
+  RECIPE_QUICK_FILTERS,
+  getPreviewDisplayCategory,
   getReadinessBadge,
   isBeginnerVerifiedRecipe,
+  matchesPreviewQuickFilter,
   matchesRecipeQuickFilter,
 } from "../lib/recipe-list-labels.ts";
+import {
+  matchesRecipeListFilters,
+  sortRecipeListRecipes,
+} from "../lib/recipe-list-filters.ts";
+import { suggestIngredientCategory } from "../lib/ingredient-category.ts";
+import { getIngredientPhotoUrl } from "../lib/utils.ts";
+
+const DISALLOWED_STEP_IMAGE_PATTERNS = [
+  /\/beginner-scenes\//,
+  /\/beginner-recipe-guides\//,
+  /\/beginner-imagegen-posters\//,
+  /-recipe-poster\.(png|svg)$/i,
+  /\.svg$/i,
+];
 
 test("calculateRecipeIngredientMatch keeps the existing match result shape", () => {
   const match = calculateRecipeIngredientMatch(["계란", "대파"], "계란 2개, 대파 1줄기, 간장 1큰술");
@@ -60,6 +78,28 @@ test("ranking uses more available ingredients when match quality is otherwise ti
   assert.equal(ranked[1].match.matchRate, 100);
 });
 
+test("ranking adds beginner fit points for easy release recipes", () => {
+  const ranked = rankRecipeRecommendations(
+    [
+      { id: "plain", ingredients: "계란, 밥" },
+      {
+        id: "beginner-safe",
+        ingredients: "계란, 밥",
+        beginnerScore: 92,
+        difficultyLevel: 1,
+        totalMinutes: 8,
+        requiredTools: ["그릇", "숟가락"],
+        noFire: true,
+        fallbackMeal: "짜면 밥을 더 넣어 비빔밥처럼 먹습니다.",
+      },
+    ],
+    [{ name: "계란" }, { name: "밥" }],
+  );
+
+  assert.equal(ranked[0].recipe.id, "beginner-safe");
+  assert.ok(ranked[0].score.beginnerFitPoints > ranked[1].score.beginnerFitPoints);
+});
+
 test("ranking lifts recipes that use ingredients expiring soon", () => {
   const ranked = rankRecipeRecommendations(
     [
@@ -89,19 +129,19 @@ test("ranking ignores invalid expiry metadata instead of adding freshness urgenc
 });
 
 test("curated beginner recipes keep structured amounts and visual cues", () => {
-  const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-doenjang-jjigae");
+  const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.name === "된장찌개");
 
   assert.ok(recipe);
-  assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "2큰술"));
+  assert.ok(recipe.ingredientDetails?.some((item) => item.name === "된장" && item.display === "1.5큰술"));
   assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")));
   assert.ok(recipe.steps.some((step) => step.beginnerTip && step.visualCue));
 });
 
 test("curated recipe batch has competitive beginner coverage", () => {
-  assert.ok(CURATED_JIPBAB_RECIPES.length >= 20);
+  assert.ok(CURATED_JIPBAB_RECIPES.length >= 100);
 
   for (const recipe of CURATED_JIPBAB_RECIPES) {
-    assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 4, recipe.id);
+    assert.ok(recipe.ingredientDetails && recipe.ingredientDetails.length >= 3, recipe.id);
     assert.ok(recipe.measurementTips?.some((tip) => tip.includes("1큰술")), recipe.id);
     assert.ok(recipe.beginnerSummary && recipe.beginnerSummary.length >= 20, recipe.id);
     assert.ok(recipe.steps.length >= 4, recipe.id);
@@ -126,6 +166,115 @@ test("curated recipe thumbnails are local release-safe assets", () => {
   }
 });
 
+test("App Store QA thumbnail fixes use menu-specific food photos", () => {
+  const expectedThumbnails = new Map([
+    ["달걀국", "/images/recipes/beginner-food-photos/beginner-004-egg-drop-soup.png"],
+    ["햄야채볶음밥", "/images/recipes/beginner-food-photos/beginner-016-ham-vegetable-fried-rice.png"],
+    ["감자국", "/images/recipes/beginner-food-photos/beginner-034-gamja-guk.png"],
+    ["참치김치찌개", "/images/recipes/beginner-food-photos/beginner-047-tuna-kimchi-jjigae.png"],
+    ["스팸김치볶음", "/images/recipes/beginner-food-photos/beginner-049-spam-kimchi-bokkeum.png"],
+    ["어묵탕", "/images/recipes/beginner-food-photos/beginner-052-eomuk-tang.png"],
+  ]);
+
+  for (const [recipeName, thumbnailUrl] of expectedThumbnails) {
+    const recipe = CURATED_JIPBAB_RECIPES.find((item) => item.name === recipeName);
+    assert.ok(recipe, recipeName);
+    assert.equal(recipe.thumbnailUrl, thumbnailUrl, recipeName);
+    assert.ok(existsSync(join(process.cwd(), "public", thumbnailUrl)), `${recipeName} missing ${thumbnailUrl}`);
+  }
+});
+
+test("curated recipe instruction steps do not require unverified images", () => {
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    assert.ok(recipe.steps.length > 0, recipe.id);
+    for (const step of recipe.steps) {
+      if (!step.imageUrl) {
+        assert.equal(step.imageUrl, null, `${recipe.id} step ${step.index} uses an empty imageUrl`);
+        continue;
+      }
+      assert.ok(step.imageUrl.startsWith("/images/recipes/"), `${recipe.id} step ${step.index} uses ${step.imageUrl}`);
+      assert.equal(
+        DISALLOWED_STEP_IMAGE_PATTERNS.some((pattern) => pattern.test(step.imageUrl ?? "")),
+        false,
+        `${recipe.id} step ${step.index} still uses old/card image ${step.imageUrl}`,
+      );
+      assert.ok(
+        existsSync(join(process.cwd(), "public", step.imageUrl)),
+        `${recipe.id} step ${step.index} missing ${step.imageUrl}`,
+      );
+    }
+  }
+});
+
+test("all curated recipe and ingredient image references resolve to local assets", () => {
+  const imageRefs: Array<{ owner: string; url: string }> = [];
+
+  for (const recipe of CURATED_JIPBAB_RECIPES) {
+    for (const [field, url] of Object.entries({
+      thumbnailUrl: recipe.thumbnailUrl,
+      recipePosterImageUrl: recipe.recipePosterImageUrl,
+      recipeGuideImageUrl: recipe.recipeGuideImageUrl,
+      recipePrepImageUrl: recipe.recipePrepImageUrl,
+      recipeStepsImageUrl: recipe.recipeStepsImageUrl,
+    })) {
+      if (url) {
+        imageRefs.push({ owner: `${recipe.id}.${field}`, url });
+      }
+    }
+
+    for (const step of recipe.steps) {
+      if (step.imageUrl) {
+        imageRefs.push({ owner: `${recipe.id}.step.${step.index}`, url: step.imageUrl });
+      }
+    }
+
+    const ingredients = recipe.ingredientDetails?.length
+      ? recipe.ingredientDetails.map((ingredient) => ingredient.name)
+      : recipe.ingredientList;
+    for (const ingredientName of ingredients) {
+      const category = suggestIngredientCategory(ingredientName, "채소");
+      const url = getIngredientPhotoUrl(ingredientName, category);
+      imageRefs.push({ owner: `${recipe.id}.ingredient.${ingredientName}`, url });
+
+      if (url.includes("dumpling-shop")) {
+        assert.match(ingredientName, /만두/, `${recipe.id} maps ${ingredientName} to dumpling image`);
+      }
+    }
+  }
+
+  assert.ok(imageRefs.length > 700, "expected broad recipe and ingredient image coverage");
+  for (const { owner, url } of imageRefs) {
+    assert.ok(url.startsWith("/images/"), `${owner} uses non-local image ${url}`);
+    assert.ok(existsSync(join(process.cwd(), "public", url)), `${owner} missing ${url}`);
+  }
+});
+
+test("curated beginner recipes expose verified visual guide images", () => {
+  const beginnerRecipes = CURATED_JIPBAB_RECIPES.filter((recipe) =>
+    recipe.slug?.startsWith("beginner-"),
+  );
+  const sourceLedger = readFileSync(
+    join(process.cwd(), "public/images/recipes/SOURCES.md"),
+    "utf8",
+  );
+
+  assert.equal(beginnerRecipes.length, 176);
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/*.png"));
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/prep/*.png"));
+  assert.ok(sourceLedger.includes("beginner-recipe-guides/steps/*.png"));
+
+  for (const recipe of beginnerRecipes) {
+    const imageUrls = [recipe.recipeGuideImageUrl, recipe.recipePrepImageUrl, recipe.recipeStepsImageUrl].filter(
+      (imageUrl): imageUrl is string => typeof imageUrl === "string",
+    );
+    assert.equal(imageUrls.length, 3, `${recipe.id} missing verified guide image`);
+    for (const imageUrl of imageUrls) {
+      assert.ok(imageUrl.startsWith("/images/recipes/beginner-recipe-guides/"), `${recipe.id} uses an unexpected guide image`);
+      assert.ok(existsSync(join(process.cwd(), "public", imageUrl)), `${recipe.id} missing ${imageUrl}`);
+    }
+  }
+});
+
 test("curated recipe thumbnails are documented in the recipe source ledger", () => {
   const sourceLedger = readFileSync(
     join(process.cwd(), "public/images/recipes/SOURCES.md"),
@@ -139,14 +288,34 @@ test("curated recipe thumbnails are documented in the recipe source ledger", () 
     assert.ok(thumbnailUrl, recipe.id);
 
     const ledgerPath = thumbnailUrl.replace(/^\/images\/recipes\//, "");
+    if (ledgerPath.startsWith("beginner-posters/")) {
+      assert.ok(sourceLedger.includes("beginner-posters/manifest.json"), recipe.id);
+      assert.ok(sourceLedger.includes("beginner-posters/recipe-poster__*.svg"), recipe.id);
+      continue;
+    }
+    if (ledgerPath.startsWith("beginner-scenes/")) {
+      assert.ok(sourceLedger.includes("beginner-scenes/manifest.json"), recipe.id);
+      assert.ok(sourceLedger.includes("beginner-scenes/{recipeSlug}/"), recipe.id);
+      continue;
+    }
+    if (ledgerPath.startsWith("beginner-food-photos/")) {
+      assert.ok(sourceLedger.includes("beginner-food-photos/*.png"), recipe.id);
+      assert.match(sourceLedger, /finished-dish food photos only/i);
+      continue;
+    }
+    if (ledgerPath.startsWith("generated/")) {
+      assert.ok(sourceLedger.includes("generated/*.png"), recipe.id);
+      continue;
+    }
     assert.ok(sourceLedger.includes(ledgerPath), `${recipe.id} missing ${ledgerPath}`);
   }
 });
 
 test("recipe list quick filters expose beginner and ready states", () => {
-  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.id === "curated-soy-egg-rice");
+  const curated = CURATED_JIPBAB_RECIPES.find((item) => item.name === "간장계란밥");
+  assert.ok(curated);
   const recipe = {
-    id: "curated-soy-egg-rice",
+    id: curated?.id ?? "beginner-recipe-001",
     name: "간장계란밥",
     category: "밥",
     method: "비비기",
@@ -166,7 +335,164 @@ test("recipe list quick filters expose beginner and ready states", () => {
   assert.equal(isBeginnerVerifiedRecipe(curated), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "one-more"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "beginner"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "quick"), true);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "few-ingredients"), false);
+  assert.equal(matchesRecipeQuickFilter(recipe, curated, "few-tools"), true);
   assert.equal(matchesRecipeQuickFilter(recipe, curated, "ready"), false);
+  assert.deepEqual(RECIPE_QUICK_FILTERS.map((item) => item.label), [
+    "10분 이내",
+    "재료 5개 이하",
+    "설거지 적음",
+  ]);
+  const eggPorridge = CURATED_JIPBAB_RECIPES.find((item) => item.name === "달걀죽");
+  assert.ok(eggPorridge);
+  assert.equal(matchesPreviewQuickFilter(eggPorridge, "few-ingredients"), true);
+});
+
+test("safe recipe preview categories map editorial labels to user-facing groups", () => {
+  const categoryByTitle = new Map(
+    RECIPE_PREVIEW_CATALOG.map((recipe) => [recipe.name, getPreviewDisplayCategory(recipe)]),
+  );
+  assert.equal(categoryByTitle.get("버터간장계란밥"), "밥·한 그릇");
+  assert.equal(categoryByTitle.get("두부부침"), "두부");
+  assert.equal(categoryByTitle.get("어묵볶음"), "반찬");
+  assert.equal([...categoryByTitle.values()].includes("기타"), false);
+});
+
+test("recipe list filters cover difficulty, time, tools, fridge fit, and beginner sorting", () => {
+  const base = {
+    name: "계란간장밥",
+    category: "계란요리",
+    method: "비비기",
+    calories: "420",
+    thumbnailUrl: null,
+    ingredients: "계란, 밥, 간장",
+    hashTag: "",
+    ingredientList: ["계란", "밥", "간장"],
+    matchRate: 100,
+    matchedIngredients: ["계란", "밥", "간장"],
+    missingIngredients: [],
+    totalRecipeIngredients: 3,
+  };
+  const readyRecipe = {
+    ...base,
+    id: "ready-beginner",
+    difficultyLevel: 1 as const,
+    totalMinutes: 8,
+    beginnerScore: 94,
+    requiredTools: ["그릇", "숟가락"],
+    noFire: true,
+    microwave: false,
+  };
+  const microwaveRecipe = {
+    ...base,
+    id: "microwave",
+    name: "전자레인지 계란찜",
+    difficultyLevel: 2 as const,
+    totalMinutes: 12,
+    beginnerScore: 90,
+    requiredTools: ["전자레인지", "전자레인지용 그릇"],
+    noFire: true,
+    microwave: true,
+    missingIngredients: ["물"],
+    matchRate: 75,
+  };
+  const slowRecipe = {
+    ...base,
+    id: "slow",
+    name: "느린 조림",
+    difficultyLevel: 3 as const,
+    totalMinutes: 35,
+    beginnerScore: 70,
+    requiredTools: ["냄비"],
+    noFire: false,
+    microwave: false,
+    missingIngredients: ["간장", "설탕", "대파"],
+    matchRate: 40,
+  };
+
+  assert.equal(
+    matchesRecipeListFilters(readyRecipe, {
+      difficulty: "level-1",
+      time: "10",
+      tool: "no-fire",
+      fridge: "ready",
+    }),
+    true,
+  );
+  assert.equal(
+    matchesRecipeListFilters(slowRecipe, {
+      difficulty: "level-2",
+      time: "20",
+      tool: "all",
+      fridge: "almost",
+    }),
+    false,
+  );
+  assert.equal(
+    matchesRecipeListFilters(microwaveRecipe, {
+      difficulty: "level-2",
+      time: "15",
+      tool: "microwave",
+      fridge: "almost",
+    }),
+    true,
+  );
+
+  assert.deepEqual(
+    sortRecipeListRecipes([slowRecipe, microwaveRecipe, readyRecipe], "beginner-score").map((recipe) => recipe.id),
+    ["ready-beginner", "microwave", "slow"],
+  );
+  assert.deepEqual(
+    sortRecipeListRecipes([slowRecipe, microwaveRecipe, readyRecipe], "missing").map((recipe) => recipe.id),
+    ["ready-beginner", "microwave", "slow"],
+  );
+});
+
+test("recipe page uses the normalized API v1 category rail", () => {
+  const typesSource = readFileSync(new URL("../types/index.ts", import.meta.url), "utf8");
+  const pageSource = readFileSync(new URL("../app/recipe/page.tsx", import.meta.url), "utf8");
+  const detailSource = readFileSync(new URL("../app/recipe/[id]/page.tsx", import.meta.url), "utf8");
+  const apiSource = readFileSync(new URL("../app/api/recipes/route.ts", import.meta.url), "utf8");
+
+  assert.match(typesSource, /DISPLAY_RECIPE_CATEGORIES/);
+  assert.match(typesSource, /"찌개·전골"/);
+  assert.match(typesSource, /"초보가능"/);
+  assert.match(typesSource, /"10분요리"/);
+  assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"중식"/);
+  assert.match(typesSource.slice(typesSource.indexOf("DISPLAY_RECIPE_CATEGORIES")), /"간식·디저트"/);
+  assert.match(pageSource, /visibleCategories/);
+  assert.match(pageSource, /displayedCategories/);
+  assert.match(pageSource, /PRIMARY_RECIPE_CATEGORIES/);
+  assert.match(pageSource, /재료 \{recipe\.matchedIngredients\.length\}\/\{recipe\.totalRecipeIngredients\}개 보유/);
+  assert.doesNotMatch(pageSource, /<Star/);
+  assert.match(pageSource, /DISPLAY_CATEGORY_QUICK_FILTERS/);
+  assert.match(pageSource, /setQuickFilter/);
+  assert.match(pageSource, /difficultyFilter/);
+  assert.match(pageSource, /timeFilter/);
+  assert.match(pageSource, /toolFilter/);
+  assert.match(pageSource, /fridgeFilter/);
+  assert.match(pageSource, /sortMode/);
+  assert.match(pageSource, /matchesRecipeListFilters/);
+  assert.match(pageSource, /sortRecipeListRecipes/);
+  assert.match(detailSource, /getPublicRecipeDetailV1/);
+  assert.match(detailSource, /recipeApiV1DetailToRecord/);
+  assert.match(detailSource, /isRecipeDetailPublicationApproved/);
+  assert.doesNotMatch(detailSource, /<Star(?:\s|>)/);
+  assert.match(detailSource, /<ChefHat size=\{16\}/);
+  assert.match(detailSource, /label=\{`난이도 \$\{difficultyLabel\}`\}/);
+  assert.match(detailSource, /recipe\.safetyNotes/);
+  assert.match(detailSource, /recipe\.storageTip/);
+  assert.match(apiSource, /categoryCounts/);
+  assert.match(apiSource, /normalizeDisplayCategory/);
+  assert.match(apiSource, /counts\.초보가능/);
+  assert.match(apiSource, /counts\['10분요리'\]/);
+
+  const hookSource = readFileSync(new URL("../hooks/useRecipes.ts", import.meta.url), "utf8");
+  assert.match(hookSource, /VIRTUAL_CATEGORY_LABELS/);
+  assert.match(hookSource, /recipe\.totalMinutes <= 10/);
+  assert.match(hookSource, /counts\[category\]/);
+  assert.doesNotMatch(hookSource, /normalizeCategoryCounts\(payload\.categoryCounts,\s*getCuratedFallbackCategoryCounts/);
 });
 
 test("Korean ingredient aliases cover common home-cooking variants", () => {

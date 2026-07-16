@@ -4,13 +4,25 @@ import path from "node:path";
 // 스토어 콘솔 확인을 브라우저 세션 대신 공식 API로 재현하기 위한 credential runbook을 검증합니다.
 const cwd = process.cwd();
 const runbookPath = path.join(cwd, "docs/store-api-credentials-runbook.md");
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const iosBuild = readIosProjectBuildNumber() ?? "2026052001";
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
 
 const requiredTerms = [
   "APP_STORE_CONNECT_API_KEY_ID",
   "APP_STORE_CONNECT_API_ISSUER_ID",
   "APP_STORE_CONNECT_API_PRIVATE_KEY_PATH",
   "APP_STORE_CONNECT_BUNDLE_ID=com.jipbab.note",
-  "APP_STORE_CONNECT_BUILD_VERSION=2026052001",
+  `APP_STORE_CONNECT_BUILD_VERSION=${iosBuild}`,
   "GOOGLE_APPLICATION_CREDENTIALS",
   "GOOGLE_PLAY_PACKAGE_NAME=com.jipbab.note",
   "GOOGLE_PLAY_VERSION_CODE=1",

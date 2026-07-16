@@ -42,27 +42,6 @@ function serviceUnavailable() {
   );
 }
 
-async function deleteRowsForUser(
-  client: ReturnType<typeof getServerSupabaseAdminClient>,
-  userId: string,
-) {
-  const deleteSteps = [
-    client.from("ingredients").delete().eq("user_id", userId),
-    client.from("favorites").delete().eq("user_id", userId),
-    client.from("shopping_items").delete().eq("user_id", userId),
-    client.from("community_likes").delete().eq("user_id", userId),
-    client.from("community_comments").delete().eq("user_id", userId),
-    client.from("community_posts").delete().eq("user_id", userId),
-  ];
-
-  for (const step of deleteSteps) {
-    const { error } = await step;
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-}
-
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -159,7 +138,6 @@ export async function PATCH(
     }
 
     try {
-      await deleteRowsForUser(client, currentRequest.user_id);
       const { error: deleteUserError } = await client.auth.admin.deleteUser(currentRequest.user_id);
 
       if (deleteUserError) {

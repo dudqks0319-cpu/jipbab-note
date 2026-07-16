@@ -46,7 +46,7 @@ const env = {
   ...process.env,
 };
 const APP_MARKERS = ["집밥노트", "JIPBAB NOTE", "TODAY'S KITCHEN"];
-const runtimeConfigPath = path.join(cwd, "public", "runtime-app-config.json");
+const runtimeConfigPath = path.join(cwd, "capacitor-shell", "runtime-app-config.json");
 
 async function verifyAppUrl(serverUrl) {
   try {
@@ -149,6 +149,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.1"),
+        .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
+        .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser"),
         .package(name: "CapacitorLocalNotifications", path: "../../../node_modules/@capacitor/local-notifications")
     ],
     targets: [
@@ -157,6 +159,8 @@ let package = Package(
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "CapacitorApp", package: "CapacitorApp"),
+                .product(name: "CapacitorBrowser", package: "CapacitorBrowser"),
                 .product(name: "CapacitorLocalNotifications", package: "CapacitorLocalNotifications")${enableGemmaPlugin ? `,
                 "LiteRTLMEngine",
                 "GemmaModelConstraintProvider"` : ""}
@@ -180,9 +184,13 @@ let package = Package(
   if (existsSync(capacitorConfigPath)) {
     const capacitorConfig = JSON.parse(readFileSync(capacitorConfigPath, "utf8"));
     capacitorConfig.packageClassList = [
+      "AppPlugin",
+      "CAPBrowserPlugin",
       "LocalNotificationsPlugin",
       "JipbabGemmaPlugin",
+      "JipbabOAuthPlugin",
       "CapApp_SPM.JipbabGemmaPlugin",
+      "CapApp_SPM.JipbabOAuthPlugin",
     ];
     writeFileSync(capacitorConfigPath, `${JSON.stringify(capacitorConfig, null, "\t")}\n`, "utf8");
     console.log("Registered JipbabGemma Capacitor plugin for iOS.");

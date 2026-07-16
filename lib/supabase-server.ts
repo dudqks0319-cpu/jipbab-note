@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -40,9 +40,7 @@ export function getServerSupabaseAdminClient(): SupabaseClient {
   );
 }
 
-export async function getAuthorizedAdminEmail(
-  authorizationHeader: string | null,
-): Promise<string | null> {
+function getBearerAccessToken(authorizationHeader: string | null): string | null {
   if (!authorizationHeader?.startsWith("Bearer ")) {
     return null;
   }
@@ -52,13 +50,35 @@ export async function getAuthorizedAdminEmail(
     return null;
   }
 
-  const client = getServerSupabaseUserClient();
-  const { data, error } = await client.auth.getUser(accessToken);
-  if (error || !data.user?.email) {
+  return accessToken;
+}
+
+export async function getAuthenticatedServerUser(
+  authorizationHeader: string | null,
+): Promise<User | null> {
+  const accessToken = getBearerAccessToken(authorizationHeader);
+  if (!accessToken) {
     return null;
   }
 
-  const normalizedEmail = data.user.email.trim().toLowerCase();
+  const client = getServerSupabaseUserClient();
+  const { data, error } = await client.auth.getUser(accessToken);
+  if (error || !data.user) {
+    return null;
+  }
+
+  return data.user;
+}
+
+export async function getAuthorizedAdminEmail(
+  authorizationHeader: string | null,
+): Promise<string | null> {
+  const user = await getAuthenticatedServerUser(authorizationHeader);
+  if (!user?.email) {
+    return null;
+  }
+
+  const normalizedEmail = user.email.trim().toLowerCase();
   return ADMIN_EMAILS.includes(normalizedEmail) ? normalizedEmail : null;
 }
 

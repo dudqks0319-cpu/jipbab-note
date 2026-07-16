@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
@@ -94,12 +95,19 @@ function assertVercelProductionServerEnv() {
   }
 }
 
-async function postFamilyAction({ productionUrl, action, deviceId, body }) {
+function shouldAssertVercelProductionEnv(productionUrl) {
+  if (process.env.CHECK_VERCEL_PRODUCTION_ENV === "0") {
+    return false;
+  }
+  return new URL(productionUrl).hostname.endsWith(".vercel.app");
+}
+
+async function postFamilyAction({ productionUrl, action, accessToken, body }) {
   const response = await fetch(`${productionUrl}/api/family-groups`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-device-id": deviceId,
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ action, ...body }),
   });
@@ -135,27 +143,54 @@ async function cleanupFamilyGroup({ supabaseUrl, serviceRoleKey, groupId }) {
   }
 }
 
-async function run() {
-  assertVercelProductionServerEnv();
+async function createTestUser(admin, supabaseUrl, anonKey, label) {
+  const email = `family-route-${label}-${randomUUID()}@example.invalid`;
+  const password = `Family-${randomUUID()}-Aa1!`;
+  const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (created.error || !created.data.user) {
+    throw new Error(`unable to create ${label} test user`);
+  }
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const signedIn = await client.auth.signInWithPassword({ email, password });
+  if (signedIn.error || !signedIn.data.session) {
+    await admin.auth.admin.deleteUser(created.data.user.id);
+    throw new Error(`unable to sign in ${label} test user`);
+  }
+  return { id: created.data.user.id, accessToken: signedIn.data.session.access_token };
+}
 
+async function run() {
   const env = {
     ...readEnvFile(envFilePath),
     ...process.env,
   };
   const productionUrl = normalizeBaseUrl(env.PRODUCTION_APP_URL || env.CAPACITOR_SERVER_URL);
+  if (shouldAssertVercelProductionEnv(productionUrl)) {
+    assertVercelProductionServerEnv();
+  }
+
   const supabaseUrl = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_URL");
+  const anonKey = requiredEnv(env, "NEXT_PUBLIC_SUPABASE_ANON_KEY");
   const serviceRoleKey = requiredEnv(env, "SUPABASE_SERVICE_ROLE_KEY");
   const groupId = randomUUID();
   const inviteCode = `QA${randomBytes(3).toString("hex").toUpperCase()}`;
-  const ownerDeviceId = `qa-owner-${randomBytes(4).toString("hex")}`;
-  const joinerDeviceId = `qa-joiner-${randomBytes(4).toString("hex")}`;
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const testUsers = [];
 
   let cleanupError = null;
   try {
+    const owner = await createTestUser(admin, supabaseUrl, anonKey, "owner");
+    testUsers.push(owner);
+    const joiner = await createTestUser(admin, supabaseUrl, anonKey, "joiner");
+    testUsers.push(joiner);
     const created = await postFamilyAction({
       productionUrl,
       action: "create",
-      deviceId: ownerDeviceId,
+      accessToken: owner.accessToken,
       body: {
         groupId,
         groupName: "Release QA family",
@@ -171,7 +206,7 @@ async function run() {
     const joined = await postFamilyAction({
       productionUrl,
       action: "join",
-      deviceId: joinerDeviceId,
+      accessToken: joiner.accessToken,
       body: {
         inviteCode,
         displayName: "Joiner",
@@ -195,6 +230,12 @@ async function run() {
       await cleanupFamilyGroup({ supabaseUrl, serviceRoleKey, groupId });
     } catch (error) {
       cleanupError = error instanceof Error ? error.message : "unknown cleanup error";
+    }
+    for (const user of testUsers) {
+      const { error } = await admin.auth.admin.deleteUser(user.id);
+      if (error && !cleanupError) {
+        cleanupError = "temporary test user cleanup failed";
+      }
     }
     if (cleanupError) {
       console.error(`- cleanup: failed (${cleanupError})`);

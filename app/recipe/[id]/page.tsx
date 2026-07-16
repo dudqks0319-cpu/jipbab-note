@@ -1,520 +1,41 @@
-// 이 파일은 레시피 상세 화면을 담당합니다 - 큰 이미지, 재료 목록, 조리 순서를 제공합니다.
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Clock3, PlayCircle, Ruler, ShoppingBasket, Star, Users } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+import type { ReactNode } from "react";
+import {
+  BookOpenText,
+  ChefHat,
+  ChevronLeft,
+  Clock3,
+  ShieldCheck,
+  ShoppingBag,
+  ShoppingBasket,
+  Users,
+  Wrench,
+} from "lucide-react";
 
-import RecipeImage from "@/components/recipe/RecipeImage";
-import RecipeExploreLinks from "@/components/recipe/RecipeExploreLinks";
+import RecipeComments from "@/components/recipe/RecipeComments";
 import RecipeCookMode from "@/components/recipe/RecipeCookMode";
 import RecipeFavoriteButton from "@/components/recipe/RecipeFavoriteButton";
+import RecipeImage from "@/components/recipe/RecipeImage";
+import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
 import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import RecipeShoppingAssistant from "@/components/recipe/RecipeShoppingAssistant";
-import { findCuratedRecipe } from "@/lib/curated-recipes";
-import { normalizeHttpUrl } from "@/lib/request-security";
-import type { RecipeDetailRecord, RecipeDetailStep, RecipeIngredientDetail } from "@/types";
+import { recipeApiV1DetailToRecord } from "@/lib/recipe-api-v1-client";
+import { getPublicRecipeDetailV1 } from "@/lib/recipe-api-v1-repository";
+import { isBeginnerRecipeGeneratedImage } from "@/lib/recipe-images";
+import { isRecipeDetailPublicationApproved } from "@/lib/recipe-publication";
+import type { RecipeDetailRecord } from "@/types";
 
-const SERVICE_ID = "COOKRCP01";
-const BASE_URL = "https://openapi.foodsafetykorea.go.kr/api";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const FALLBACK_IMAGE =
-  "/images/recipes/kimchi-fried-rice.png";
-const DEFAULT_DETAIL_MEASUREMENT_TIPS = [
-  "1큰술 = 밥숟가락 평평하게 1번 = 약 15ml",
-  "1작은술 = 티스푼 평평하게 1번 = 약 5ml",
-  "1컵 = 일반 종이컵 1컵 = 약 180ml",
-  "한줌 = 한 손으로 가볍게 집히는 양 = 약 30~50g",
-];
-const INGREDIENT_SPLIT_PLACEHOLDER = "__JIPBAB_FRACTION_SLASH__";
-const INGREDIENT_SECTION_LABEL_PATTERN =
-  /^(?:주재료|부재료|양념|양념장|소스|고명|육수|반죽|반죽재료|속재료|초코필링|토핑)$/;
-const INGREDIENT_QUANTITY_FRAGMENT_PATTERN =
-  /^[0-9]+(?:\.[0-9]+)?\s*(?:kg|g|mg|ml|l|cm|mm|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)$/i;
-const INGREDIENT_FRACTION_DENOMINATOR_PATTERN =
-  /^([2-9][0-9]*)\s*(개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|컵|큰술|작은술|술|스푼|통|단|포기)$/i;
-const INGREDIENT_MEASUREMENT_PATTERN =
-  /\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|ts|tbsp|tsp|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기)/i;
-
-type MfdsRecipeRow = {
-  RCP_SEQ?: string;
-  RCP_NM?: string;
-  RCP_WAY2?: string;
-  RCP_PAT2?: string;
-  INFO_ENG?: string;
-  ATT_FILE_NO_MAIN?: string;
-  ATT_FILE_NO_MK?: string;
-  RCP_PARTS_DTLS?: string;
-  HASH_TAG?: string;
-  [key: string]: string | undefined;
-};
-
-type MfdsResponse = {
-  COOKRCP01?: {
-    row?: MfdsRecipeRow[];
-  };
-};
-
-type SupabaseRecipeRow = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  difficulty: number | null;
-  cooking_time: number | null;
-  servings: number | null;
-  thumbnail_url: string | null;
-  ingredients: unknown;
-  steps: unknown;
-  source: string | null;
-  content_origin: RecipeDetailRecord["contentOrigin"] | null;
-  reviewed_for_beginner: boolean | null;
-  recipe_sources:
-    | {
-        provider: string | null;
-        external_id: string | null;
-        source_url: string | null;
-        license: string | null;
-        attribution: string | null;
-      }
-    | Array<{
-        provider: string | null;
-        external_id: string | null;
-        source_url: string | null;
-        license: string | null;
-        attribution: string | null;
-      }>
-    | null;
-};
-
-const normalizeRecipeImageUrl = (value: string | null | undefined): string | null => {
-  return normalizeHttpUrl(value);
-};
-
-const cleanIngredientDisplayText = (value: string): string => {
-  const colonIndex = value.lastIndexOf(":");
-  const withoutLabel = colonIndex === -1 ? value : value.slice(colonIndex + 1);
-
-  return withoutLabel
-    .replace(/^[-•·*]\s*/, "")
-    .replace(/[，、]/g, ",")
-    .replace(/\s+/g, " ")
-    .replace(/\b([0-2])\s+([0-9])(?=\s*(?:g|kg|mg|ml|l)\b)/gi, "$1.$2")
-    .trim();
-};
-
-const dedupeIngredientDisplayList = (items: string[]): string[] => {
-  const seen = new Set<string>();
-  const deduped: string[] = [];
-
-  for (const item of items) {
-    const key = item.toLowerCase().replace(/\s+/g, " ");
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    deduped.push(item);
-  }
-
-  return deduped;
-};
-
-const normalizeIngredientDisplayItems = (items: string[]): string[] => {
-  const cleaned = items
-    .map(cleanIngredientDisplayText)
-    .filter((item) => item.length > 0)
-    .filter((item) => !INGREDIENT_SECTION_LABEL_PATTERN.test(item));
-  const normalized: string[] = [];
-
-  for (let index = 0; index < cleaned.length; index += 1) {
-    const current = cleaned[index];
-    const next = cleaned[index + 1];
-    const fractionNumerator = current.match(/^(.*\S)\s+([1-9])$/);
-    const fractionDenominator = next?.match(INGREDIENT_FRACTION_DENOMINATOR_PATTERN);
-
-    if (fractionNumerator && fractionDenominator) {
-      normalized.push(`${fractionNumerator[1]} ${fractionNumerator[2]}/${fractionDenominator[1]}${fractionDenominator[2]}`);
-      index += 1;
-      continue;
-    }
-
-    if (INGREDIENT_QUANTITY_FRAGMENT_PATTERN.test(current)) {
-      continue;
-    }
-
-    normalized.push(
-      INGREDIENT_MEASUREMENT_PATTERN.test(current) ? current.replace(/\s+[1-9]$/, "") : current,
-    );
-  }
-
-  return dedupeIngredientDisplayList(normalized);
-};
-
-const splitIngredientDisplayText = (rawIngredients: string): string[] => {
-  return rawIngredients
-    .replace(/(\d)\s*\/\s*(\d)/g, `$1${INGREDIENT_SPLIT_PLACEHOLDER}$2`)
-    .split(/[\n,;|/]+/g)
-    .map((item) => item.replaceAll(INGREDIENT_SPLIT_PLACEHOLDER, "/"));
-};
-
-const parseIngredientDisplayList = (rawIngredients: string): string[] => {
-  if (!rawIngredients) {
-    return [];
-  }
-
-  return normalizeIngredientDisplayItems(splitIngredientDisplayText(rawIngredients));
-};
-
-const parseSteps = (row: MfdsRecipeRow): RecipeDetailStep[] => {
-  const steps: RecipeDetailStep[] = [];
-
-  for (let index = 1; index <= 20; index += 1) {
-    const key = String(index).padStart(2, "0");
-    const description = row[`MANUAL${key}`]?.trim();
-    const imageUrl = normalizeRecipeImageUrl(row[`MANUAL_IMG${key}`]?.trim() || null);
-
-    if (!description) {
-      continue;
-    }
-
-    steps.push({
-      index,
-      description,
-      imageUrl,
-    });
-  }
-
-  if (steps.length > 0) {
-    return steps;
-  }
-
-  return [
-    { index: 1, description: "재료를 깨끗하게 손질하고 필요한 양을 준비합니다.", imageUrl: null },
-    { index: 2, description: "조리법에 맞춰 가열하고, 중간에 간을 맞춰가며 조리합니다.", imageUrl: null },
-    { index: 3, description: "불을 끄고 플레이팅한 뒤, 기호에 맞게 마무리합니다.", imageUrl: null },
-  ];
-};
-
-const parseHashTags = (rawTag: string): string[] => {
-  if (!rawTag) {
-    return [];
-  }
-
-  return rawTag
-    .split(/[\s,]+/g)
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0)
-    .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
-};
-
-const parseMethodAndCalories = (description: string | null): Pick<RecipeDetailRecord, "method" | "calories"> => {
-  if (!description) {
-    return { method: "정보 없음", calories: "-" };
-  }
-
-  const methodMatch = description.match(/조리법:\s*([^|]+)/);
-  const caloriesMatch = description.match(/열량:\s*([^|]+)/);
-
-  return {
-    method: methodMatch?.[1]?.trim() || description,
-    calories: caloriesMatch?.[1]?.trim() || "-",
-  };
-};
-
-const normalizeIngredientList = (value: unknown): string[] => {
-  if (Array.isArray(value)) {
-    return normalizeIngredientDisplayItems(value.map((item) => (typeof item === "string" ? item : "")));
-  }
-  if (typeof value === "string") {
-    return parseIngredientDisplayList(value);
-  }
-  return [];
-};
-
-const inferIngredientName = (display: string): string => {
-  return display
-    .replace(/\s+\d+(?:\.\d+)?\s*(?:kg|g|mg|ml|l|컵|큰술|작은술|술|스푼|개|장|줄기|봉|봉지|마리|모|쪽|알|팩|톨|줌|한줌|통|단|포기).*$/i, "")
-    .replace(/\s+(?:약간|조금|적당량)$/i, "")
-    .trim() || display.trim();
-};
-
-const normalizeIngredientDetails = (value: unknown): RecipeIngredientDetail[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item): RecipeIngredientDetail | null => {
-      if (typeof item === "string") {
-        const display = cleanIngredientDisplayText(item);
-        if (!display || INGREDIENT_SECTION_LABEL_PATTERN.test(display)) {
-          return null;
-        }
-        return {
-          name: inferIngredientName(display),
-          display,
-          beginnerNote: null,
-          prepNote: null,
-        } satisfies RecipeIngredientDetail;
-      }
-
-      if (typeof item !== "object" || item === null) {
-        return null;
-      }
-
-      const record = item as Record<string, unknown>;
-      const name = typeof record.name === "string" ? record.name.trim() : "";
-      const rawDisplay = typeof record.display === "string" ? record.display.trim() : "";
-      const amount = typeof record.amount === "string" ? record.amount.trim() : "";
-      const unit = typeof record.unit === "string" ? record.unit.trim() : "";
-      const display = rawDisplay || [amount, unit].filter(Boolean).join("");
-
-      if (!name || !display) {
-        return null;
-      }
-
-      return {
-        name,
-        display,
-        amount: amount || null,
-        unit: unit || null,
-        beginnerNote:
-          typeof record.beginnerNote === "string"
-            ? record.beginnerNote.trim()
-            : typeof record.beginner_note === "string"
-              ? record.beginner_note.trim()
-              : null,
-        prepNote:
-          typeof record.prepNote === "string"
-            ? record.prepNote.trim()
-            : typeof record.prep_note === "string"
-              ? record.prep_note.trim()
-              : null,
-      } satisfies RecipeIngredientDetail;
-    })
-    .filter((item): item is RecipeIngredientDetail => item !== null);
-};
-
-const normalizeStepList = (value: unknown): RecipeDetailStep[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  const steps = value
-    .map((item): RecipeDetailStep | null => {
-      if (typeof item !== "object" || item === null) {
-        return null;
-      }
-
-      const record = item as Record<string, unknown>;
-      const rawDescription = record.description;
-      const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
-      if (!description) {
-        return null;
-      }
-
-      const rawIndex = record.order ?? record.index;
-      const parsedIndex =
-        typeof rawIndex === "number"
-          ? rawIndex
-          : typeof rawIndex === "string"
-            ? Number(rawIndex)
-            : Number.NaN;
-
-      const imageFromSnake = record.image_url;
-      const imageFromCamel = record.imageUrl;
-      const imageUrl =
-        typeof imageFromSnake === "string"
-          ? imageFromSnake
-          : typeof imageFromCamel === "string"
-            ? imageFromCamel
-            : null;
-
-      return {
-        index: Number.isFinite(parsedIndex) && parsedIndex > 0 ? Math.floor(parsedIndex) : 0,
-        description,
-        imageUrl: normalizeRecipeImageUrl(imageUrl),
-        beginnerTip:
-          typeof record.beginnerTip === "string"
-            ? record.beginnerTip.trim()
-            : typeof record.beginner_tip === "string"
-              ? record.beginner_tip.trim()
-              : null,
-        visualCue:
-          typeof record.visualCue === "string"
-            ? record.visualCue.trim()
-            : typeof record.visual_cue === "string"
-              ? record.visual_cue.trim()
-              : null,
-        imageAlt:
-          typeof record.imageAlt === "string"
-            ? record.imageAlt.trim()
-            : typeof record.image_alt === "string"
-              ? record.image_alt.trim()
-              : null,
-        imageCaption:
-          typeof record.imageCaption === "string"
-            ? record.imageCaption.trim()
-            : typeof record.image_caption === "string"
-              ? record.image_caption.trim()
-              : null,
-      } satisfies RecipeDetailStep;
-    })
-    .filter((item): item is RecipeDetailStep => item !== null)
-    .map((item, idx): RecipeDetailStep => ({
-      ...item,
-      index: item.index > 0 ? item.index : idx + 1,
-    }))
-    .sort((a, b) => a.index - b.index);
-
-  return steps;
-};
-
-async function fetchRecipeDetailFromSupabase(recipeId: string): Promise<RecipeDetailRecord | null> {
-  if (!UUID_PATTERN.test(recipeId)) {
-    return null;
-  }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
-  }
-
-  try {
-    const client = createClient(supabaseUrl, supabaseAnonKey);
-    const { data, error } = await client
-      .from("recipes")
-      .select(`
-        id,
-        title,
-        description,
-        category,
-        difficulty,
-        cooking_time,
-        servings,
-        thumbnail_url,
-        ingredients,
-        steps,
-        source,
-        content_origin,
-        reviewed_for_beginner,
-        recipe_sources (
-          provider,
-          external_id,
-          source_url,
-          license,
-          attribution
-        )
-      `)
-      .eq("id", recipeId)
-      .maybeSingle();
-
-    if (error || !data) {
-      return null;
-    }
-
-    const row = data as SupabaseRecipeRow;
-    const parsedMeta = parseMethodAndCalories(row.description);
-    const ingredientDetails = normalizeIngredientDetails(row.ingredients);
-    const ingredientList = ingredientDetails.length > 0
-      ? ingredientDetails.map((ingredientItem) => ingredientItem.name)
-      : normalizeIngredientList(row.ingredients);
-    const steps = normalizeStepList(row.steps);
-    const sourceRecord = Array.isArray(row.recipe_sources)
-      ? row.recipe_sources[0] ?? null
-      : row.recipe_sources;
-    const fallbackProvider = row.source?.startsWith("mfds:") ? "MFDS" : row.source;
-    const fallbackExternalId = row.source?.startsWith("mfds:") ? row.source.replace(/^mfds:/, "") : null;
-    const fallbackAttribution = row.source?.startsWith("mfds:") ? "식품의약품안전처 식품안전나라" : null;
-    const fallbackLicense = row.source?.startsWith("mfds:") ? "공공데이터 OpenAPI" : null;
-
-    return {
-      id: row.id,
-      name: row.title?.trim() || "레시피 이름 없음",
-      category: row.category?.trim() || "기타",
-      method: parsedMeta.method,
-      calories: parsedMeta.calories,
-      thumbnailUrl: normalizeRecipeImageUrl(row.thumbnail_url || null),
-      ingredients: ingredientList.join(", "),
-      hashTag: "",
-      ingredientList,
-      ingredientDetails,
-      steps:
-        steps.length > 0
-          ? steps
-          : [
-              { index: 1, description: "재료를 깨끗하게 손질하고 필요한 양을 준비합니다.", imageUrl: null },
-              { index: 2, description: "조리법에 맞춰 가열하고, 중간에 간을 맞춰가며 조리합니다.", imageUrl: null },
-              { index: 3, description: "불을 끄고 플레이팅한 뒤, 기호에 맞게 마무리합니다.", imageUrl: null },
-            ],
-      difficulty: row.difficulty,
-      cookingTime: row.cooking_time,
-      servings: row.servings,
-      sourceProvider: sourceRecord?.provider ?? fallbackProvider,
-      sourceExternalId: sourceRecord?.external_id ?? fallbackExternalId,
-      sourceUrl: normalizeHttpUrl(sourceRecord?.source_url),
-      sourceAttribution: sourceRecord?.attribution ?? fallbackAttribution,
-      sourceLicense: sourceRecord?.license ?? fallbackLicense,
-      contentOrigin: row.content_origin ?? (row.source?.startsWith("mfds:") ? "public_api" : "licensed"),
-      reviewedForBeginner: row.reviewed_for_beginner ?? false,
-    };
-  } catch (error) {
-    console.error("Supabase 레시피 상세 조회 실패", error);
-    return null;
-  }
-}
 
 async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetailRecord | null> {
-  const curated = findCuratedRecipe(recipeId);
-  if (curated) {
-    return curated;
-  }
-
-  const fromSupabase = await fetchRecipeDetailFromSupabase(recipeId);
-  if (fromSupabase) {
-    return fromSupabase;
-  }
-
-  const apiKey = process.env.MFDS_API_KEY || process.env.FOODSAFETY_API_KEY;
-  if (!apiKey) {
+  if (!UUID_PATTERN.test(recipeId)) return null;
+  try {
+    const detail = await getPublicRecipeDetailV1(recipeId);
+    return detail ? recipeApiV1DetailToRecord(detail) : null;
+  } catch {
     return null;
   }
-
-  const endpoint = `${BASE_URL}/${apiKey}/${SERVICE_ID}/json/1/5/RCP_SEQ=${encodeURIComponent(recipeId)}`;
-  const response = await fetch(endpoint, { cache: "no-store" });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload = (await response.json()) as MfdsResponse;
-  const rows = payload.COOKRCP01?.row ?? [];
-  const target = rows.find((row) => row.RCP_SEQ === recipeId) ?? rows[0];
-
-  if (!target) {
-    return null;
-  }
-
-  return {
-    id: target.RCP_SEQ ?? recipeId,
-    name: target.RCP_NM?.trim() ?? "레시피 이름 없음",
-    category: target.RCP_PAT2?.trim() ?? "기타",
-    method: target.RCP_WAY2?.trim() ?? "정보 없음",
-    calories: target.INFO_ENG?.trim() ?? "-",
-    thumbnailUrl: normalizeRecipeImageUrl(target.ATT_FILE_NO_MAIN || target.ATT_FILE_NO_MK || null),
-    ingredients: target.RCP_PARTS_DTLS?.trim() ?? "",
-    hashTag: target.HASH_TAG?.trim() ?? "",
-    ingredientList: parseIngredientDisplayList(target.RCP_PARTS_DTLS?.trim() ?? ""),
-    steps: parseSteps(target),
-    sourceProvider: "MFDS",
-    sourceExternalId: target.RCP_SEQ ?? recipeId,
-    sourceUrl: "https://www.foodsafetykorea.go.kr",
-    sourceAttribution: "식품의약품안전처 식품안전나라",
-    sourceLicense: "공공데이터 OpenAPI",
-    contentOrigin: "public_api",
-    reviewedForBeginner: false,
-  };
 }
 
 function formatDifficulty(difficulty: RecipeDetailRecord["difficulty"]): string {
@@ -523,9 +44,16 @@ function formatDifficulty(difficulty: RecipeDetailRecord["difficulty"]): string 
     if (difficulty === 2) return "보통";
     return "어려움";
   }
+  return difficulty?.toString().trim() || "미표시";
+}
 
-  const label = difficulty?.toString().trim();
-  return label || "쉬움";
+function DetailMetric({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <div className="rounded-xl border border-[#ece8e2] bg-[#faf8f5] px-1.5 py-3">
+      <span className="mx-auto flex h-5 w-5 items-center justify-center text-[#78a95f]">{icon}</span>
+      <p className="mt-1 break-keep text-[12px] font-black leading-4 text-[#39342f]">{label}</p>
+    </div>
+  );
 }
 
 type RecipeDetailPageProps = {
@@ -534,22 +62,18 @@ type RecipeDetailPageProps = {
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { id } = await params;
-
-  if (!id) {
-    notFound();
-  }
+  if (!id) notFound();
 
   const recipe = await fetchRecipeDetail(id);
-
-  if (!recipe) {
+  if (!recipe || !isRecipeDetailPublicationApproved(recipe)) {
     return (
-      <div className="px-5 py-10">
-        <p className="rounded-2xl bg-rose-50 px-4 py-5 text-sm text-rose-500">
-          레시피 상세 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+      <div className="min-h-full bg-[#fbf6ee] px-5 py-10">
+        <p className="rounded-2xl bg-amber-50 px-4 py-5 text-sm font-semibold leading-6 text-amber-800">
+          이 레시피는 현재 검수 중이거나 잠시 불러올 수 없어요. 출처, 안전 안내와 실제 조리를 확인한 레시피만 공개합니다.
         </p>
         <Link
           href="/recipe"
-          className="mt-4 inline-flex items-center gap-1 rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-600"
+          className="mt-4 inline-flex min-h-11 items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-700"
         >
           <ChevronLeft size={16} />
           목록으로 돌아가기
@@ -558,44 +82,24 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     );
   }
 
-  const heroImage = recipe.thumbnailUrl || FALLBACK_IMAGE;
-  const tags = parseHashTags(recipe.hashTag);
-  const cookingMinutes = recipe.cookingTime ?? Math.min(Math.max(recipe.steps.length * 5 + 5, 15), 45);
-  const servingLabel = `${recipe.servings ?? 2}인분`;
+  const generatedImage = recipe.thumbnailUrl
+    ? isBeginnerRecipeGeneratedImage(recipe.thumbnailUrl)
+    : false;
+  const ingredientDetails = recipe.ingredientDetails ?? [];
   const difficultyLabel = formatDifficulty(recipe.difficulty);
-  const ingredientDetails = recipe.ingredientDetails?.length
-    ? recipe.ingredientDetails
-    : recipe.ingredientList.map((ingredientName) => ({
-        name: ingredientName,
-        display: "적당량",
-        beginnerNote: null,
-        prepNote: null,
-      }));
-  const measurementTips = recipe.measurementTips?.length
-    ? recipe.measurementTips
-    : DEFAULT_DETAIL_MEASUREMENT_TIPS;
-  const sourceLabel = recipe.sourceAttribution
-    ?? (recipe.id.startsWith("curated-") ? "집밥노트 직접 큐레이션" : "출처 정보 확인 필요");
-  const sourceLicense = recipe.sourceLicense
-    ?? (recipe.id.startsWith("curated-") ? "직접 작성/제작 콘텐츠" : "원천 데이터 기준 표시");
-  const reviewedForBeginner = recipe.reviewedForBeginner ?? recipe.id.startsWith("curated-");
-  const contentOriginLabel = {
-    original: "집밥노트 직접 작성",
-    public_api: "공공 API 기반",
-    licensed: "허가/라이선스 콘텐츠",
-    user_bookmark: "사용자 북마크",
-  }[recipe.contentOrigin ?? (recipe.id.startsWith("curated-") ? "original" : "licensed")];
+  const sourceLabel = recipe.sourceAttribution || recipe.sourceProvider || "출처 표시 없음";
+  const sourceLicense = recipe.sourceLicense || "라이선스 표시 없음";
 
   return (
-    <div className="min-h-full bg-[#fbf6ee] pb-8">
-      <section className="relative overflow-hidden bg-[#f8eddf] pb-4">
+    <div className="min-h-full bg-white pb-8 text-[#2b2b2b]">
+      <section className="relative overflow-hidden bg-white">
         <div className="mobile-safe-top absolute left-4 top-0 z-20">
           <Link
             href="/recipe"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf3]/92 text-[#2f2117] shadow-soft"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[#242424] shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
             aria-label="레시피 목록으로 돌아가기"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={19} />
           </Link>
         </div>
         <div className="mobile-safe-top absolute right-4 top-0 z-20 flex gap-2">
@@ -605,191 +109,177 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             name={recipe.name}
             category={recipe.category}
             thumbnailUrl={recipe.thumbnailUrl}
+            publicationEvidence={recipe.publicationEvidence}
           />
         </div>
 
-        <div className="relative h-[250px] w-full overflow-hidden">
+        {recipe.thumbnailUrl ? (
           <RecipeImage
-            src={heroImage}
-            fallbackSrc={FALLBACK_IMAGE}
-            alt={recipe.imageAlt || recipe.name}
-            className="h-full w-full"
-            imageClassName="h-full w-full object-cover"
+            src={recipe.thumbnailUrl}
+            alt={recipe.imageAlt || `${recipe.name} 완성 사진`}
+            className="h-[320px] w-full overflow-hidden bg-[#eee7dd] min-[390px]:h-[360px]"
+            imageClassName={`h-full w-full ${generatedImage ? "object-contain p-2" : "object-cover"}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#2f2117]/60 via-transparent to-transparent" />
-        </div>
+        ) : (
+          <div className="flex h-[250px] w-full items-center justify-center bg-[#f3eee7] text-sm font-bold text-[#81766d]">
+            등록된 완성 사진이 없어요
+          </div>
+        )}
 
-        <div className="-mt-7 px-5">
-          <div className="jipbab-panel relative rounded-[20px] px-4 py-4">
-            <span className="rounded-full border border-[#eadcc9] bg-[#fff7ed] px-3 py-1 text-[11px] font-black text-[#d94d19]">
-              {recipe.category}
-            </span>
-            <h1 className="mt-2 text-[24px] font-black leading-tight text-[#2f2117]">{recipe.name}</h1>
-            <p className="mt-1 text-[13px] font-semibold text-[#7d6d5f]">{recipe.method} · {recipe.calories} kcal</p>
-            {recipe.imageCaption ? (
-              <p className="mt-2 text-[12px] font-semibold leading-5 text-[#8f7f70]">{recipe.imageCaption}</p>
-            ) : null}
-
-            <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-              <DetailMetric icon={<Clock3 size={14} />} label={`${cookingMinutes}분`} />
-              <DetailMetric icon={<Users size={14} />} label={servingLabel} />
-              <DetailMetric icon={<Star size={14} />} label={difficultyLabel} />
-              <DetailMetric icon={<ShoppingBasket size={14} />} label={`${recipe.ingredientList.length}개`} />
-            </div>
+        <div className="px-5 py-7 min-[390px]:px-6">
+          <p className="text-[12px] font-black text-[#78a95f]">{recipe.category}</p>
+          <h1 className="mt-2 break-keep text-[32px] font-black leading-[1.24] text-[#2d2d2d] min-[390px]:text-[36px]">
+            {recipe.name}
+          </h1>
+          {recipe.beginnerSummary ? (
+            <p className="mt-4 break-keep text-[17px] font-medium leading-[1.65] text-[#4b4540]">
+              {recipe.beginnerSummary}
+            </p>
+          ) : null}
+          <div className="mt-6 grid grid-cols-4 gap-2 text-center">
+            <DetailMetric icon={<Clock3 size={16} />} label={`${recipe.totalMinutes}분`} />
+            <DetailMetric icon={<Users size={16} />} label={`${recipe.servings}인분`} />
+            <DetailMetric icon={<ChefHat size={16} />} label={`난이도 ${difficultyLabel}`} />
+            <DetailMetric icon={<ShoppingBasket size={16} />} label={`${ingredientDetails.length}개`} />
           </div>
         </div>
       </section>
 
-      {tags.length > 0 && (
-        <section className="flex flex-wrap gap-2 px-5 pt-4">
-          {tags.map((tag) => (
-            <span key={tag} className="rounded-full border border-[#eadcc9] bg-[#fffaf3] px-3 py-1.5 text-xs font-bold text-[#7d6d5f]">
-              {tag}
-            </span>
-          ))}
-        </section>
-      )}
+      <section className="px-5 pb-2">
+        <div className="grid grid-cols-3 gap-2">
+          <a href="#ingredients" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#fff5e9] px-2 text-sm font-black text-[#d94d19]">
+            <ShoppingBasket size={18} /> 재료 확인
+          </a>
+          <a href="#instructions" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#eef6df] px-2 text-sm font-black text-[#4f8740]">
+            <BookOpenText size={18} /> 조리 순서
+          </a>
+          <a href="#shopping-assistant" className="flex min-h-12 items-center justify-center gap-1 rounded-xl bg-[#f2edfb] px-2 text-sm font-black text-[#7652b7]">
+            <ShoppingBag size={18} /> 장보기
+          </a>
+        </div>
+      </section>
 
-      <RecipeShoppingAssistant recipeId={recipe.id} recipeName={recipe.name} ingredientList={recipe.ingredientList} />
-
-      {recipe.beginnerSummary ? (
-        <section className="px-5 pt-5">
-          <div className="jipbab-panel rounded-[16px] px-4 py-4">
-            <p className="text-[13px] font-black text-[#2f2117]">처음 만들 때 핵심</p>
-            <p className="mt-2 text-[13px] font-semibold leading-6 text-[#5f4b3a]">{recipe.beginnerSummary}</p>
+      {recipe.requiredTools?.length ? (
+        <section className="px-5 pt-6">
+          <div className="rounded-2xl border border-[#dcebd2] bg-[#f4fbef] px-4 py-4">
+            <div className="flex items-center gap-2 text-[#4f8740]">
+              <Wrench size={18} />
+              <h2 className="text-[17px] font-black">필요한 조리도구</h2>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {recipe.requiredTools.map((tool) => (
+                <span key={tool} className="rounded-full bg-white px-3 py-2 text-[13px] font-bold text-[#426e35]">
+                  {tool}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
       ) : null}
 
-      <section className="px-5 pt-5">
-        <h2 className="text-[17px] font-black text-[#2f2117]">재료</h2>
-        {ingredientDetails.length === 0 ? (
-          <p className="mt-2 rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-sm text-[#8f7f70]">재료 정보가 없습니다.</p>
-        ) : (
-          <ul className="jipbab-panel mt-2 divide-y divide-[#eadcc9] overflow-hidden rounded-[16px]">
-            {ingredientDetails.map((ingredient) => (
-              <li key={`${ingredient.name}-${ingredient.display}`} className="px-4 py-3">
-                <div className="flex items-start justify-between gap-3 text-[13px] font-semibold text-[#4b3929]">
-                  <span>{ingredient.name}</span>
-                  <span className="shrink-0 font-black text-[#d94d19]">{ingredient.display}</span>
+      <section id="ingredients" className="scroll-mt-24 px-5 py-8">
+        <div className="border-b-2 border-[#2d2d2d] pb-3">
+          <h2 className="text-[26px] font-black text-[#242424]">재료</h2>
+          <p className="mt-1 text-sm font-semibold text-[#7a7168]">{recipe.servings}인분 기준</p>
+        </div>
+        <ul className="divide-y divide-[#ededed]">
+          {ingredientDetails.map((ingredient) => (
+            <li key={`${ingredient.name}-${ingredient.display}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-4">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-keep text-[18px] font-bold leading-7 text-[#303030]">{ingredient.name}</p>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[11px] font-black ${
+                      ingredient.required === false
+                        ? "bg-[#f1eee9] text-[#74695f]"
+                        : "bg-[#eef6df] text-[#4f8740]"
+                    }`}
+                  >
+                    {ingredient.required === false ? "선택 재료" : "필수 재료"}
+                  </span>
                 </div>
-                {ingredient.beginnerNote || ingredient.prepNote ? (
-                  <div className="mt-1 space-y-0.5 text-[11px] font-semibold leading-5 text-[#8f7f70]">
-                    {ingredient.beginnerNote ? <p>{ingredient.beginnerNote}</p> : null}
-                    {ingredient.prepNote ? <p>{ingredient.prepNote}</p> : null}
-                  </div>
+                {ingredient.prepNote ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#7a7168]">손질: {ingredient.prepNote}</p> : null}
+                {ingredient.beginnerNote && ingredient.beginnerNote !== ingredient.prepNote ? (
+                  <p className="mt-1 break-keep text-[13px] font-semibold leading-5 text-[#6a625a]">준비 팁: {ingredient.beginnerNote}</p>
                 ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
+                {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
+              </div>
+              <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">{ingredient.display}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="px-5 pt-4">
-        <div className="jipbab-panel rounded-[16px] px-4 py-4">
-          <div className="flex items-center gap-2">
-            <Ruler size={16} className="text-[#d94d19]" />
-            <h2 className="text-[15px] font-black text-[#2f2117]">초보자 계량 기준</h2>
+      <RecipeShoppingAssistant
+        recipeId={recipe.id}
+        recipeName={recipe.name}
+        ingredientList={recipe.ingredientList}
+        ingredientDetails={ingredientDetails}
+      />
+
+      <RecipeInstructionView recipeName={recipe.name} steps={recipe.steps} />
+      <RecipeCookMode recipeId={recipe.id} recipeName={recipe.name} steps={recipe.steps} />
+
+      {recipe.safetyNotes?.length ? (
+        <section className="px-5 pt-6">
+          <div className="rounded-2xl border border-[#f0dfcb] bg-[#fff9f0] px-4 py-4">
+            <div className="flex items-center gap-2 text-[#b55c24]">
+              <ShieldCheck size={18} />
+              <h2 className="text-[18px] font-black">안전하게 만들기</h2>
+            </div>
+            <ul className="mt-3 space-y-2">
+              {recipe.safetyNotes.map((note) => (
+                <li key={note} className="break-keep rounded-xl bg-white px-3 py-3 text-[13px] font-semibold leading-6 text-[#6e431d]">
+                  {note}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="mt-3 grid gap-2">
-            {measurementTips.map((tip) => (
-              <p key={tip} className="rounded-[12px] bg-[#fff7ed] px-3 py-2 text-[12px] font-bold leading-5 text-[#6e431d]">
-                {tip}
-              </p>
-            ))}
-          </div>
+        </section>
+      ) : null}
+
+      <section className="px-5 pt-6">
+        <div className="grid gap-2 rounded-2xl border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[19px] font-black text-[#242424]">남았을 때</h2>
+          <p className="rounded-xl bg-white px-3 py-3 text-[13px] font-bold leading-6 text-[#5d554d]">보관: {recipe.storageTip}</p>
+          <p className="rounded-xl bg-white px-3 py-3 text-[13px] font-bold leading-6 text-[#5d554d]">다시 데우기: {recipe.reheatTip}</p>
         </div>
       </section>
 
-      <RecipeExploreLinks recipeName={recipe.name} />
-      <RecipeCookMode recipeName={recipe.name} steps={recipe.steps} />
+      <div id="recipe-qna" className="scroll-mt-24">
+        <RecipeComments recipeId={recipe.id} recipeName={recipe.name} />
+      </div>
 
-      <section className="px-5 pt-5">
-        <h2 className="text-[17px] font-black text-[#2f2117]">만드는 순서</h2>
-        <ol className="mt-3 space-y-2.5">
-          {recipe.steps.map((step) => (
-            <li key={step.index} className="jipbab-panel overflow-hidden rounded-[16px]">
-              <div className="flex items-start gap-3 px-4 py-4">
-                <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6e431d] text-xs font-black text-white">
-                  {step.index}
-                </span>
-                <p className="text-sm leading-relaxed text-[#4b3929]">{step.description}</p>
-              </div>
-              {step.beginnerTip || step.visualCue ? (
-                <div className="space-y-1 border-t border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-[12px] font-semibold leading-5">
-                  {step.beginnerTip ? <p className="text-[#6e431d]">팁: {step.beginnerTip}</p> : null}
-                  {step.visualCue ? <p className="text-[#8f7f70]">눈으로 확인: {step.visualCue}</p> : null}
-                </div>
-              ) : null}
-              {step.imageUrl && (
-                <RecipeImage
-                  src={step.imageUrl}
-                  alt={step.imageAlt || `${recipe.name} 조리 순서 ${step.index}`}
-                  className="relative h-44 w-full overflow-hidden border-t border-[#eadcc9]"
-                  imageClassName="h-full w-full object-cover"
-                  caption={step.imageCaption}
-                />
-              )}
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="px-5 pb-24 pt-5">
-        <div className="rounded-[16px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
-          <h2 className="text-[14px] font-black text-[#2f2117]">레시피 출처</h2>
-          <p className="mt-2 text-[12px] font-semibold leading-5 text-[#7d6d5f]">
-            출처: {sourceLabel} · 라이선스/권한: {sourceLicense}
-          </p>
-          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
-            제공자: {recipe.sourceProvider ?? "집밥노트"} · 콘텐츠 기준: {contentOriginLabel}
-            {recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
+      <section className="px-5 pb-24 pt-6">
+        <div className="rounded-2xl border border-[#ece8e2] bg-[#faf8f5] px-4 py-4">
+          <h2 className="text-[15px] font-black text-[#242424]">레시피 출처</h2>
+          <p className="mt-2 break-keep text-[13px] font-semibold leading-6 text-[#6f655b]">{sourceLabel} · {sourceLicense}</p>
+          <p className="mt-1 break-keep text-[12px] font-semibold leading-5 text-[#7a7168]">
+            제공자: {recipe.sourceProvider}{recipe.sourceExternalId ? ` · 원천 ID: ${recipe.sourceExternalId}` : ""}
           </p>
           {recipe.sourceUrl ? (
             <Link
               href={recipe.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex text-[12px] font-black text-[#d94d19] underline-offset-2 hover:underline"
+              className="mt-2 inline-flex min-h-11 items-center text-[13px] font-black text-[#d94d19] underline underline-offset-2"
             >
               원천 페이지 확인
             </Link>
           ) : null}
-          <p className="mt-1 text-[12px] font-semibold leading-5 text-[#8f7f70]">
-            {reviewedForBeginner
-              ? "초보자용 계량, 실패 방지 팁, 조리 문장은 집밥노트 기준으로 검수했습니다."
-              : "공공 API 원천 정보는 앱 표시 기준으로 정리하며, 초보자 문장은 원문을 그대로 복사하지 않습니다."}
-          </p>
         </div>
       </section>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[430px] border-t border-[#eadcc9] bg-[#fffaf3]/95 px-5 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <nav className="px-5 pb-4">
         <div className="grid grid-cols-2 gap-2">
-          <a
-            href="#cook-mode"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#2f2117] px-3 text-[13px] font-black text-white"
-          >
-            <PlayCircle size={16} />
-            요리 시작
+          <a href="#instructions" className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#242424] px-3 text-[13px] font-black text-white">
+            <BookOpenText size={16} /> 순서 보기
           </a>
-          <a
-            href="#shopping-assistant"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] px-3 text-[13px] font-black text-white"
-          >
-            <ShoppingBasket size={16} />
-            부족 재료 장보기
+          <a href="#shopping-assistant" className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#78a95f] px-3 text-[13px] font-black text-white">
+            <ShoppingBasket size={16} /> 부족 재료 장보기
           </a>
         </div>
       </nav>
-    </div>
-  );
-}
-
-function DetailMetric({ icon, label }: { icon: ReactNode; label: string }) {
-  return (
-    <div className="rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-2 py-2">
-      <span className="mx-auto flex h-5 w-5 items-center justify-center text-[#8a5a2a]">{icon}</span>
-      <p className="mt-1 text-[11px] font-black text-[#4b3929]">{label}</p>
     </div>
   );
 }

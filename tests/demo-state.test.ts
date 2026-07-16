@@ -16,5 +16,5 @@ function getDaysUntil(dateValue: string | null): number {
 test("keeps app store demo expiry dates relative to the current date", () => {
   const daysUntilExpiry = APPSTORE_DEMO_INGREDIENTS.map((item) => getDaysUntil(item.expiryDate));
 
-  assert.deepEqual(daysUntilExpiry, [2, 4, 1, 3]);
+  assert.deepEqual(daysUntilExpiry, [2, 4, 1, 3, 5, 8, 6, 9, 7, 1]);
 });

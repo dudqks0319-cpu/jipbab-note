@@ -94,3 +94,25 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(76, 51, 28, 0.12);
 }
+
+button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']),
+select,
+textarea {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

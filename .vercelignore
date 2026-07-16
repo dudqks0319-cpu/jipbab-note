@@ -20,6 +20,8 @@ docs/play-store-assets
 # local runtime, captures, and private release material
 .git
 .vercel
+.codegraph
+.omo
 .env*
 !.env.example
 output

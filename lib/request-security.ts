@@ -17,20 +17,33 @@ function normalizeDeviceId(value: string | null): string | null {
 }
 
 export function getRateLimitKey(request: Request): string {
+  return getRateLimitIdentityKeys(request)[0] ?? "ua:unknown-ua";
+}
+
+export function getRateLimitIdentityKeys(request: Request, userId?: string | null): string[] {
   const forwardedFor = firstForwardedIp(request.headers.get("x-forwarded-for"));
   const realIp = request.headers.get("x-real-ip")?.trim() || null;
   const ip = forwardedFor ?? realIp;
   const deviceId = normalizeDeviceId(request.headers.get("x-device-id"));
+  const normalizedUserId = userId?.trim();
+  const keys: string[] = [];
 
+  if (normalizedUserId) {
+    keys.push(`user:${normalizedUserId}`);
+  }
   if (ip) {
-    return `ip:${ip}`;
+    keys.push(`ip:${ip}`);
   }
   if (deviceId) {
-    return `device:${deviceId}`;
+    keys.push(`device:${deviceId}`);
   }
 
-  const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
-  return `ua:${userAgent.slice(0, 120)}`;
+  if (keys.length === 0) {
+    const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
+    keys.push(`ua:${userAgent.slice(0, 120)}`);
+  }
+
+  return [...new Set(keys)];
 }
 
 export function normalizeHttpUrl(value: string | null | undefined): string | null {
@@ -70,6 +83,64 @@ export async function readJsonObject(request: Request): Promise<Record<string, u
     return body as Record<string, unknown>;
   } catch {
     return null;
+  }
+}
+
+export type BoundedJsonObjectResult =
+  | { status: "ok"; value: Record<string, unknown> }
+  | { status: "invalid" }
+  | { status: "too_large" };
+
+export async function readBoundedJsonObject(
+  request: Request,
+  maxBytes: number,
+): Promise<BoundedJsonObjectResult> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) {
+    throw new TypeError("maxBytes must be a positive safe integer");
+  }
+
+  const declaredLength = request.headers.get("content-length");
+  if (declaredLength && /^\d+$/.test(declaredLength) && Number(declaredLength) > maxBytes) {
+    return { status: "too_large" };
+  }
+  if (!request.body) {
+    return { status: "invalid" };
+  }
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel();
+        return { status: "too_large" };
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return { status: "invalid" };
+  }
+
+  const payload = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    payload.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(payload);
+    const value = JSON.parse(text) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return { status: "invalid" };
+    }
+    return { status: "ok", value: value as Record<string, unknown> };
+  } catch {
+    return { status: "invalid" };
   }
 }
 

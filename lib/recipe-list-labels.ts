@@ -1,15 +1,62 @@
 // 이 파일은 레시피 목록에서 쓰는 준비 상태/초보 검수 표시 로직을 제공합니다.
 import type { CuratedRecipe } from "@/lib/curated-recipes";
-import type { RecipeWithMatch } from "@/types";
+import {
+  DISPLAY_RECIPE_CATEGORIES,
+  type DisplayRecipeCategory,
+  type RecipeWithMatch,
+} from "../types/index.ts";
 
-export type RecipeQuickFilter = "all" | "ready" | "one-more" | "beginner";
+export type RecipeQuickFilter =
+  | "all"
+  | "ready"
+  | "one-more"
+  | "beginner"
+  | "quick"
+  | "few-ingredients"
+  | "few-tools"
+  | "no-fire"
+  | "microwave";
 
 export const RECIPE_QUICK_FILTERS: Array<{ id: RecipeQuickFilter; label: string }> = [
-  { id: "all", label: "전체 추천" },
-  { id: "ready", label: "바로 가능" },
-  { id: "one-more", label: "1개만 사면" },
-  { id: "beginner", label: "초보 검수" },
+  { id: "quick", label: "10분 이내" },
+  { id: "few-ingredients", label: "재료 5개 이하" },
+  { id: "few-tools", label: "설거지 적음" },
 ];
+
+export function getPreviewDisplayCategory(
+  recipe: Pick<CuratedRecipe, "category" | "name">,
+): DisplayRecipeCategory {
+  const { category, name } = recipe;
+  if (
+    category === "밥" ||
+    category.includes("밥") ||
+    name.includes("밥") ||
+    name.includes("덮밥") ||
+    name.includes("죽")
+  ) {
+    return "밥·한 그릇";
+  }
+  if (/국수|우동|라면|파스타|면$/u.test(name) || category.includes("면")) return "면";
+  if (/찌개|전골/u.test(name)) {
+    return "찌개·전골";
+  }
+  if (
+    /국|탕/u.test(name) ||
+    category === "국·찌개" ||
+    category === "국&찌개" ||
+    category.includes("국/찌개")
+  ) {
+    return "국";
+  }
+  if (/제육|돼지고기|소고기|닭|불고기/u.test(name) || category.includes("고기")) return "고기";
+  if (/두부/u.test(name)) return "두부";
+  if (/달걀|계란/u.test(name) || category.includes("달걀") || category.includes("계란")) return "달걀";
+  if (/볶음|무침|조림|부침|구이|전$/u.test(name) || category === "반찬") return "반찬";
+  if (DISPLAY_RECIPE_CATEGORIES.includes(category as DisplayRecipeCategory)) {
+    return category as DisplayRecipeCategory;
+  }
+  return "기타";
+}
 
 export function getReadinessBadge(
   missingCount: number,
@@ -34,6 +81,15 @@ export function isBeginnerVerifiedRecipe(curated: CuratedRecipe | undefined): bo
     Boolean(curated?.steps.every((step) => step.beginnerTip && step.visualCue));
 }
 
+function getRequiredIngredientCount(curated: CuratedRecipe | undefined, fallbackCount: number): number {
+  if (!curated?.ingredientDetails?.length) return fallbackCount;
+  return curated.ingredientDetails.filter((ingredient) => ingredient.required !== false).length;
+}
+
+function hasLowCleanupToolCount(requiredTools: string[] | undefined): boolean {
+  return Boolean(requiredTools?.length) && (requiredTools?.length ?? 0) <= 3;
+}
+
 export function matchesRecipeQuickFilter(
   recipe: RecipeWithMatch,
   curated: CuratedRecipe | undefined,
@@ -46,7 +102,54 @@ export function matchesRecipeQuickFilter(
     return recipe.missingIngredients.length === 1;
   }
   if (quickFilter === "beginner") {
-    return isBeginnerVerifiedRecipe(curated);
+    return recipe.publicationEvidence?.reviewedForBeginner === true || isBeginnerVerifiedRecipe(curated);
+  }
+  if (quickFilter === "quick") {
+    return (
+      (typeof recipe.totalMinutes === "number" && recipe.totalMinutes <= 10) ||
+      (typeof curated?.cookingTime === "number" && curated.cookingTime <= 10)
+    );
+  }
+  if (quickFilter === "few-ingredients") {
+    const ingredientCount = getRequiredIngredientCount(curated, recipe.totalRecipeIngredients);
+    return ingredientCount <= 5;
+  }
+  if (quickFilter === "few-tools") {
+    return hasLowCleanupToolCount(recipe.requiredTools ?? curated?.requiredTools);
+  }
+  if (quickFilter === "no-fire") {
+    return recipe.noFire === true || curated?.noFire === true;
+  }
+  if (quickFilter === "microwave") {
+    return recipe.microwave === true || curated?.microwave === true;
+  }
+  return true;
+}
+
+export function matchesPreviewQuickFilter(
+  recipe: CuratedRecipe,
+  quickFilter: RecipeQuickFilter,
+): boolean {
+  if (quickFilter === "quick") {
+    return typeof recipe.cookingTime === "number" && recipe.cookingTime <= 10;
+  }
+  if (quickFilter === "few-ingredients") {
+    return getRequiredIngredientCount(recipe, 0) <= 5;
+  }
+  if (quickFilter === "few-tools") {
+    return hasLowCleanupToolCount(recipe.requiredTools);
+  }
+  if (quickFilter === "beginner") {
+    return isBeginnerVerifiedRecipe(recipe);
+  }
+  if (quickFilter === "no-fire") {
+    return recipe.noFire === true;
+  }
+  if (quickFilter === "microwave") {
+    return recipe.microwave === true;
+  }
+  if (quickFilter === "ready" || quickFilter === "one-more") {
+    return false;
   }
   return true;
 }

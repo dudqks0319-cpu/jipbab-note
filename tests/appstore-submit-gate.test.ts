@@ -38,9 +38,12 @@ test("App Store submission gate checks iOS release readiness without the full Pl
 });
 
 test("App Store external gate excludes Android device and Play Console blockers", () => {
+  assert.match(appStoreExternalSource, /scripts\/check-supabase-live\.mjs/);
+  assert.match(appStoreExternalSource, /scripts\/check-supabase-storage-live\.mjs/);
   assert.match(appStoreExternalSource, /scripts\/check-real-device-availability\.mjs", "--platform=ios"/);
   assert.match(appStoreExternalSource, /scripts\/check-real-device-qa-evidence\.mjs", "--platform=ios"/);
   assert.match(appStoreExternalSource, /scripts\/check-store-console-confirmation\.mjs", "--platform=appstore"/);
+  assert.match(appStoreExternalSource, /shared production blockers and iOS\/App Store blockers/);
   assert.match(appStoreExternalSource, /does not validate Play Console readiness/);
   assert.doesNotMatch(appStoreExternalSource, /--platform=android/);
   assert.doesNotMatch(appStoreExternalSource, /--platform=play/);

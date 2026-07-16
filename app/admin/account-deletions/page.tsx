@@ -70,9 +70,8 @@ export default function AdminAccountDeletionsPage() {
 
         setRecords(payload.requests ?? []);
         setError(null);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "요청 목록을 불러오지 못했습니다.";
-        setError(message);
+      } catch {
+        setError("계정 삭제 요청 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       }
     };
 
@@ -138,9 +137,8 @@ export default function AdminAccountDeletionsPage() {
         prev.map((item) => (item.id === payload.request?.id ? payload.request : item)),
       );
       setMessage(options?.destructive ? "계정 삭제를 완료했습니다." : "상태를 업데이트했습니다.");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "상태를 저장하지 못했습니다.";
-      setError(message);
+    } catch {
+      setError("상태를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setWorkingId(null);
     }

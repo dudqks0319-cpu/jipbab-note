@@ -5,7 +5,10 @@ const cwd = process.cwd();
 const envFilePath = path.join(cwd, ".env.local");
 const DEFAULT_PRODUCTION_URL = "https://jipbab-note-app.vercel.app";
 const ACCOUNT_DELETION_PATH = "/api/account-deletion-requests";
+const DIRECT_ACCOUNT_DELETION_PATH = "/api/account/delete";
 const EXPECTED_FORBIDDEN_MESSAGE = "운영자 권한이 없습니다.";
+const EXPECTED_UNAUTHENTICATED_MESSAGE =
+  "로그인 세션을 확인할 수 없습니다. 다시 로그인한 뒤 시도해주세요.";
 const EXPECTED_SERVICE_UNAVAILABLE_MESSAGE =
   "계정 삭제 운영 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.";
 
@@ -111,9 +114,20 @@ async function run() {
       Accept: "application/json",
     },
   });
+  const directResponse = await fetch(`${productionUrl}${DIRECT_ACCOUNT_DELETION_PATH}`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
+  });
   const text = await response.text();
+  const directText = await directResponse.text();
   const json = parseJson(text);
+  const directJson = parseJson(directText);
   const message = getMessage(json);
+  const directMessage = getMessage(directJson);
   const details = [];
   let passes = 0;
 
@@ -142,6 +156,63 @@ async function run() {
   passes += 1;
   details.push("- response body does not expose server env names or internal traces");
 
+  if (hasNoStore(directResponse.headers)) {
+    passes += 1;
+    details.push("- direct deletion route includes no-store cache header");
+  } else {
+    printResult({
+      status: "fail",
+      passes,
+      failures: 1,
+      details: ["FAIL", "- missing Cache-Control: no-store on direct deletion route"],
+    });
+    process.exit(1);
+  }
+
+  if (hasSensitiveOutput(directText)) {
+    printResult({
+      status: "fail",
+      passes,
+      failures: 1,
+      details: ["FAIL", "- direct deletion response body contains sensitive implementation details"],
+    });
+    process.exit(1);
+  }
+  passes += 1;
+  details.push("- direct deletion response body does not expose server env names or internal traces");
+
+  if (directResponse.status === 401 && directMessage === EXPECTED_UNAUTHENTICATED_MESSAGE) {
+    passes += 1;
+    details.push("- unauthenticated direct deletion is rejected");
+  } else if (directResponse.status === 503 && directMessage === EXPECTED_SERVICE_UNAVAILABLE_MESSAGE) {
+    details.push("- direct deletion route fails closed with a generic 503 because production server env is incomplete");
+    printResult({
+      status: "blocked",
+      passes,
+      failures: 1,
+      details: [
+        "FAIL",
+        ...details,
+        "- next: add SUPABASE_SERVICE_ROLE_KEY to the active production host, redeploy, then rerun this check",
+      ],
+    });
+    process.exit(1);
+  } else {
+    printResult({
+      status: "fail",
+      passes,
+      failures: 1,
+      details: [
+        "FAIL",
+        ...details,
+        `- unexpected direct deletion response: HTTP ${directResponse.status}${
+          directMessage ? ` message=${directMessage}` : ""
+        }`,
+      ],
+    });
+    process.exit(1);
+  }
+
   if (response.status === 403 && message === EXPECTED_FORBIDDEN_MESSAGE) {
     passes += 1;
     details.push("- unauthenticated admin listing is forbidden");
@@ -158,7 +229,7 @@ async function run() {
       details: [
         "FAIL",
         ...details,
-        "- next: add SUPABASE_SERVICE_ROLE_KEY and ADMIN_EMAILS to Vercel Production, redeploy, then rerun this check",
+        "- next: add SUPABASE_SERVICE_ROLE_KEY and ADMIN_EMAILS to the active production host, redeploy, then rerun this check",
       ],
     });
     process.exit(1);

@@ -10,6 +10,13 @@ const expectedBundleId = "com.jipbab.note";
 const expectedTeamId = "3FG9QJC8WC";
 const minimumIpaBytes = 10 * 1024 * 1024;
 const projectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+const compactRemoteShellEntries = [
+  "Payload/App.app/App",
+  "Payload/App.app/Frameworks/Capacitor.framework/Capacitor",
+  "Payload/App.app/Frameworks/Cordova.framework/Cordova",
+  "Payload/App.app/capacitor.config.json",
+  "Payload/App.app/public/runtime-app-config.json",
+];
 
 function addResult(results, level, label, detail) {
   results.push({ level, label, detail });
@@ -96,10 +103,39 @@ function readProjectSetting(settingName) {
   }
 
   const source = readFileSync(projectPath, "utf8");
-  const matches = [...source.matchAll(new RegExp(`${settingName}\\s*=\\s*([^;]+);`, "g"))]
+  const appBuildConfigIds = appTargetBuildConfigurationIds(source);
+  const sourceToRead =
+    appBuildConfigIds.length > 0
+      ? appBuildConfigIds.map((id) => projectObjectBlock(source, id)).filter(Boolean).join("\n")
+      : source;
+
+  const matches = [...sourceToRead.matchAll(new RegExp(`${settingName}\\s*=\\s*([^;]+);`, "g"))]
     .map((match) => match[1].trim().replace(/^"|"$/g, ""));
 
   return [...new Set(matches)];
+}
+
+function appTargetBuildConfigurationIds(source) {
+  const targetMatch = source.match(
+    /\/\* App \*\/ = \{\s*isa = PBXNativeTarget;[\s\S]*?buildConfigurationList = ([A-Z0-9]+) \/\* Build configuration list for PBXNativeTarget "App" \*\/;[\s\S]*?name = App;[\s\S]*?productType = "com\.apple\.product-type\.application";[\s\S]*?\n\t\t\};/,
+  );
+  const configurationListId = targetMatch?.[1];
+  if (!configurationListId) {
+    return [];
+  }
+
+  const configurationList = projectObjectBlock(source, configurationListId);
+  if (!configurationList) {
+    return [];
+  }
+
+  const configurations = configurationList.match(/buildConfigurations = \(([\s\S]*?)\);/)?.[1] ?? "";
+  return [...configurations.matchAll(/([A-Z0-9]+) \/\* (?:Debug|Release) \*\//g)].map((match) => match[1]);
+}
+
+function projectObjectBlock(source, objectId) {
+  const escapedId = objectId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return source.match(new RegExp(`\\n\\t\\t${escapedId} [\\s\\S]*?\\n\\t\\t\\};`))?.[0] ?? "";
 }
 
 function projectSetting(results, settingName, label) {
@@ -124,6 +160,42 @@ function runCodesign(appBundlePath) {
     cwd,
     encoding: "utf8",
   });
+}
+
+function validateCompactRemoteShellIpa(filePath) {
+  const listing = spawnSync("unzip", ["-l", filePath], {
+    cwd,
+    encoding: "utf8",
+  });
+  if (listing.status !== 0) {
+    return { ok: false, detail: "could not inspect IPA contents" };
+  }
+
+  const missingEntries = compactRemoteShellEntries.filter((entry) => !listing.stdout.includes(entry));
+  if (missingEntries.length > 0) {
+    return {
+      ok: false,
+      detail: `compact IPA is missing required entries: ${missingEntries.join(", ")}`,
+    };
+  }
+
+  const runtimeConfig = spawnSync("unzip", ["-p", filePath, "Payload/App.app/public/runtime-app-config.json"], {
+    cwd,
+    encoding: "utf8",
+  });
+  if (runtimeConfig.status !== 0) {
+    return { ok: false, detail: "could not read runtime app config from IPA" };
+  }
+
+  try {
+    const parsed = JSON.parse(runtimeConfig.stdout);
+    if (typeof parsed.remoteUrl !== "string" || !parsed.remoteUrl.startsWith("https://")) {
+      return { ok: false, detail: "runtime remoteUrl is missing or not HTTPS" };
+    }
+    return { ok: true, detail: `compact remote shell IPA, remoteUrl ${parsed.remoteUrl}` };
+  } catch {
+    return { ok: false, detail: "runtime app config is not valid JSON" };
+  }
 }
 
 const results = [];
@@ -271,7 +343,12 @@ if (!existsSync(ipaPath)) {
   if (stats.size >= minimumIpaBytes) {
     addResult(results, "pass", "iOS IPA", `${Math.round(stats.size / 1024 / 1024)}MB, sha256 ${digest}`);
   } else {
-    addResult(results, "fail", "iOS IPA", `artifact is unexpectedly small: ${stats.size} bytes`);
+    const compactIpa = validateCompactRemoteShellIpa(ipaPath);
+    if (compactIpa.ok) {
+      addResult(results, "pass", "iOS IPA", `${stats.size} bytes, sha256 ${digest}; ${compactIpa.detail}`);
+    } else {
+      addResult(results, "fail", "iOS IPA", `artifact is unexpectedly small: ${stats.size} bytes; ${compactIpa.detail}`);
+    }
   }
 
   const archiveInfoPath = archivePath ? path.join(archivePath, "Info.plist") : null;

@@ -1,6 +1,7 @@
 // 이 파일은 냉장고 페이지를 담당합니다 - 참고 이미지의 재고 관리 스타일
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardPaste, MoreVertical, Plus, RefreshCw, Refrigerator, Search, X } from 'lucide-react'
 import { useIngredients } from '@/hooks/useIngredients'
@@ -15,8 +16,12 @@ import {
 } from '@/types'
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { parseBulkIngredientInput } from '@/lib/bulk-ingredient-input'
-import { searchIngredientCatalog } from '@/lib/ingredient-catalog'
-import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
+import { getIngredientCatalog, searchIngredientCatalog } from '@/lib/ingredient-catalog'
+import {
+  getIngredientCategoryDisplayLabel,
+  normalizeIngredientInput,
+  suggestIngredientCategory,
+} from '@/lib/ingredient-category'
 import {
   STARTER_INGREDIENT_TEMPLATES,
   buildStarterIngredientPayloads,
@@ -30,6 +35,20 @@ import { getCategoryBg, getCategoryEmoji, getDday, getIngredientPhotoUrl, getSta
 
 const storageTabs = ['전체', '냉장', '냉동', '실온'] as const
 const suggestionFetchLimit = 24
+const categoryBrowseLimit = 24
+
+type FridgeViewMode = 'inventory' | 'browse'
+type CatalogIngredient = ReturnType<typeof getIngredientCatalog>[number]
+type RocketFreshBrowseGroup = {
+  id: string
+  label: string
+  shortLabel: string
+  emoji: string
+  description: string
+  categories: readonly IngredientCategory[]
+  includeNames?: readonly string[]
+  excludeNames?: readonly string[]
+}
 
 type IngredientFormState = {
   name: string
@@ -53,6 +72,128 @@ const initialFormState: IngredientFormState = {
 
 const normalizeIngredientName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '')
 
+const ROCKET_FRESH_BROWSE_GROUPS = [
+  {
+    id: 'vegetables',
+    label: '채소',
+    shortLabel: '채소',
+    emoji: '🥬',
+    description: '나물, 뿌리채소, 버섯처럼 매일 쓰는 신선 재료',
+    categories: ['채소'],
+  },
+  {
+    id: 'fruit',
+    label: '과일',
+    shortLabel: '과일',
+    emoji: '🍎',
+    description: '상온/냉장 과일을 한 번에 담기',
+    categories: ['과일'],
+  },
+  {
+    id: 'meat-egg',
+    label: '축산/계란',
+    shortLabel: '축산/계란',
+    emoji: '🥩',
+    description: '고기와 계란을 같이 보는 신선식품 묶음',
+    categories: ['육류'],
+    includeNames: ['계란', '달걀'],
+  },
+  {
+    id: 'seafood',
+    label: '수산물/건어물',
+    shortLabel: '수산/건어물',
+    emoji: '🐟',
+    description: '생선, 해산물, 건어물까지 수산 재료',
+    categories: ['수산물'],
+    excludeNames: ['어묵', '명란'],
+  },
+  {
+    id: 'dairy',
+    label: '유제품',
+    shortLabel: '유제품',
+    emoji: '🥛',
+    description: '우유, 치즈, 버터, 요거트 같은 냉장 기본 재료',
+    categories: ['유제품'],
+    excludeNames: ['계란', '달걀', '두부', '마요네즈'],
+  },
+  {
+    id: 'frozen-ready',
+    label: '냉장/냉동/간편식',
+    shortLabel: '냉장/냉동',
+    emoji: '🧊',
+    description: '냉동만두, 피자, 냉동볶음밥 같은 간편 재료',
+    categories: ['냉동식품'],
+  },
+  {
+    id: 'side-dish',
+    label: '반찬/간편식',
+    shortLabel: '반찬/간편식',
+    emoji: '🥢',
+    description: '김치, 두부, 어묵처럼 바로 곁들이기 좋은 재료',
+    categories: [],
+    includeNames: ['김치', '두부', '피클', '올리브', '잼', '어묵', '명란'],
+  },
+  {
+    id: 'processed',
+    label: '면/통조림/가공식품',
+    shortLabel: '면/통조림',
+    emoji: '🥫',
+    description: '라면, 통조림, 스팸처럼 팬트리에 두기 좋은 재료',
+    categories: ['통조림/가공식품'],
+    includeNames: ['라면', '라면사리', '파스타면'],
+    excludeNames: ['김치', '피클', '올리브', '잼', '토마토소스', '파스타소스'],
+  },
+  {
+    id: 'seasoning',
+    label: '가루/조미료/오일',
+    shortLabel: '가루/오일',
+    emoji: '🧂',
+    description: '가루류, 기름, 기본 조미료를 모아 보기',
+    categories: [],
+    includeNames: ['가루', '밀가루', '전분', '소금', '설탕', '식초', '참기름', '들기름', '후추', '깨', '카레', '오일', '맛술', '치킨스톡'],
+  },
+  {
+    id: 'sauce',
+    label: '장/소스',
+    shortLabel: '장/소스',
+    emoji: '🥣',
+    description: '장류, 소스, 액젓처럼 맛을 잡는 재료',
+    categories: [],
+    includeNames: ['간장', '고추장', '된장', '쌈장', '소스', '케첩', '마요네즈', '겨자', '액젓', '매실청'],
+  },
+  {
+    id: 'rice-noodle',
+    label: '쌀/잡곡/면',
+    shortLabel: '쌀/잡곡',
+    emoji: '🍚',
+    description: '쌀, 잡곡, 빵, 떡처럼 한 끼의 바탕이 되는 재료',
+    categories: ['곡물/면/빵'],
+    excludeNames: ['라면', '라면사리', '파스타면', '밀가루', '전분', '가루'],
+  },
+  {
+    id: 'drink-coffee',
+    label: '생수/음료/커피',
+    shortLabel: '음료/커피',
+    emoji: '🧃',
+    description: '생수, 주스, 커피, 차, 견과류와 기타 식품',
+    categories: ['음료/기타'],
+  },
+] as const satisfies readonly RocketFreshBrowseGroup[]
+
+type RocketFreshBrowseGroupId = (typeof ROCKET_FRESH_BROWSE_GROUPS)[number]['id']
+
+function matchesRocketFreshGroup(item: CatalogIngredient, group: RocketFreshBrowseGroup): boolean {
+  const lookupText = normalizeIngredientName(`${item.name} ${item.aliases?.join(' ') ?? ''}`)
+  const excluded = group.excludeNames?.some((name) => lookupText.includes(normalizeIngredientName(name))) ?? false
+  if (excluded) {
+    return false
+  }
+
+  const categoryMatched = group.categories.includes(item.category)
+  const nameMatched = group.includeNames?.some((name) => lookupText.includes(normalizeIngredientName(name))) ?? false
+  return categoryMatched || nameMatched
+}
+
 const expiryQuickOptions = [
   { label: '3일', days: 3 },
   { label: '1주', days: 7 },
@@ -61,6 +202,20 @@ const expiryQuickOptions = [
 ] as const
 
 const frequentIngredientPresets = ['계란', '두부', '대파', '양파', '김치', '돼지고기', '우유'] as const
+
+const findCatalogItemByName = (name: string) => {
+  const target = normalizeIngredientName(name)
+  if (!target) {
+    return null
+  }
+
+  return getIngredientCatalog().find((item) => {
+    if (normalizeIngredientName(item.name) === target) {
+      return true
+    }
+    return item.aliases?.some((alias) => normalizeIngredientName(alias) === target) ?? false
+  }) ?? null
+}
 
 function shouldOpenAddFromUrl(): boolean {
   if (typeof window === 'undefined') {
@@ -78,7 +233,16 @@ function buildFutureDate(days: number): string {
 }
 
 export default function FridgePage() {
-  const { ingredients, loading, error, source, addIngredient, updateIngredient, deleteIngredient, listIngredients } = useIngredients()
+  const {
+    ingredients,
+    loading,
+    error,
+    cloudSyncState,
+    addIngredient,
+    updateIngredient,
+    deleteIngredient,
+    listIngredients,
+  } = useIngredients()
   const { settings } = useAppSettings()
   const isAppStoreDemo = useDemoMode()
   const [activeTab, setActiveTab] = useState<string>('전체')
@@ -88,6 +252,8 @@ export default function FridgePage() {
   const [saveMessage, setSaveMessage] = useState('')
   const [swipeStartX, setSwipeStartX] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<FridgeViewMode>('inventory')
+  const [browseGroupId, setBrowseGroupId] = useState<RocketFreshBrowseGroupId>('vegetables')
 
   const [form, setForm] = useState<IngredientFormState>(initialFormState)
   const [suggestionKeyword, setSuggestionKeyword] = useState('')
@@ -108,6 +274,22 @@ export default function FridgePage() {
       }),
     [form.category, suggestionKeyword],
   )
+
+  const catalogIngredients = useMemo(() => getIngredientCatalog(), [])
+  const activeBrowseGroup = useMemo(
+    () => ROCKET_FRESH_BROWSE_GROUPS.find((group) => group.id === browseGroupId) ?? ROCKET_FRESH_BROWSE_GROUPS[0],
+    [browseGroupId],
+  )
+  const browseIngredients = useMemo(
+    () => catalogIngredients.filter((item) => matchesRocketFreshGroup(item, activeBrowseGroup)).slice(0, categoryBrowseLimit),
+    [activeBrowseGroup, catalogIngredients],
+  )
+  const catalogGroupCounts = useMemo(() => {
+    return ROCKET_FRESH_BROWSE_GROUPS.reduce<Record<RocketFreshBrowseGroupId, number>>((counts, group) => {
+      counts[group.id] = catalogIngredients.filter((item) => matchesRocketFreshGroup(item, group)).length
+      return counts
+    }, {} as Record<RocketFreshBrowseGroupId, number>)
+  }, [catalogIngredients])
 
   useEffect(() => {
     if (shouldOpenAddFromUrl()) {
@@ -146,6 +328,7 @@ export default function FridgePage() {
   const displayIngredients = isAppStoreDemo ? APPSTORE_DEMO_INGREDIENTS : ingredients
   const activeIngredients = displayIngredients.filter((item) => !item.consumedAt && !item.discardedAt)
   const consumedIngredients = displayIngredients.filter((item) => item.consumedAt || item.discardedAt)
+  const pendingSyncCount = displayIngredients.filter((item) => item.syncStatus && item.syncStatus !== 'synced').length
 
   const normalizedSearchQuery = searchQuery.trim().toLowerCase()
 
@@ -303,6 +486,41 @@ export default function FridgePage() {
     }
   }
 
+  const handleAddCatalogIngredient = async (item: CatalogIngredient) => {
+    if (isAppStoreDemo) {
+      setSaveMessage('데모 화면에서는 카테고리 보기만 가능해요. 실제 냉장고에서 바로 담을 수 있습니다.')
+      return
+    }
+
+    const duplicate = ingredients.find(
+      (ingredient) => normalizeIngredientName(ingredient.name) === normalizeIngredientName(item.name),
+    )
+    const storageType = item.defaultStorageType ?? (item.category === '냉동식품' ? '냉동' : item.category === '조미료' ? '실온' : '냉장')
+    const memo = '유통기한 나중에 확인'
+
+    if (duplicate) {
+      await updateIngredient(duplicate.id, buildIngredientPayloadFromRecord(duplicate, {
+        category: item.category,
+        storageType: duplicate.storageType ?? storageType,
+        consumedAt: null,
+        discardedAt: null,
+        memo: mergeMemoDisplay(duplicate.memo, memo),
+      }))
+      setSaveMessage(`${item.name}은 이미 있어요. 기존 재료에 표시했어요.`)
+      return
+    }
+
+    await addIngredient({
+      name: item.name,
+      category: item.category,
+      storageType,
+      quantity: null,
+      expiryDate: null,
+      memo,
+    })
+    setSaveMessage(`${item.name}을 냉장고에 담았어요.`)
+  }
+
   const handleAddStarterIngredients = async () => {
     const payloads = buildStarterIngredientPayloads(ingredients.map((item) => item.name))
     if (payloads.length === 0) {
@@ -429,10 +647,13 @@ export default function FridgePage() {
   }
 
   const handleIngredientNameChange = (value: string) => {
+    const catalogItem = findCatalogItemByName(value)
     setForm((prev) => ({
       ...prev,
       name: value,
-      category: categoryTouched ? prev.category : suggestIngredientCategory(value, prev.category),
+      category: categoryTouched ? prev.category : catalogItem?.category ?? suggestIngredientCategory(value, prev.category),
+      storage_type: catalogItem?.defaultStorageType ?? prev.storage_type,
+      amount_unit: catalogItem?.defaultUnit ?? prev.amount_unit,
     }))
   }
 
@@ -480,65 +701,235 @@ export default function FridgePage() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
-          <Search size={16} className="text-[#b5a493]" />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="재료, 카테고리, 메모 검색"
-            className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[#4b3929] outline-none placeholder:text-[#a69585]"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              aria-label="재료 검색어 지우기"
-              onClick={() => setSearchQuery('')}
-              className="text-[#b5a493]"
-            >
-              <X size={15} />
-            </button>
-          ) : null}
+        <div className="mt-4 grid grid-cols-2 gap-1 rounded-[14px] bg-[#fff7ed] p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('inventory')}
+            className={`min-h-11 rounded-[11px] text-[12px] font-black ${
+              viewMode === 'inventory'
+                ? 'bg-[#2f2117] text-white'
+                : 'text-[#7d6d5f]'
+            }`}
+          >
+            내 재료
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('browse')}
+            className={`min-h-11 rounded-[11px] text-[12px] font-black ${
+              viewMode === 'browse'
+                ? 'bg-[#2f2117] text-white'
+                : 'text-[#7d6d5f]'
+            }`}
+          >
+            카테고리로 담기
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] text-[13px] font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
-        >
-          <Plus size={16} />
-          재료 바로 추가
-        </button>
+        {viewMode === 'inventory' ? (
+          <>
+            <div className="mt-4 flex items-center gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
+              <Search size={16} className="text-[#b5a493]" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="재료, 카테고리, 메모 검색"
+                className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[#4b3929] outline-none placeholder:text-[#a69585]"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  aria-label="재료 검색어 지우기"
+                  onClick={() => setSearchQuery('')}
+                  className="text-[#b5a493]"
+                >
+                  <X size={15} />
+                </button>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ea5a1f] text-[13px] font-black text-white shadow-[0_8px_18px_rgba(234,90,31,0.18)]"
+            >
+              <Plus size={16} />
+              재료 바로 추가
+            </button>
+          </>
+        ) : (
+          <p className="mt-4 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5 text-[12px] font-bold leading-5 text-[#7d6d5f]">
+            큰 장보기 분류로 보고, 사진을 확인한 뒤 바로 냉장고에 담으세요.
+          </p>
+        )}
 
         {saveMessage ? (
           <p className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-2 text-[12px] font-bold text-[#3d7b38]">
             {saveMessage}
           </p>
         ) : null}
-        {!isAppStoreDemo && source === 'local' ? (
-          <p className="mt-3 rounded-[14px] border border-[#f6d7b8] bg-[#fff7ed] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#9a4f14]">
-            현재 냉장고 데이터가 이 기기에만 저장되는 로컬 모드입니다. 로그인/네트워크 복구 후 새로고침해 클라우드 동기화 상태를 확인하세요.
-          </p>
+        {!isAppStoreDemo && cloudSyncState === 'local-only' ? (
+          <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]">
+            <p className="text-[12px] font-black">지금 이 기기에 저장했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              데이터는 이 기기에 안전하게 저장되어 있어요. 로그인하면 다른 기기에서도 이어서 볼 수 있어요.
+            </p>
+            <Link
+              href="/mypage"
+              className="mt-2 inline-flex min-h-11 items-center rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white"
+            >
+              로그인하고 동기화
+            </Link>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'checking' && pendingSyncCount > 0 ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mt-3 flex items-start gap-2 rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-3 text-[#6f5540]"
+          >
+            <RefreshCw size={18} aria-hidden="true" className="mt-0.5 shrink-0 animate-spin" />
+            <div>
+              <p className="text-[13px] font-black">클라우드에 저장 중</p>
+              <p className="mt-1 text-[12px] font-bold leading-relaxed">
+                이 기기에 먼저 저장했어요 · {pendingSyncCount}개 변경사항을 반영하고 있어요.
+              </p>
+            </div>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'synced' && pendingSyncCount === 0 ? (
+          <div
+            role="status"
+            className="mt-3 flex items-start gap-2 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-3 py-3 text-[#3d6f38]"
+          >
+            <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[13px] font-black">클라우드 동기화 완료</p>
+              <p className="mt-1 text-[12px] font-bold leading-relaxed">
+                이 기기의 재료 변경사항을 안전하게 저장했어요.
+              </p>
+            </div>
+          </div>
+        ) : null}
+        {!isAppStoreDemo && cloudSyncState === 'error' ? (
+          <div
+            role="alert"
+            className="mt-3 rounded-[14px] border border-[#ffd1bd] bg-[#fff0e4] px-3 py-3 text-[#7d3f18]"
+          >
+            <p className="text-[12px] font-black">클라우드 동기화를 마치지 못했어요</p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed">
+              이 기기에 안전하게 저장되어 있어요{pendingSyncCount > 0 ? ` · ${pendingSyncCount}개 대기 중` : ''}.
+            </p>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => void listIngredients()}
+              className="mt-2 inline-flex min-h-11 items-center gap-1 rounded-full bg-[#2f2117] px-3 text-[11px] font-black text-white disabled:cursor-wait disabled:opacity-60"
+            >
+              <RefreshCw size={13} aria-hidden="true" className={loading ? 'animate-spin' : undefined} />
+              {loading ? '다시 시도 중' : '다시 시도'}
+            </button>
+          </div>
         ) : null}
 
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {storageTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`min-h-10 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
-                activeTab === tab
-                  ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
-                  : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {viewMode === 'inventory' ? (
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {storageTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`min-h-11 rounded-full border px-2 py-2 text-[12px] font-black transition-all ${
+                  activeTab === tab
+                    ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                    : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="px-5 pb-6 pt-4">
+        {viewMode === 'browse' ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              {ROCKET_FRESH_BROWSE_GROUPS.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => setBrowseGroupId(group.id)}
+                  className={`min-h-[48px] rounded-[14px] border px-2.5 py-2 text-left transition-all ${
+                    browseGroupId === group.id
+                      ? 'border-[#ea5a1f] bg-[#fff0e4] text-[#d94d19]'
+                      : 'border-[#eadcc9] bg-[#fffaf3] text-[#7d6d5f]'
+                  }`}
+                >
+                  <span className="block truncate text-[11px] font-black leading-4">
+                    <span aria-hidden="true" className="mr-1">{group.emoji}</span>
+                    {group.shortLabel}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] font-bold opacity-75">
+                    {catalogGroupCounts[group.id]}개
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="rounded-[14px] border border-[#eadcc9] bg-[#fffaf3] px-3 py-2.5">
+              <p className="text-[12px] font-black text-[#2f2117]">
+                {activeBrowseGroup.emoji} {activeBrowseGroup.label}
+              </p>
+              <p className="mt-1 break-keep text-[11px] font-semibold leading-4 text-[#8f7f70]">
+                {activeBrowseGroup.description}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {browseIngredients.map((item) => {
+                const alreadyAdded = activeIngredients.some(
+                  (ingredient) => normalizeIngredientName(ingredient.name) === normalizeIngredientName(item.name),
+                )
+                const storageType = item.defaultStorageType ?? (item.category === '냉동식품' ? '냉동' : item.category === '조미료' ? '실온' : '냉장')
+
+                return (
+                  <div key={item.id} className="jipbab-panel rounded-[16px] p-2.5">
+                    <div className="flex gap-2">
+                      <div className={`h-14 w-14 shrink-0 overflow-hidden rounded-[13px] ${getCategoryBg(item.category)}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getIngredientPhotoUrl(item.name, item.category)}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-1">
+                        <p className="line-clamp-2 break-keep text-[13px] font-black leading-4 text-[#2f2117]">{item.name}</p>
+                        <p className="mt-1 text-[10px] font-bold text-[#8f7f70]">{storageType} 보관</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={alreadyAdded}
+                      onClick={() => {
+                        void handleAddCatalogIngredient(item)
+                      }}
+                      className={`mt-2 flex min-h-11 w-full items-center justify-center rounded-[12px] text-[12px] font-black ${
+                        alreadyAdded
+                          ? 'cursor-default bg-[#f2eee7] text-[#a99a8a]'
+                          : 'bg-[#ea5a1f] text-white shadow-[0_8px_18px_rgba(234,90,31,0.16)]'
+                      }`}
+                    >
+                      {alreadyAdded ? '추가됨' : '담기'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[12px] font-bold text-[#8f7f70]">
             {activeTab === '전체' ? '보관 중 재료' : `${activeTab} 재료`} {sortedIngredients.length}개
@@ -665,11 +1056,26 @@ export default function FridgePage() {
                             <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${statusBg}`}>
                               {statusLabel}
                             </span>
+                            {item.syncStatus === 'conflict' ? (
+                              <span className="rounded-full bg-[#fff0e4] px-2 py-0.5 text-[10px] font-black text-[#d94d19]">
+                                동기화 확인 필요
+                              </span>
+                            ) : cloudSyncState !== 'local-only' && item.syncStatus && item.syncStatus !== 'synced' ? (
+                              <span className="rounded-full bg-[#fff7ed] px-2 py-0.5 text-[10px] font-black text-[#9a4f14]">
+                                동기화 대기
+                              </span>
+                            ) : null}
                           </div>
                           <p className="mt-1 text-[12px] font-semibold text-[#7d6d5f]">
-                            {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
+                            {getIngredientCategoryDisplayLabel(item.name, item.category)} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
                           </p>
                           <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
+                          <Link
+                            href={`/recipe?q=${encodeURIComponent(item.name)}`}
+                            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-[#fff0e4] px-3 text-[11px] font-black text-[#d94d19]"
+                          >
+                            이 재료로 요리
+                          </Link>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -679,7 +1085,7 @@ export default function FridgePage() {
                           <button
                             onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}
                             aria-label={`${item.name} 메뉴 열기`}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f7eee3] text-[#7d6d5f]"
                           >
                             <MoreVertical size={15} />
                           </button>
@@ -719,9 +1125,11 @@ export default function FridgePage() {
             ))}
           </div>
         )}
+          </>
+        )}
       </section>
 
-      {consumedIngredients.length > 0 ? (
+      {viewMode === 'inventory' && consumedIngredients.length > 0 ? (
         <section className="px-5 pb-6">
           <div className="mb-2 flex items-center gap-2">
             <CheckCircle2 size={16} className="text-[#3d7b38]" />
@@ -777,7 +1185,7 @@ export default function FridgePage() {
                   resetForm()
                 }}
                 aria-label="모달 닫기"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100"
               >
                 <X size={18} className="text-gray-500" />
               </button>
@@ -851,7 +1259,7 @@ export default function FridgePage() {
                       form.category === cat ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
                     }`}
                   >
-                    {getCategoryEmoji(cat)} {cat}
+                    {getCategoryEmoji(cat)} {getIngredientCategoryDisplayLabel(form.name, cat)}
                   </button>
                 ))}
               </div>
@@ -863,7 +1271,9 @@ export default function FridgePage() {
             {/* 카테고리별 추천 재료 */}
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <label className="block text-sm font-bold text-gray-700">{form.category} 추천 재료</label>
+                <label className="block text-sm font-bold text-gray-700">
+                  {getIngredientCategoryDisplayLabel(form.name, form.category)} 추천 재료
+                </label>
                 <span className="text-[11px] font-medium text-gray-400">칩 선택 시 재료명 자동입력</span>
               </div>
 
@@ -876,7 +1286,7 @@ export default function FridgePage() {
                   type="text"
                   value={suggestionKeyword}
                   onChange={(event) => setSuggestionKeyword(event.target.value)}
-                  placeholder={`${form.category} 재료 검색 (예: 양파)`}
+                  placeholder={`${getIngredientCategoryDisplayLabel(form.name, form.category)} 재료 검색 (예: 양파)`}
                   className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors focus:border-mint-300 focus:bg-white"
                 />
                 {suggestionKeyword && (

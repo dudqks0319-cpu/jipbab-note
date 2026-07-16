@@ -33,7 +33,7 @@ test("store console confirmation requires both app store and play console eviden
   assert.match(checkSource, /Play Console evidence date: YYYY-MM-DD/);
   assert.match(checkSource, /Play Console evidence artifacts/);
   assert.match(checkSource, /existing local path or URL/);
-  assert.match(checkSource, /existsSync\(artifactPath\)/);
+  assert.match(checkSource, /releaseEvidenceReferenceExists\(lineValue\(source, label\)\)/);
 });
 
 test("store console confirmation reports missing optional store API credentials without values", () => {
@@ -62,12 +62,12 @@ test("store console confirmation can verify store dashboards through official AP
   assert.match(checkSource, /GOOGLE_PLAY_TRACK/);
 });
 
-test("store console confirmation evidence stays blocked until manually confirmed", () => {
-  assert.match(evidence, /App Store Connect\/TestFlight: not confirmed/);
-  assert.match(evidence, /TestFlight processing: not confirmed/);
+test("store console confirmation evidence keeps Play Console blocked after App Store confirmation", () => {
+  assert.match(evidence, /App Store Connect\/TestFlight: confirmed/);
+  assert.match(evidence, /TestFlight processing: confirmed/);
+  assert.match(evidence, /App Store Connect evidence artifacts: <repo>\/output\/release-evidence\//);
   assert.match(evidence, /Play Console internal testing: not confirmed/);
   assert.match(evidence, /AAB upload: not confirmed/);
-  assert.match(evidence, /App Store Connect evidence artifacts: pending/);
   assert.match(evidence, /Play Console evidence artifacts: pending/);
 });
 

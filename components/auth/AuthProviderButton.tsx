@@ -1,6 +1,8 @@
 // 이 파일은 소셜 로그인 버튼을 브랜드 스타일에 맞춰 렌더링합니다.
 "use client";
 
+import { useRef, type SyntheticEvent } from "react";
+
 import type { OAuthProvider } from "@/types";
 
 type AuthProviderButtonProps = {
@@ -41,12 +43,34 @@ export default function AuthProviderButton({
   disabled = false,
   onClick,
 }: AuthProviderButtonProps) {
+  const lastActivationRef = useRef(0);
+
+  const handleActivate = (event: SyntheticEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (disabled) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastActivationRef.current < 700) {
+      return;
+    }
+
+    lastActivationRef.current = now;
+    onClick();
+  };
+
   if (provider === "google") {
     return (
       <button
         type="button"
         disabled={disabled}
-        onClick={onClick}
+        onClick={handleActivate}
+        onMouseDown={handleActivate}
+        onPointerDown={handleActivate}
+        onPointerUp={handleActivate}
+        onTouchStart={handleActivate}
+        onTouchEnd={handleActivate}
         className="flex w-full items-center justify-center gap-3 rounded-[12px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-3 text-sm font-bold text-[#2f2117] shadow-soft transition-colors hover:bg-[#fff7ed] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <GoogleIcon />
@@ -60,7 +84,12 @@ export default function AuthProviderButton({
       <button
         type="button"
         disabled={disabled}
-        onClick={onClick}
+        onClick={handleActivate}
+        onMouseDown={handleActivate}
+        onPointerDown={handleActivate}
+        onPointerUp={handleActivate}
+        onTouchStart={handleActivate}
+        onTouchEnd={handleActivate}
         className="flex w-full items-center justify-center gap-3 rounded-[12px] bg-black px-4 py-3 text-sm font-bold text-white shadow-soft transition-colors hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <AppleIcon />
@@ -73,7 +102,12 @@ export default function AuthProviderButton({
     <button
       type="button"
       disabled={disabled}
-      onClick={onClick}
+      onClick={handleActivate}
+      onMouseDown={handleActivate}
+      onPointerDown={handleActivate}
+      onPointerUp={handleActivate}
+      onTouchStart={handleActivate}
+      onTouchEnd={handleActivate}
       className="flex w-full items-center justify-center gap-3 rounded-[12px] bg-[#FEE500] px-4 py-3 text-sm font-bold text-[#191919] shadow-soft transition-colors hover:bg-[#f7dc00] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <KakaoIcon />

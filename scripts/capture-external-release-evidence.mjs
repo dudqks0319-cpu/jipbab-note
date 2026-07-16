@@ -3,7 +3,11 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const cwd = process.cwd();
-const adbPath = process.env.ADB_PATH || "/Users/jyb-m3max/Library/Android/sdk/platform-tools/adb";
+const defaultAndroidSdk =
+  process.env.ANDROID_HOME ||
+  process.env.ANDROID_SDK_ROOT ||
+  (process.env.HOME ? path.join(process.env.HOME, "Library/Android/sdk") : "");
+const adbPath = process.env.ADB_PATH || path.join(defaultAndroidSdk, "platform-tools/adb");
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(cwd, "output", "release-evidence", stamp);
 

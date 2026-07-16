@@ -40,7 +40,7 @@ test("goal completion check requires store console confirmation evidence", () =>
   assert.match(source, /Play Console evidence date: YYYY-MM-DD/);
   assert.match(source, /Play Console evidence artifacts/);
   assert.match(source, /existing local path or URL/);
-  assert.match(source, /existsSync\(artifactPath\)/);
+  assert.match(source, /releaseEvidenceReferenceExists\(lineValue\(source, label\), \{ cwd \}\)/);
 });
 
 test("goal completion check requires both production family and account-deletion smokes", () => {
@@ -81,4 +81,40 @@ test("goal completion check runs the executable Supabase release check", () => {
   assert.match(source, /supabaseReleaseCheck\.evidence/);
   assert.doesNotMatch(source, /Supabase contract checks passed/);
   assert.doesNotMatch(source, /local Supabase schema\/RLS contract evidence in release ledger/);
+});
+
+test("goal completion check treats live Supabase and Storage blockers as blockers", () => {
+  assert.match(source, /운영 Supabase live\/read\/write\/RLS/);
+  assert.match(source, /Supabase live current status: confirmed/);
+  assert.match(source, /Supabase Storage current status: confirmed/);
+  assert.match(source, /Latest Supabase live unblock check: confirmed/);
+  assert.match(source, /Supabase live blocks/);
+  assert.match(source, /family_group_id` missing from live/);
+  assert.match(source, /Could not find the 'family_group_id' column/);
+  assert.match(source, /운영 Supabase Storage 정책/);
+  assert.match(source, /Storage still allows cross-prefix/);
+  assert.match(source, /guest upload outside device prefix succeeded/);
+  assert.match(source, /release:supabase-live-unblock-check/);
+  assert.match(source, /check:supabase-storage-live/);
+});
+
+test("goal completion check runs the beginner recipe expansion gates", () => {
+  assert.match(source, /초보자 레시피 데이터 계약\/검증/);
+  assert.match(source, /초보자 레시피 제품 목표/);
+  assert.match(source, /scripts\/validate-recipes\.mjs/);
+  assert.match(source, /scripts\/check-curated-beginner-guidance\.mjs/);
+  assert.match(source, /scripts\/check-beginner-goal-readiness\.mjs/);
+  assert.match(source, /scripts\/check-beginner-mobile-evidence\.mjs/);
+  assert.match(source, /recipeValidationCheck\.evidence/);
+  assert.match(source, /curatedBeginnerGuidanceCheck\.evidence/);
+  assert.match(source, /beginnerGoalReadinessCheck\.evidence/);
+  assert.match(source, /beginnerMobileEvidenceCheck\.evidence/);
+  assert.match(source, /초보자 모바일 화면 증거/);
+});
+
+test("goal completion check requires Phase 5 actual cooking and human review evidence", () => {
+  assert.match(source, /scripts\/check-phase-5-human-evidence\.mjs/);
+  assert.match(source, /phase5HumanEvidenceCheck\.evidence/);
+  assert.match(source, /핵심 20개 실제 조리·사람 검수 증거/);
+  assert.match(source, /phase-5-human-testing-runbook\.md/);
 });

@@ -2,16 +2,30 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { releaseEvidenceReferenceExists } from "./lib/release-evidence-reference.mjs";
 
 const cwd = process.cwd();
 const ledgerPath = path.join(cwd, "docs/current-release-state.md");
 const realDeviceQaPath = path.join(cwd, "docs/real-device-qa.md");
 const storeConsolePath = path.join(cwd, "docs/store-console-confirmation.md");
+const iosProjectPath = path.join(cwd, "ios/App/App.xcodeproj/project.pbxproj");
+
+function readIosProjectBuildNumber() {
+  if (!existsSync(iosProjectPath)) {
+    return null;
+  }
+
+  const source = readFileSync(iosProjectPath, "utf8");
+  const match = source.match(/CURRENT_PROJECT_VERSION\s*=\s*([^;]+);/);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") ?? null;
+}
+
+const expectedIosBuild = readIosProjectBuildNumber() ?? "2026052001";
 
 const requiredRealDeviceQaTerms = [
   "iOS real-device QA: confirmed",
   "Device: iPhone",
-  "iOS build: 2026052001",
+  `iOS build: ${expectedIosBuild}`,
   "Bundle ID: com.jipbab.note",
   "iOS core loop: confirmed",
   "iOS Google login: confirmed",
@@ -19,7 +33,7 @@ const requiredRealDeviceQaTerms = [
   "iOS Kakao login: confirmed",
   "iOS local notification permission and scheduling: confirmed",
   "iOS shopping external link: confirmed",
-  "iOS account deletion request: confirmed",
+  "iOS account deletion: confirmed",
   "iOS raw error disclosure: not observed",
   "Android real-device QA: confirmed",
   "Device: Android",
@@ -30,7 +44,7 @@ const requiredRealDeviceQaTerms = [
   "Android Apple login/provider behavior: confirmed",
   "Android local notification permission and scheduling: confirmed",
   "Android shopping external link: confirmed",
-  "Android account deletion request: confirmed",
+  "Android account deletion: confirmed",
   "Android back navigation: confirmed",
   "Android raw error disclosure: not observed",
 ];
@@ -52,7 +66,7 @@ const realDeviceQaExtraEvidence = {
 const requiredAppStoreTerms = [
   "App Store Connect/TestFlight: confirmed",
   "Bundle ID: com.jipbab.note",
-  "iOS build: 2026052001",
+  `iOS build: ${expectedIosBuild}`,
   "TestFlight processing: confirmed",
   "Internal tester availability: confirmed",
 ];
@@ -102,24 +116,12 @@ function lineValue(source, label) {
   return match?.[1]?.trim() ?? "";
 }
 
-function artifactExists(value) {
-  const normalized = value.replace(/^`|`$/g, "").trim();
-  if (!normalized || normalized === "pending") {
-    return false;
-  }
-  if (/^https?:\/\//.test(normalized)) {
-    return true;
-  }
-  const artifactPath = path.isAbsolute(normalized) ? normalized : path.join(cwd, normalized);
-  return existsSync(artifactPath);
-}
-
 function missingExtraEvidence(source, extraEvidence) {
   const missingPatterns = (extraEvidence.patterns ?? [])
     .filter((requirement) => !requirement.pattern.test(source))
     .map((requirement) => requirement.label);
   const missingArtifacts = (extraEvidence.artifactLabels ?? [])
-    .filter((label) => !artifactExists(lineValue(source, label)))
+    .filter((label) => !releaseEvidenceReferenceExists(lineValue(source, label), { cwd }))
     .map((label) => `${label}: existing local path or URL`);
   return [...missingPatterns, ...missingArtifacts];
 }
@@ -179,11 +181,36 @@ const localModeReleaseCheck = runLocalCheck("node scripts/check-local-mode-relea
 const supabaseReleaseCheck = runLocalCheck("node scripts/check-supabase-release.mjs", [
   "scripts/check-supabase-release.mjs",
 ]);
+const recipeValidationCheck = runLocalCheck("node --experimental-strip-types scripts/validate-recipes.mjs", [
+  "--experimental-strip-types",
+  "scripts/validate-recipes.mjs",
+]);
+const curatedBeginnerGuidanceCheck = runLocalCheck("node --experimental-strip-types scripts/check-curated-beginner-guidance.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-curated-beginner-guidance.mjs",
+]);
+const beginnerGoalReadinessCheck = runLocalCheck("node --experimental-strip-types scripts/check-beginner-goal-readiness.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-beginner-goal-readiness.mjs",
+]);
+const beginnerMobileEvidenceCheck = runLocalCheck("node scripts/check-beginner-mobile-evidence.mjs", [
+  "scripts/check-beginner-mobile-evidence.mjs",
+]);
+const phase5HumanEvidenceCheck = runLocalCheck("node --experimental-strip-types scripts/check-phase-5-human-evidence.mjs", [
+  "--experimental-strip-types",
+  "scripts/check-phase-5-human-evidence.mjs",
+]);
 const vercelProductionPass = includesAll(ledger, [
   "`pnpm check:vercel-production-env`: pass",
   "Production family route smoke: pass",
   "`pnpm check:production-account-deletion-route`: pass",
 ]);
+const supabaseLiveCurrentPass =
+  ledger.includes("Supabase live current status: confirmed") ||
+  ledger.includes("Latest Supabase live unblock check: confirmed");
+const storageLiveCurrentPass =
+  ledger.includes("Supabase Storage current status: confirmed") ||
+  ledger.includes("Latest Supabase live unblock check: confirmed");
 
 addResult(
   results,
@@ -211,15 +238,68 @@ addResult(
 
 addResult(
   results,
-  ledger.includes("`pnpm check:supabase-live` / `pnpm release:external-check`: blocked") ||
-    ledger.includes("Supabase live REST check failed")
-    ? "blocked"
-    : ledger.includes("SUPABASE_LIVE_WRITE_TEST=1") && ledger.includes("pass")
+  recipeValidationCheck.status === "pass" && curatedBeginnerGuidanceCheck.status === "pass" ? "pass" : "missing",
+  "초보자 레시피 데이터 계약/검증",
+  `${recipeValidationCheck.evidence}; ${curatedBeginnerGuidanceCheck.evidence}`,
+  "pnpm validate:recipes 및 pnpm check:curated-beginner-guidance 실패 원인 수정",
+);
+
+addResult(
+  results,
+  beginnerGoalReadinessCheck.status,
+  "초보자 레시피 제품 목표",
+  beginnerGoalReadinessCheck.evidence,
+  "pnpm check:beginner-goal-readiness 실패 원인 수정",
+);
+
+addResult(
+  results,
+  beginnerMobileEvidenceCheck.status,
+  "초보자 모바일 화면 증거",
+  beginnerMobileEvidenceCheck.evidence,
+  "360/390/430px 홈/목록/상세/장보기 스크린샷을 다시 캡처한 뒤 pnpm check:beginner-mobile-evidence 재실행",
+);
+
+addResult(
+  results,
+  phase5HumanEvidenceCheck.status,
+  "핵심 20개 실제 조리·사람 검수 증거",
+  phase5HumanEvidenceCheck.evidence,
+  "docs/phase-5-human-testing-runbook.md에 따라 실제 조리와 초보자·식품 안전·출처·이미지 권리 검수를 완료한 뒤 pnpm check:phase5-human-evidence 재실행",
+);
+
+addResult(
+  results,
+  supabaseLiveCurrentPass
+    ? "pass"
+    : ledger.includes("`pnpm check:supabase-live` / `pnpm release:external-check`: blocked") ||
+        ledger.includes("Supabase live REST check failed") ||
+        ledger.includes("Supabase live blocks") ||
+        ledger.includes("family_group_id` missing from live") ||
+        ledger.includes("Could not find the 'family_group_id' column")
+      ? "blocked"
+      : ledger.includes("SUPABASE_LIVE_WRITE_TEST=1") && ledger.includes("pass")
       ? "pass"
       : "missing",
   "운영 Supabase live/read/write/RLS",
   "production Supabase REST and write-isolation evidence",
-  "Supabase 프로젝트 복구 후 pnpm release:external-check 및 SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live 실행",
+  "Supabase production migration 적용 후 pnpm release:supabase-live-unblock-check 및 pnpm release:external-check 실행",
+);
+
+addResult(
+  results,
+  storageLiveCurrentPass
+    ? "pass"
+    : ledger.includes("Storage still allows cross-prefix") ||
+        ledger.includes("guest upload outside device prefix succeeded") ||
+        ledger.includes("Storage path policy: production Storage")
+      ? "blocked"
+      : ledger.includes("cross-prefix upload blocked") && ledger.includes("PASS")
+      ? "pass"
+      : "missing",
+  "운영 Supabase Storage 정책",
+  "production community-images Storage write policy evidence",
+  "Storage 정책 migration 적용 후 pnpm release:supabase-live-unblock-check 및 pnpm check:supabase-storage-live 재실행",
 );
 
 addResult(
@@ -277,7 +357,7 @@ addResult(
   ], realDeviceQaExtraEvidence),
   "실기기 QA",
   "docs/real-device-qa.md evidence for real iPhone/Android OAuth, local notification, link-flow, account deletion, and raw-error checks",
-  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 요청 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
+  "실기기에서 OAuth/알림/장보기 링크/계정 삭제 완료 확인 후 docs/real-device-qa.md confirmed evidence 갱신",
 );
 
 addResult(

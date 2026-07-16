@@ -1,13 +1,12 @@
-// 이 파일은 앱 내 계정 삭제 요청 시작 화면을 제공합니다.
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { getDeviceId } from "@/lib/device-id";
 import { getSupportEmail, getSupportMailtoUrl } from "@/lib/external-links";
-import { getSupabaseClient } from "@/lib/supabase";
+import { clearSupabaseAuthStorage, getSupabaseClient } from "@/lib/supabase";
 
 type DeletionRequestRecord = {
   id: string;
@@ -23,16 +22,20 @@ const statusLabels: Record<string, string> = {
   completed: "삭제 완료",
   rejected: "반려",
 };
+const DELETE_CONFIRMATION_TEXT = "삭제";
+const DIRECT_DELETE_CONFIRMATION = "DELETE_MY_ACCOUNT";
 
 export default function AccountDeletePage() {
   const supportEmail = getSupportEmail();
-  const mailtoUrl = getSupportMailtoUrl("집밥노트 계정 삭제 요청");
+  const mailtoUrl = getSupportMailtoUrl("집밥노트 계정 삭제 문의");
   const { user, isAuthenticated, loading } = useAuth();
   const deviceId = useMemo(() => getDeviceId(), []);
-  const [reason, setReason] = useState("");
+  const confirmInputRef = useRef<HTMLInputElement>(null);
+  const [confirmText, setConfirmText] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
   const [requests, setRequests] = useState<DeletionRequestRecord[]>([]);
 
   const refreshRequests = async () => {
@@ -42,7 +45,7 @@ export default function AccountDeletePage() {
     }
 
     try {
-      const client = getSupabaseClient({ deviceId });
+      const client = getSupabaseClient();
       const { data } = await client
         .from("account_deletion_requests")
         .select("id,status,reason,created_at,updated_at")
@@ -60,9 +63,17 @@ export default function AccountDeletePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, deviceId]);
 
-  const handleSubmit = async () => {
+  const handleDelete = async () => {
+    const isConfirmed = confirmText.trim() === DELETE_CONFIRMATION_TEXT;
+
     if (!user) {
-      setErrorMessage("로그인 후에 계정 삭제 요청을 보낼 수 있습니다.");
+      setErrorMessage("로그인 후에 계정을 삭제할 수 있습니다.");
+      return;
+    }
+
+    if (!isConfirmed) {
+      setErrorMessage("확인 문구를 입력해야 계정을 삭제할 수 있습니다.");
+      confirmInputRef.current?.focus();
       return;
     }
 
@@ -71,35 +82,51 @@ export default function AccountDeletePage() {
     setStatusMessage(null);
 
     try {
-      const client = getSupabaseClient({ deviceId });
-      const { error } = await client.from("account_deletion_requests").insert({
-        user_id: user.id,
-        email: user.email ?? null,
-        reason: reason.trim() || null,
-      });
-
-      if (error) {
-        throw error;
+      const client = getSupabaseClient();
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (sessionError || !accessToken) {
+        throw new Error("Auth session was not available for account deletion.");
       }
 
-      setStatusMessage("계정 삭제 요청이 접수되었습니다. 운영자가 완료 처리하면 계정과 연동 데이터가 실제 삭제됩니다.");
-      setReason("");
-      await refreshRequests();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "계정 삭제 요청을 접수하지 못했습니다.";
-      setErrorMessage(message);
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          confirmation: DIRECT_DELETE_CONFIRMATION,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Account deletion API did not accept the request.");
+      }
+
+      await client.auth.signOut({ scope: "local" }).catch(() => undefined);
+      clearSupabaseAuthStorage();
+
+      setDeleted(true);
+      setStatusMessage("계정이 삭제되었습니다. 로그인 정보와 계정에 연결된 데이터는 복구할 수 없습니다.");
+      setConfirmText("");
+      setRequests([]);
+    } catch {
+      setErrorMessage("계정을 삭제하지 못했습니다. 잠시 후 다시 시도하거나 고객센터로 문의해주세요.");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const isDeleteConfirmationReady = confirmText.trim() === DELETE_CONFIRMATION_TEXT;
+
   return (
     <div className="flex flex-col pb-8">
       <section className="px-5 pt-4">
         <p className="text-xs font-semibold tracking-[0.16em] text-gray-400">ACCOUNT DELETE</p>
-        <h1 className="text-2xl font-bold text-gray-800">계정 삭제 요청</h1>
+        <h1 className="text-2xl font-bold text-gray-800">계정 삭제</h1>
         <p className="mt-2 text-sm leading-6 text-gray-500">
-          앱 안에서 계정 삭제를 시작하고 처리 상태를 확인할 수 있습니다. 완료 처리 시 로그인 계정과 연동 데이터를 실제 삭제합니다.
+          앱 안에서 계정 삭제를 바로 완료할 수 있습니다. 삭제 후에는 로그인 계정과 연동 데이터를 복구할 수 없습니다.
         </p>
       </section>
 
@@ -114,37 +141,52 @@ export default function AccountDeletePage() {
         </article>
 
         <article className="rounded-3xl bg-white px-4 py-4 shadow-soft">
-          <h2 className="text-base font-bold text-gray-800">요청 방법</h2>
+          <h2 className="text-base font-bold text-gray-800">삭제 방법</h2>
           <p className="mt-2 text-sm leading-7 text-gray-600">
-            로그인 상태라면 앱 안에서 삭제 요청을 바로 접수할 수 있습니다. 운영자가 완료 처리할 때 계정, 냉장고, 장보기, 즐겨찾기, 커뮤니티 연결 데이터를 삭제하고 처리 이력만 최소 감사 목적으로 남깁니다.
+            로그인 상태에서 확인 문구를 입력하면 계정, 냉장고, 장보기, 즐겨찾기, 커뮤니티 연결 데이터가 바로 삭제됩니다. 처리 이력은 최소 감사 목적으로만 남깁니다.
           </p>
 
-          {loading ? (
+          {deleted ? (
+            <p className="mt-4 rounded-2xl bg-mint-50 px-4 py-3 text-sm text-mint-600">
+              계정 삭제가 완료되었습니다.
+            </p>
+          ) : loading ? (
             <p className="mt-4 rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-500">
               로그인 상태를 확인하는 중입니다.
             </p>
           ) : isAuthenticated ? (
             <div className="mt-4 space-y-3">
-              <textarea
-                value={reason}
-                onChange={(event) => setReason(event.target.value)}
-                placeholder="삭제 사유나 참고할 내용을 적어주세요. 비워도 요청은 가능합니다."
-                className="min-h-28 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-rose-300"
+              <label htmlFor="account-delete-confirm" className="block text-sm font-semibold text-gray-700">
+                확인 문구
+              </label>
+              <input
+                id="account-delete-confirm"
+                ref={confirmInputRef}
+                value={confirmText}
+                onChange={(event) => setConfirmText(event.target.value)}
+                placeholder="확인 문구를 직접 입력"
+                autoComplete="off"
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-rose-300"
               />
+              <p className="text-xs leading-5 text-gray-500">
+                입력칸에 “삭제”를 직접 입력하면 버튼이 활성화됩니다.
+              </p>
               <button
                 type="button"
                 onClick={() => {
-                  void handleSubmit();
+                  void handleDelete();
                 }}
                 disabled={submitting}
-                className="inline-flex rounded-full bg-rose-100 px-4 py-2 text-sm font-bold text-rose-600 disabled:opacity-50"
+                className={`inline-flex rounded-full px-4 py-2 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  isDeleteConfirmationReady ? "bg-rose-600 text-white" : "bg-rose-100 text-rose-600"
+                }`}
               >
-                {submitting ? "접수 중..." : "앱에서 삭제 요청 접수"}
+                {submitting ? "삭제 중..." : "계정 바로 삭제"}
               </button>
             </div>
           ) : (
             <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              로그인 후에 앱 안에서 계정 삭제 요청을 접수할 수 있습니다.
+              로그인 후에 앱 안에서 계정을 삭제할 수 있습니다.
             </p>
           )}
 

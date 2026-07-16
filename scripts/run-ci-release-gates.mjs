@@ -13,6 +13,46 @@ const checks = [
     args: ["scripts/check-local-mode-release.mjs"],
   },
   {
+    name: "phase6-mobile-accessibility",
+    command: "node",
+    args: ["scripts/check-phase-6-mobile-accessibility.mjs"],
+  },
+  {
+    name: "phase6-e2e-contract",
+    command: "node",
+    args: ["scripts/check-phase-6-e2e-contract.mjs"],
+  },
+  {
+    name: "phase6-performance-budget",
+    command: "node",
+    args: ["scripts/check-phase-6-performance-budget.mjs"],
+  },
+  {
+    name: "beginner-goal-readiness",
+    command: "node",
+    args: ["--experimental-strip-types", "scripts/check-beginner-goal-readiness.mjs"],
+  },
+  {
+    name: "phase1-data-contract",
+    command: "node",
+    args: ["scripts/check-phase-1-data-contract.mjs"],
+  },
+  {
+    name: "api-v1-contract",
+    command: "node",
+    args: ["scripts/check-api-v1-contract.mjs"],
+  },
+  {
+    name: "cost-abuse-protection",
+    command: "node",
+    args: ["scripts/check-cost-abuse-protection.mjs"],
+  },
+  {
+    name: "repository-asset-budget",
+    command: "node",
+    args: ["scripts/check-repository-asset-budget.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],
@@ -26,6 +66,11 @@ const checks = [
     name: "store-assets-contract",
     command: "node",
     args: ["scripts/check-store-assets.mjs"],
+  },
+  {
+    name: "cloudflare-config-contract",
+    command: "node",
+    args: ["scripts/check-cloudflare-config.mjs"],
   },
   {
     name: "release-security",

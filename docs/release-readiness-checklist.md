@@ -9,20 +9,23 @@ pnpm release:check
 ```
 
 - [ ] `pnpm release:check` 실행
+- [ ] `pnpm check:beginner-goal-readiness` 실행 또는 `pnpm release:check` 안에서 `beginner-goal-readiness` PASS 확인
+- [ ] `pnpm check:curated-beginner-guidance` 실행 또는 `pnpm release:check` 안에서 `Beginner recipe guidance` PASS 확인
 - [ ] GitHub Actions `Release Gate` 워크플로가 push/PR에서 green인지 확인 (`pnpm test`, `pnpm build`, `pnpm release:ci-static-check`)
 - [ ] `pnpm release:security-check` 실행: production dependency audit와 secret 파일 git 추적 여부 확인
 - [ ] `pnpm check:core-loop-release` 실행: 냉장고 재료 → 추천 레시피 → 부족 재료 장보기 → 구매 후 냉장고 반영 루프 PASS 확인
 - [ ] `pnpm check:local-mode-release` 실행: Supabase 빈 응답/지연 상황에서도 로컬 재료·장보기 데이터와 로그인 동기화 상태가 보존되는지 확인
-- [ ] `pnpm release:ci-static-check` 실행: CI-safe Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
+- [ ] `pnpm release:ci-static-check` 실행: CI-safe 초보자 레시피 목표, Supabase SQL/RLS 계약, 파트너 링크, 스토어 자산, 보안 audit/secret 추적 게이트 확인
 - [ ] 모든 로컬 게이트가 실행됐는지 확인 (`release-readiness`, `supabase-release`, `partner-links`, `store-assets`, `ios-release`, `android-release`)
 - [ ] hard blocker 0개 및 `Release gate summary` 실패 0개 확인
 - [ ] `pnpm store-assets:prepare` 실행: App Store 6.9형 스크린샷, Play Store 휴대전화 스크린샷, Play Store 기능 그래픽 생성 확인
 - [ ] `pnpm check:store-assets` 실행: App Store 1290x2796 PNG 5장, Play Store 1080x1920 JPG 5장, 1024x500 RGB 기능 그래픽, 512x512 RGB 아이콘 PASS 확인
 - [ ] `pnpm release:capture-store-submission-packet` 실행: App Store/Play Store 메타데이터와 업로드용 이미지 파일을 한 로컬 패킷으로 복사
 - [ ] `pnpm release:capture-appstore-review-packet` 실행: iOS가 먼저 준비됐을 때 App Store 전용 메타데이터, 스크린샷, iOS 산출물, App Store 제출 게이트 상태를 한 로컬 패킷으로 복사
-- [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live check까지 통과 확인
+- [ ] `pnpm release:full-check` 실행: 로컬 게이트 + 운영 Supabase live read/write/RLS + Storage path policy check까지 통과 확인
 - [ ] warning 항목을 검토하고 수동 QA 범위에 반영
 - [ ] `Curated beginner recipes`, `Beginner recipe guidance`, `Recipe image provenance`, `Ingredient catalog coverage` PASS 확인
+- [ ] `pnpm check:phase1-data-contract` 실행: 스키마 v2, 카테고리, 카탈로그·별칭, 버전 복원 계약, dry-run 대기열 PASS 확인
 - [ ] `iOS Capacitor config`, `iOS Info.plist`, `iOS SPM package`, `Runtime app config` PASS 확인
 - [ ] `Android manifest`, `Android Capacitor config`, `Android release identity`, `Android upload signing` PASS 확인
 - [ ] `Supabase release contract check`에서 required tables/RLS/policies/partner_links 권한 PASS 확인
@@ -30,11 +33,12 @@ pnpm release:check
 - [ ] `pnpm check:android-release` 실행: Android release AAB 크기/SHA-256/서명 상태 확인
 - [ ] `pnpm check:supabase-live` 실행: 운영 Supabase REST에서 `recipes`, `recipe_sources`, `partner_links`, `ingredients`, `shopping_items` 조회 가능 확인
 - [ ] `SUPABASE_LIVE_WRITE_TEST=1 pnpm check:supabase-live` 실행: 임시 재료 insert/read/isolation/delete로 guest `device_id` RLS 확인
+- [ ] `pnpm release:supabase-live-unblock-check` 실행: production family scope migration과 Storage path policy 적용 후 Supabase local/live/Storage 확인을 한 번에 재검증
 - [ ] `pnpm release:goal-check` 실행: 목표 전체 완료 여부 확인. 차단 항목이 있으면 목표 완료로 표시하지 않음
 - [ ] `pnpm release:submit-gate` 실행: 로컬/보안/외부/목표 완료 게이트가 모두 PASS인지 확인. 하나라도 BLOCKED면 App Store 심사 제출 또는 Play production 제출 금지
-- [ ] `pnpm release:appstore-external-status` 실행: Play Console 상태와 분리해 iOS 실기기 QA 및 App Store Connect/TestFlight 차단만 확인
+- [ ] `pnpm release:appstore-external-status` 실행: 공통 production Supabase/Storage 상태와 iOS 실기기 QA 및 App Store Connect/TestFlight 차단을 확인하되 Play Console 상태는 분리
 - [ ] `pnpm release:appstore-submit-gate` 실행: App Store 심사 제출 직전 iOS 산출물, 보안, 운영 API, iOS 실기기 QA, App Store Connect 상태만 따로 확인. 하나라도 BLOCKED면 App Store 심사 제출 금지
-- [ ] `pnpm release:playstore-external-status` 실행: App Store Connect 상태와 분리해 Android 실기기 QA 및 Play Console 내부 테스트 차단만 확인
+- [ ] `pnpm release:playstore-external-status` 실행: 공통 production Supabase/Storage 상태와 Android 실기기 QA 및 Play Console 내부 테스트 차단을 확인하되 App Store Connect 상태는 분리
 - [ ] `pnpm release:playstore-submit-gate` 실행: Play production 제출 직전 Android 산출물, 보안, 운영 API, Android 실기기 QA, Play Console 상태만 따로 확인. 하나라도 BLOCKED면 Play production 제출 금지
 - [ ] `pnpm release:unblock-runbook` 실행: 실기기, App Store Connect, Play Console 차단 해제 후 실행 순서 확인
 - [ ] `pnpm release:store-api-runbook` 실행: App Store Connect API / Google Play Developer API credential 설정 절차와 secret 보관 원칙 확인
@@ -71,8 +75,8 @@ pnpm release:check
 - [ ] 부족 재료 → 장보기 추가
 - [ ] 쿠팡 검색 링크 이동
 
-### 삭제 요청
-- [ ] 사용자 계정으로 `/account-delete` 요청 생성
+### 계정 삭제
+- [ ] 사용자 계정으로 `/account-delete` 직접 삭제 완료
 - [ ] 운영자 계정으로 `/admin/account-deletions` 목록 확인
 - [ ] 상태 변경 (`requested -> reviewing -> completed`)
 
@@ -94,6 +98,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] `NEXT_PUBLIC_SUPABASE_ANONYMOUS_AUTH_ENABLED=false` 유지 또는 익명 로그인 남용 방지 설정과 함께 명시적으로 활성화
 - [ ] `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] `ADMIN_EMAILS`
 - [ ] `NEXT_PUBLIC_SUPPORT_EMAIL`
@@ -121,7 +126,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] 개인정보 처리방침 URL 및 지원 URL 입력
 - [ ] 콘텐츠 등급 설문 완료
 - [ ] 내부 테스트 트랙에 AAB 업로드
-- [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 삭제 요청 QA
+- [ ] Android 실기기에서 로그인, 로컬 알림, 장보기 링크, 계정 직접 삭제 QA
 - [ ] Android emulator가 흰 화면이면 DNS 문제 여부 확인: `adb shell ping -c 1 jipbab-note-app.vercel.app`
 - [ ] emulator DNS 실패 시 `-dns-server 8.8.8.8,1.1.1.1` 옵션으로 재부팅 후 Home/장보기 화면 캡처
 
@@ -139,7 +144,7 @@ Current Vercel Production confirmation: pass again on 2026-05-21 21:42 KST. `pnp
 - [ ] `.env.local` 커밋 금지
 - [ ] DB 비밀번호 새 값 운영 문서 저장
 - [ ] 운영자 이메일 allowlist 확인
-- [ ] 삭제 요청 실제 처리 절차 문서화
+- [ ] 계정 직접 삭제 처리 절차 문서화
 - [ ] 운영 로그/텔레메트리에서 이메일, 토큰, 세션, 서비스 키 등 민감정보 redaction 확인
 - [ ] analytics 이벤트는 개인정보 최소 수집 원칙과 사용자 식별자 정책 확인 후 활성화
 - [ ] crash reporting 도입 전 수집 항목, 보관 기간, 사용자 고지 문구 확인

@@ -41,7 +41,10 @@ export function summarizeAuthMigrationState(options: {
   }
 
   const skippedTables = tableResults.filter((item) => item.skipped);
-  if (skippedTables.length > 0) {
+  if (
+    skippedTables.length > 0
+    && options.migrationResult?.remoteMigrationMode !== "signed_session_sync"
+  ) {
     return {
       health: "partial",
       statLabel: "일부확인",

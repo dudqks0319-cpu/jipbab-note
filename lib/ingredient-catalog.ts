@@ -5,7 +5,7 @@ import type {
 
 const CATALOG: IngredientCatalogItem[] = [
   { id: "veg-onion", category: "채소", name: "양파", aliases: ["흰양파", "적양파"], defaultStorageType: "냉장", defaultUnit: "piece" },
-  { id: "veg-green-onion", category: "채소", name: "대파", aliases: ["쪽파"], defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "veg-green-onion", category: "채소", name: "대파", aliases: ["파", "굵은파", "쪽파"], defaultStorageType: "냉장", defaultUnit: "piece" },
   { id: "veg-garlic", category: "채소", name: "마늘", aliases: ["통마늘", "깐마늘"], defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "veg-potato", category: "채소", name: "감자", aliases: ["수미감자"], defaultStorageType: "실온", defaultUnit: "piece" },
   { id: "veg-sweet-potato", category: "채소", name: "고구마", aliases: ["밤고구마", "호박고구마"], defaultStorageType: "실온", defaultUnit: "piece" },
@@ -40,7 +40,7 @@ const CATALOG: IngredientCatalogItem[] = [
   { id: "fruit-pineapple", category: "과일", name: "파인애플", defaultStorageType: "실온", defaultUnit: "piece" },
   { id: "fruit-avocado", category: "과일", name: "아보카도", defaultStorageType: "실온", defaultUnit: "piece" },
 
-  { id: "meat-beef", category: "육류", name: "소고기", aliases: ["불고기용 소고기", "국거리"], defaultStorageType: "냉장", defaultUnit: "g" },
+  { id: "meat-beef", category: "육류", name: "소고기", aliases: ["국거리"], defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "meat-pork", category: "육류", name: "돼지고기", aliases: ["앞다리살", "뒷다리살"], defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "meat-pork-belly", category: "육류", name: "삼겹살", defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "meat-pork-neck", category: "육류", name: "목살", defaultStorageType: "냉장", defaultUnit: "g" },
@@ -73,8 +73,8 @@ const CATALOG: IngredientCatalogItem[] = [
   { id: "dairy-butter", category: "유제품", name: "버터", defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "dairy-yogurt", category: "유제품", name: "요거트", aliases: ["플레인요거트"], defaultStorageType: "냉장", defaultUnit: "cup" },
   { id: "dairy-whipping-cream", category: "유제품", name: "생크림", aliases: ["휘핑크림"], defaultStorageType: "냉장", defaultUnit: "ml" },
-  { id: "dairy-egg", category: "유제품", name: "계란", aliases: ["달걀"], defaultStorageType: "냉장", defaultUnit: "piece" },
-  { id: "dairy-tofu", category: "유제품", name: "두부", defaultStorageType: "냉장", defaultUnit: "block" },
+  { id: "dairy-egg", category: "육류", name: "계란", aliases: ["달걀"], defaultStorageType: "냉장", defaultUnit: "piece" },
+  { id: "dairy-tofu", category: "통조림/가공식품", name: "두부", defaultStorageType: "냉장", defaultUnit: "block" },
   { id: "dairy-cream-cheese", category: "유제품", name: "크림치즈", defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "dairy-mayonnaise", category: "유제품", name: "마요네즈", defaultStorageType: "냉장", defaultUnit: "g" },
   { id: "dairy-parmesan", category: "유제품", name: "파마산치즈", aliases: ["파마산"], defaultStorageType: "냉장", defaultUnit: "g" },
