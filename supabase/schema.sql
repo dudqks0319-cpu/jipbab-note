@@ -3232,10 +3232,10 @@ begin
   if input_key_hash is null or input_key_hash !~ '^[0-9a-f]{64}$' then
     raise exception 'invalid_key_hash';
   end if;
-  if request_limit < 1 or request_limit > 10000 then
+  if request_limit < 1 or request_limit > 100000 then
     raise exception 'invalid_request_limit';
   end if;
-  if window_seconds < 1 or window_seconds > 3600 then
+  if window_seconds < 1 or window_seconds > 86400 then
     raise exception 'invalid_window_seconds';
   end if;
 
@@ -3286,6 +3286,9 @@ to service_role;
 
 comment on table public.api_rate_limit_buckets is
   'HMAC-pseudonymized, service-role-only fixed-window counters shared across server instances.';
+
+comment on function public.consume_api_rate_limit(text, text, integer, integer) is
+  'Service-role-only HMAC-pseudonymized fixed-window limiter supporting windows up to 24 hours.';
 
 notify pgrst, 'reload schema';
 

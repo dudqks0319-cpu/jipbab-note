@@ -16,6 +16,14 @@ const rollback = readFileSync(
   "supabase/rollbacks/20260710160000_add_distributed_api_rate_limits.sql",
   "utf8",
 );
+const dailyMigration = readFileSync(
+  "supabase/migrations/20260716131500_allow_daily_api_rate_limit_windows.sql",
+  "utf8",
+);
+const dailyRollback = readFileSync(
+  "supabase/rollbacks/20260716131500_allow_daily_api_rate_limit_windows.sql",
+  "utf8",
+);
 
 test("distributed rate-limit keys are HMAC pseudonyms", () => {
   const first = hashRateLimitKey("recipes:list", "ip:203.0.113.10", "a".repeat(32));
@@ -92,6 +100,16 @@ test("database rate limiting is atomic, private, and service-role only", () => {
   assert.match(migration, /auth\.role\(\)\) <> 'service_role'/);
   assert.doesNotMatch(migration, /to anon|to authenticated/);
   assert.doesNotMatch(rollback, /drop table|truncate/i);
+});
+
+test("database limiter accepts 24-hour budgets with a non-destructive rollback", () => {
+  assert.match(dailyMigration, /window_seconds > 86400/);
+  assert.match(dailyMigration, /request_limit > 100000/);
+  assert.match(dailyMigration, /from public, anon, authenticated, service_role/);
+  assert.match(dailyMigration, /to service_role/);
+  assert.match(dailyRollback, /window_seconds > 3600/);
+  assert.doesNotMatch(dailyRollback, /drop table|truncate/i);
+  assert.match(dailyRollback, /delete from public\.api_rate_limit_buckets\s+where expires_at < request_time/i);
 });
 
 test("bounded JSON parsing rejects chunked bodies beyond the API limit", async () => {

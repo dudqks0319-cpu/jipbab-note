@@ -133,6 +133,7 @@ const requiredMigrationFiles = [
   "20260715101716_harden_security_definer_privileges_20260715.sql",
   "20260715135333_backup_phase1_ingredient_catalog_pre_seed_20260715.sql",
   "20260715135424_seed_phase1_ingredient_catalog_reconciled_20260715.sql",
+  "20260716131500_allow_daily_api_rate_limit_windows.sql",
 ];
 
 function readSqlBundle() {
@@ -352,6 +353,10 @@ const apiRateLimitMigration = readFileSync(
   path.join(migrationsDir, "20260710160000_add_distributed_api_rate_limits.sql"),
   "utf8",
 ).toLowerCase();
+const apiDailyRateLimitMigration = readFileSync(
+  path.join(migrationsDir, "20260716131500_allow_daily_api_rate_limit_windows.sql"),
+  "utf8",
+).toLowerCase();
 if (
   apiRateLimitMigration.includes("primary key (route_key, key_hash, window_start)") &&
   apiRateLimitMigration.includes("on conflict (route_key, key_hash, window_start)") &&
@@ -365,6 +370,18 @@ if (
   addResult(results, "pass", "API rate-limit RPC", "atomic counters are private and service-role only");
 } else {
   addResult(results, "fail", "API rate-limit RPC", "atomic fixed-window RPC privileges are incomplete");
+}
+
+if (
+  apiDailyRateLimitMigration.includes("window_seconds > 86400") &&
+  apiDailyRateLimitMigration.includes("request_limit > 100000") &&
+  apiDailyRateLimitMigration.includes("set search_path = pg_catalog, public") &&
+  apiDailyRateLimitMigration.includes("from public, anon, authenticated, service_role") &&
+  apiDailyRateLimitMigration.includes("to service_role")
+) {
+  addResult(results, "pass", "API daily rate-limit RPC", "24-hour global and identity budgets are service-role only");
+} else {
+  addResult(results, "fail", "API daily rate-limit RPC", "24-hour window or least-privilege contract is incomplete");
 }
 
 const recipePublicationPolicy = getPolicyBlock(sql, "recipes_select_public");
