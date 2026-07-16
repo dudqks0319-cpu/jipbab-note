@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Bookmark, ChevronDown, Clock3, Eye, Heart, Refrigerator, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils } from 'lucide-react'
+import { BadgeCheck, Bookmark, ChevronDown, Clock3, Eye, Heart, ListChecks, Refrigerator, RefreshCw, Search, ShoppingBasket, SlidersHorizontal, Users, Utensils, Wrench, X } from 'lucide-react'
 
 import RecipeImage from '@/components/recipe/RecipeImage'
 import { APPSTORE_DEMO_RECIPES } from '@/lib/demo-state'
@@ -59,6 +59,9 @@ const PRIMARY_RECIPE_CATEGORIES: DisplayRecipeCategory[] = [
   '달걀',
   '두부',
 ]
+const PREVIEW_MAX_TOTAL_MINUTES = Math.max(
+  ...RECIPE_PREVIEW_CATALOG.map((recipe) => recipe.totalMinutes ?? 0),
+)
 
 function toRealRecipeCategory(category: DisplayRecipeCategory): RecipeCategory {
   return category as RecipeCategory
@@ -303,9 +306,20 @@ export default function RecipePage() {
             placeholder="레시피 검색"
             className="w-full bg-transparent text-[13px] font-medium text-[#4b3929] outline-none placeholder:text-[#a69585]"
           />
-          <button onClick={refresh} aria-label="레시피 새로고침" className="flex h-11 w-11 shrink-0 items-center justify-center text-[#9f8d7a]">
-            <RefreshCw size={15} />
-          </button>
+          {previewMode && searchQuery ? (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              aria-label="검색어 지우기"
+              className="flex h-11 w-11 shrink-0 items-center justify-center text-[#9f8d7a]"
+            >
+              <X size={16} />
+            </button>
+          ) : !previewMode ? (
+            <button type="button" onClick={refresh} aria-label="레시피 새로고침" className="flex h-11 w-11 shrink-0 items-center justify-center text-[#9f8d7a]">
+              <RefreshCw size={15} />
+            </button>
+          ) : null}
         </div>
       </section>
 
@@ -475,6 +489,14 @@ export default function RecipePage() {
                 </div>
               </div>
             </div>
+            <div className="mt-4 flex min-h-11 items-center justify-between gap-3">
+              <p className="text-[13px] font-black text-[#4b3929]">
+                검색 결과 {filteredPreviewRecipes.length}개
+              </p>
+              <p className="text-[12px] font-semibold text-[#8f7f70]">
+                {PREVIEW_MAX_TOTAL_MINUTES}분 이내 · 초보용
+              </p>
+            </div>
             {filteredPreviewRecipes.length === 0 ? (
               <div className="mt-3 rounded-[20px] border border-[#eadcc9] bg-[#fffaf3] px-4 py-8 text-center">
                 <p className="text-sm font-black text-[#4b3929]">조건에 맞는 미리보기 레시피가 없어요.</p>
@@ -508,16 +530,15 @@ export default function RecipePage() {
                       />
                     </div>
                     <div className="min-w-0 flex-1 py-1">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#fff0e4] px-2 py-1 text-[11px] font-black text-[#d94d19]">
-                        <Eye size={11} /> 조리 검수 중
-                      </span>
-                      <h2 className="mt-2 line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
+                      <h2 className="line-clamp-1 text-[16px] font-black text-[#2f2117]">{recipe.name}</h2>
                       <p className="mt-1 line-clamp-1 text-[12px] font-semibold text-[#7d6d5f]">
                         {recipe.beginnerSummary ?? recipe.featuredReason}
                       </p>
-                      <div className="mt-2 flex items-center gap-3 text-[12px] font-bold text-[#7d6d5f]">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold text-[#7d6d5f]">
                         <span className="inline-flex items-center gap-1"><Clock3 size={12} /> {recipe.totalMinutes}분</span>
                         <span className="inline-flex items-center gap-1"><Users size={12} /> {recipe.servings}인분</span>
+                        <span className="inline-flex items-center gap-1"><ListChecks size={12} /> {recipe.steps.length}단계</span>
+                        <span className="inline-flex items-center gap-1"><Wrench size={12} /> 도구 {recipe.requiredTools?.length ?? 0}개</span>
                       </div>
                     </div>
                   </Link>

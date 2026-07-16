@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  BookOpenText,
+  CheckCircle2,
   ChevronLeft,
   Clock3,
   Eye,
+  FileCheck2,
+  ListChecks,
   ShieldAlert,
+  ShieldCheck,
   Users,
   Wrench,
 } from "lucide-react";
 
 import RecipeImage from "@/components/recipe/RecipeImage";
 import RecipeInstructionView from "@/components/recipe/RecipeInstructionView";
+import RecipeShareButton from "@/components/recipe/RecipeShareButton";
 import { findRecipePreview } from "@/lib/recipe-preview";
 
 type RecipePreviewPageProps = {
@@ -23,6 +29,8 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
   if (!recipe) notFound();
 
   const ingredients = recipe.ingredientDetails ?? [];
+  const requiredIngredientCount = ingredients.filter((ingredient) => ingredient.required !== false).length;
+  const toolCount = recipe.requiredTools?.length ?? 0;
 
   return (
     <div className="min-h-full bg-white pb-10 text-[#2b2b2b]">
@@ -35,6 +43,9 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
           >
             <ChevronLeft size={19} />
           </Link>
+        </div>
+        <div className="mobile-safe-top absolute right-4 top-0 z-20">
+          <RecipeShareButton recipeName={recipe.name} recipeId={recipe.id} route="preview" />
         </div>
 
         <RecipeImage
@@ -62,11 +73,37 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
             <div className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#faf5ef] text-sm font-black text-[#4b3929]">
               <Users size={17} /> {recipe.servings}인분
             </div>
+            <div className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#faf5ef] text-sm font-black text-[#4b3929]">
+              <ListChecks size={17} /> {recipe.steps.length}단계
+            </div>
+            <div className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#faf5ef] text-sm font-black text-[#4b3929]">
+              <Wrench size={17} /> 도구 {toolCount}개
+            </div>
           </div>
         </div>
       </section>
 
       <section className="px-5">
+        <nav aria-label="레시피 바로가기" className="mb-4 grid grid-cols-3 gap-2">
+          <a
+            href="#ingredients"
+            className="flex min-h-11 items-center justify-center rounded-full border border-[#eadcc9] bg-white px-2 text-[12px] font-black text-[#4b3929]"
+          >
+            필수 {requiredIngredientCount}개
+          </a>
+          <a
+            href="#instructions"
+            className="flex min-h-11 items-center justify-center rounded-full border border-[#eadcc9] bg-white px-2 text-[12px] font-black text-[#4b3929]"
+          >
+            조리 {recipe.steps.length}단계
+          </a>
+          <a
+            href="#recipe-review-status"
+            className="flex min-h-11 items-center justify-center rounded-full border border-[#eadcc9] bg-white px-2 text-[12px] font-black text-[#4b3929]"
+          >
+            검수 상태
+          </a>
+        </nav>
         <div role="note" className="rounded-2xl border border-[#ffd1bd] bg-[#fff5ed] px-4 py-4">
           <div className="flex items-start gap-2 text-[#9a431c]">
             <ShieldAlert size={19} className="mt-0.5 shrink-0" />
@@ -80,8 +117,43 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
         </div>
       </section>
 
-      {recipe.requiredTools?.length ? (
+      {recipe.beforeStart?.length || recipe.measurementTips?.length ? (
         <section className="px-5 pt-6">
+          <div className="rounded-2xl border border-[#eadcc9] bg-[#fffaf3] px-4 py-4">
+            <div className="flex items-center gap-2 text-[#4b3929]">
+              <CheckCircle2 size={19} />
+              <h2 className="text-[17px] font-black">요리 전에 준비해요</h2>
+            </div>
+            {recipe.beforeStart?.length ? (
+              <ul className="mt-3 space-y-2">
+                {recipe.beforeStart.map((item) => (
+                  <li key={item} className="flex items-start gap-2 break-keep text-[13px] font-semibold leading-5 text-[#6a625a]">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[#6b9d53]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {recipe.measurementTips?.length ? (
+              <details className="mt-4 border-t border-[#eadcc9] pt-3">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-[13px] font-black text-[#9a431c]">
+                  <BookOpenText size={16} /> 계량법 보기
+                </summary>
+                <ul className="space-y-2 pb-1 pt-2">
+                  {recipe.measurementTips.map((tip) => (
+                    <li key={tip} className="break-keep text-[13px] font-semibold leading-5 text-[#6a625a]">
+                      · {tip}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {recipe.requiredTools?.length ? (
+        <section id="tools" className="scroll-mt-24 px-5 pt-6">
           <div className="rounded-2xl border border-[#dcebd2] bg-[#f4fbef] px-4 py-4">
             <div className="flex items-center gap-2 text-[#4f8740]">
               <Wrench size={18} />
@@ -98,7 +170,7 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
         </section>
       ) : null}
 
-      <section className="px-5 py-8">
+      <section id="ingredients" className="scroll-mt-24 px-5 py-8">
         <h2 className="border-b-2 border-[#2d2d2d] pb-3 text-[25px] font-black">재료</h2>
         <ul className="divide-y divide-[#ededed]">
           {ingredients.map((ingredient) => (
@@ -133,6 +205,53 @@ export default async function RecipePreviewPage({ params }: RecipePreviewPagePro
       </section>
 
       <RecipeInstructionView recipeName={recipe.name} steps={recipe.steps} />
+
+      {recipe.storageTip || recipe.reheatTip ? (
+        <section className="px-5 pt-6">
+          <div className="rounded-2xl border border-[#dcebd2] bg-[#f4fbef] px-4 py-4">
+            <div className="flex items-center gap-2 text-[#426e35]">
+              <FileCheck2 size={18} />
+              <h2 className="text-[17px] font-black">먹고 남았을 때</h2>
+            </div>
+            <div className="mt-3 space-y-2 text-[13px] font-semibold leading-5 text-[#5d6958]">
+              {recipe.storageTip ? <p><span className="font-black">보관:</span> {recipe.storageTip}</p> : null}
+              {recipe.reheatTip ? <p><span className="font-black">다시 데우기:</span> {recipe.reheatTip}</p> : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="recipe-review-status" className="scroll-mt-24 px-5 pt-6">
+        <div className="rounded-2xl border border-[#d8e2ee] bg-[#f5f8fc] px-4 py-4">
+          <div className="flex items-center gap-2 text-[#355b7a]">
+            <ShieldCheck size={19} />
+            <h2 className="text-[17px] font-black">레시피 작성 및 검수 상태</h2>
+          </div>
+          <dl className="mt-3 grid gap-2 text-[13px] font-semibold leading-5 text-[#526475]">
+            <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-2">
+              <dt className="font-black">콘텐츠</dt>
+              <dd>{recipe.source?.sourceName ?? "집밥노트 자체 작성"}</dd>
+            </div>
+            <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-2">
+              <dt className="font-black">이미지</dt>
+              <dd>{recipe.source?.imageUsageAllowed ? "앱 사용 가능 여부 확인" : "권리 확인 중"}</dd>
+            </div>
+            <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-2">
+              <dt className="font-black">실제 조리 검수</dt>
+              <dd>진행 중</dd>
+            </div>
+            <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-2">
+              <dt className="font-black">식품 안전 검수</dt>
+              <dd>진행 중</dd>
+            </div>
+          </dl>
+          {recipe.source?.licenseOrUsageNote ? (
+            <p className="mt-3 break-keep border-t border-[#d8e2ee] pt-3 text-[12px] font-semibold leading-5 text-[#647789]">
+              {recipe.source.licenseOrUsageNote}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       <section className="px-5 pt-6">
         <Link

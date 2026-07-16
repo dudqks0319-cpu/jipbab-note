@@ -28,6 +28,15 @@ test("preview catalog exposes only original structured recipes with local images
     assert.ok(existsSync(`public${recipe.thumbnailUrl}`), recipe.name);
     assert.ok((recipe.ingredientDetails?.length ?? 0) >= 3, recipe.name);
     assert.ok(recipe.steps.length >= 3, recipe.name);
+    for (const step of recipe.steps) {
+      assert.ok(step.commonMistake, `${recipe.name} ${step.index}단계 실수 주의`);
+      assert.ok(step.rescueTip, `${recipe.name} ${step.index}단계 복구 방법`);
+      assert.notEqual(
+        step.beginnerTip,
+        step.commonMistake,
+        `${recipe.name} ${step.index}단계 실수 문구를 초보 팁으로 중복 표시하면 안 됩니다.`,
+      );
+    }
     assert.equal(recipe.publicationEvidence, undefined);
     assert.equal(findRecipePreview(recipe.id)?.name, recipe.name);
   }
@@ -70,7 +79,16 @@ test("preview surface is explicit and cannot start cooking or shopping", () => {
   assert.match(detail, /선택 재료/);
   assert.match(detail, /준비 팁:/);
   assert.match(detail, /대체:/);
-  assert.doesNotMatch(detail, /RecipeCookMode|RecipeShoppingAssistant|RecipeFavoriteButton/);
+  assert.match(detail, /RecipeShareButton/);
+  assert.match(detail, /route="preview"/);
+  assert.match(detail, /요리 전에 준비해요/);
+  assert.match(detail, /계량법 보기/);
+  assert.match(detail, /보관/);
+  assert.match(detail, /다시 데우기/);
+  assert.match(detail, /레시피 작성 및 검수 상태/);
+  assert.match(detail, /실제 조리 검수/);
+  assert.match(detail, /식품 안전 검수/);
+  assert.doesNotMatch(detail, /RecipeCookMode|RecipeShoppingAssistant|RecipeFavoriteButton|RecipeComments/);
 });
 
 test("preview list prioritizes recipe discovery over inactive or secondary controls", () => {
@@ -80,7 +98,9 @@ test("preview list prioritizes recipe discovery over inactive or secondary contr
   assert.doesNotMatch(list, /공개 승인 0개/);
   assert.match(list, /먼저 둘러볼 수 있는 쉬운 집밥이에요/);
   assert.match(list, /실제 조리 검수가 끝날 때까지 장보기와 조리 시작은 잠겨 있어요/);
-  assert.match(list, /<Eye size=\{11\} \/> 조리 검수 중/);
+  assert.match(list, /검색 결과 \{filteredPreviewRecipes\.length\}개/);
+  assert.match(list, /\{recipe\.steps\.length\}단계/);
+  assert.match(list, /\{recipe\.requiredTools\?\.length \?\? 0\}개/);
   assert.match(list, /\{!previewMode \? \(\s*<section className="px-5 pt-3">/);
   assert.match(list, /\{!previewMode && totalPages > 1 \? \(\s*<section/);
   assert.ok(
@@ -89,6 +109,14 @@ test("preview list prioritizes recipe discovery over inactive or secondary contr
   );
   assert.match(list, /\{!previewMode \? \(\s*<button[\s\S]*?<Heart size=\{14\}/);
   assert.match(list, /RECIPE_PREVIEW_CATALOG\.length\}개 레시피를 다시 볼 수 있어요/);
+});
+
+test("recipe instructions expose mistakes and recovery separately", () => {
+  const instructions = readFileSync("components/recipe/RecipeInstructionView.tsx", "utf8");
+
+  assert.match(instructions, /실수 주의:/);
+  assert.match(instructions, /복구 방법:/);
+  assert.match(instructions, /step\.beginnerTip !== step\.commonMistake/);
 });
 
 test("preview search stays visible while the approved catalog refreshes", () => {

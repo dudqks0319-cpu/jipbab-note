@@ -79,6 +79,9 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
         {steps.map((step) => {
           const tools = getStepTools(step);
           const heatLabel = getHeatLabel(step);
+          const showBeginnerTip = Boolean(
+            step.beginnerTip && step.beginnerTip !== step.commonMistake,
+          );
           const showMediaColumn = mode !== "text" && Boolean(step.imageUrl);
           const gridClassName = showMediaColumn
             ? "grid grid-cols-[38px_minmax(0,1fr)_112px] gap-4 min-[390px]:grid-cols-[42px_minmax(0,1fr)_128px]"
@@ -133,10 +136,20 @@ export default function RecipeInstructionView({ recipeName, steps }: RecipeInstr
                   />
                 ) : null}
               </div>
-              {mode !== "compact" && (step.visualCue || step.beginnerTip) ? (
+              {mode !== "compact" && (step.visualCue || showBeginnerTip || step.commonMistake || step.rescueTip) ? (
                 <div className={noteClassName}>
                   {step.visualCue ? <p>눈으로 확인: {step.visualCue}</p> : null}
-                  {step.beginnerTip ? <p>초보 팁: {step.beginnerTip}</p> : null}
+                  {showBeginnerTip ? <p>초보 팁: {step.beginnerTip}</p> : null}
+                  {step.commonMistake ? (
+                    <p className="rounded-[8px] bg-[#fff0e8] px-3 py-2 text-[#9a431c]">
+                      <span className="font-black">실수 주의:</span> {step.commonMistake}
+                    </p>
+                  ) : null}
+                  {step.rescueTip ? (
+                    <p className="rounded-[8px] bg-[#eef7ea] px-3 py-2 text-[#426e35]">
+                      <span className="font-black">복구 방법:</span> {step.rescueTip}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </li>

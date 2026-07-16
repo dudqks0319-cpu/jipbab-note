@@ -29,7 +29,15 @@ function isPreviewReady(recipe: CuratedRecipe | undefined): recipe is CuratedRec
 
 export const RECIPE_PREVIEW_CATALOG: CuratedRecipe[] = RECIPE_PREVIEW_TITLES.map(
   (title) => CURATED_JIPBAB_RECIPES.find((recipe) => recipe.name === title),
-).filter(isPreviewReady);
+)
+  .filter(isPreviewReady)
+  .map((recipe) => ({
+    ...recipe,
+    steps: recipe.steps.map((step) => ({
+      ...step,
+      beginnerTip: step.beginnerTip === step.commonMistake ? null : step.beginnerTip,
+    })),
+  }));
 
 export function findRecipePreview(recipeId: string): CuratedRecipe | null {
   return RECIPE_PREVIEW_CATALOG.find((recipe) => recipe.id === recipeId) ?? null;
