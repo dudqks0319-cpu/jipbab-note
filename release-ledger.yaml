@@ -12,10 +12,10 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "sync_coalescing_candidate_local_verified_preview_quota_blocked"
+  phase: "home_recipe_first_candidate_local_chrome_verified_preview_quota_blocked"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   branch: "agent/sync-ux-release"
   dirty_state: "clean_docs_commit_pushed_candidate_is_ancestor"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
@@ -48,9 +48,10 @@ source_alignment_20260715:
   github_default_branch: "main"
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
-  candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
+  candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   candidate_remote_head_matches: false
-  candidate_runtime_sha_is_remote_ancestor: true
+  candidate_runtime_sha_is_remote_ancestor: false
+  latest_successful_exact_preview_sha_is_remote_ancestor: true
   candidate_remote_head_note: "remote head adds release evidence after the code candidate; the latest successful exact runtime preview remains bound to 0f0aab0"
   sync_coalescing_candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
   sync_coalescing_candidate_remote_head_matches_before_docs: true
@@ -59,6 +60,10 @@ source_alignment_20260715:
   sync_coalescing_candidate_preview_retry_after: "24_hours_or_after_quota_reset"
   sync_coalescing_candidate_preview_deployment_id: null
   sync_coalescing_candidate_production_promoted: false
+  home_recipe_first_candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  home_recipe_first_candidate_local_runtime_status: "verified_chrome_recipe_cards_before_fridge"
+  home_recipe_first_candidate_preview_status: "pending_after_vercel_daily_quota_reset"
+  home_recipe_first_candidate_production_promoted: false
   exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
   exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
@@ -315,6 +320,12 @@ phase6_quality_security:
   sync_coalescing_security_status: "verified_4_of_4"
   sync_coalescing_browser_flow_status: "verified_phase6_12_of_12_on_prior_exact_sha_preview"
   sync_coalescing_exact_preview_status: "blocked_vercel_free_daily_deployment_quota_not_runtime_verified"
+  home_recipe_first_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
+  home_recipe_first_unit_status: "verified_full_suite_413_of_413"
+  home_recipe_first_build_status: "verified"
+  home_recipe_first_ci_static_status: "verified_15_of_15"
+  home_recipe_first_security_status: "verified_4_of_4"
+  home_recipe_first_chrome_status: "verified_recipe_cards_before_fridge_after_ingredient_save"
 
 phase6_vercel_preview:
   deployed_at: "2026-07-11 KST"
