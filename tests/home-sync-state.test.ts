@@ -49,6 +49,28 @@ test("home exposes recipe previews before the user has saved fridge ingredients"
   assert.match(homePage, /<h2 className="text-\[16px\] font-black text-\[#2f2117\]">먼저 보는 레시피<\/h2>/);
 });
 
+test("home prefers safe recipe previews over loading skeletons", () => {
+  assert.match(
+    homePage,
+    /!hasPublishedRecipes\s*&&\s*\(hasRecipePreview\s*\|\|\s*!isLoading\)/,
+  );
+  assert.match(
+    homePage,
+    /homeRecipeSections\.length === 0 \? \(\s*previewRecipes\.length > 0 \? \(/,
+  );
+
+  const previewBranchIndex = homePage.indexOf(
+    'homeRecipeSections.length === 0 ? (',
+  );
+  const loadingFallbackIndex = homePage.indexOf(
+    'isLoading && recommendedRecipes.length === 0 ? (',
+    previewBranchIndex,
+  );
+
+  assert.ok(previewBranchIndex >= 0, "preview branch must exist");
+  assert.ok(loadingFallbackIndex > previewBranchIndex, "loading skeleton must remain a fallback after safe previews");
+});
+
 test("home prioritizes recipe discovery before the full fridge visualization", () => {
   const recipeSectionIndex = homePage.indexOf(
     '<section className="space-y-5 px-5 pt-5">',

@@ -277,7 +277,7 @@ export default function HomePage() {
             starterIngredientNames={STARTER_INGREDIENT_NAMES}
             storageCounts={storageCounts}
           />
-        ) : !hasPublishedRecipes && !isLoading ? (
+        ) : !hasPublishedRecipes && (hasRecipePreview || !isLoading) ? (
           <RecipePublicationEmptyCard previewRecipe={previewRecipes[0] ?? null} />
         ) : (
           <TodayActionCard
@@ -289,18 +289,7 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-5 px-5 pt-5">
-        {isLoading && recommendedRecipes.length === 0 ? (
-          <div>
-            <div className="flex items-center justify-between">
-              <h2 className="text-[17px] font-black text-[#2f2117]">오늘 만들 메뉴</h2>
-              <span className="text-[11px] font-black text-[#9b8979]">불러오는 중</span>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-3">
-              <RecipeCardSkeleton />
-              <RecipeCardSkeleton />
-            </div>
-          </div>
-        ) : homeRecipeSections.length === 0 ? (
+        {homeRecipeSections.length === 0 ? (
           previewRecipes.length > 0 ? (
             <div>
               <div className="flex items-end justify-between gap-3">
@@ -318,6 +307,17 @@ export default function HomePage() {
                 {previewRecipes.map((recipe) => (
                   <RecipeHomeCard key={`preview-${recipe.id}`} recipe={recipe} compact previewMode />
                 ))}
+              </div>
+            </div>
+          ) : isLoading && recommendedRecipes.length === 0 ? (
+            <div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-[17px] font-black text-[#2f2117]">오늘 만들 메뉴</h2>
+                <span className="text-[11px] font-black text-[#9b8979]">불러오는 중</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-3">
+                <RecipeCardSkeleton />
+                <RecipeCardSkeleton />
               </div>
             </div>
           ) : (
