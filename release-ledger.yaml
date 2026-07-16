@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "home_recipe_first_candidate_local_chrome_verified_preview_quota_blocked"
+  phase: "home_recipe_first_exact_git_preview_verified"
   version: "1.0"
   build_number: "2026062602"
   git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_docs_commit_pushed_candidate_is_ancestor"
+  dirty_state: "clean_remote_head_exact_git_preview_verified"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -50,20 +50,36 @@ source_alignment_20260715:
   candidate_branch: "agent/sync-ux-release"
   candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   candidate_remote_head_matches: false
-  candidate_runtime_sha_is_remote_ancestor: false
+  candidate_runtime_sha_is_remote_ancestor: true
   latest_successful_exact_preview_sha_is_remote_ancestor: true
-  candidate_remote_head_note: "remote head adds release evidence after the code candidate; the latest successful exact runtime preview remains bound to 0f0aab0"
+  candidate_remote_head_note: "remote head cce0098 adds release evidence after the f6bdc07 code candidate and is the exact Git Preview runtime"
   sync_coalescing_candidate_git_sha: "f555092b9ddfd9a2dea67f3770649eb9d445ad07"
   sync_coalescing_candidate_remote_head_matches_before_docs: true
-  sync_coalescing_candidate_preview_status: "blocked_vercel_free_daily_deployment_quota"
+  sync_coalescing_candidate_preview_status: "verified_in_exact_git_preview_head_cce0098"
   sync_coalescing_candidate_preview_error_code: "api-deployments-free-per-day"
   sync_coalescing_candidate_preview_retry_after: "24_hours_or_after_quota_reset"
-  sync_coalescing_candidate_preview_deployment_id: null
+  sync_coalescing_candidate_preview_deployment_id: "dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
   sync_coalescing_candidate_production_promoted: false
   home_recipe_first_candidate_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   home_recipe_first_candidate_local_runtime_status: "verified_chrome_recipe_cards_before_fridge"
-  home_recipe_first_candidate_preview_status: "pending_after_vercel_daily_quota_reset"
+  home_recipe_first_candidate_preview_status: "verified_exact_git_preview_recipe_cards_before_fridge"
   home_recipe_first_candidate_production_promoted: false
+  home_recipe_first_preview_deployment_id: "dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
+  home_recipe_first_preview_url: "https://jipbab-note-587urq4he-youngbeens-projects.vercel.app"
+  home_recipe_first_preview_branch_alias: "https://jipbab-note-git-agent-sync-ux-release-youngbeens-projects.vercel.app"
+  home_recipe_first_preview_status: "READY"
+  home_recipe_first_preview_source: "git"
+  home_recipe_first_preview_metadata_git_sha: "cce0098901e88feb935759f5563116cff3dcfb9f"
+  home_recipe_first_preview_metadata_git_ref: "agent/sync-ux-release"
+  home_recipe_first_preview_metadata_git_repo: "dudqks0319-cpu/jipbab-note"
+  home_recipe_first_preview_recipe_first_order_verified: true
+  home_recipe_first_preview_recipe_top_px: 325.15
+  home_recipe_first_preview_fridge_top_px: 766.65
+  home_recipe_first_preview_recipe_count: 20
+  home_recipe_first_preview_reload_persistence: "verified_egg_tofu"
+  home_recipe_first_preview_sync_copy: "클라우드 동기화 완료"
+  home_recipe_first_preview_sync_delay_visible: false
+  home_recipe_first_preview_production_promoted: false
   exact_sha_preview_deployment_id: "dpl_ADhFSzuh1hPhAJJ6JQxX1APAeDz3"
   exact_sha_preview_url: "https://jipbab-note-8hv702dzh-youngbeens-projects.vercel.app"
   exact_sha_preview_status: "READY"
@@ -319,13 +335,14 @@ phase6_quality_security:
   sync_coalescing_ci_static_status: "verified_15_of_15"
   sync_coalescing_security_status: "verified_4_of_4"
   sync_coalescing_browser_flow_status: "verified_phase6_12_of_12_on_prior_exact_sha_preview"
-  sync_coalescing_exact_preview_status: "blocked_vercel_free_daily_deployment_quota_not_runtime_verified"
+  sync_coalescing_exact_preview_status: "verified_in_git_preview_dpl_AYNKS9NtwiN7iQWTRPKJ4G7qLDof"
   home_recipe_first_git_sha: "f6bdc07f069829b5d69281e64589be78d6d31fa7"
   home_recipe_first_unit_status: "verified_full_suite_413_of_413"
   home_recipe_first_build_status: "verified"
   home_recipe_first_ci_static_status: "verified_15_of_15"
   home_recipe_first_security_status: "verified_4_of_4"
   home_recipe_first_chrome_status: "verified_recipe_cards_before_fridge_after_ingredient_save"
+  home_recipe_first_git_preview_status: "verified_ready_head_cce0098_recipe_count_20_sync_complete_reload_persistence"
 
 phase6_vercel_preview:
   deployed_at: "2026-07-11 KST"
@@ -792,11 +809,11 @@ blockers:
     due: "before_cloudflare_primary"
   - id: "P1-JIPBAB-VERCEL-PREVIEW-QUOTA"
     severity: "P1"
-    status: "open_external_quota"
-    title: "The f555092 sync-coalescing candidate is pushed and locally verified, but Vercel rejected a new Preview before deployment creation because the Free project exceeded 100 deployments in one day."
+    status: "resolved_by_git_integration_preview_20260716"
+    title: "The manual CLI deploy hit the Free daily quota, but Git integration later deployed remote HEAD cce0098 with f555092 and f6bdc07 to a READY Preview and Chrome runtime verification passed."
     owner: "Vercel+project_owner"
     evidence: "docs/current-release-state.md"
-    due: "after_daily_quota_reset_before_exact_runtime_preview_claim"
+    due: "closed_20260716_production_promotion_still_separate"
 
 sync_preview_backup_20260715:
   branch: "agent/sync-ux-release"
