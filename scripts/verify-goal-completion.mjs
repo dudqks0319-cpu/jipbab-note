@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { releaseEvidenceReferenceExists } from "./lib/release-evidence-reference.mjs";
 
 const cwd = process.cwd();
 const ledgerPath = path.join(cwd, "docs/current-release-state.md");
@@ -115,24 +116,12 @@ function lineValue(source, label) {
   return match?.[1]?.trim() ?? "";
 }
 
-function artifactExists(value) {
-  const normalized = value.replace(/^`|`$/g, "").trim();
-  if (!normalized || normalized === "pending") {
-    return false;
-  }
-  if (/^https?:\/\//.test(normalized)) {
-    return true;
-  }
-  const artifactPath = path.isAbsolute(normalized) ? normalized : path.join(cwd, normalized);
-  return existsSync(artifactPath);
-}
-
 function missingExtraEvidence(source, extraEvidence) {
   const missingPatterns = (extraEvidence.patterns ?? [])
     .filter((requirement) => !requirement.pattern.test(source))
     .map((requirement) => requirement.label);
   const missingArtifacts = (extraEvidence.artifactLabels ?? [])
-    .filter((label) => !artifactExists(lineValue(source, label)))
+    .filter((label) => !releaseEvidenceReferenceExists(lineValue(source, label), { cwd }))
     .map((label) => `${label}: existing local path or URL`);
   return [...missingPatterns, ...missingArtifacts];
 }

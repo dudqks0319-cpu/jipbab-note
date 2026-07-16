@@ -40,7 +40,7 @@ test("goal completion check requires store console confirmation evidence", () =>
   assert.match(source, /Play Console evidence date: YYYY-MM-DD/);
   assert.match(source, /Play Console evidence artifacts/);
   assert.match(source, /existing local path or URL/);
-  assert.match(source, /existsSync\(artifactPath\)/);
+  assert.match(source, /releaseEvidenceReferenceExists\(lineValue\(source, label\), \{ cwd \}\)/);
 });
 
 test("goal completion check requires both production family and account-deletion smokes", () => {

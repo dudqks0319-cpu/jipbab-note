@@ -33,7 +33,7 @@ test("store console confirmation requires both app store and play console eviden
   assert.match(checkSource, /Play Console evidence date: YYYY-MM-DD/);
   assert.match(checkSource, /Play Console evidence artifacts/);
   assert.match(checkSource, /existing local path or URL/);
-  assert.match(checkSource, /existsSync\(artifactPath\)/);
+  assert.match(checkSource, /releaseEvidenceReferenceExists\(lineValue\(source, label\)\)/);
 });
 
 test("store console confirmation reports missing optional store API credentials without values", () => {

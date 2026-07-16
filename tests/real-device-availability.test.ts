@@ -93,7 +93,7 @@ test("real-device QA evidence gate requires end-to-end manual release checks", (
   assert.match(evidenceSource, /Android evidence date: YYYY-MM-DD/);
   assert.match(evidenceSource, /Android evidence artifacts/);
   assert.match(evidenceSource, /existing local path or URL/);
-  assert.match(evidenceSource, /existsSync\(artifactPath\)/);
+  assert.match(evidenceSource, /releaseEvidenceReferenceExists\(lineValue\(source, label\)\)/);
   assert.match(evidenceSource, /function hasEvidenceTerm/);
   assert.match(evidenceSource, /escapeRegExp\(term\)/);
   assert.equal(evidenceSource.includes('new RegExp(`^\\\\s*-\\\\s*${escapeRegExp(term)}\\\\s*$`, "m")'), true);
