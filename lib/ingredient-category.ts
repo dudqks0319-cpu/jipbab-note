@@ -29,6 +29,21 @@ export function normalizeLegacyIngredientCategory(
   return category;
 }
 
+export function getIngredientCategoryDisplayLabel(
+  ingredientName: string,
+  category: IngredientCategory | null,
+): string {
+  const name = normalizedLookupText(ingredientName);
+  if ((name === "계란" || name === "달걀") && category === "육류") {
+    return "계란·난류";
+  }
+  if (name === "두부" && category === "통조림/가공식품") {
+    return "콩·두부";
+  }
+
+  return category ?? "기타";
+}
+
 export function suggestIngredientCategory(
   ingredientName: string,
   fallback: IngredientCategory,

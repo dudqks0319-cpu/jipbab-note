@@ -2,6 +2,7 @@
 import { HTMLAttributes } from "react";
 
 import { getIngredientDisplayName } from "@/lib/ingredient-display";
+import { getIngredientCategoryDisplayLabel } from "@/lib/ingredient-category";
 import { normalizeIngredientStorageType } from "@/lib/ingredient-storage";
 import { getExpiryStatus } from "@/lib/utils";
 import type { IngredientRecord } from "@/types";
@@ -32,6 +33,7 @@ export function IngredientCard({
   const expiryStatus = getExpiryStatus(ingredient.expiryDate);
   const statusVariant = getStatusVariant(expiryStatus.isExpired, expiryStatus.isExpiringSoon);
   const displayName = getIngredientDisplayName(ingredient.name);
+  const displayCategory = getIngredientCategoryDisplayLabel(ingredient.name, ingredient.category);
   const displayStorageType = normalizeIngredientStorageType(ingredient.name, ingredient.storageType);
 
   return (
@@ -43,7 +45,7 @@ export function IngredientCard({
         <div className="min-w-0">
           <p className="truncate text-base font-semibold text-slate-900">{displayName}</p>
           <p className="mt-1 text-sm text-slate-500">
-            {(ingredient.category ?? "기타")} · {displayStorageType}
+            {displayCategory} · {displayStorageType}
           </p>
         </div>
         <Badge variant={statusVariant}>{expiryStatus.label}</Badge>

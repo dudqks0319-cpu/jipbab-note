@@ -17,7 +17,11 @@ import {
 import { APPSTORE_DEMO_INGREDIENTS } from '@/lib/demo-state'
 import { parseBulkIngredientInput } from '@/lib/bulk-ingredient-input'
 import { getIngredientCatalog, searchIngredientCatalog } from '@/lib/ingredient-catalog'
-import { normalizeIngredientInput, suggestIngredientCategory } from '@/lib/ingredient-category'
+import {
+  getIngredientCategoryDisplayLabel,
+  normalizeIngredientInput,
+  suggestIngredientCategory,
+} from '@/lib/ingredient-category'
 import {
   STARTER_INGREDIENT_TEMPLATES,
   buildStarterIngredientPayloads,
@@ -1063,7 +1067,7 @@ export default function FridgePage() {
                             ) : null}
                           </div>
                           <p className="mt-1 text-[12px] font-semibold text-[#7d6d5f]">
-                            {item.category ?? '기타'} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
+                            {getIngredientCategoryDisplayLabel(item.name, item.category)} · {item.expiryDate ? `${Math.max(dday, 0)}일 남음` : '유통기한 나중에 확인'}
                           </p>
                           <p className="mt-0.5 text-[11px] text-[#a69585]">보관위치 | {item.storageType}</p>
                           <Link
@@ -1255,7 +1259,7 @@ export default function FridgePage() {
                       form.category === cat ? 'bg-mint-200 text-mint-500 shadow-sm' : 'bg-gray-100 text-gray-500'
                     }`}
                   >
-                    {getCategoryEmoji(cat)} {cat}
+                    {getCategoryEmoji(cat)} {getIngredientCategoryDisplayLabel(form.name, cat)}
                   </button>
                 ))}
               </div>
@@ -1267,7 +1271,9 @@ export default function FridgePage() {
             {/* 카테고리별 추천 재료 */}
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <label className="block text-sm font-bold text-gray-700">{form.category} 추천 재료</label>
+                <label className="block text-sm font-bold text-gray-700">
+                  {getIngredientCategoryDisplayLabel(form.name, form.category)} 추천 재료
+                </label>
                 <span className="text-[11px] font-medium text-gray-400">칩 선택 시 재료명 자동입력</span>
               </div>
 
@@ -1280,7 +1286,7 @@ export default function FridgePage() {
                   type="text"
                   value={suggestionKeyword}
                   onChange={(event) => setSuggestionKeyword(event.target.value)}
-                  placeholder={`${form.category} 재료 검색 (예: 양파)`}
+                  placeholder={`${getIngredientCategoryDisplayLabel(form.name, form.category)} 재료 검색 (예: 양파)`}
                   className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors focus:border-mint-300 focus:bg-white"
                 />
                 {suggestionKeyword && (

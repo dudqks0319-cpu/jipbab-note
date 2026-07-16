@@ -7,6 +7,7 @@ import {
   searchIngredientCatalog,
 } from "../lib/ingredient-catalog.ts";
 import {
+  getIngredientCategoryDisplayLabel,
   normalizeLegacyIngredientCategory,
   normalizeIngredientInput,
   suggestIngredientCategory,
@@ -119,4 +120,13 @@ test("repairs only known legacy dairy misclassifications", () => {
   assert.equal(normalizeLegacyIngredientCategory("우유", "유제품"), "유제품");
   assert.equal(normalizeLegacyIngredientCategory("계란", "수산물"), "육류");
   assert.equal(normalizeLegacyIngredientCategory("두부", "채소"), "통조림/가공식품");
+});
+
+test("ingredient category labels describe egg and tofu without changing canonical storage values", () => {
+  assert.equal(getIngredientCategoryDisplayLabel("계란", "육류"), "계란·난류");
+  assert.equal(getIngredientCategoryDisplayLabel("달걀", "육류"), "계란·난류");
+  assert.equal(getIngredientCategoryDisplayLabel("두부", "통조림/가공식품"), "콩·두부");
+  assert.equal(getIngredientCategoryDisplayLabel("돼지고기", "육류"), "육류");
+  assert.equal(getIngredientCategoryDisplayLabel("참치캔", "통조림/가공식품"), "통조림/가공식품");
+  assert.equal(getIngredientCategoryDisplayLabel("직접입력", null), "기타");
 });
