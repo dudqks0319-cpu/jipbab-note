@@ -31,6 +31,7 @@ test("external release check includes Vercel production env verification", () =>
 test("Vercel production env check requires server-only release secrets without printing values", () => {
   assert.match(vercelEnvCheckSource, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(vercelEnvCheckSource, /ADMIN_EMAILS/);
+  assert.match(vercelEnvCheckSource, /API_RATE_LIMIT_HMAC_SECRET/);
   assert.match(vercelEnvCheckSource, /vercel", \["env", "ls"\]/);
   assert.doesNotMatch(vercelEnvCheckSource, /process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(vercelEnvCheckSource, /console\.log\(.*value/);

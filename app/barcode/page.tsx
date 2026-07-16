@@ -11,6 +11,8 @@ import {
   type BarcodeDetectorLike,
 } from '@/lib/barcode'
 import { getDeviceId } from '@/lib/device-id'
+import { getSupabaseClient } from '@/lib/supabase'
+import { ensureSignedSupabaseUser } from '@/lib/supabase-session'
 
 const SCAN_INTERVAL_MS = 700
 
@@ -86,11 +88,20 @@ export default function BarcodePage() {
     setLookupResult(null)
 
     try {
+      const supabase = getSupabaseClient()
+      const user = await ensureSignedSupabaseUser(supabase)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      if (!user || !accessToken) {
+        setLookupError('안전한 상품 조회 세션을 만들지 못했습니다. 수동 입력을 이용해 주세요.')
+        return
+      }
       const response = await fetch(
         `/api/products?barcode=${encodeURIComponent(barcode)}`,
         {
           cache: 'no-store',
           headers: {
+            Authorization: `Bearer ${accessToken}`,
             'x-device-id': getDeviceId(),
           },
         },
@@ -105,8 +116,7 @@ export default function BarcodePage() {
       const typed = payload as ProductLookupResponse
       setLookupResult(typed.product)
       setStatusMessage(typed.message)
-    } catch (error) {
-      console.error('상품 조회 요청 실패', error)
+    } catch {
       setLookupError('네트워크 오류로 조회에 실패했습니다.')
     } finally {
       setIsLookupLoading(false)
@@ -189,8 +199,7 @@ export default function BarcodePage() {
       scanIntervalRef.current = window.setInterval(() => {
         void detectOnce()
       }, SCAN_INTERVAL_MS)
-    } catch (error) {
-      console.error('카메라 시작 실패', error)
+    } catch {
       stopCamera()
       setCameraStatus('error')
       setStatusMessage('카메라를 시작하지 못했습니다. 권한을 확인해 주세요.')

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   getRateLimitKey,
+  getRateLimitIdentityKeys,
   isUuidLike,
   normalizeHttpUrl,
   readJsonObject,
@@ -17,6 +18,21 @@ test("builds rate limit keys from network identity before device identity", () =
   });
 
   assert.equal(getRateLimitKey(request), "ip:203.0.113.10");
+});
+
+test("limits user, network, and device identities together to resist identifier rotation", () => {
+  const request = new Request("https://example.com/api/products", {
+    headers: {
+      "x-forwarded-for": "203.0.113.20",
+      "x-device-id": "signed-device-20",
+    },
+  });
+
+  assert.deepEqual(getRateLimitIdentityKeys(request, "user-20"), [
+    "user:user-20",
+    "ip:203.0.113.20",
+    "device:signed-device-20",
+  ]);
 });
 
 test("ignores malformed device identifiers in rate limit keys", () => {

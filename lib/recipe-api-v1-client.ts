@@ -1,4 +1,5 @@
 import { getIngredientCatalog } from "./ingredient-catalog.ts";
+import { getDeviceId } from "./device-id.ts";
 import type { CanonicalRecipeCategoryId } from "./recipe-category-taxonomy.ts";
 import type {
   RecipeDetailRecord,
@@ -189,6 +190,11 @@ async function readApiData<T>(response: Response): Promise<T> {
     });
   }
   return payload?.data as T;
+}
+
+function getRateLimitHeaders(): HeadersInit {
+  const deviceId = getDeviceId();
+  return deviceId ? { "x-device-id": deviceId } : {};
 }
 
 export function resolveIngredientCatalogIds(names: string[]): string[] {
@@ -384,6 +390,7 @@ export async function fetchRecipeListV1(
 
   const response = await fetch(resolveApiUrl(`/api/v1/recipes?${params.toString()}`), {
     cache: "no-store",
+    headers: getRateLimitHeaders(),
     signal,
   });
   return readApiData<RecipeApiV1ListData>(response);
@@ -406,7 +413,7 @@ export async function fetchRecipeRecommendationsV1(
     method: "POST",
     cache: "no-store",
     signal,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getRateLimitHeaders() },
     body: JSON.stringify(input),
   });
   return readApiData<RecipeApiV1RecommendationData>(response);
@@ -418,6 +425,7 @@ export async function fetchRecipeDetailV1(
 ): Promise<RecipeApiV1Detail> {
   const response = await fetch(resolveApiUrl(`/api/v1/recipes/${encodeURIComponent(id)}`), {
     cache: "no-store",
+    headers: getRateLimitHeaders(),
     signal,
   });
   return readApiData<RecipeApiV1Detail>(response);

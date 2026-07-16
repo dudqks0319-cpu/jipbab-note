@@ -17,20 +17,33 @@ function normalizeDeviceId(value: string | null): string | null {
 }
 
 export function getRateLimitKey(request: Request): string {
+  return getRateLimitIdentityKeys(request)[0] ?? "ua:unknown-ua";
+}
+
+export function getRateLimitIdentityKeys(request: Request, userId?: string | null): string[] {
   const forwardedFor = firstForwardedIp(request.headers.get("x-forwarded-for"));
   const realIp = request.headers.get("x-real-ip")?.trim() || null;
   const ip = forwardedFor ?? realIp;
   const deviceId = normalizeDeviceId(request.headers.get("x-device-id"));
+  const normalizedUserId = userId?.trim();
+  const keys: string[] = [];
 
+  if (normalizedUserId) {
+    keys.push(`user:${normalizedUserId}`);
+  }
   if (ip) {
-    return `ip:${ip}`;
+    keys.push(`ip:${ip}`);
   }
   if (deviceId) {
-    return `device:${deviceId}`;
+    keys.push(`device:${deviceId}`);
   }
 
-  const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
-  return `ua:${userAgent.slice(0, 120)}`;
+  if (keys.length === 0) {
+    const userAgent = request.headers.get("user-agent")?.trim() ?? "unknown-ua";
+    keys.push(`ua:${userAgent.slice(0, 120)}`);
+  }
+
+  return [...new Set(keys)];
 }
 
 export function normalizeHttpUrl(value: string | null | undefined): string | null {

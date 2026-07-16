@@ -10,6 +10,7 @@ const requiredProductionEnv = [
   "NEXT_PUBLIC_SUPABASE_OAUTH_APPLE_ENABLED",
   "SUPABASE_SERVICE_ROLE_KEY",
   "ADMIN_EMAILS",
+  "API_RATE_LIMIT_HMAC_SECRET",
 ];
 
 function hasProductionEnv(output, name) {

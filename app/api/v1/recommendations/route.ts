@@ -27,6 +27,9 @@ export async function POST(request: Request) {
   const rateLimit = await consumeDistributedRateLimit(request, "recipes:recommendations", {
     limit: 30,
     windowSeconds: 60,
+    dailyLimit: 500,
+    globalLimit: 300,
+    globalDailyLimit: 10_000,
   });
   if (rateLimit.status === "limited") {
     return apiV1Error(

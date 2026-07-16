@@ -18,6 +18,9 @@ export async function GET(
   const rateLimit = await consumeDistributedRateLimit(request, "recipes:detail", {
     limit: 120,
     windowSeconds: 60,
+    dailyLimit: 4_000,
+    globalLimit: 2_000,
+    globalDailyLimit: 100_000,
   });
   if (rateLimit.status === "limited") {
     return apiV1Error(

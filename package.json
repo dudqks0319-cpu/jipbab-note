@@ -91,6 +91,7 @@
     "check:phase5-human-evidence": "node --experimental-strip-types scripts/check-phase-5-human-evidence.mjs",
     "check:phase1-data-contract": "node scripts/check-phase-1-data-contract.mjs",
     "check:api-v1-contract": "node scripts/check-api-v1-contract.mjs",
+    "check:cost-abuse-protection": "node scripts/check-cost-abuse-protection.mjs",
     "recipes:posters:generate": "node --experimental-strip-types scripts/generate-beginner-recipe-posters.mjs",
     "recipes:scenes:generate": "node --experimental-strip-types scripts/generate-beginner-recipe-scenes.mjs",
     "validate:recipes": "node --experimental-strip-types scripts/validate-recipes.mjs",

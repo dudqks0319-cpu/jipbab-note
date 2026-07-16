@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 
-import { getRateLimitKey } from "./request-security.ts";
+import { getRateLimitIdentityKeys } from "./request-security.ts";
 import { getServerSupabaseAdminClient } from "./supabase-server.ts";
 
 export type DistributedRateLimitResult =
@@ -11,6 +11,16 @@ export type DistributedRateLimitResult =
 type LocalBucket = { count: number; startedAt: number };
 const LOCAL_BUCKET_CAPACITY = 10_000;
 const localBuckets = new Map<string, LocalBucket>();
+
+type DistributedRateLimitOptions = {
+  limit: number;
+  windowSeconds: number;
+  userId?: string | null;
+  dailyLimit?: number;
+  globalLimit?: number;
+  globalWindowSeconds?: number;
+  globalDailyLimit?: number;
+};
 
 export function hashRateLimitKey(routeKey: string, requestKey: string, secret: string): string {
   return createHmac("sha256", secret).update(`${routeKey}\n${requestKey}`).digest("hex");
@@ -50,12 +60,11 @@ function localDevelopmentLimit(
     : { status: "limited", remaining: 0, retryAfter };
 }
 
-export async function consumeDistributedRateLimit(
-  request: Request,
+export async function consumeDistributedRateLimitForKey(
   routeKey: string,
+  requestKey: string,
   options: { limit: number; windowSeconds: number },
 ): Promise<DistributedRateLimitResult> {
-  const requestKey = getRateLimitKey(request);
   const secret = process.env.API_RATE_LIMIT_HMAC_SECRET?.trim();
   const production = process.env.NODE_ENV === "production";
   if (!secret || secret.length < 32) {
@@ -93,4 +102,107 @@ export async function consumeDistributedRateLimit(
       ? { status: "unavailable", remaining: 0, retryAfter: 60 }
       : localDevelopmentLimit(routeKey, requestKey, options.limit, options.windowSeconds);
   }
+}
+
+function mergeLimitedResult(
+  current: DistributedRateLimitResult,
+  next: DistributedRateLimitResult,
+): DistributedRateLimitResult {
+  if (current.status === "unavailable" || next.status === "unavailable") {
+    return {
+      status: "unavailable",
+      remaining: 0,
+      retryAfter: Math.max(current.retryAfter, next.retryAfter),
+    };
+  }
+  if (current.status === "limited" || next.status === "limited") {
+    return {
+      status: "limited",
+      remaining: 0,
+      retryAfter: Math.max(current.retryAfter, next.retryAfter),
+    };
+  }
+  return {
+    status: "allowed",
+    remaining: Math.min(current.remaining, next.remaining),
+    retryAfter: Math.max(current.retryAfter, next.retryAfter),
+  };
+}
+
+async function consumeAll(
+  checks: Array<{
+    routeKey: string;
+    requestKey: string;
+    limit: number;
+    windowSeconds: number;
+  }>,
+): Promise<DistributedRateLimitResult> {
+  let aggregate: DistributedRateLimitResult = {
+    status: "allowed",
+    remaining: Number.MAX_SAFE_INTEGER,
+    retryAfter: 1,
+  };
+
+  for (const check of checks) {
+    const result = await consumeDistributedRateLimitForKey(
+      check.routeKey,
+      check.requestKey,
+      check,
+    );
+    aggregate = mergeLimitedResult(aggregate, result);
+    if (aggregate.status !== "allowed") {
+      return aggregate;
+    }
+  }
+
+  return aggregate;
+}
+
+export async function consumeDistributedRateLimit(
+  request: Request,
+  routeKey: string,
+  options: DistributedRateLimitOptions,
+): Promise<DistributedRateLimitResult> {
+  const identityKeys = getRateLimitIdentityKeys(request, options.userId);
+  const identityChecks = identityKeys.flatMap((requestKey) => [
+    {
+      routeKey: `${routeKey}:burst`,
+      requestKey,
+      limit: options.limit,
+      windowSeconds: options.windowSeconds,
+    },
+    ...(options.dailyLimit
+      ? [{
+          routeKey: `${routeKey}:daily`,
+          requestKey,
+          limit: options.dailyLimit,
+          windowSeconds: 86_400,
+        }]
+      : []),
+  ]);
+  const identityResult = await consumeAll(identityChecks);
+  if (identityResult.status !== "allowed") {
+    return identityResult;
+  }
+
+  const globalChecks = [
+    ...(options.globalLimit
+      ? [{
+          routeKey: `${routeKey}:global-burst`,
+          requestKey: "global",
+          limit: options.globalLimit,
+          windowSeconds: options.globalWindowSeconds ?? options.windowSeconds,
+        }]
+      : []),
+    ...(options.globalDailyLimit
+      ? [{
+          routeKey: `${routeKey}:global-daily`,
+          requestKey: "global",
+          limit: options.globalDailyLimit,
+          windowSeconds: 86_400,
+        }]
+      : []),
+  ];
+
+  return globalChecks.length > 0 ? consumeAll(globalChecks) : identityResult;
 }
