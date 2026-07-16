@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "home_recipe_immediate_exact_git_preview_verified"
+  phase: "production_sync_and_safe_recipe_preview_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "01e9895a20ae0dc1243a19f776753289ee05dce2"
+  git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_code_candidate_pushed_exact_git_preview_verified_docs_followups_present"
+  dirty_state: "clean_runtime_candidate_production_deployed_docs_followup_separate"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -49,12 +49,12 @@ source_alignment_20260715:
   github_default_branch: "main"
   github_default_branch_sha: "86e2bc23abab13f028349d39e8b27d5a42a627c1"
   candidate_branch: "agent/sync-ux-release"
-  candidate_git_sha: "01e9895a20ae0dc1243a19f776753289ee05dce2"
-  candidate_branch_remote_head_at_reaudit_sha: "edf651f5b52b79e84797b72981bde45d45acf8a1"
-  candidate_remote_head_matches: false
+  candidate_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  candidate_branch_remote_head_at_reaudit_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  candidate_remote_head_matches: true
   candidate_runtime_sha_is_remote_ancestor: true
   latest_successful_exact_preview_sha_is_remote_ancestor: true
-  candidate_remote_head_note: "01e9895 is the latest code candidate and exact Git Preview runtime; edf651f was the clean remote branch HEAD at the start of the 2026-07-16 reaudit and is not a permanent HEAD claim"
+  candidate_remote_head_note: "062df1b is the clean runtime candidate deployed to Production; a documentation-only follow-up may advance the branch without changing runtime code"
   candidate_to_main_open_pr: true
   candidate_to_main_pr_number: 9
   candidate_to_main_pr_url: "https://github.com/dudqks0319-cpu/jipbab-note/pull/9"
@@ -63,7 +63,7 @@ source_alignment_20260715:
   candidate_to_main_pr_commit_count_at_open: 102
   candidate_to_main_pr_file_count_at_open: 2586
   candidate_to_main_pr_merge_tree_conflict_count: 0
-  candidate_to_main_pr_initial_checks: "release_gate_in_progress_vercel_pending"
+  candidate_to_main_pr_initial_checks: "release_gate_and_vercel_passed_at_runtime_sha_062df1b"
   unrelated_toddler_draft_pr_number: 4
   unrelated_toddler_draft_pr_base: "ux/home-today-action-v2"
   unrelated_toddler_draft_pr_checks: "failing_keep_separate_from_release_candidate"
@@ -138,9 +138,14 @@ source_alignment_20260715:
   exact_sha_preview_api_hmac_status: "registered_preview_encrypted_value_not_logged"
   exact_sha_preview_api_status_reason: "preview_hmac_ready_but_isolated_supabase_server_dependency_not_configured_fail_closed"
   exact_sha_preview_production_service_role_copied: false
-  production_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
-  production_promoted: false
-  alignment_status: "canonical_repo_connected_default_branch_candidate_and_production_sha_differ"
+  production_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  production_deployment_id: "dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp"
+  production_deployment_url: "https://jipbab-note-na24ds4wi-youngbeens-projects.vercel.app"
+  production_promoted: true
+  production_sync_browser_status: "cloud_sync_complete_pending_zero_egg_tofu_persisted"
+  production_safe_preview_count: 10
+  production_browser_console_warning_error_count: 0
+  alignment_status: "production_matches_runtime_candidate_protected_main_integration_pending"
 
 publication_gate:
   migration: "20260710130000_gate_recipe_publication.sql"
@@ -159,7 +164,7 @@ signed_guest_auth:
   design: "docs/guest-session-security.md"
   local_code_status: "verified"
   production_migration_status: "applied_20260715101553_with_prerequisites_and_hardening"
-  production_deploy_status: "preview_code_deployed_and_browser_verified_production_alias_not_promoted"
+  production_deploy_status: "production_promoted_and_browser_sync_verified_at_062df1b"
   anonymous_auth_feature_flag_default: false
   preview_anonymous_auth_feature_flag: true
   ownership_contract: "verified_supabase_auth_uid_only"
@@ -997,8 +1002,15 @@ sync_preview_backup_20260715:
   production_recipe_search_screenshot: "/tmp/jipbab-recipe-search-immediate.png"
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
-  production_alias_runtime_git_sha: "3a8f72f78cde6588be86795d6fd4da4dc9d6308f"
-  production_alias_runtime_alignment: "runtime_hotfix_verified_canonical_repo_connected_branch_and_production_sha_mismatch_open"
+  production_alias_runtime_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  production_alias_runtime_deployment_id: "dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp"
+  production_alias_runtime_alignment: "runtime_matches_clean_candidate_protected_main_integration_pending"
+  production_safe_preview_current_count: 10
+  production_safe_preview_home_cards: "두부부침,두부조림"
+  production_sync_current_copy: "클라우드 동기화 완료"
+  production_sync_current_pending_count: 0
+  production_sync_current_screenshot: "output/ui-evidence/production-sync-complete-2026-07-16.png"
+  production_safe_preview_current_screenshot: "output/ui-evidence/production-safe-recipes-2026-07-16.png"
 
 next_action:
   owner: "ContentQA+BeginnerTesters"

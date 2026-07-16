@@ -2,13 +2,20 @@
 
 Updated: 2026-07-16 KST
 
+## 2026-07-16 Production 동기화·안전 레시피 미리보기 승격
+
+- 검증된 runtime commit `062df1b04e07002202e840db441fe9f14f887d8a`을 Vercel Production deployment `dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp` (`https://jipbab-note-na24ds4wi-youngbeens-projects.vercel.app`)으로 배포하고 운영 별칭 `https://jipbab-note-app.vercel.app`에 연결했다. Vercel metadata의 Git SHA·브랜치는 각각 `062df1b`, `agent/sync-ux-release`와 일치하고 원격 build는 TypeScript와 38/38 routes를 통과했다.
+- 같은 Chrome production origin에 저장된 계란·두부 2개를 유지한 채 `/fridge`를 새로고침해 `클라우드 동기화 완료`, 대기 0건, 계란 `육류`, 두부 `통조림/가공식품`을 확인했다. 기존 실패처럼 보이던 `동기화가 지연되고 있어요` 문구는 없고 console warning/error도 0건이다.
+- 운영 홈은 동기화된 두부 재료에 맞춰 두부부침·두부조림 카드를 냉장고 시각화보다 먼저 표시한다. 내용이 다른 음식과 섞인 미리보기는 제외하고 구조·이미지·자체 작성 출처를 확인한 10개만 유지한다. 실제 사람 조리 검수 전이므로 모든 카드는 `조리 검수 중`이며 추천 확정·장보기·조리 시작은 계속 잠겨 있다.
+- 운영 `/`와 `/api/v1/recipes?limit=2`는 HTTP 200이고 승인 API는 의도대로 빈 목록을 반환한다. 배포 직후 Vercel runtime error cluster는 0건이다. 화면 증거는 `output/ui-evidence/production-sync-complete-2026-07-16.png`, `output/ui-evidence/production-safe-recipes-2026-07-16.png`이다.
+
 ## 2026-07-16 공식 원본·운영 DB 재확인
 
-- canonical GitHub 저장소는 `dudqks0319-cpu/jipbab-note`, 보호된 기본 브랜치는 `main` @ `86e2bc23abab13f028349d39e8b27d5a42a627c1`이다. 최신 코드 후보는 `agent/sync-ux-release`의 `01e9895a20ae0dc1243a19f776753289ee05dce2`다. 재감사 시작 시 문서 후속을 포함한 원격 HEAD는 `edf651f5b52b79e84797b72981bde45d45acf8a1`이었고 이 브랜치를 `main`으로 보내는 열린 PR은 없었다.
-- 운영 별칭은 계속 `dpl_6vCTkYxfHdyzjByHsqLLK9KGxvNZ`(`READY`)을 가리키고 runtime code는 `3a8f72f78cde6588be86795d6fd4da4dc9d6308f`다. Preview 코드 후보를 Production으로 승격하지 않았다.
+- canonical GitHub 저장소는 `dudqks0319-cpu/jipbab-note`, 보호된 기본 브랜치는 `main` @ `86e2bc23abab13f028349d39e8b27d5a42a627c1`이다. 최신 검증 runtime 후보는 `agent/sync-ux-release`의 `062df1b04e07002202e840db441fe9f14f887d8a`이며 Draft PR #9가 이 브랜치를 `main`으로 검토 중이다.
+- 운영 별칭은 `dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp`(`READY`)을 가리키고 runtime code는 `062df1b04e07002202e840db441fe9f14f887d8a`다. 동기화 단일 실행·레시피 우선 노출·안전 미리보기 10개 제한을 포함한 검증 후보를 Production에 승격했다.
 - Supabase CLI의 linked 프로젝트는 `JipbabNote` ref `xqelabiwtjntwrjqcteo`로 재확인했다. `supabase migration list --linked`는 로컬·원격 40개 버전이 모두 일치하고 최신 버전이 `20260715135424`임을 보여준다. `supabase db push --dry-run --linked`는 `Remote database is up to date`로 종료해 추가 적용 SQL이 없었다. `supabase inspect db table-stats --linked`로 `ops_backup`의 recipes 1,152건, signed-session 전 냉장고 51건·장보기 18건·정책 36건·함수 8건, 분류 수정 전 20건·1건 백업이 남아 있음을 재확인했다. 중복 migration은 실행하지 않았다.
-- 남은 P0는 DB migration이 아니라 보호된 `main`·후보 브랜치·Production SHA 통합이다. Draft PR #4는 오래된 `ux/home-today-action-v2` base와 실패 중인 Toddler Meals CI를 사용하므로 현재 release candidate와 분리한다.
-- 누적 후보를 보호된 `main`으로 검토하기 위한 Draft PR [#9](https://github.com/dudqks0319-cpu/jipbab-note/pull/9)를 열었다. opening head는 `69f18cbee06fc6ad11ca896fa20041826a7efbc8`이며 Release Gate와 Vercel Preview가 시작됐다. 102개 커밋·2,586개 파일의 큰 범위이므로 자동 merge·Ready 전환·Production 승격은 하지 않는다.
+- 남은 P0는 DB migration이나 동기화가 아니라 보호된 `main`과 누적 후보 브랜치 통합, Phase 5 사람 검수 20/20이다. Draft PR #4는 오래된 `ux/home-today-action-v2` base와 실패 중인 Toddler Meals CI를 사용하므로 현재 release candidate와 분리한다.
+- 누적 후보를 보호된 `main`으로 검토하기 위한 Draft PR [#9](https://github.com/dudqks0319-cpu/jipbab-note/pull/9)의 runtime head `062df1b`에서 Release Gate와 Vercel 검사가 통과했다. 102개 이상 커밋·2,586개 파일의 큰 범위이므로 자동 merge·Ready 전환은 하지 않는다.
 
 ## 2026-07-16 홈 레시피 우선순위 조정
 
