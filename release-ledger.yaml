@@ -12,12 +12,12 @@ project:
   release_goal: "초보 사용자가 냉장고 재료에서 레시피 추천과 장보기까지 이어갈 수 있는 앱을 스토어 제출 가능한 상태로 만든다."
 
 candidate:
-  phase: "production_sync_and_safe_recipe_preview_verified"
+  phase: "production_sync_recipe_visibility_and_release_evidence_paths_verified"
   version: "1.0"
   build_number: "2026062602"
-  git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
+  git_sha: "c8b32c5612b9f183b79bbc67d29ddfdba6aa934c"
   branch: "agent/sync-ux-release"
-  dirty_state: "clean_runtime_candidate_production_deployed_docs_followup_separate"
+  dirty_state: "clean_runtime_candidate_production_deployed_evidence_ledger_followup_pending"
   source_of_truth: "docs/official-production-sources.md, docs/phase-0-baseline-2026-07-10.md, docs/phase-1-data-contract.md, docs/phase-2-api-v1-report.md, docs/phase-3-frontend-integration-report.md, docs/phase-4-cook-mode-report.md, docs/phase-5-core-20-audit.md, docs/phase-6-security-definer-review.md, docs/phase-6-mobile-accessibility-report.md, docs/phase-6-e2e-report.md, docs/phase-6-performance-report.md, docs/current-release-state.md"
 
 phase0_baseline:
@@ -1002,15 +1002,19 @@ sync_preview_backup_20260715:
   production_recipe_search_screenshot: "/tmp/jipbab-recipe-search-immediate.png"
   residual_security_followup: "advisor_search_path_warnings_captcha_and_leaked_password_protection"
   production_alias_runtime_project: "jipbab-note-app"
-  production_alias_runtime_git_sha: "062df1b04e07002202e840db441fe9f14f887d8a"
-  production_alias_runtime_deployment_id: "dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp"
-  production_alias_runtime_alignment: "runtime_matches_clean_candidate_protected_main_integration_pending"
+  production_alias_runtime_git_sha: "c8b32c5612b9f183b79bbc67d29ddfdba6aa934c"
+  production_alias_runtime_deployment_id: "dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv"
+  production_alias_runtime_alignment: "runtime_matches_remote_candidate_protected_main_integration_pending"
   production_safe_preview_current_count: 10
   production_safe_preview_home_cards: "두부부침,두부조림"
   production_sync_current_copy: "클라우드 동기화 완료"
   production_sync_current_pending_count: 0
   production_sync_current_screenshot: "output/ui-evidence/production-sync-complete-2026-07-16.png"
   production_safe_preview_current_screenshot: "output/ui-evidence/production-safe-recipes-2026-07-16.png"
+  production_sync_latest_screenshot: "output/ui-evidence/production-sync-complete-c8b32c5.png"
+  production_recipe_detail_latest_screenshot: "output/ui-evidence/production-recipe-detail-c8b32c5.png"
+  release_goal_latest_gate_count: "14_pass_2_blocked_1_missing"
+  release_goal_latest_progress_percent: 82.4
 
 next_action:
   owner: "ContentQA+BeginnerTesters"

@@ -2,6 +2,14 @@
 
 Updated: 2026-07-16 KST
 
+## 2026-07-16 동기화 UX 최종 운영 검증·출시 증거 경로 복구
+
+- 운영 runtime commit `c8b32c5612b9f183b79bbc67d29ddfdba6aa934c`을 Vercel Production deployment `dpl_5rDi3WqXGrMua8VLKoTSRNwCFCGv` (`https://jipbab-note-7e78cozu4-youngbeens-projects.vercel.app`)으로 배포하고 `https://jipbab-note-app.vercel.app`에 연결했다. 상태는 `READY`이며 `/`, `/fridge`, `/recipe?q=두부`, `/recipe/preview/beginner-recipe-028`은 모두 HTTP 200이다.
+- fresh 390×844 브라우저에서 계란·두부 저장 → 홈 레시피 추천 → 냉장고 이동 → `클라우드 동기화 완료` → 새로고침 후 재료 유지 → 두부 검색 결과 2개 → 두부조림 상세 진입을 확인했다. 가로 overflow와 console warning/error는 0건이다.
+- linked worktree에서도 저장소 공용 `output/...` 출시 증거를 안전하게 해석하도록 공통 경로 해석기를 추가했다. Git common root 밖 경로, `..` 순회, symlink escape는 거부한다. 이 수정으로 App Store 공개 확인은 정상 PASS가 됐고 출시 목표는 14 PASS / 2 BLOCKED / 1 MISSING(82.4%)로 재계산됐다.
+- 전체 unit 422/422, integration, 콘텐츠 검증, security 4/4, production build 38/38 routes, CI-safe 15/15와 GitHub PR #9 검사가 통과했다. 증거 화면은 `output/ui-evidence/production-sync-complete-c8b32c5.png`, `output/ui-evidence/production-recipe-detail-c8b32c5.png`이다.
+- 남은 출시 차단 조건은 코드 결함이 아니다. Phase 5 실제 사람 조리·초보자·식품안전·법무출처·이미지권리 검수는 0/20이고, 연결된 iPhone에는 요구 build `2026062602`가 아닌 `2026062601`이 설치돼 있으며, Android 실기기와 Play Console 내부 테스트 확인이 없다. 이 증거를 생성하거나 추정해 PASS로 만들지 않는다.
+
 ## 2026-07-16 Production 동기화·안전 레시피 미리보기 승격
 
 - 검증된 runtime commit `062df1b04e07002202e840db441fe9f14f887d8a`을 Vercel Production deployment `dpl_BD8sCC1HPoKWZnpMwK5uV5BS9qhp` (`https://jipbab-note-na24ds4wi-youngbeens-projects.vercel.app`)으로 배포하고 운영 별칭 `https://jipbab-note-app.vercel.app`에 연결했다. Vercel metadata의 Git SHA·브랜치는 각각 `062df1b`, `agent/sync-ux-release`와 일치하고 원격 build는 TypeScript와 38/38 routes를 통과했다.
