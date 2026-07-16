@@ -48,6 +48,11 @@ const checks = [
     args: ["scripts/check-cost-abuse-protection.mjs"],
   },
   {
+    name: "repository-asset-budget",
+    command: "node",
+    args: ["scripts/check-repository-asset-budget.mjs"],
+  },
+  {
     name: "supabase-release-contract",
     command: "node",
     args: ["scripts/check-supabase-release.mjs"],
