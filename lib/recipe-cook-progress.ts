@@ -8,12 +8,12 @@ export type RecipeCookTimer = {
 };
 
 export type RecipeCookProgress = {
-  version: 1;
+  version: 2;
   clientSessionId: string | null;
   startedAt: string | null;
   activeStepIndex: number;
   checkedStepIndexes: number[];
-  timer: RecipeCookTimer | null;
+  timers: RecipeCookTimer[];
   completedAt: string | null;
   feedback: RecipeCookFeedback | null;
   updatedAt: string;
@@ -67,13 +67,56 @@ export function resumeRecipeCookTimer(
   };
 }
 
+export function upsertRecipeCookTimer(
+  timers: RecipeCookTimer[],
+  timer: RecipeCookTimer,
+): RecipeCookTimer[] {
+  return [
+    ...timers.filter((candidate) => candidate.stepIndex !== timer.stepIndex),
+    timer,
+  ].sort((left, right) => left.stepIndex - right.stepIndex);
+}
+
+function normalizeRecipeCookTimer(
+  value: unknown,
+  validSteps: Set<number>,
+): RecipeCookTimer | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const timerRecord = value as Record<string, unknown>;
+  if (
+    !Number.isInteger(timerRecord.stepIndex) ||
+    !validSteps.has(timerRecord.stepIndex as number) ||
+    typeof timerRecord.endsAt !== "number" ||
+    !Number.isFinite(timerRecord.endsAt) ||
+    !Number.isInteger(timerRecord.durationSeconds) ||
+    (timerRecord.durationSeconds as number) < 1 ||
+    (timerRecord.durationSeconds as number) > MAX_TIMER_SECONDS
+  ) {
+    return null;
+  }
+
+  return {
+    stepIndex: timerRecord.stepIndex as number,
+    endsAt: timerRecord.endsAt,
+    durationSeconds: timerRecord.durationSeconds as number,
+    pausedRemainingSeconds:
+      timerRecord.pausedRemainingSeconds === null || timerRecord.pausedRemainingSeconds === undefined
+        ? null
+        : Number.isInteger(timerRecord.pausedRemainingSeconds)
+          && Number(timerRecord.pausedRemainingSeconds) >= 0
+          && Number(timerRecord.pausedRemainingSeconds) <= Number(timerRecord.durationSeconds)
+          ? Number(timerRecord.pausedRemainingSeconds)
+          : null,
+  };
+}
+
 export function normalizeRecipeCookProgress(
   value: unknown,
   stepIndexes: number[],
 ): RecipeCookProgress | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
-  if (record.version !== 1 || typeof record.updatedAt !== "string") return null;
+  if ((record.version !== 1 && record.version !== 2) || typeof record.updatedAt !== "string") return null;
   const validSteps = new Set(stepIndexes);
   const activeStepIndex = Number(record.activeStepIndex);
   const checkedStepIndexes = Array.isArray(record.checkedStepIndexes)
@@ -81,31 +124,14 @@ export function normalizeRecipeCookProgress(
         (item): item is number => Number.isInteger(item) && validSteps.has(item as number),
       ))]
     : [];
-  const timerRecord = record.timer && typeof record.timer === "object" && !Array.isArray(record.timer)
-    ? (record.timer as Record<string, unknown>)
-    : null;
-  const timer = timerRecord
-    && Number.isInteger(timerRecord.stepIndex)
-    && validSteps.has(timerRecord.stepIndex as number)
-    && typeof timerRecord.endsAt === "number"
-    && Number.isFinite(timerRecord.endsAt)
-    && Number.isInteger(timerRecord.durationSeconds)
-    && (timerRecord.durationSeconds as number) >= 1
-    && (timerRecord.durationSeconds as number) <= MAX_TIMER_SECONDS
-      ? {
-          stepIndex: timerRecord.stepIndex as number,
-          endsAt: timerRecord.endsAt,
-          durationSeconds: timerRecord.durationSeconds as number,
-          pausedRemainingSeconds:
-            timerRecord.pausedRemainingSeconds === null
-              ? null
-              : Number.isInteger(timerRecord.pausedRemainingSeconds)
-                && Number(timerRecord.pausedRemainingSeconds) >= 0
-                && Number(timerRecord.pausedRemainingSeconds) <= Number(timerRecord.durationSeconds)
-              ? Number(timerRecord.pausedRemainingSeconds)
-              : null,
-        }
-      : null;
+  const timerValues = record.version === 1
+    ? [record.timer]
+    : Array.isArray(record.timers) ? record.timers : [];
+  const timerByStep = new Map<number, RecipeCookTimer>();
+  for (const timerValue of timerValues) {
+    const timer = normalizeRecipeCookTimer(timerValue, validSteps);
+    if (timer) timerByStep.set(timer.stepIndex, timer);
+  }
   const feedback = record.feedback === "easy" || record.feedback === "okay" || record.feedback === "hard"
     ? record.feedback
     : null;
@@ -117,7 +143,7 @@ export function normalizeRecipeCookProgress(
     : null;
 
   return {
-    version: 1,
+    version: 2,
     clientSessionId,
     startedAt,
     activeStepIndex:
@@ -125,7 +151,7 @@ export function normalizeRecipeCookProgress(
         ? activeStepIndex
         : 0,
     checkedStepIndexes,
-    timer,
+    timers: [...timerByStep.values()].sort((left, right) => left.stepIndex - right.stepIndex),
     completedAt: typeof record.completedAt === "string" ? record.completedAt : null,
     feedback,
     updatedAt: record.updatedAt,

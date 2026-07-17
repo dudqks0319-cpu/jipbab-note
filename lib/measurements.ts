@@ -65,7 +65,7 @@ function normalizeValue(value: number): string {
     return String(value);
   }
 
-  return value.toFixed(1).replace(/\.0$/, "");
+  return value.toFixed(3).replace(/\.?0+$/, "");
 }
 
 export function formatIngredientQuantity(
@@ -172,6 +172,19 @@ export function parseQuantityDisplay(
     return {
       amountValue: looseMatch[2],
       amountUnit: looseUnitMap[looseMatch[1]] ?? null,
+    };
+  }
+
+  const recipeStyleMatch = raw.match(/^(\d+(?:\.\d+)?)\s*(큰술|작은술|컵)$/);
+  if (recipeStyleMatch) {
+    const recipeStyleUnitMap: Record<string, IngredientUnit> = {
+      큰술: "tbsp",
+      작은술: "tsp",
+      컵: "cup",
+    };
+    return {
+      amountValue: recipeStyleMatch[1],
+      amountUnit: recipeStyleUnitMap[recipeStyleMatch[2]] ?? null,
     };
   }
 

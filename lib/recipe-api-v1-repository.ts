@@ -392,7 +392,7 @@ export async function listPublicRecipesV1(
     client
       .from("recipe_ingredients")
       .select(
-        "id,recipe_id,ingredient_id,group_type,display_name,quantity_value,quantity_text,unit,preparation,optional,pantry_staple,sort_order",
+        "id,recipe_id,ingredient_id,group_type,display_name,quantity_value,quantity_text,unit,preparation,optional,pantry_staple,scale_mode,sort_order",
       )
       .in("recipe_id", recipeIds),
     client
@@ -507,6 +507,7 @@ export type RecipeV1IngredientRow = {
   preparation: string | null;
   optional: boolean;
   pantry_staple: boolean;
+  scale_mode?: "linear" | "fixed" | "to_taste";
   sort_order: number;
 };
 
@@ -717,6 +718,7 @@ export function buildPublicRecipeDetail(
       preparation: ingredient.preparation,
       optional: ingredient.optional,
       pantryStaple: ingredient.pantry_staple,
+      scaleMode: ingredient.scale_mode ?? "linear",
       substitutions: (substitutionsByIngredient.get(ingredient.id) ?? [])
         .slice()
         .sort((left, right) => left.sort_order - right.sort_order)
@@ -894,7 +896,7 @@ export async function getPublicRecipeDetailV1(recipeId: string): Promise<RecipeV
     client
       .from("recipe_ingredients")
       .select(
-        "id,ingredient_id,group_type,display_name,quantity_value,quantity_text,unit,preparation,optional,pantry_staple,sort_order",
+        "id,ingredient_id,group_type,display_name,quantity_value,quantity_text,unit,preparation,optional,pantry_staple,scale_mode,sort_order",
       )
       .eq("recipe_id", recipeId)
       .order("sort_order", { ascending: true }),

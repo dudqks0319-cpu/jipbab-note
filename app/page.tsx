@@ -44,6 +44,8 @@ import { filterPublicationApprovedRecipes } from '@/lib/recipe-publication'
 import { STARTER_INGREDIENT_NAMES, buildStarterIngredientPayloads } from '@/lib/starter-ingredients'
 import { getDday, getIngredientPhotoUrl } from '@/lib/utils'
 import type { IngredientRecord } from '@/types'
+import { useRecentRecipes } from '@/hooks/useRecentRecipes'
+import { prioritizeRecipeDiversity } from '@/lib/recent-recipes'
 
 const HOME_FRIDGE_IMAGE = '/images/fridge-freezer-board-animated.png'
 
@@ -55,6 +57,7 @@ type StorageCounts = {
 
 export default function HomePage() {
   const { settings } = useAppSettings()
+  const recentRecipes = useRecentRecipes()
   const { isDemoMode: isAppStoreDemo, ready: demoModeReady } = useDemoModeState()
   const {
     ingredients,
@@ -140,7 +143,10 @@ export default function HomePage() {
   )
 
   const rankedHomeRecipes = useMemo(() => {
-    return rankRecipeRecommendations(beginnerHomeRecipeCatalog, activeDisplayIngredients)
+    return prioritizeRecipeDiversity(
+      rankRecipeRecommendations(beginnerHomeRecipeCatalog, activeDisplayIngredients),
+      recentRecipes,
+    )
       .map(({ recipe, match, score }) => {
         const expiringIngredients = findExpiringMatchedIngredients(match.matchedIngredients, activeDisplayIngredients)
         return {
@@ -156,13 +162,16 @@ export default function HomePage() {
           expiringIngredients,
         }
       })
-  }, [activeDisplayIngredients, beginnerHomeRecipeCatalog])
+  }, [activeDisplayIngredients, beginnerHomeRecipeCatalog, recentRecipes])
   const rankedFamilyRecipes = useMemo(() => {
     if (!group) {
       return []
     }
 
-    return rankRecipeRecommendations(beginnerHomeRecipeCatalog, activeFamilyIngredients)
+    return prioritizeRecipeDiversity(
+      rankRecipeRecommendations(beginnerHomeRecipeCatalog, activeFamilyIngredients),
+      recentRecipes,
+    )
       .map(({ recipe, match, score }) => {
         const expiringIngredients = findExpiringMatchedIngredients(match.matchedIngredients, activeFamilyIngredients)
         return {
@@ -178,7 +187,7 @@ export default function HomePage() {
           expiringIngredients,
         }
       })
-  }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group])
+  }, [activeFamilyIngredients, beginnerHomeRecipeCatalog, group, recentRecipes])
   const recommendedRecipes = useMemo(() => rankedHomeRecipes.slice(0, 2), [rankedHomeRecipes])
   const previewRecipes = useMemo(
     () =>

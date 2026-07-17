@@ -54,7 +54,7 @@ export default function RecipeShoppingAssistant({
     ingredients,
     loading,
     error: ingredientError,
-    updateIngredient,
+    consumeIngredientQuantity,
     listIngredients,
   } = useIngredients({ scope: activeScope, familyGroupId });
   const {
@@ -161,33 +161,25 @@ export default function RecipeShoppingAssistant({
     [activeIngredients, match.matchedIngredients],
   );
 
-  const removeCookedIngredients = async () => {
+  const deductCookedIngredients = async () => {
     if (matchedInventoryItems.length === 0) return;
     const shouldRemove = await requestConfirmation({
-      title: "사용한 재료를 소진 처리할까요?",
-      message: `${recipeName}에 사용한 재료 ${matchedInventoryItems.length}개를 삭제하지 않고 소진 기록으로 남깁니다.`,
-      confirmLabel: "소진 처리",
+      title: "사용한 재료 수량을 차감할까요?",
+      message: "냉장고와 레시피의 단위가 명확히 맞는 재료만 차감합니다. 단위가 다르거나 수량이 부족한 재료는 변경하지 않습니다.",
+      confirmLabel: "안전하게 차감",
     });
     if (!shouldRemove) return;
-    await Promise.all(matchedInventoryItems.map((item) => updateIngredient(item.id, {
-      name: item.name,
-      category: item.category,
-      storageType: item.storageType,
-      quantity: item.quantity,
-      expiryDate: item.expiryDate,
-      purchaseDate: item.purchaseDate,
-      openedAt: item.openedAt,
-      storageLocation: item.storageLocation,
-      unitPrice: item.unitPrice,
-      purchasePlace: item.purchasePlace,
-      consumedAt: new Date().toISOString(),
-      discardedAt: null,
-      repeatPurchase: item.repeatPurchase,
-      barcode: item.barcode,
-      imageUrl: item.imageUrl,
-      memo: [item.memo, `${recipeName} 조리 후 소진`].filter(Boolean).join(" · ") || null,
-    })));
-    setStatusMessage(`사용한 재료 ${matchedInventoryItems.length}개를 소진 처리했어요.`);
+    const results = await Promise.all(matchedInventoryItems.map((item) => {
+      const detail = detailByName.get(item.name.trim().toLowerCase());
+      return consumeIngredientQuantity(item.id, detail?.display ?? null, { recipeId, recipeName });
+    }));
+    const changedCount = results.filter((result) => result?.status === "adjusted" || result?.status === "consumed").length;
+    const manualCount = results.filter((result) => result && result.status !== "adjusted" && result.status !== "consumed").length;
+    setStatusMessage(
+      changedCount > 0
+        ? `${changedCount}개 재료 수량을 차감하고 원장에 기록했어요.${manualCount > 0 ? ` ${manualCount}개는 단위를 확인해 주세요.` : ""}`
+        : "자동 차감 가능한 수량이 없습니다. 냉장고 수량과 레시피 단위를 확인해 주세요.",
+    );
   };
 
   useEffect(() => {
@@ -454,20 +446,20 @@ export default function RecipeShoppingAssistant({
         {matchedInventoryItems.length > 0 ? (
           <div className="mt-3 rounded-[14px] border border-[#dce8c8] bg-[#f2f7e7] px-4 py-3">
             <p className="text-sm font-black text-[#2f2117]">
-              조리 후 사용한 재료를 바로 뺄 수 있어요.
+              조리 후 사용한 만큼 재고에서 뺄 수 있어요.
             </p>
             <p className="mt-1 text-xs text-[#7d6d5f]">
-              수량 단위가 제각각이어도 삭제하지 않고 소진 상태로 기록합니다.
+              같은 단위나 g↔kg, ml↔L처럼 안전한 경우만 자동 차감하고 변경 원장을 남깁니다.
             </p>
             <button
               type="button"
               data-testid="consumed-ingredients-apply"
               onClick={() => {
-                void removeCookedIngredients();
+                void deductCookedIngredients();
               }}
               className="mt-3 rounded-full bg-[#3d7b38] px-4 py-2 text-sm font-bold text-white"
             >
-              사용한 재료 소진 처리
+              사용한 수량 차감
             </button>
           </div>
         ) : null}

@@ -201,6 +201,10 @@ export function getIngredientCatalog(): IngredientCatalogItem[] {
   return CATALOG;
 }
 
+export function getIngredientCatalogItem(id: string): IngredientCatalogItem | null {
+  return CATALOG.find((item) => item.id === id) ?? null;
+}
+
 export function getIngredientCatalogByCategory(
   category: IngredientCategory,
 ): IngredientCatalogItem[] {

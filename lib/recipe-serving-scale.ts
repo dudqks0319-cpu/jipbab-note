@@ -20,7 +20,9 @@ export function scaleIngredientDisplay(
   display: string,
   baseServings: number,
   requestedServings: number,
+  scaleMode: "linear" | "fixed" | "to_taste" = "linear",
 ): string {
+  if (scaleMode !== "linear") return display;
   if (!Number.isFinite(baseServings) || baseServings <= 0) return display;
   if (!Number.isFinite(requestedServings) || requestedServings <= 0) return display;
   const match = display.trim().match(LEADING_QUANTITY_PATTERN);

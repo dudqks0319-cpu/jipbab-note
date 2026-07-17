@@ -512,6 +512,7 @@ export interface RecipeIngredientDetail {
   substitute?: string | null;
   beginnerNote?: string | null;
   prepNote?: string | null;
+  scaleMode?: "linear" | "fixed" | "to_taste";
 }
 
 export interface RecipeDetailRecord extends RecipeRecord {

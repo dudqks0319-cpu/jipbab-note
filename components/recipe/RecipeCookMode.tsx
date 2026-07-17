@@ -10,16 +10,23 @@ import {
   recipeCookProgressKey,
   remainingTimerSeconds,
   resumeRecipeCookTimer,
+  upsertRecipeCookTimer,
   type RecipeCookFeedback,
   type RecipeCookTimer,
 } from '@/lib/recipe-cook-progress'
+import {
+  cancelCookTimerNotification,
+  scheduleCookTimerNotification,
+} from '@/lib/notifications'
 import type { RecipeDetailStep } from '@/types'
 import { trackProductAnalyticsEvent } from '@/lib/product-analytics'
 import RecipeCookingSessionForm from '@/components/recipe/RecipeCookingSessionForm'
+import { recordRecentRecipe } from '@/lib/recent-recipes'
 
 type RecipeCookModeProps = {
   recipeId: string
   recipeName: string
+  recipeCategory: string
   steps: RecipeDetailStep[]
 }
 
@@ -67,9 +74,9 @@ function playCompletionSignal(context: AudioContext | null) {
   }
 }
 
-export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCookModeProps) {
+export default function RecipeCookMode({ recipeId, recipeName, recipeCategory, steps }: RecipeCookModeProps) {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set())
-  const [activeTimer, setActiveTimer] = useState<RecipeCookTimer | null>(null)
+  const [activeTimers, setActiveTimers] = useState<RecipeCookTimer[]>([])
   const [activeStepIndex, setActiveStepIndex] = useState(0)
   const [showAllSteps, setShowAllSteps] = useState(false)
   const [feedback, setFeedback] = useState<RecipeCookFeedback | null>(null)
@@ -80,14 +87,19 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
   const [hydrated, setHydrated] = useState(false)
   const [timerAnnouncement, setTimerAnnouncement] = useState('')
   const [hasStarted, setHasStarted] = useState(false)
-  const signaledTimerRef = useRef<number | null>(null)
+  const signaledTimerRef = useRef<Set<number>>(new Set())
   const audioContextRef = useRef<AudioContext | null>(null)
   const completedEventRef = useRef(false)
   const storageKey = recipeCookProgressKey(recipeId)
   const stepIndexes = useMemo(() => steps.map((step) => step.index), [steps])
+  const activeStepNumber = steps[Math.min(activeStepIndex, Math.max(steps.length - 1, 0))]?.index ?? 0
+  const activeTimer = activeTimers.find((timer) => timer.stepIndex === activeStepNumber) ?? null
   const remainingSeconds = remainingTimerSeconds(activeTimer, now)
   const timerPaused = Boolean(activeTimer && Number.isInteger(activeTimer.pausedRemainingSeconds))
   const timerRunning = Boolean(activeTimer && remainingSeconds > 0 && !timerPaused)
+  const hasRunningTimer = activeTimers.some(
+    (timer) => remainingTimerSeconds(timer, now) > 0 && !Number.isInteger(timer.pausedRemainingSeconds),
+  )
   const allComplete = steps.length > 0 && checkedSteps.size === steps.length
   const progress = steps.length === 0 ? 0 : Math.round((checkedSteps.size / steps.length) * 100)
 
@@ -98,15 +110,15 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
       if (saved) {
         setCheckedSteps(new Set(saved.checkedStepIndexes))
         setActiveStepIndex(saved.activeStepIndex)
-        setActiveTimer(saved.timer)
-        if (saved.timer && remainingTimerSeconds(saved.timer) === 0) {
-          signaledTimerRef.current = saved.timer.endsAt
+        setActiveTimers(saved.timers)
+        for (const timer of saved.timers) {
+          if (remainingTimerSeconds(timer) === 0) signaledTimerRef.current.add(timer.endsAt)
         }
         setCompletedAt(saved.completedAt)
         setFeedback(saved.feedback)
         setClientSessionId(saved.clientSessionId)
         setStartedAt(saved.startedAt)
-        setHasStarted(Boolean(saved.checkedStepIndexes.length || saved.timer || saved.completedAt))
+        setHasStarted(Boolean(saved.checkedStepIndexes.length || saved.timers.length || saved.completedAt))
         completedEventRef.current = Boolean(saved.completedAt)
       }
     } catch {
@@ -120,12 +132,12 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     if (!hydrated) return
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        version: 1,
+        version: 2,
         clientSessionId,
         startedAt,
         activeStepIndex,
         checkedStepIndexes: [...checkedSteps].sort((left, right) => left - right),
-        timer: activeTimer,
+        timers: activeTimers,
         completedAt,
         feedback,
         updatedAt: new Date().toISOString(),
@@ -133,44 +145,44 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     } catch {
       return
     }
-  }, [activeStepIndex, activeTimer, checkedSteps, clientSessionId, completedAt, feedback, hydrated, startedAt, storageKey])
+  }, [activeStepIndex, activeTimers, checkedSteps, clientSessionId, completedAt, feedback, hydrated, startedAt, storageKey])
 
   useEffect(() => {
-    if (!activeTimer || timerPaused || remainingTimerSeconds(activeTimer) <= 0) return
+    if (!hasRunningTimer) return
     const interval = window.setInterval(() => setNow(Date.now()), 250)
-    const completion = window.setTimeout(() => {
-      window.clearInterval(interval)
-      setNow(Date.now())
-    }, remainingTimerSeconds(activeTimer) * 1000 + 50)
     const sync = () => setNow(Date.now())
     document.addEventListener('visibilitychange', sync)
     window.addEventListener('focus', sync)
     return () => {
       window.clearInterval(interval)
-      window.clearTimeout(completion)
       document.removeEventListener('visibilitychange', sync)
       window.removeEventListener('focus', sync)
     }
-  }, [activeTimer, timerPaused])
+  }, [hasRunningTimer])
 
   useEffect(() => {
-    if (!activeTimer || remainingSeconds > 0 || signaledTimerRef.current === activeTimer.endsAt) return
-    signaledTimerRef.current = activeTimer.endsAt
-    setTimerAnnouncement(`${activeTimer.stepIndex}단계 타이머가 끝났습니다.`)
+    const completedTimers = activeTimers.filter(
+      (timer) => remainingTimerSeconds(timer, now) === 0 && !signaledTimerRef.current.has(timer.endsAt),
+    )
+    if (completedTimers.length === 0) return
+    for (const timer of completedTimers) {
+      signaledTimerRef.current.add(timer.endsAt)
+      trackProductAnalyticsEvent('timer_completed', {
+        recipeId,
+        stepIndex: timer.stepIndex,
+        durationSeconds: timer.durationSeconds,
+      })
+    }
+    setTimerAnnouncement(`${completedTimers.map((timer) => `${timer.stepIndex}단계`).join(', ')} 타이머가 끝났습니다.`)
     playCompletionSignal(audioContextRef.current)
-    trackProductAnalyticsEvent('timer_completed', {
-      recipeId,
-      stepIndex: activeTimer.stepIndex,
-      durationSeconds: activeTimer.durationSeconds,
-    })
-  }, [activeTimer, recipeId, remainingSeconds])
+  }, [activeTimers, now, recipeId])
 
   useEffect(() => () => {
     if (audioContextRef.current) void audioContextRef.current.close()
   }, [])
 
   useEffect(() => {
-    if (!activeTimer || !timerRunning) return
+    if (!hasRunningTimer) return
     let sentinel: WakeLockSentinelLike | null = null
     const acquire = async () => {
       if (document.visibilityState !== 'visible') return
@@ -193,7 +205,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
       document.removeEventListener('visibilitychange', reacquire)
       if (sentinel) void sentinel.release()
     }
-  }, [activeTimer, timerRunning])
+  }, [hasRunningTimer])
 
   useEffect(() => {
     if (allComplete && !completedAt) setCompletedAt(new Date().toISOString())
@@ -206,8 +218,9 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
   useEffect(() => {
     if (!allComplete || completedEventRef.current) return
     completedEventRef.current = true
+    recordRecentRecipe(recipeId, recipeCategory)
     trackProductAnalyticsEvent('cooking_completed', { recipeId, stepIndex: steps.length })
-  }, [allComplete, recipeId, steps.length])
+  }, [allComplete, recipeCategory, recipeId, steps.length])
 
   if (steps.length === 0) return null
   const activeStep = steps[Math.min(activeStepIndex, steps.length - 1)]
@@ -234,10 +247,11 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     } catch {
       audioContextRef.current = null
     }
-    signaledTimerRef.current = null
+    signaledTimerRef.current.delete(timer.endsAt)
     setTimerAnnouncement('')
-    setNow(Date.now())
-    setActiveTimer(timer)
+    setNow(() => Date.now())
+    setActiveTimers((current) => upsertRecipeCookTimer(current, timer))
+    void scheduleCookTimerNotification(recipeId, recipeName, timer).catch(() => undefined)
     trackProductAnalyticsEvent('timer_started', {
       recipeId,
       stepIndex: step.index,
@@ -249,17 +263,23 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
       startTimer(step)
       return
     }
-    setNow(Date.now())
+    const nextTimer = timerPaused
+      ? resumeRecipeCookTimer(activeTimer)
+      : pauseRecipeCookTimer(activeTimer)
+    if (!nextTimer) return
+    setNow(() => Date.now())
     if (!timerPaused) {
       trackProductAnalyticsEvent('timer_paused', {
         recipeId,
         stepIndex: step.index,
         durationSeconds: remainingSeconds,
       })
+      void cancelCookTimerNotification(recipeId, step.index).catch(() => undefined)
+    } else {
+      signaledTimerRef.current.delete(nextTimer.endsAt)
+      void scheduleCookTimerNotification(recipeId, recipeName, nextTimer).catch(() => undefined)
     }
-    setActiveTimer((current) => timerPaused
-      ? resumeRecipeCookTimer(current)
-      : pauseRecipeCookTimer(current))
+    setActiveTimers((current) => upsertRecipeCookTimer(current, nextTimer))
   }
   const resetProgress = () => {
     if (hasStarted && !allComplete) {
@@ -267,7 +287,10 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     }
     setCheckedSteps(new Set())
     setActiveStepIndex(0)
-    setActiveTimer(null)
+    for (const timer of activeTimers) {
+      void cancelCookTimerNotification(recipeId, timer.stepIndex).catch(() => undefined)
+    }
+    setActiveTimers([])
     setTimerAnnouncement('')
     setCompletedAt(null)
     setFeedback(null)
@@ -275,6 +298,7 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
     setStartedAt(null)
     setHasStarted(false)
     completedEventRef.current = false
+    signaledTimerRef.current.clear()
   }
 
   const startCooking = () => {
@@ -357,6 +381,26 @@ export default function RecipeCookMode({ recipeId, recipeName, steps }: RecipeCo
                     : `${formatRemainingTime(remainingSeconds)} 일시정지`
                 : `${formatDurationLabel(activeTimerSeconds)} 타이머`}
             </button>
+          ) : null}
+          {activeTimers.length > 1 ? (
+            <div className="mt-3 rounded-[13px] border border-[#eadcc9] bg-white px-3 py-3" aria-label="실행 중인 타이머">
+              <p className="text-[11px] font-black text-[#8f7f70]">동시 타이머 {activeTimers.length}개</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {activeTimers.map((timer) => {
+                  const timerSeconds = remainingTimerSeconds(timer, now)
+                  return (
+                    <button
+                      key={timer.stepIndex}
+                      type="button"
+                      onClick={() => selectStep(steps.findIndex((step) => step.index === timer.stepIndex))}
+                      className={`min-h-11 rounded-full px-3 text-[12px] font-black ${timer.stepIndex === activeStep.index ? 'bg-[#2f2117] text-white' : 'bg-[#fff0e4] text-[#d94d19]'}`}
+                    >
+                      {timer.stepIndex}단계 {timerSeconds === 0 ? '완료' : formatRemainingTime(timerSeconds)}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           ) : null}
           <p className="sr-only" aria-live="assertive">{timerAnnouncement}</p>
         </div> : null}

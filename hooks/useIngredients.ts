@@ -23,6 +23,10 @@ import {
 import { syncIngredientsWithSupabase } from "@/lib/sync/ingredient-sync-service";
 import { enqueuePendingSync } from "@/lib/sync/sync-engine";
 import { toDateOnlyString } from "@/lib/utils";
+import {
+  calculateInventoryDeduction,
+  type InventoryDeductionResult,
+} from "@/lib/inventory-deduction";
 import type {
   IngredientFormPayload,
   IngredientQueryError,
@@ -53,6 +57,11 @@ export interface UseIngredientsResult {
   fetchIngredient: (ingredientId: string) => Promise<IngredientRecord | null>;
   addIngredient: (payload: IngredientFormPayload) => Promise<IngredientRecord>;
   updateIngredient: (ingredientId: string, payload: IngredientFormPayload) => Promise<IngredientRecord | null>;
+  consumeIngredientQuantity: (
+    ingredientId: string,
+    requiredQuantity: string | null,
+    context: { recipeId: string; recipeName: string },
+  ) => Promise<InventoryDeductionResult | null>;
   deleteIngredient: (ingredientId: string) => Promise<boolean>;
 }
 
@@ -318,6 +327,64 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     [deviceId, loadLocalIngredients, queueAndSync],
   );
 
+  const consumeIngredientQuantity = useCallback(
+    async (
+      ingredientId: string,
+      requiredQuantity: string | null,
+      context: { recipeId: string; recipeName: string },
+    ): Promise<InventoryDeductionResult | null> => {
+      setLoading(true);
+      setError(null);
+      const target = await getLocalIngredient(ingredientId);
+      if (!target || target.deletedAt) {
+        setError(makeError("차감할 재료를 찾지 못했습니다.", "local"));
+        setLoading(false);
+        return null;
+      }
+
+      const deduction = calculateInventoryDeduction(target.quantity, requiredQuantity);
+      if (deduction.status !== "adjusted" && deduction.status !== "consumed") {
+        setLoading(false);
+        return deduction;
+      }
+
+      const syncAction: PendingSyncAction = target.syncStatus === "pending_create" ? "create" : "update";
+      const usedMemo = `${context.recipeName} 조리에 ${deduction.usedQuantity ?? requiredQuantity} 사용`;
+      const nextRecord = applyPayloadToRecord(target, {
+        name: target.name,
+        category: target.category,
+        storageType: target.storageType,
+        quantity: deduction.nextQuantity,
+        expiryDate: target.expiryDate,
+        purchaseDate: target.purchaseDate,
+        openedAt: target.openedAt,
+        storageLocation: target.storageLocation,
+        unitPrice: target.unitPrice,
+        purchasePlace: target.purchasePlace,
+        consumedAt: deduction.status === "consumed" ? new Date().toISOString() : null,
+        discardedAt: null,
+        repeatPurchase: target.repeatPurchase,
+        barcode: target.barcode,
+        imageUrl: target.imageUrl,
+        memo: [target.memo, usedMemo].filter(Boolean).join(" · ") || null,
+      }, syncAction);
+      await upsertLocalIngredient(nextRecord);
+      await recordFridgeEvent(deviceId, target.userId, nextRecord.id, "consume", {
+        recipeId: context.recipeId,
+        recipeName: context.recipeName,
+        deduction,
+        record: nextRecord,
+      });
+      const nextItems = await loadLocalIngredients();
+      setIngredients(nextItems);
+      setSource("local");
+      setLoading(false);
+      await queueAndSync(nextRecord, syncAction);
+      return deduction;
+    },
+    [deviceId, loadLocalIngredients, queueAndSync],
+  );
+
   const deleteIngredient = useCallback(
     async (ingredientId: string): Promise<boolean> => {
       setLoading(true);
@@ -386,6 +453,7 @@ export function useIngredients(options?: IngredientScopeOptions): UseIngredients
     fetchIngredient,
     addIngredient,
     updateIngredient,
+    consumeIngredientQuantity,
     deleteIngredient,
   };
 }

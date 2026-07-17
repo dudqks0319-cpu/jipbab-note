@@ -90,6 +90,7 @@ export interface RecipeApiV1Detail {
     preparation: string | null;
     optional: boolean;
     pantryStaple: boolean;
+    scaleMode?: "linear" | "fixed" | "to_taste";
     substitutions: Array<{
       ingredientId: string | null;
       text: string | null;
@@ -289,6 +290,7 @@ export function recipeApiV1DetailToRecord(detail: RecipeApiV1Detail): RecipeDeta
     required: !ingredient.optional,
     substitute: substitutionDisplay(ingredient.substitutions[0]),
     prepNote: ingredient.preparation,
+    scaleMode: ingredient.scaleMode ?? "linear",
   }));
   const steps = detail.steps.map((step) => ({
     index: step.order,

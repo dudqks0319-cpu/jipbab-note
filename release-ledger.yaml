@@ -373,8 +373,8 @@ migration_history:
   phase2_rate_limit_migration_recorded_remote: false
   phase6_security_definer_migration_recorded_remote: false
   phase6_egg_tofu_reclassification_recorded_remote: false
-  latest_local_migration: "20260717102000_add_moderated_recipe_reviews.sql"
-  latest_local_migration_rollback: "supabase/rollbacks/20260717102000_add_moderated_recipe_reviews.sql"
+  latest_local_migration: "20260717103000_add_recipe_ingredient_scale_mode.sql"
+  latest_local_migration_rollback: "supabase/rollbacks/20260717103000_add_recipe_ingredient_scale_mode.sql"
   latest_local_migration_status: "not_applied_requires_history_reconciliation_backup_and_staging"
   db_push_status: "blocked_until_live_schema_and_history_reconciled"
 

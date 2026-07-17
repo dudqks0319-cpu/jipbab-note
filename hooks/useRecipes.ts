@@ -25,6 +25,8 @@ import type {
   RecipeRecord,
   RecipeWithMatch,
 } from "@/types";
+import { useRecentRecipes } from "@/hooks/useRecentRecipes";
+import { prioritizeRecipeDiversity } from "@/lib/recent-recipes";
 
 const DEFAULT_PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -257,6 +259,7 @@ export function useRecipes(
   } = {},
 ): UseRecipesResult {
   const { ingredients, loading: ingredientsLoading } = useIngredients();
+  const recentRecipes = useRecentRecipes();
   const activeIngredients = useMemo(
     () => ingredients.filter((item) => !item.consumedAt && !item.discardedAt),
     [ingredients],
@@ -272,7 +275,10 @@ export function useRecipes(
   );
   const recipes = useMemo<RecommendedRecipe[]>(
     () =>
-      rankRecipeRecommendations(approvedRecipes, activeIngredients).map(({ recipe, match, score }) => {
+      prioritizeRecipeDiversity(
+        rankRecipeRecommendations(approvedRecipes, activeIngredients),
+        recentRecipes,
+      ).map(({ recipe, match, score }) => {
         const expiringIngredients = findExpiringMatchedIngredients(
           match.matchedIngredients,
           activeIngredients,
@@ -289,7 +295,7 @@ export function useRecipes(
           }),
         };
       }),
-    [activeIngredients, approvedRecipes],
+    [activeIngredients, approvedRecipes, recentRecipes],
   );
 
   return { ...catalog, recipes, ingredientsLoading };

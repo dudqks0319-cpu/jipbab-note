@@ -91,7 +91,13 @@ export default function RecipeIngredientList({
               {ingredient.substitute ? <p className="mt-1 text-[13px] font-semibold leading-5 text-[#6b8f58]">대체: {ingredient.substitute}</p> : null}
             </div>
             <span className="break-keep text-right text-[17px] font-bold leading-7 text-[#303030]">
-              {scaleIngredientDisplay(ingredient.display, baseServings, servings)}
+              {scaleIngredientDisplay(ingredient.display, baseServings, servings, ingredient.scaleMode)}
+              {ingredient.scaleMode === 'to_taste' && servings !== baseServings ? (
+                <small className="mt-1 block text-[11px] font-semibold text-[#8d8177]">기호에 맞게 조절</small>
+              ) : null}
+              {ingredient.scaleMode === 'fixed' && servings !== baseServings ? (
+                <small className="mt-1 block text-[11px] font-semibold text-[#8d8177]">고정 계량</small>
+              ) : null}
             </span>
           </li>
         ))}

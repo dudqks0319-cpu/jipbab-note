@@ -1,4 +1,5 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
+import type { RecipeCookTimer } from './recipe-cook-progress.ts'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_REMINDER_DAYS = [3, 1, 0] as const
@@ -18,6 +19,15 @@ export type ExpiryNotificationJob = {
   ingredientId: string
   ingredientName: string
   dDay: ExpiryReminderDay
+  scheduledAt: string
+  title: string
+  body: string
+}
+
+export type CookTimerNotificationJob = {
+  id: string
+  recipeId: string
+  stepIndex: number
   scheduledAt: string
   title: string
   body: string
@@ -217,6 +227,57 @@ function makeNativeNotificationId(jobId: string): number {
     hash = (hash * 31 + jobId.charCodeAt(index)) >>> 0
   }
   return Math.max(1, hash % 2_147_483_647)
+}
+
+export function buildCookTimerNotificationJob(
+  recipeId: string,
+  recipeName: string,
+  timer: RecipeCookTimer,
+): CookTimerNotificationJob {
+  return {
+    id: `cook-${recipeId}-step-${timer.stepIndex}`,
+    recipeId,
+    stepIndex: timer.stepIndex,
+    scheduledAt: new Date(timer.endsAt).toISOString(),
+    title: `${timer.stepIndex}단계 타이머 완료`,
+    body: `${recipeName} ${timer.stepIndex}단계를 확인해 주세요.`,
+  }
+}
+
+export async function scheduleCookTimerNotification(
+  recipeId: string,
+  recipeName: string,
+  timer: RecipeCookTimer,
+): Promise<'native-granted' | 'native-denied' | 'unsupported'> {
+  if (typeof window === 'undefined') return 'unsupported'
+  const nativePlugin = LocalNotifications as unknown as NativeNotificationPlugin
+  if (!nativePlugin.schedule) return 'unsupported'
+  const job = buildCookTimerNotificationJob(recipeId, recipeName, timer)
+  const permission = await nativePlugin.requestPermissions?.()
+  if (permission?.display && permission.display !== 'granted') return 'native-denied'
+  const notificationId = makeNativeNotificationId(job.id)
+  await nativePlugin.cancel?.({ notifications: [{ id: notificationId }] })
+  await nativePlugin.schedule({
+    notifications: [{
+      id: notificationId,
+      title: job.title,
+      body: job.body,
+      schedule: { at: new Date(job.scheduledAt) },
+      extra: { recipeId, url: `/recipe/${encodeURIComponent(recipeId)}#cook-mode` },
+    }],
+  })
+  return 'native-granted'
+}
+
+export async function cancelCookTimerNotification(
+  recipeId: string,
+  stepIndex: number,
+): Promise<void> {
+  if (typeof window === 'undefined') return
+  const nativePlugin = LocalNotifications as unknown as NativeNotificationPlugin
+  await nativePlugin.cancel?.({
+    notifications: [{ id: makeNativeNotificationId(`cook-${recipeId}-step-${stepIndex}`) }],
+  })
 }
 
 async function cancelNativeExpiryNotifications(
